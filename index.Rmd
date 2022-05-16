@@ -1,0 +1,64 @@
+---
+pagetitle: "CalCOFI Products"
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r, setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = F, message = F, warning = F)
+fontawesome::fa_html_dependency()
+```
+
+This website is dedicated to enabling and generating online products using data from the California Cooperative Oceanic Fisheries Investigations ([CalCOFI](https://CalCOFI.org)). By streamlining data ingestion into the database, summary extraction of data from the database using a public-facing API, and making helper functions available in an R library, we can easily produce interactive applications and online reports of value to scientific and management audiences.
+
+```{r, }
+librarian::shelf(
+  bs4cards, bslib, dplyr, fontawesome, glue, googlesheets4, 
+  htmltools, purrr, rstudio/webshot2)
+
+# [datasheet | calcofi - Google Sheets](https://docs.google.com/spreadsheets/d/1ghM30pIdcsun7XWzLRKh4EilUplN60YdHayfiilPFwE/edit?pli=1#gid=600242061)
+products_gs <- "https://docs.google.com/spreadsheets/d/1ghM30pIdcsun7XWzLRKh4EilUplN60YdHayfiilPFwE/edit"
+products_tab <- "products"
+
+gs4_deauth()
+
+d_products <- read_sheet(products_gs, products_tab)
+
+d_products <- d_products %>% 
+  mutate(
+    img = map2_chr(live_url, code, function(live_url, code){
+      # d_products %>% filter(code == "capstone") %>% attach()
+      img <- glue("./images/{code}.png")
+      if (!file.exists(img))
+        webshot(
+          live_url, img,
+          vwidth = 992,
+          vheight = 744,
+          delay = 5)
+      img }))
+
+# TODO: 
+# - + date last updated
+# - + Github icon: source_url
+# - + Tags icon: categories
+
+d_products %>% 
+  arrange(title) %>% 
+  cards(
+    title = title,
+    link = live_url,
+    text = description_short,
+    image = img,
+    tags = paste("ALL;", categories),
+    footer = categories,
+    layout = "label-left",
+    width = 4)
+    # footer = map_chr(category, function(x){
+    #   tagList(fa_i("tags"), x) %>% as.character() }))
+```
+
+Contacts: 
+
+- Program: Erin Sattherwaite (esatterthwaite@ucsd.edu)
+- Technical: Ben Best (ben@ecoquants.com)

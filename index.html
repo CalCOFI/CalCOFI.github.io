@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>CalCOFI Products</title>
+
+<script src="site_libs/header-attrs-2.13/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+<link href="site_libs/bootstrap-5.1.0/bootstrap.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-5.1.0/bootstrap.bundle.min.js"></script>
+<script src="site_libs/bs3compat-0.3.1/transition.js"></script>
+<script src="site_libs/bs3compat-0.3.1/tabs.js"></script>
+<script src="site_libs/bs3compat-0.3.1/bs3compat.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.tab('show');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">CalCOFI.io</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+
+</div>
+
+
+<p>This website is dedicated to enabling and generating online products
+using data from the California Cooperative Oceanic Fisheries
+Investigations (<a href="https://CalCOFI.org">CalCOFI</a>). By
+streamlining data ingestion into the database, summary extraction of
+data from the database using a public-facing API, and making helper
+functions available in an R library, we can easily produce interactive
+applications and online reports of value to scientific and management
+audiences.</p>
+<div>
+<p>
+<button class="btn btn-primary" type="button" onClick="$(&#39;.bs4cards-blahblahblah&#39;).hide(400, &#39;swing&#39;);setTimeout(function() {$(&#39;.bs4cards-ALL&#39;).show(400, &#39;swing&#39;)}, 400);">ALL</button>
+<button class="btn btn-primary" type="button" onClick="$(&#39;.bs4cards-blahblahblah&#39;).hide(400, &#39;swing&#39;);setTimeout(function() {$(&#39;.bs4cards-API&#39;).show(400, &#39;swing&#39;)}, 400);">API</button>
+<button class="btn btn-primary" type="button" onClick="$(&#39;.bs4cards-blahblahblah&#39;).hide(400, &#39;swing&#39;);setTimeout(function() {$(&#39;.bs4cards-App&#39;).show(400, &#39;swing&#39;)}, 400);">App</button>
+<button class="btn btn-primary" type="button" onClick="$(&#39;.bs4cards-blahblahblah&#39;).hide(400, &#39;swing&#39;);setTimeout(function() {$(&#39;.bs4cards-Doc&#39;).show(400, &#39;swing&#39;)}, 400);">Doc</button>
+<button class="btn btn-primary" type="button" onClick="$(&#39;.bs4cards-blahblahblah&#39;).hide(400, &#39;swing&#39;);setTimeout(function() {$(&#39;.bs4cards-Script&#39;).show(400, &#39;swing&#39;)}, 400);">Script</button>
+</p>
+<div class="row p-0 row-cols-1 row-cols-lg-2" style="margin-left: -.2rem; margin-right: -.2rem; margin-top: 1rem; margin-bottom: 1rem; ">
+<div class="card bg-transparent m-0 border-0 collapse.show bs4cards-blahblahblah bs4cards-ALL bs4cards-API" style="padding: .2rem ; border-width: 0; border-radius: .6rem .6rem .6rem .6rem ;">
+<div class="card-body m-0 p-0 col-12" style="visibility: visible; border-style:solid; border-color:inherits; border-width:1px; background-color: inherits;border-radius: .6rem .6rem 0 0 ;">
+<div class="row no-gutters h-100 border-0" style="border-radius: .6rem .6rem 0 0 ;">
+<div class="col-7 h-100">
+<a href="https://api.calcofi.io">
+<h5 class="card-title my-auto px-3 pt-3 pb-1">API</h5>
+</a>
+<p class="card-text my-auto px-3 pb-3 pt-1">application programming interface (API) to generate summary tables and figures given input arguments</p>
+</div>
+<div class="col-5" style="border-radius: 0 .6rem 0 0 ;">
+<a href="https://api.calcofi.io" style="color: inherit;">
+<img src="images/api.png" class="card-img" style="border-style:solid; border-color:inherits; border-width:1px; margin-left: 1px;margin-right: -1px;margin-top: -1px;margin-bottom: -1px;border-radius: 0 .6rem 0 0 ;"/>
+</a>
+</div>
+</div>
+</div>
+<div class="card-footer small text-muted px-3 py-auto" style="border-style:solid; border-color:inherits; border-width:0 1px 1px 1px; border-radius: 0 0 .6rem .6rem ;">API</div>
+</div>
+<div class="card bg-transparent m-0 border-0 collapse.show bs4cards-blahblahblah bs4cards-ALL bs4cards-App" style="padding: .2rem ; border-width: 0; border-radius: .6rem .6rem .6rem .6rem ;">
+<div class="card-body m-0 p-0 col-12" style="visibility: visible; border-style:solid; border-color:inherits; border-width:1px; background-color: inherits;border-radius: .6rem .6rem 0 0 ;">
+<div class="row no-gutters h-100 border-0" style="border-radius: .6rem .6rem 0 0 ;">
+<div class="col-7 h-100">
+<a href="https://shiny.calcofi.io/capstone">
+<h5 class="card-title my-auto px-3 pt-3 pb-1">Capstone App</h5>
+</a>
+<p class="card-text my-auto px-3 pb-3 pt-1">visualization application designed by UCSB students for their undergraduate Capstone project</p>
+</div>
+<div class="col-5" style="border-radius: 0 .6rem 0 0 ;">
+<a href="https://shiny.calcofi.io/capstone" style="color: inherit;">
+<img src="images/capstone.png" class="card-img" style="border-style:solid; border-color:inherits; border-width:1px; margin-left: 1px;margin-right: -1px;margin-top: -1px;margin-bottom: -1px;border-radius: 0 .6rem 0 0 ;"/>
+</a>
+</div>
+</div>
+</div>
+<div class="card-footer small text-muted px-3 py-auto" style="border-style:solid; border-color:inherits; border-width:0 1px 1px 1px; border-radius: 0 0 .6rem .6rem ;">App</div>
+</div>
+<div class="card bg-transparent m-0 border-0 collapse.show bs4cards-blahblahblah bs4cards-ALL bs4cards-Doc" style="padding: .2rem ; border-width: 0; border-radius: .6rem .6rem .6rem .6rem ;">
+<div class="card-body m-0 p-0 col-12" style="visibility: visible; border-style:solid; border-color:inherits; border-width:1px; background-color: inherits;border-radius: .6rem .6rem 0 0 ;">
+<div class="row no-gutters h-100 border-0" style="border-radius: .6rem .6rem 0 0 ;">
+<div class="col-7 h-100">
+<a href="https://calcofi.github.io/docs/">
+<h5 class="card-title my-auto px-3 pt-3 pb-1">Documentation</h5>
+</a>
+<p class="card-text my-auto px-3 pb-3 pt-1">documentation describing technical ecosystem</p>
+</div>
+<div class="col-5" style="border-radius: 0 .6rem 0 0 ;">
+<a href="https://calcofi.github.io/docs/" style="color: inherit;">
+<img src="images/docs.png" class="card-img" style="border-style:solid; border-color:inherits; border-width:1px; margin-left: 1px;margin-right: -1px;margin-top: -1px;margin-bottom: -1px;border-radius: 0 .6rem 0 0 ;"/>
+</a>
+</div>
+</div>
+</div>
+<div class="card-footer small text-muted px-3 py-auto" style="border-style:solid; border-color:inherits; border-width:0 1px 1px 1px; border-radius: 0 0 .6rem .6rem ;">Doc</div>
+</div>
+<div class="card bg-transparent m-0 border-0 collapse.show bs4cards-blahblahblah bs4cards-ALL bs4cards-App" style="padding: .2rem ; border-width: 0; border-radius: .6rem .6rem .6rem .6rem ;">
+<div class="card-body m-0 p-0 col-12" style="visibility: visible; border-style:solid; border-color:inherits; border-width:1px; background-color: inherits;border-radius: .6rem .6rem 0 0 ;">
+<div class="row no-gutters h-100 border-0" style="border-radius: .6rem .6rem 0 0 ;">
+<div class="col-7 h-100">
+<a href="https://shiny.calcofi.io/oceano">
+<h5 class="card-title my-auto px-3 pt-3 pb-1">Oceano App</h5>
+</a>
+<p class="card-text my-auto px-3 pb-3 pt-1">application to generate input parameters for the API and render outputs visually</p>
+</div>
+<div class="col-5" style="border-radius: 0 .6rem 0 0 ;">
+<a href="https://shiny.calcofi.io/oceano" style="color: inherit;">
+<img src="images/oceano.png" class="card-img" style="border-style:solid; border-color:inherits; border-width:1px; margin-left: 1px;margin-right: -1px;margin-top: -1px;margin-bottom: -1px;border-radius: 0 .6rem 0 0 ;"/>
+</a>
+</div>
+</div>
+</div>
+<div class="card-footer small text-muted px-3 py-auto" style="border-style:solid; border-color:inherits; border-width:0 1px 1px 1px; border-radius: 0 0 .6rem .6rem ;">App</div>
+</div>
+<div class="card bg-transparent m-0 border-0 collapse.show bs4cards-blahblahblah bs4cards-ALL bs4cards-Script" style="padding: .2rem ; border-width: 0; border-radius: .6rem .6rem .6rem .6rem ;">
+<div class="card-body m-0 p-0 col-12" style="visibility: visible; border-style:solid; border-color:inherits; border-width:1px; background-color: inherits;border-radius: .6rem .6rem 0 0 ;">
+<div class="row no-gutters h-100 border-0" style="border-radius: .6rem .6rem 0 0 ;">
+<div class="col-7 h-100">
+<a href="https://calcofi.github.io/calcofi4r">
+<h5 class="card-title my-auto px-3 pt-3 pb-1">R Library</h5>
+</a>
+<p class="card-text my-auto px-3 pb-3 pt-1">R libary of helper functions to extract data from the API and visualize</p>
+</div>
+<div class="col-5" style="border-radius: 0 .6rem 0 0 ;">
+<a href="https://calcofi.github.io/calcofi4r" style="color: inherit;">
+<img src="images/calcofi4r.png" class="card-img" style="border-style:solid; border-color:inherits; border-width:1px; margin-left: 1px;margin-right: -1px;margin-top: -1px;margin-bottom: -1px;border-radius: 0 .6rem 0 0 ;"/>
+</a>
+</div>
+</div>
+</div>
+<div class="card-footer small text-muted px-3 py-auto" style="border-style:solid; border-color:inherits; border-width:0 1px 1px 1px; border-radius: 0 0 .6rem .6rem ;">Script</div>
+</div>
+<div class="card bg-transparent m-0 border-0 collapse.show bs4cards-blahblahblah bs4cards-ALL bs4cards-Script" style="padding: .2rem ; border-width: 0; border-radius: .6rem .6rem .6rem .6rem ;">
+<div class="card-body m-0 p-0 col-12" style="visibility: visible; border-style:solid; border-color:inherits; border-width:1px; background-color: inherits;border-radius: .6rem .6rem 0 0 ;">
+<div class="row no-gutters h-100 border-0" style="border-radius: .6rem .6rem 0 0 ;">
+<div class="col-7 h-100">
+<a href="https://calcofi.github.io/scripts">
+<h5 class="card-title my-auto px-3 pt-3 pb-1">Scripts</h5>
+</a>
+<p class="card-text my-auto px-3 pb-3 pt-1">scripts to explore and load data into the database</p>
+</div>
+<div class="col-5" style="border-radius: 0 .6rem 0 0 ;">
+<a href="https://calcofi.github.io/scripts" style="color: inherit;">
+<img src="images/scripts.png" class="card-img" style="border-style:solid; border-color:inherits; border-width:1px; margin-left: 1px;margin-right: -1px;margin-top: -1px;margin-bottom: -1px;border-radius: 0 .6rem 0 0 ;"/>
+</a>
+</div>
+</div>
+</div>
+<div class="card-footer small text-muted px-3 py-auto" style="border-style:solid; border-color:inherits; border-width:0 1px 1px 1px; border-radius: 0 0 .6rem .6rem ;">Script</div>
+</div>
+<div class="card bg-transparent m-0 border-0 collapse.show bs4cards-blahblahblah bs4cards-ALL bs4cards-API" style="padding: .2rem ; border-width: 0; border-radius: .6rem .6rem .6rem .6rem ;">
+<div class="card-body m-0 p-0 col-12" style="visibility: visible; border-style:solid; border-color:inherits; border-width:1px; background-color: inherits;border-radius: .6rem .6rem 0 0 ;">
+<div class="row no-gutters h-100 border-0" style="border-radius: .6rem .6rem 0 0 ;">
+<div class="col-7 h-100">
+<a href="https://tile.calcofi.io">
+<h5 class="card-title my-auto px-3 pt-3 pb-1">Tile Server</h5>
+</a>
+<p class="card-text my-auto px-3 pb-3 pt-1">vector tile server for quickly rendering "slippy" maps of complex/dense geometries (e.g. points, lines, polygons)</p>
+</div>
+<div class="col-5" style="border-radius: 0 .6rem 0 0 ;">
+<a href="https://tile.calcofi.io" style="color: inherit;">
+<img src="images/tile.png" class="card-img" style="border-style:solid; border-color:inherits; border-width:1px; margin-left: 1px;margin-right: -1px;margin-top: -1px;margin-bottom: -1px;border-radius: 0 .6rem 0 0 ;"/>
+</a>
+</div>
+</div>
+</div>
+<div class="card-footer small text-muted px-3 py-auto" style="border-style:solid; border-color:inherits; border-width:0 1px 1px 1px; border-radius: 0 0 .6rem .6rem ;">API</div>
+</div>
+</div>
+</div>
+<p>Contacts:</p>
+<ul>
+<li>Program: Erin Sattherwaite (<a href="mailto:esatterthwaite@ucsd.edu"
+class="email">esatterthwaite@ucsd.edu</a>)</li>
+<li>Technical: Ben Best (<a href="mailto:ben@ecoquants.com"
+class="email">ben@ecoquants.com</a>)</li>
+</ul>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
