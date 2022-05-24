@@ -40,15 +40,19 @@ d <- d %>%
   arrange(title) 
 
 d %>% 
+  mutate(
+    text_source = map2_chr(description_short, source_url, function(x, y){
+      glue("{x} <br>\n<a href='{y}'>\n  <img width=16 src='./images/icon_github.svg'> code</a>") } )) %>% 
+  # pull(text_source) %>% .[[1]] %>% cat()
   cards(
-    title = title,
-    link = live_url,
-    text = description_short,
-    image = img,
-    tags = paste("ALL;", categories),
+    title  = title,
+    link   = live_url,
+    text   = text_source,
+    image  = img,
+    tags   = paste("ALL;", categories),
     footer = categories,
     layout = "label-left",
-    width = 4)
+    width  = 4)
     # footer = map_chr(category, function(x){
     #   tagList(fa_i("tags"), x) %>% as.character() }))
 ```
@@ -57,3 +61,10 @@ Contacts:
 
 - Program: Erin Sattherwaite (esatterthwaite@ucsd.edu)
 - Technical: Ben Best (ben@ecoquants.com)
+
+<script>
+$('.card-text').each(function() { 
+  var x=$(this).text(); 
+  $(this).html(x);
+});
+</script>
