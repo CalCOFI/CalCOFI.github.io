@@ -30,7 +30,8 @@ This website is dedicated to enabling and generating online products using data 
 
 librarian::shelf(
   bs4cards, bslib, dplyr, fontawesome, glue, googlesheets4, 
-  htmltools, purrr, rstudio/webshot2)
+  htmltools, purrr, rstudio/webshot2,
+  quiet = T)
 
 # [datasheet | calcofi - Google Sheets](https://docs.google.com/spreadsheets/d/1ghM30pIdcsun7XWzLRKh4EilUplN60YdHayfiilPFwE/edit?pli=1#gid=600242061)
 products_gs <- "https://docs.google.com/spreadsheets/d/1ghM30pIdcsun7XWzLRKh4EilUplN60YdHayfiilPFwE/edit"
