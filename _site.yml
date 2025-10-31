@@ -1,15 +1,9 @@
 name: "calcofi.io"
 navbar:
   title: "CalCOFI.io"
-  # left:
-  #   - text: "Home"
-  #     href: index.html
-  #   - text: "About"
-  #     href: about.html
 output_dir: "."
 output:
   html_document:
     theme:
-      version: 5
       bootswatch: darkly
     css: _styles.css
