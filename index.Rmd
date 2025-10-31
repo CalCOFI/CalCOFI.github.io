@@ -1,7 +1,6 @@
 ---
+# runtime: shiny
 pagetitle: CalCOFI Products
-editor_options:
-  chunk_output_type: console
 ---
 
 ```{r, setup, include=FALSE}
@@ -19,6 +18,12 @@ fontawesome::fa_html_dependency()
 
   gtag('config', 'G-0HVK8TDMCF');
 </script>
+
+```{r bslib_themer, eval=F}
+# frontmatter:
+#   runtime: shiny
+bslib::bs_themer()
+```
 
 This website is dedicated to enabling and generating online products using data from the California Cooperative Oceanic Fisheries Investigations ([CalCOFI.org](https://CalCOFI.org)). By streamlining data ingestion into the database, summary extraction of data from the database using a public-facing API, and making helper functions available in an R library, we can easily produce interactive applications and online reports of value to scientific and management audiences.
 
