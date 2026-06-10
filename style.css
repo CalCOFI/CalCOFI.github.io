@@ -1,0 +1,190 @@
+/* CalCOFI.io — style.css
+   Shares the palette and header/footer idiom with CalCOFI/schema, /query and
+   /workflows so the sites read as siblings. Dark default; light overrides via
+   :root[data-theme="light"]. */
+
+:root {
+  --bg:       #1b1d20;
+  --panel:    #24272b;
+  --panel-2:  #2c3035;
+  --border:   #3a3f44;
+  --fg:       #e6e9ed;
+  --muted:    #9aa0a6;
+  --accent:   #4dabf7;
+  --accent-d: #339af0;
+  --warn:     #fcc419;
+  --mono:     ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --sans:     system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color-scheme: dark;
+}
+:root[data-theme="light"] {
+  --bg:       #ffffff;
+  --panel:    #f8f9fa;
+  --panel-2:  #ffffff;
+  --border:   #dee2e6;
+  --fg:       #212529;
+  --muted:    #6c757d;
+  --accent:   #2780e3;
+  --accent-d: #1c69bf;
+  --warn:     #b08800;
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+html, body {
+  margin: 0; padding: 0;
+  font-family: var(--sans);
+  font-size: 15px; line-height: 1.5;
+  color: var(--fg);
+  background: var(--bg);
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: var(--accent-d); text-decoration: underline; }
+code, .mono { font-family: var(--mono); font-size: 0.9em; }
+.muted { color: var(--muted); }
+
+/* ── page shell ──────────────────────────────────────────────────────────── */
+
+#layout { display: grid; grid-template-rows: auto 1fr; min-height: 100vh; }
+
+header.app-header {
+  position: sticky; top: 0; z-index: 10;
+  display: flex; align-items: center; gap: 0.85rem;
+  padding: 0.55rem 1rem;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  font-size: 0.9rem;
+}
+header.app-header .app-logo { display: inline-flex; align-items: center; height: 32px; }
+header.app-header .app-logo img { height: 32px; width: auto; display: block; }
+:root[data-theme="dark"]  header.app-header .logo-light,
+:root:not([data-theme="light"]) header.app-header .logo-light { display: none; }
+:root[data-theme="light"] header.app-header .logo-dark  { display: none; }
+
+header.app-header h1 { margin: 0; font-size: 1.05rem; font-weight: 700; letter-spacing: 0.01em; }
+header.app-header .spacer { flex: 1; }
+
+.header-links { display: inline-flex; flex-wrap: wrap; gap: 0.85rem; font-family: var(--mono); font-size: 0.82rem; }
+.header-links a { color: var(--muted); }
+.header-links a:hover { color: var(--accent); text-decoration: none; }
+
+header.app-header button#theme-toggle {
+  background: transparent; border: 1px solid var(--border);
+  color: var(--fg); font: inherit; cursor: pointer;
+  border-radius: 4px; padding: 0.2rem 0.55rem;
+}
+header.app-header button#theme-toggle:hover { background: var(--panel-2); }
+
+main#panel { padding: 1.25rem 1.5rem 4rem; max-width: 1180px; width: 100%; margin: 0 auto; }
+
+/* ── hero ────────────────────────────────────────────────────────────────── */
+
+.hero { margin: 0.5rem 0 1.5rem; max-width: 75ch; }
+.hero h2 { margin: 0 0 0.4rem; font-size: 1.5rem; }
+.hero .hero-lede { margin: 0 0 0.6rem; }
+.hero .hero-pipeline { font-size: 0.82rem; }
+
+/* ── section nav ─────────────────────────────────────────────────────────── */
+
+.section-nav {
+  display: flex; flex-wrap: wrap; gap: 0.4rem;
+  margin: 1.75rem 0;
+  padding-bottom: 1rem; border-bottom: 1px solid var(--border);
+}
+.section-nav a {
+  font-family: var(--mono); font-size: 0.8rem;
+  color: var(--fg);
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 999px; padding: 0.18rem 0.7rem;
+}
+.section-nav a:hover { border-color: var(--accent); text-decoration: none; }
+.section-nav a .n { color: var(--muted); margin-left: 0.3rem; }
+
+/* ── product sections ────────────────────────────────────────────────────── */
+
+.prod-section { margin: 2rem 0; scroll-margin-top: 3.5rem; }
+.prod-section > h2 {
+  margin: 0 0 0.2rem; font-size: 1.15rem;
+  display: flex; align-items: baseline; gap: 0.5rem;
+}
+.prod-section > h2 .count {
+  font-family: var(--mono); font-size: 0.78rem; font-weight: 400;
+  color: var(--muted);
+}
+.prod-section > .blurb { margin: 0 0 1rem; color: var(--muted); font-size: 0.86rem; max-width: 80ch; }
+
+/* ── cards ───────────────────────────────────────────────────────────────── */
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 0.85rem;
+}
+.card-grid.featured-grid {
+  grid-template-columns: repeat(auto-fill, minmax(min(420px, 100%), 1fr));
+  margin-bottom: 0.5rem;
+}
+
+.prod-card {
+  display: flex; flex-direction: column;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  font-size: 0.88rem;
+}
+.prod-card.featured { border-color: var(--accent); }
+.prod-card.demoted { opacity: 0.75; }
+
+.prod-card .shot { display: block; background: var(--panel-2); }
+.prod-card .shot img {
+  display: block; width: 100%;
+  aspect-ratio: 16 / 10; object-fit: cover; object-position: top;
+  border-bottom: 1px solid var(--border);
+}
+
+.prod-card .prod-body { display: flex; flex-direction: column; flex: 1; padding: 0.8rem 1rem 0.9rem; }
+.prod-card h3 {
+  margin: 0 0 0.3rem; font-size: 0.98rem;
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.45rem;
+}
+.prod-card h3 a { color: var(--accent); }
+
+.badge {
+  font-family: var(--mono); font-size: 0.68rem; font-weight: 400;
+  border: 1px solid var(--border); border-radius: 999px;
+  padding: 0.02rem 0.5rem; color: var(--muted);
+  white-space: nowrap;
+}
+.badge.interim { border-color: var(--warn); color: var(--warn); }
+.badge a { color: inherit; text-decoration: underline; }
+
+.prod-card .desc { margin: 0 0 0.5rem; color: var(--muted); font-size: 0.84rem; }
+
+.prod-card .tech { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-bottom: 0.5rem; }
+.chip {
+  display: inline-block;
+  background: var(--panel-2); border: 1px solid var(--border);
+  border-radius: 999px; padding: 0.03rem 0.5rem;
+  font-family: var(--mono); font-size: 0.72rem; color: var(--muted);
+}
+
+.prod-card .credits { margin: 0 0 0.5rem; font-size: 0.76rem; }
+
+.prod-card .links {
+  margin-top: auto; font-size: 0.78rem;
+  display: flex; flex-wrap: wrap; gap: 0.35rem 0.9rem;
+}
+
+/* ── footer ──────────────────────────────────────────────────────────────── */
+
+.app-footer {
+  margin-top: 3rem; padding-top: 1rem;
+  border-top: 1px solid var(--border);
+  color: var(--muted); font-size: 0.82rem;
+}
+.app-footer p { margin: 0.25rem 0; }
+.app-footer a { color: var(--muted); }
+.app-footer a:hover { color: var(--accent); }

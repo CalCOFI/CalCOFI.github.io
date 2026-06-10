@@ -1,0 +1,34 @@
+{%- assign p = include.p -%}
+<article class="prod-card{% if include.featured %} featured{% endif %}{% if p.status == 'superseded' or p.status == 'archived' %} demoted{% endif %}">
+  <a class="shot" href="{{ p.live_url }}" aria-label="Open {{ p.title }}">
+    <img loading="lazy" src="{{ p.img | relative_url }}" alt="Screenshot of {{ p.title }}">
+  </a>
+  <div class="prod-body">
+    <h3>
+      <a href="{{ p.live_url }}">{{ p.title }}</a>
+      {%- if p.status == 'superseded' and p.superseded_by -%}
+        {%- assign sup = site.data.products.products | where: "key", p.superseded_by | first -%}
+        <span class="badge superseded">superseded by <a href="{{ sup.live_url }}">{{ sup.title }}</a></span>
+      {%- elsif p.status and p.status != 'active' -%}
+        <span class="badge {{ p.status }}">{{ p.status }}</span>
+      {%- endif -%}
+    </h3>
+    <p class="desc">{{ p.description }}</p>
+    {%- if p.tech -%}
+    <div class="tech">
+      {%- for t in p.tech -%}<span class="chip">{{ t }}</span>{%- endfor -%}
+    </div>
+    {%- endif -%}
+    {%- if p.credits -%}
+    <p class="credits muted">
+      {{ p.credits.org }} · {{ p.credits.year }}{% if p.credits.team %} · {{ p.credits.team | join: ", " }}{% endif %}
+    </p>
+    {%- endif -%}
+    <div class="links mono">
+      <a href="{{ p.live_url }}">open ↗</a>
+      {%- if p.source_url and p.source_url != p.live_url -%}
+      <a href="{{ p.source_url }}">source ↗</a>
+      {%- endif -%}
+    </div>
+  </div>
+</article>

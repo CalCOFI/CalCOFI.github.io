@@ -1,0 +1,23 @@
+# CalCOFI.io — Jekyll landing site at https://calcofi.io/
+# Product cards are driven by _data/products.yml (replaces the old Google Sheet
+# + index.Rmd + bs4cards build). Edit the YAML, push to main, done.
+# Built by .github/workflows/pages.yml (Jekyll 4.3); siblings: schema, query,
+# workflows (_output).
+
+title:       "CalCOFI.io"
+description: "Interactive apps, data access and open-source tooling built on the CalCOFI integrated database."
+url:         "https://calcofi.io"
+baseurl:     ""
+markdown:    kramdown
+
+ga_tag: G-0HVK8TDMCF
+
+exclude:
+  - README.md
+  - LICENSE
+  - Gemfile
+  - Gemfile.lock
+  - vendor
+  - node_modules
+  - .bundle
+  - .jekyll-cache

@@ -1,5 +1,8 @@
-.Rproj.user
-.Rhistory
-.RData
-.Ruserdata
+_site/
+.jekyll-cache/
+.bundle/
+vendor/
+Gemfile.lock
 .DS_Store
+.Rproj.user/
+.Rhistory
