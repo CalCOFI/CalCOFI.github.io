@@ -1,9 +1,0 @@
-name: "calcofi.io"
-navbar:
-  title: "CalCOFI.io"
-output_dir: "."
-output:
-  html_document:
-    theme:
-      bootswatch: darkly
-    css: _styles.css
