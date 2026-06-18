@@ -317,6 +317,21 @@ products:
       year: 2026
       team: Betty Huang
 
+  - key: ucsb-viz-dashboard
+    title: Larvae Dashboard
+    section: students
+    live_url: https://app.calcofi.io/2026-ucsb-viz-dashboard/
+    source_url: https://github.com/CalCOFI/2026-ucsb-viz-dashboard
+    img: images/ucsb-viz-dashboard.png
+    description: >-
+      Explore CalCOFI fish-larvae (ichthyoplankton) abundance over time and
+      space — filter by species or habitat across seasons and decades, with
+      trend, correlation, stability and spatial views plus CSV/PDF export.
+    credits:
+      org: UCSB Data Science Capstone
+      year: 2026
+      team: [Jiarui Chang, Abhijit Brahme, A. Senthil, Chengcheng Fang, Kaeya Mehta, Shenyi Jiang]
+
   - key: saferseafood
     title: SaferSeafood App
     section: students
