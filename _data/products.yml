@@ -303,15 +303,16 @@ products:
       team: [Nicole Xu, Aashish Krishnan, Qiongwen (Lucy) Cao]
 
   - key: ucla-monitoring-map
-    title: CA Ocean Monitoring Map
+    title: CA Ocean & Coastal Monitoring Map
     section: students
-    live_url: https://calcofi.io/2026-ucla-ca-ocean-monitoring-map/
-    source_url: https://github.com/CalCOFI/2026-ucla-ca-ocean-monitoring-map
-    img: images/ucla-monitoring-map.png
+    live_url: https://calcofi.io/2026-ucla-cal-ocean-coastal-monitoring-map/
+    source_url: https://github.com/CalCOFI/2026-ucla-cal-ocean-coastal-monitoring-map
+    img: images/ucla-coastal-monitoring-map.png
     description: >-
       Statewide inventory of California ocean and coastal monitoring programs
-      — hex-grid coverage, survey transects, discharger stations and
-      bathymetry.
+      within 12 nmi of the coast — hex-grid coverage at 1/3/5 km, survey
+      transects, discharger stations, bathymetry, monitoring gaps, wind energy
+      areas, and marine protected areas.
     credits:
       org: UCLA Capstone
       year: 2026
