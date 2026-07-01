@@ -1,5 +1,5 @@
 /* CalCOFI.io — style.css
-   Shares the palette and header/footer idiom with CalCOFI/schema, /query and
+   Shares the palette and header/footer idiom with CalCOFI/db-schema, /db-query and
    /workflows so the sites read as siblings. Dark default; light overrides via
    :root[data-theme="light"]. */
 

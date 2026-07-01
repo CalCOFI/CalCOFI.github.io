@@ -1,8 +1,8 @@
 # CalCOFI.github.io
 
 Source for the [calcofi.io](https://calcofi.io) landing page — a Jekyll site
-styled as a sibling of [schema](https://github.com/CalCOFI/schema),
-[query](https://github.com/CalCOFI/query) and
+styled as a sibling of [schema](https://github.com/CalCOFI/db-schema),
+[query](https://github.com/CalCOFI/db-query) and
 [workflows](https://github.com/CalCOFI/workflows).
 
 ## Editing products
@@ -35,9 +35,9 @@ CSS). To capture or refresh one, use
 
 ```bash
 pipx install shot-scraper && shot-scraper install
-shot-scraper https://calcofi.io/query/ -o images/query.png \
+shot-scraper https://calcofi.io/db-query/ -o images/db-query.png \
   --width 1200 --height 750 --wait 5000
-pngquant --force --ext .png images/query.png
+pngquant --force --ext .png images/db-query.png
 ```
 
 Shiny apps cold-start in ~10–20 s; bump `--wait 20000` for

@@ -39,12 +39,12 @@ sections:
 products:
 
   # ── featured ─────────────────────────────────────────────────────────────
-  - key: int-app
+  - key: db-viz-hex
     title: Integrated App
     section: featured
-    live_url: https://app.calcofi.io/int/
-    source_url: https://github.com/CalCOFI/int-app
-    img: images/int-app.png
+    live_url: https://app.calcofi.io/db-viz-hex/
+    source_url: https://github.com/CalCOFI/db-viz-hex
+    img: images/db-viz-hex.png
     description: >-
       Explore decades of fish larvae and oceanographic bottle data together —
       filter by taxa, depth and season over dynamic hexagon maps, time series
@@ -67,7 +67,7 @@ products:
     title: Oceano App
     section: explore
     status: superseded
-    superseded_by: int-app
+    superseded_by: db-viz-hex
     live_url: https://app.calcofi.io/oceano/
     source_url: https://github.com/CalCOFI/apps/tree/main/oceano
     img: images/oceano.png
@@ -139,33 +139,33 @@ products:
       indicator scores.
 
   # ── access data ──────────────────────────────────────────────────────────
-  - key: query
+  - key: db-query
     title: Query
     section: data
-    live_url: https://calcofi.io/query/
-    source_url: https://github.com/CalCOFI/query
-    img: images/query.png
+    live_url: https://calcofi.io/db-query/
+    source_url: https://github.com/CalCOFI/db-query
+    img: images/db-query.png
     description: >-
       Run SQL on the CalCOFI database right in your browser — DuckDB-WASM
       reads the released Parquet files directly; no server, no credentials.
     tech: [SQL, DuckDB-WASM]
 
-  - key: schema
+  - key: db-schema
     title: Schema
     section: data
-    live_url: https://calcofi.io/schema/
-    source_url: https://github.com/CalCOFI/schema
-    img: images/schema.png
+    live_url: https://calcofi.io/db-schema/
+    source_url: https://github.com/CalCOFI/db-schema
+    img: images/db-schema.png
     description: >-
       Browse tables, columns, datasets and entity-relationship diagrams of
       each versioned database release.
 
-  - key: datacheck
+  - key: db-viz-cruise
     title: Datacheck App
     section: data
-    live_url: https://app.calcofi.io/datacheck/
-    source_url: https://github.com/CalCOFI/apps/tree/main/datacheck
-    img: images/datacheck.png
+    live_url: https://app.calcofi.io/db-viz-cruise/
+    source_url: https://github.com/CalCOFI/apps/tree/main/db-viz-cruise
+    img: images/db-viz-cruise.png
     description: >-
       Cross-dataset observation explorer — compare coverage across cruises,
       datasets and depths, with shareable deep-link URLs.
