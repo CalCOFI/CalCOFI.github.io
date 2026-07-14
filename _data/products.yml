@@ -333,6 +333,21 @@ products:
       year: 2026
       team: [Joy Chang, Abhijit Brahme, A. Senthil, Chengcheng Fang, Kaeya Mehta, Shenyi Jiang]
 
+  - key: calcofi-75th-timeline
+    title: 75th Anniversary Timeline
+    section: students
+    live_url: https://cdn.knightlab.com/libs/timeline3/latest/embed/index.html?source=12x10Qrf0UAyUT2BQ_TA3wTDgQJHYqov0fEQV42VtByU&font=Default&lang=en
+    source_url: https://docs.google.com/spreadsheets/d/12x10Qrf0UAyUT2BQ_TA3wTDgQJHYqov0fEQV42VtByU/edit?usp=sharing
+    img: images/calcofi-75th-timeline.png
+    description: >-
+      An interactive TimelineJS journey through 75 years of CalCOFI milestones
+      — from the 1949 founding after the sardine collapse to the NORPAC
+      expedition, the 1957–58 El Niño, CTD sampling, and the first all-female
+      research cruise.
+    credits:
+      org: CalCOFI
+      year: 2024
+
   - key: saferseafood
     title: SaferSeafood App
     section: students
