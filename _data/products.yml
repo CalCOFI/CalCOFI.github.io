@@ -95,16 +95,6 @@ products:
       Map pollutants in the Southern California Bight from the Regional
       Monitoring Program via SCCWRP.
 
-  - key: hypoxia-story
-    title: Hypoxia Story
-    section: explore
-    live_url: https://calcofi.io/hypoxia-story/
-    source_url: https://github.com/CalCOFI/hypoxia-story
-    img: images/hypoxia.png
-    description: >-
-      A scrollable story of hypoxia in the California Current Ecosystem and
-      its changing oxygen levels over the past 71 years.
-
   - key: larvae-cinms
     title: Larval Analysis
     section: explore
@@ -333,6 +323,20 @@ products:
       year: 2026
       team: [Joy Chang, Abhijit Brahme, A. Senthil, Chengcheng Fang, Kaeya Mehta, Shenyi Jiang]
 
+  - key: offshore-wind-monitoring
+    title: Offshore Wind Monitoring
+    section: students
+    live_url: https://elizathomas.shinyapps.io/california_ofw_monitoring/
+    img: images/offshore-wind-monitoring.png
+    description: >-
+      An interactive map for planning ocean monitoring around California's
+      floating offshore wind areas — toggle Essential Ocean Variables and
+      long-term monitoring programs to reveal gaps in baseline datasets.
+    credits:
+      org: CalCOFI
+      year: 2025
+      team: Eliza Thomas
+
   - key: calcofi-75th-timeline
     title: 75th Anniversary Timeline
     section: students
@@ -373,6 +377,20 @@ products:
     credits:
       org: UCSB Data Science Capstone
       year: 2025
+
+  - key: hypoxia-story
+    title: Hypoxia Story
+    section: students
+    live_url: https://calcofi.io/hypoxia-story/
+    source_url: https://github.com/CalCOFI/hypoxia-story
+    img: images/hypoxia.png
+    description: >-
+      A scrollable story of hypoxia in the California Current Ecosystem and
+      its changing oxygen levels over the past 71 years.
+    credits:
+      org: UCSB Data Storytelling Internship
+      year: 2022
+      team: [Annie Adams, Mallika Gupta]
 
   - key: capstone
     title: Capstone App

@@ -1,0 +1,53 @@
+# Recipes for calcofi.io product-card screenshots — run via `scripts/shots.sh`.
+# shot-scraper "multi" format: https://shot-scraper.datasette.io/en/stable/multi.html
+#
+# Each card image is images/<key>.png captured at the card aspect (1200x750;
+# the thumbnail is further top-cropped to 16:10 by CSS). Cards whose app shows
+# a welcome modal or guided tour on load dismiss it in a `javascript:` block
+# first, so the shot shows the real interface rather than the popup.
+#
+# Add an entry here whenever a card needs scripted setup or a long cold-start
+# wait; simple/static pages can just use the one-liner in README.md instead.
+
+- output: images/db-viz-hex.png
+  url: https://app.calcofi.io/db-viz-hex/
+  width: 1200
+  height: 750
+  wait: 15000   # the sardine/temperature hexagon layers paint several seconds
+                # after the basemap; too short a wait yields an empty map
+  # the Integrated App starts a Conductor (shepherd.js) guided tour on load;
+  # cancel it and strip its overlay so the hexagon compare map shows through.
+  javascript: |-
+    (async () => {
+      const sleep = ms => new Promise(r => setTimeout(r, ms));
+      for (let i = 0; i < 60 && !document.querySelector('.shepherd-element'); i++) await sleep(250);
+      try { if (window.Shepherd && window.Shepherd.activeTour) window.Shepherd.activeTour.cancel(); } catch (e) {}
+      document.querySelectorAll('.shepherd-element, .shepherd-modal-overlay-container').forEach(e => e.remove());
+      document.body.classList.remove('shepherd-active');
+      await sleep(4000);
+    })()
+
+- output: images/offshore-wind-monitoring.png
+  url: https://elizathomas.shinyapps.io/california_ofw_monitoring/
+  width: 1200
+  height: 750
+  wait: 18000   # shinyapps.io free tier can cold-start for ~15-20s
+  # dismiss the Scripps welcome modal by clicking OK, then wait for the
+  # monitoring-program overlay layers + legend to finish drawing (they paint
+  # several seconds after the modal closes)
+  javascript: |-
+    (async () => {
+      const sleep = ms => new Promise(r => setTimeout(r, ms));
+      for (let i = 0; i < 80; i++) {
+        const ok = [...document.querySelectorAll('button, a')].find(e => e.textContent.trim() === 'OK');
+        if (ok) { ok.click(); break; }
+        await sleep(250);
+      }
+      await sleep(7000);
+    })()
+
+- output: images/calcofi-75th-timeline.png
+  url: https://cdn.knightlab.com/libs/timeline3/latest/embed/index.html?source=12x10Qrf0UAyUT2BQ_TA3wTDgQJHYqov0fEQV42VtByU&font=Default&lang=en
+  width: 1200
+  height: 750
+  wait: 9000   # let TimelineJS pull the Google Sheet and render the title slide

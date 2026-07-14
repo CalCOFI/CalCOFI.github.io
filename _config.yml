@@ -21,3 +21,5 @@ exclude:
   - node_modules
   - .bundle
   - .jekyll-cache
+  - shots.yml          # screenshot recipes (build tooling, not site content)
+  - scripts
