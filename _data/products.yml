@@ -202,14 +202,14 @@ products:
       Technical documentation of the data ecosystem — data access, database,
       API, apps, maps and reports.
 
-  - key: file-server
-    title: File Server
-    section: data
-    live_url: https://file.calcofi.io/
-    source_url: https://github.com/CalCOFI/server
-    img: images/file-server.png
-    description: >-
-      Browse and download public CalCOFI files directly over HTTPS.
+  # - key: file-server
+  #   title: File Server
+  #   section: data
+  #   live_url: https://file.calcofi.io/
+  #   source_url: https://github.com/CalCOFI/server
+  #   img: images/file-server.png
+  #   description: >-
+  #     Browse and download public CalCOFI files directly over HTTPS.
 
   # ── build ────────────────────────────────────────────────────────────────
   - key: workflows
