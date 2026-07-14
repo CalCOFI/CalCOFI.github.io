@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Reproducibly (re)capture product-card screenshots for calcofi.io.
 #
-# Recipes live in ../shots.yml (shot-scraper "multi" format). Each writes
+# Recipes live in ../_data/shots.yml (shot-scraper "multi" format). Each writes
 # images/<key>.png at 1200x750, dismissing any welcome modal / guided tour
 # first. Captured PNGs are then compressed in place with pngquant.
 #
@@ -14,7 +14,7 @@
 #   brew install pngquant                                # macOS (or apt, etc.)
 #
 # Usage:
-#   scripts/shots.sh                 # capture every recipe in shots.yml
+#   scripts/shots.sh                 # capture every recipe in _data/shots.yml
 #   scripts/shots.sh db-viz-hex      # only cards whose image name contains this
 #   scripts/shots.sh db-viz-hex offshore-wind-monitoring
 set -euo pipefail
@@ -30,7 +30,7 @@ for cmd in shot-scraper pngquant; do
 done
 
 # all output paths declared in the config (handles the "- output:" list dash)
-all_outputs=$(awk '/^[[:space:]]*-?[[:space:]]*output:/ {sub(/.*output:[[:space:]]*/, ""); print}' shots.yml)
+all_outputs=$(awk '/^[[:space:]]*-?[[:space:]]*output:/ {sub(/.*output:[[:space:]]*/, ""); print}' _data/shots.yml)
 
 # build the subset to (re)capture: everything, or only paths matching an arg
 filters=""
@@ -44,11 +44,11 @@ if [ "$#" -gt 0 ]; then
       esac
     done
   done
-  [ -n "$targets" ] || { echo "error: no recipe in shots.yml matches: $*" >&2; exit 1; }
+  [ -n "$targets" ] || { echo "error: no recipe in _data/shots.yml matches: $*" >&2; exit 1; }
 fi
 
 # shellcheck disable=SC2086
-shot-scraper multi shots.yml --browser "$browser" $filters
+shot-scraper multi _data/shots.yml --browser "$browser" $filters
 
 for png in $targets; do
   [ -f "$png" ] && pngquant --quality=65-90 --strip --force --ext .png "$png" \

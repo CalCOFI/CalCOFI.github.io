@@ -30,6 +30,28 @@
       await sleep(4000);
     })()
 
+- output: images/ctd-viz.png
+  # a bookmark link (CTD app "Share" button) that reopens cruise 2026-04 (BELL
+  # M. SHIMADA) with the casts 26->32 transect selected, temperature, the Plot
+  # tab and a 600 m depth cap — url bookmarking encodes cruise + measurement +
+  # tab + depth cap + cast selection (sel_occ). NOTE: only reproduces the
+  # transect once app.calcofi.io/ctd/ is redeployed with bookmarking; until
+  # then it shows the app's default view.
+  url: https://app.calcofi.io/ctd/?_inputs_&subtabs=%22Plot%22&sel_cruise=%222026-04-3322%22&sel_meas_type=%22temperature_ave%22&sl_max_depth=600&_values_&sel_occ=%5B%22026%22%2C%22027%22%2C%22028%22%2C%22029%22%2C%22030%22%2C%22031%22%2C%22032%22%5D
+  width: 1200
+  height: 750
+  wait: 20000   # cruise load + selection restore + map load + WebGL transect
+  # dismiss the Conductor (shepherd.js) guided tour shown on first visit
+  javascript: |-
+    (async () => {
+      const sleep = ms => new Promise(r => setTimeout(r, ms));
+      for (let i = 0; i < 40 && !document.querySelector('.shepherd-element'); i++) await sleep(250);
+      try { if (window.Shepherd && window.Shepherd.activeTour) window.Shepherd.activeTour.cancel(); } catch (e) {}
+      document.querySelectorAll('.shepherd-element, .shepherd-modal-overlay-container').forEach(e => e.remove());
+      document.body.classList.remove('shepherd-active');
+      await sleep(2000);
+    })()
+
 - output: images/offshore-wind-monitoring.png
   url: https://elizathomas.shinyapps.io/california_ofw_monitoring/
   width: 1200

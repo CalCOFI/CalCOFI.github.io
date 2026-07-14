@@ -21,5 +21,4 @@ exclude:
   - node_modules
   - .bundle
   - .jekyll-cache
-  - shots.yml          # screenshot recipes (build tooling, not site content)
-  - scripts
+  - scripts            # screenshot tooling (shots.sh); recipes live in _data/shots.yml

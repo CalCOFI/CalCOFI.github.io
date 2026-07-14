@@ -30,7 +30,7 @@ bundle exec jekyll serve
 
 Card images live in `images/<key>.png` (1200×750, top-cropped to 16:10 by
 CSS). Cards whose app shows a welcome modal or guided tour on load — or needs
-a long cold-start wait — have a recipe in [`shots.yml`](shots.yml); regenerate
+a long cold-start wait — have a recipe in [`_data/shots.yml`](_data/shots.yml); regenerate
 them reproducibly with [`scripts/shots.sh`](scripts/shots.sh):
 
 ```bash
@@ -38,7 +38,7 @@ them reproducibly with [`scripts/shots.sh`](scripts/shots.sh):
 pipx install shot-scraper && shot-scraper install   # Playwright driver
 brew install pngquant                                # or apt, etc.
 
-scripts/shots.sh               # (re)capture every card in shots.yml
+scripts/shots.sh               # (re)capture every card in _data/shots.yml
 scripts/shots.sh db-viz-hex    # just one (arg matches the image name)
 ```
 
