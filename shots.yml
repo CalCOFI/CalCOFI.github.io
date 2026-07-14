@@ -10,7 +10,10 @@
 # wait; simple/static pages can just use the one-liner in README.md instead.
 
 - output: images/db-viz-hex.png
-  url: https://app.calcofi.io/db-viz-hex/
+  # ?tour=off suppresses the guided tour at the source (once db-viz-hex is
+  # redeployed with that param); the javascript below is a fallback that also
+  # cancels it client-side, so this works before and after the redeploy.
+  url: https://app.calcofi.io/db-viz-hex/?tour=off
   width: 1200
   height: 750
   wait: 15000   # the sardine/temperature hexagon layers paint several seconds
