@@ -276,22 +276,7 @@ products:
       Live uptime and response-time monitoring of every CalCOFI.io app and
       service, with incident history.
 
-  # ── student contributions ────────────────────────────────────────────────
-  - key: ucsb-station-portal
-    title: Station Data Portal
-    section: students
-    live_url: https://calcofi.io/2026-ucsb-station-data-portal/
-    source_url: https://github.com/CalCOFI/2026-ucsb-station-data-portal
-    img: images/ucsb-station-portal.png
-    description: >-
-      Map-based discovery of what is measured at each of 115 CalCOFI stations,
-      with live variable search and auto-generated ERDDAP, Euphausiid and
-      ZooDB queries.
-    credits:
-      org: UCSB Data Science Capstone
-      year: 2026
-      team: [Nicole Xu, Aashish Krishnan, Qiongwen (Lucy) Cao]
-
+  # ── student contributions (sorted by year desc, then title) ──────────────
   - key: ucla-monitoring-map
     title: CA Ocean & Coastal Monitoring Map
     section: students
@@ -323,19 +308,33 @@ products:
       year: 2026
       team: [Joy Chang, Abhijit Brahme, A. Senthil, Chengcheng Fang, Kaeya Mehta, Shenyi Jiang]
 
-  - key: offshore-wind-monitoring
-    title: Offshore Wind Monitoring
+  - key: ucsb-station-portal
+    title: Station Data Portal
     section: students
-    live_url: https://elizathomas.shinyapps.io/california_ofw_monitoring/
-    img: images/offshore-wind-monitoring.png
+    live_url: https://calcofi.io/2026-ucsb-station-data-portal/
+    source_url: https://github.com/CalCOFI/2026-ucsb-station-data-portal
+    img: images/ucsb-station-portal.png
     description: >-
-      An interactive map for planning ocean monitoring around California's
-      floating offshore wind areas — toggle Essential Ocean Variables and
-      long-term monitoring programs to reveal gaps in baseline datasets.
+      Map-based discovery of what is measured at each of 115 CalCOFI stations,
+      with live variable search and auto-generated ERDDAP, Euphausiid and
+      ZooDB queries.
     credits:
-      org: SIO Masters Capstone
-      year: 2024
-      team: Eliza Thomas
+      org: UCSB Data Science Capstone
+      year: 2026
+      team: [Nicole Xu, Aashish Krishnan, Qiongwen (Lucy) Cao]
+
+  - key: marmam
+    title: Marine Mammal App
+    section: students
+    live_url: https://app.calcofi.io/marmam/
+    source_url: https://github.com/CalCOFI/marmam-app
+    img: images/marmam-app.png
+    description: >-
+      Marine mammal eDNA detections and visual sightings visualized against
+      oceanographic conditions on the CalCOFI grid.
+    credits:
+      org: UCSB Data Science Capstone
+      year: 2025
 
   - key: calcofi-75th-timeline
     title: 75th Anniversary Timeline
@@ -353,32 +352,6 @@ products:
       year: 2024
       team: Anneliese (Annie) Adams
 
-  - key: saferseafood
-    title: SaferSeafood App
-    section: students
-    live_url: https://app.calcofi.io/SaferSeafood/
-    source_url: https://github.com/CalCOFI/SaferSeafood
-    img: images/saferseafood.png
-    description: >-
-      Personalized fish-consumption advisories for Southern California
-      anglers — DDT levels predicted by species and catch location.
-    credits:
-      org: UCSB Bren MEDS Capstone
-      year: 2024
-
-  - key: marmam
-    title: Marine Mammal App
-    section: students
-    live_url: https://app.calcofi.io/marmam/
-    source_url: https://github.com/CalCOFI/marmam-app
-    img: images/marmam-app.png
-    description: >-
-      Marine mammal eDNA detections and visual sightings visualized against
-      oceanographic conditions on the CalCOFI grid.
-    credits:
-      org: UCSB Data Science Capstone
-      year: 2025
-
   - key: hypoxia-story
     title: Hypoxia Story
     section: students
@@ -392,6 +365,33 @@ products:
       org: CalCOFI–CA Sea Grant Data Storytelling Internship
       year: 2024
       team: [Mallika Gupta, Anneliese (Annie) Adams]
+
+  - key: offshore-wind-monitoring
+    title: Offshore Wind Monitoring
+    section: students
+    live_url: https://elizathomas.shinyapps.io/california_ofw_monitoring/
+    img: images/offshore-wind-monitoring.png
+    description: >-
+      An interactive map for planning ocean monitoring around California's
+      floating offshore wind areas — toggle Essential Ocean Variables and
+      long-term monitoring programs to reveal gaps in baseline datasets.
+    credits:
+      org: SIO Masters Capstone
+      year: 2024
+      team: Eliza Thomas
+
+  - key: saferseafood
+    title: SaferSeafood App
+    section: students
+    live_url: https://app.calcofi.io/SaferSeafood/
+    source_url: https://github.com/CalCOFI/SaferSeafood
+    img: images/saferseafood.png
+    description: >-
+      Personalized fish-consumption advisories for Southern California
+      anglers — DDT levels predicted by species and catch location.
+    credits:
+      org: UCSB Bren MEDS Capstone
+      year: 2024
 
   - key: capstone
     title: Capstone App
