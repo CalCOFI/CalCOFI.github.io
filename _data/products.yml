@@ -333,8 +333,8 @@ products:
       floating offshore wind areas — toggle Essential Ocean Variables and
       long-term monitoring programs to reveal gaps in baseline datasets.
     credits:
-      org: CalCOFI
-      year: 2025
+      org: SIO Masters Capstone
+      year: 2024
       team: Eliza Thomas
 
   - key: calcofi-75th-timeline
@@ -349,8 +349,9 @@ products:
       expedition, the 1957–58 El Niño, CTD sampling, and the first all-female
       research cruise.
     credits:
-      org: CalCOFI
+      org: CalCOFI–CA Sea Grant Data Storytelling Internship
       year: 2024
+      team: Anneliese (Annie) Adams
 
   - key: saferseafood
     title: SaferSeafood App
@@ -388,9 +389,9 @@ products:
       A scrollable story of hypoxia in the California Current Ecosystem and
       its changing oxygen levels over the past 71 years.
     credits:
-      org: UCSB Data Storytelling Internship
-      year: 2022
-      team: [Annie Adams, Mallika Gupta]
+      org: CalCOFI–CA Sea Grant Data Storytelling Internship
+      year: 2024
+      team: [Mallika Gupta, Anneliese (Annie) Adams]
 
   - key: capstone
     title: Capstone App
