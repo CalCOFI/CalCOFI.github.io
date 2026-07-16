@@ -161,6 +161,19 @@ products:
       datasets and depths, with shareable deep-link URLs.
     tech: [R, Shiny, DuckDB]
 
+  - key: db-viz-station
+    title: Station Portal
+    section: data
+    live_url: https://calcofi.io/db-viz-station/
+    source_url: https://github.com/CalCOFI/db-viz-station
+    img: images/ucsb-station-portal.png
+    description: >-
+      Discover what's measured at each CalCOFI station — station × dataset
+      coverage (time, depth, observations, surveys) built from the integrated
+      release database, with variable search and dataset crosswalk. Continues
+      the 2026 UCSB student capstone.
+    tech: [DuckDB, JavaScript, MapLibre]
+
   - key: erddap
     title: ERDDAP
     section: data
@@ -311,6 +324,8 @@ products:
   - key: ucsb-station-portal
     title: Station Data Portal
     section: students
+    status: archived
+    superseded_by: db-viz-station
     live_url: https://calcofi.io/2026-ucsb-station-data-portal/
     source_url: https://github.com/CalCOFI/2026-ucsb-station-data-portal
     img: images/ucsb-station-portal.png
