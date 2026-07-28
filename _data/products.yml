@@ -1,34 +1,40 @@
 # Products shown on calcofi.io. One card per product; `section` controls
-# placement. Canonical app URLs follow uptime/.upptimerc.yml
-# (https://app.calcofi.io/<app>/).
+# placement. Cards are named for the thing itself — the repo or app name used
+# everywhere else (db-viz-hex, not "Integrated App") — so a card, its source,
+# its status page and its usage report are obviously the same product. Student
+# contributions keep human-friendly titles.
 #
-# status: active (default, no badge) | interim | superseded | archived
+# Canonical app URLs follow uptime/.upptimerc.yml (https://app.calcofi.io/<app>/).
+#
+# status:       active (default, no badge) | interim | superseded | archived
 # superseded_by: key of the replacing product (renders "superseded by <link>")
-# credits: {org, year, team[]} — shown on student contributions
+# extra_links:  [{label, url}] — extra deep links in the card's link row
+# credits:      {org, year, team[]} — shown on student contributions
 
 sections:
-  - id: featured
-    title: Featured
-    blurb: >-
-      Start here — the flagship interfaces to the CalCOFI integrated database.
-  - id: explore
+  - id: apps
     emoji: "🔭"
-    title: Explore
+    title: Apps
     blurb: >-
-      Interactive apps and stories to visualize ocean conditions and marine
-      life — no coding required.
-  - id: data
-    emoji: "📊"
-    title: Access Data
+      Visualize and download subsets of data from the integrated database via
+      these applications, oriented by station, hexagon or cruise.
+  - id: services
+    emoji: "☁️"
+    title: Services
     blurb: >-
-      Query, browse, download or programmatically access the versioned
-      integrated database — for analysts in SQL, R, Python or the browser.
-  - id: build
+      Hosted endpoints serving the data directly — standards-based access and
+      public cloud storage.
+  - id: developer
     emoji: "🛠"
-    title: Build
+    title: Developer
     blurb: >-
-      The open-source plumbing — reproducible workflows, packages and servers
-      behind everything above.
+      R packages with documented functions, browser-based query and schema
+      tools, and the reproducible workflows behind every release.
+  - id: documentation
+    emoji: "📖"
+    title: Documentation
+    blurb: >-
+      How the data ecosystem works, and the server stack it runs on.
   - id: students
     emoji: "🎓"
     title: Student Contributions
@@ -38,132 +44,10 @@ sections:
 
 products:
 
-  # ── featured ─────────────────────────────────────────────────────────────
-  - key: db-viz-hex
-    title: Integrated App
-    section: featured
-    live_url: https://app.calcofi.io/db-viz-hex/
-    source_url: https://github.com/CalCOFI/db-viz-hex
-    img: images/db-viz-hex.png
-    description: >-
-      Explore decades of fish larvae and oceanographic bottle data together —
-      filter by taxa, depth and season over dynamic hexagon maps, time series
-      and depth profiles.
-    tech: [R, Shiny, DuckDB, H3, MapLibre]
-
-  - key: ctd-viz
-    title: CTD App
-    section: featured
-    live_url: https://app.calcofi.io/ctd/
-    source_url: https://github.com/CalCOFI/apps/tree/main/ctd-viz
-    img: images/ctd-viz.png
-    description: >-
-      Visualize CTD casts — temperature, salinity, oxygen and more — by
-      cruise, station and depth, from individual profiles to whole-grid maps.
-    tech: [R, Shiny, DuckDB, MapLibre]
-
-  # ── explore ──────────────────────────────────────────────────────────────
-  - key: oceano
-    title: Oceano App
-    section: explore
-    status: superseded
-    superseded_by: db-viz-hex
-    live_url: https://app.calcofi.io/oceano/
-    source_url: https://github.com/CalCOFI/apps/tree/main/oceano
-    img: images/oceano.png
-    description: >-
-      Visualize and download CalCOFI oceanographic data in map, time-series
-      and depth-profile views.
-
-  - key: copernicus
-    title: Copernicus App
-    section: explore
-    live_url: https://app.calcofi.io/copernicus/
-    source_url: https://github.com/CalCOFI/apps/tree/main/copernicus
-    img: images/copernicus.png
-    description: >-
-      Satellite-derived sea-surface conditions from the Copernicus Marine
-      Service, mapped over the CalCOFI sampling region.
-
-  - key: pollutants
-    title: Pollutants App
-    section: explore
-    live_url: https://app.calcofi.io/pollutants/
-    source_url: https://github.com/CalCOFI/pollutants-app
-    img: images/pollutants.png
-    description: >-
-      Map pollutants in the Southern California Bight from the Regional
-      Monitoring Program via SCCWRP.
-
-  - key: larvae-cinms
-    title: Larval Analysis
-    section: explore
-    status: interim
-    live_url: https://calcofi.io/larvae-cinms/
-    source_url: https://github.com/CalCOFI/larvae-cinms
-    img: images/larvae.png
-    description: >-
-      Larval abundance analysis and visualization for Channel Islands
-      National Marine Sanctuary species.
-
-  - key: viz-gallery
-    title: Visualization Gallery
-    section: explore
-    status: interim
-    live_url: https://calcofi.io/viz-gallery/
-    source_url: https://github.com/CalCOFI/viz-gallery
-    img: images/gallery.png
-    description: >-
-      Gallery of visualizations used in products — manuscripts, reports and
-      applications — across partners.
-
-  - key: dashboard
-    title: Dashboard App
-    section: explore
-    status: interim
-    live_url: https://app.calcofi.io/dashboard/
-    source_url: https://github.com/CalCOFI/apps/tree/main/dashboard
-    img: images/dashboard.png
-    description: >-
-      Initial mockup of a condition dashboard — survey map, time series and
-      indicator scores.
-
-  # ── access data ──────────────────────────────────────────────────────────
-  - key: db-query
-    title: Query
-    section: data
-    live_url: https://calcofi.io/db-query/
-    source_url: https://github.com/CalCOFI/db-query
-    img: images/db-query.png
-    description: >-
-      Run SQL on the CalCOFI database right in your browser — DuckDB-WASM
-      reads the released Parquet files directly; no server, no credentials.
-    tech: [SQL, DuckDB-WASM]
-
-  - key: db-schema
-    title: Schema
-    section: data
-    live_url: https://calcofi.io/db-schema/
-    source_url: https://github.com/CalCOFI/db-schema
-    img: images/db-schema.png
-    description: >-
-      Browse tables, columns, datasets and entity-relationship diagrams of
-      each versioned database release.
-
-  - key: db-viz-cruise
-    title: Datacheck App
-    section: data
-    live_url: https://app.calcofi.io/db-viz-cruise/
-    source_url: https://github.com/CalCOFI/apps/tree/main/db-viz-cruise
-    img: images/db-viz-cruise.png
-    description: >-
-      Cross-dataset observation explorer — compare coverage across cruises,
-      datasets and depths, with shareable deep-link URLs.
-    tech: [R, Shiny, DuckDB]
-
+  # ── apps ─────────────────────────────────────────────────────────────────
   - key: db-viz-station
-    title: Station Portal
-    section: data
+    title: db-viz-station
+    section: apps
     live_url: https://calcofi.io/db-viz-station/
     source_url: https://github.com/CalCOFI/db-viz-station
     img: images/ucsb-station-portal.png
@@ -174,9 +58,66 @@ products:
       the 2026 UCSB student capstone.
     tech: [DuckDB, JavaScript, MapLibre]
 
+  - key: db-viz-hex
+    title: db-viz-hex
+    section: apps
+    live_url: https://app.calcofi.io/db-viz-hex/
+    source_url: https://github.com/CalCOFI/db-viz-hex
+    img: images/db-viz-hex.png
+    description: >-
+      Explore decades of fish larvae and oceanographic bottle data together —
+      filter by taxa, depth and season over dynamic hexagon maps, time series
+      and depth profiles.
+    tech: [R, Shiny, DuckDB, H3, MapLibre]
+
+  - key: db-viz-cruise
+    title: db-viz-cruise
+    section: apps
+    live_url: https://app.calcofi.io/db-viz-cruise/
+    source_url: https://github.com/CalCOFI/apps/tree/main/db-viz-cruise
+    img: images/db-viz-cruise.png
+    description: >-
+      Cross-dataset observation explorer — compare coverage across cruises,
+      datasets and depths, with shareable deep-link URLs.
+    tech: [R, Shiny, DuckDB]
+
+  - key: ctd-viz
+    title: ctd-viz
+    section: apps
+    live_url: https://app.calcofi.io/ctd/
+    source_url: https://github.com/CalCOFI/apps/tree/main/ctd-viz
+    img: images/ctd-viz.png
+    description: >-
+      Visualize CTD casts — temperature, salinity, oxygen and more — by
+      cruise, station and depth, from individual profiles to whole-grid maps.
+    tech: [R, Shiny, DuckDB, MapLibre]
+
+  - key: oceano
+    title: oceano
+    section: apps
+    status: superseded
+    superseded_by: db-viz-hex
+    live_url: https://app.calcofi.io/oceano/
+    source_url: https://github.com/CalCOFI/apps/tree/main/oceano
+    img: images/oceano.png
+    description: >-
+      Visualize and download CalCOFI oceanographic data in map, time-series
+      and depth-profile views.
+
+  - key: pollutants
+    title: pollutants
+    section: apps
+    live_url: https://app.calcofi.io/pollutants/
+    source_url: https://github.com/CalCOFI/pollutants-app
+    img: images/pollutants.png
+    description: >-
+      Map pollutants in the Southern California Bight from the Regional
+      Monitoring Program via SCCWRP.
+
+  # ── services ─────────────────────────────────────────────────────────────
   - key: erddap
-    title: ERDDAP
-    section: data
+    title: erddap
+    section: services
     live_url: https://erddap.calcofi.io/
     source_url: https://github.com/CalCOFI/erddap
     img: images/erddap.png
@@ -184,19 +125,23 @@ products:
       CalCOFI datasets served through NOAA's ERDDAP — subset and download in
       CSV, NetCDF, JSON and more, or connect from analysis tools.
 
-  - key: api
-    title: API
-    section: data
-    live_url: https://api.calcofi.io/
-    source_url: https://github.com/CalCOFI/api
-    img: images/api.png
+  - key: storage
+    title: storage
+    section: services
+    live_url: https://storage.calcofi.io/
+    source_url: https://github.com/CalCOFI/server
+    img: images/storage.png
     description: >-
-      REST API to generate summary tables and figures from the database,
-      usable from any programming language.
+      Browse the public CalCOFI cloud buckets over HTTPS — versioned database
+      releases, source files and project outputs, with folder listings that
+      the raw storage host does not provide.
+    extra_links:
+      - { label: netcdf, url: "https://storage.calcofi.io/calcofi-files-public/netcdf/" }
 
+  # ── developer ────────────────────────────────────────────────────────────
   - key: calcofi4r
     title: calcofi4r
-    section: data
+    section: developer
     live_url: https://calcofi.io/calcofi4r/
     source_url: https://github.com/CalCOFI/calcofi4r
     img: images/calcofi4r.png
@@ -205,40 +150,9 @@ products:
       data — connects directly to versioned database releases.
     tech: [R]
 
-  - key: docs
-    title: Documentation
-    section: data
-    live_url: https://calcofi.io/docs/
-    source_url: https://github.com/CalCOFI/docs
-    img: images/docs.png
-    description: >-
-      Technical documentation of the data ecosystem — data access, database,
-      API, apps, maps and reports.
-
-  # - key: file-server
-  #   title: File Server
-  #   section: data
-  #   live_url: https://file.calcofi.io/
-  #   source_url: https://github.com/CalCOFI/server
-  #   img: images/file-server.png
-  #   description: >-
-  #     Browse and download public CalCOFI files directly over HTTPS.
-
-  # ── build ────────────────────────────────────────────────────────────────
-  - key: workflows
-    title: Workflows
-    section: build
-    live_url: https://calcofi.io/workflows/
-    source_url: https://github.com/CalCOFI/workflows
-    img: images/workflows.png
-    description: >-
-      Reproducible Quarto notebooks that ingest each dataset into the
-      versioned database — the pipeline behind every release.
-    tech: [R, Quarto, DuckDB, Parquet]
-
   - key: calcofi4db
     title: calcofi4db
-    section: build
+    section: developer
     live_url: https://calcofi.io/calcofi4db/
     source_url: https://github.com/CalCOFI/calcofi4db
     img: images/calcofi4db.png
@@ -247,47 +161,59 @@ products:
       Parquet conversion, DuckDB management and frozen releases.
     tech: [R]
 
-  - key: api-h3t
-    title: H3 Tile Server
-    section: build
-    live_url: https://github.com/CalCOFI/api-h3t
-    source_url: https://github.com/CalCOFI/api-h3t
-    img: images/h3t.png
+  - key: db-query
+    title: db-query
+    section: developer
+    live_url: https://calcofi.io/db-query/
+    source_url: https://github.com/CalCOFI/db-query
+    img: images/db-query.png
     description: >-
-      Streams H3 hexagon tiles from DuckDB SQL to MapLibre maps — the engine
-      behind the Integrated App's dynamic layers (h3t.calcofi.io).
-    tech: [Python, FastAPI, DuckDB, H3]
+      Run SQL on the CalCOFI database right in your browser — DuckDB-WASM
+      reads the released Parquet files directly; no server, no credentials.
+    tech: [SQL, DuckDB-WASM]
 
-  - key: tile
-    title: Tile Server
-    section: build
-    live_url: https://tile.calcofi.io/
-    source_url: https://github.com/CalCOFI/server
-    img: images/tile.png
+  - key: db-schema
+    title: db-schema
+    section: developer
+    live_url: https://calcofi.io/db-schema/
+    source_url: https://github.com/CalCOFI/db-schema
+    img: images/db-schema.png
     description: >-
-      Vector tile server (pg_tileserv) for quickly rendering dense geometries
-      — points, lines and polygons — on slippy maps.
+      Browse tables, columns, datasets and entity-relationship diagrams of
+      each versioned database release.
+
+  - key: workflows
+    title: workflows
+    section: developer
+    live_url: https://calcofi.io/workflows/
+    source_url: https://github.com/CalCOFI/workflows
+    img: images/workflows.png
+    description: >-
+      Reproducible Quarto notebooks that ingest each dataset into the
+      versioned database — the pipeline behind every release.
+    tech: [R, Quarto, DuckDB, Parquet]
+
+  # ── documentation ────────────────────────────────────────────────────────
+  - key: docs
+    title: docs
+    section: documentation
+    live_url: https://calcofi.io/docs/
+    source_url: https://github.com/CalCOFI/docs
+    img: images/docs.png
+    description: >-
+      Technical documentation of the data ecosystem — data access, database,
+      API, apps, maps and reports.
 
   - key: server
-    title: Server
-    section: build
+    title: server
+    section: documentation
     live_url: https://github.com/CalCOFI/server
     source_url: https://github.com/CalCOFI/server
     img: images/server.png
     description: >-
-      Docker Compose stack running calcofi.io services — Shiny, API, PostGIS,
-      tile server, ERDDAP and Caddy.
+      Docker Compose stack running calcofi.io services — Shiny, PostGIS, tile
+      server, ERDDAP and Caddy.
     tech: [Docker, Caddy]
-
-  - key: status
-    title: Status
-    section: build
-    live_url: https://status.calcofi.io/
-    source_url: https://github.com/CalCOFI/uptime
-    img: images/status.png
-    description: >-
-      Live uptime and response-time monitoring of every CalCOFI.io app and
-      service, with incident history.
 
   # ── student contributions (sorted by year desc, then title) ──────────────
   - key: ucla-monitoring-map

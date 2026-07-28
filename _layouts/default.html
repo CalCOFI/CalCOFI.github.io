@@ -40,11 +40,14 @@
 
     <span class="spacer"></span>
 
+    {%- comment -%}
+      Section anchors come from _data/products.yml so the header can never
+      drift from the sections actually rendered on the page.
+    {%- endcomment -%}
     <nav class="header-links">
-      <a href="#explore">explore</a>
-      <a href="#data">data</a>
-      <a href="#build">build</a>
-      <a href="#students">students</a>
+      {%- for s in site.data.products.sections -%}
+      <a href="#{{ s.id }}">{{ s.id }}</a>
+      {%- endfor -%}
       <a href="https://calcofi.org">calcofi.org</a>
     </nav>
 

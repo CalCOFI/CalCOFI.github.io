@@ -11,39 +11,32 @@ layout: default
     programs anywhere. CalCOFI.io turns those observations into an open data
     ecosystem: reproducible workflows load each dataset into a versioned
     integrated database, which powers interactive apps, a browser SQL
-    playground, an API and an R package — for scientists, resource managers,
-    students and the curious.
+    playground, standards-based services and an R package — for scientists,
+    resource managers, students and the curious.
   </p>
-  <p class="hero-pipeline mono muted">ship → workflows → database → apps · API · R</p>
-</div>
-
-{%- assign featured = data.products | where: "section", "featured" -%}
-<div class="card-grid featured-grid">
-  {%- for p in featured -%}
-    {% include product_card.html p=p featured=true %}
-  {%- endfor -%}
+  <p class="hero-pipeline mono muted">ship → workflows → database → apps · services · R</p>
 </div>
 
 <nav class="section-nav">
   {%- for s in data.sections -%}
-  {%- if s.id != "featured" -%}
   {%- assign items = data.products | where: "section", s.id -%}
   <a href="#{{ s.id }}">{{ s.emoji }} {{ s.title }}<span class="n">{{ items | size }}</span></a>
-  {%- endif -%}
   {%- endfor -%}
 </nav>
 
+{%- comment -%}
+  Every section renders the same way; Apps leads and gets the wider grid
+  (`featured-grid`) so the flagship applications read first.
+{%- endcomment -%}
 {%- for s in data.sections -%}
-{%- if s.id != "featured" -%}
 {%- assign items = data.products | where: "section", s.id -%}
 <section class="prod-section" id="{{ s.id }}">
   <h2>{{ s.emoji }} {{ s.title }} <span class="count">{{ items | size }}</span></h2>
   <p class="blurb">{{ s.blurb }}</p>
-  <div class="card-grid">
+  <div class="card-grid{% if s.id == 'apps' %} featured-grid{% endif %}">
     {%- for p in items -%}
       {% include product_card.html p=p %}
     {%- endfor -%}
   </div>
 </section>
-{%- endif -%}
 {%- endfor -%}

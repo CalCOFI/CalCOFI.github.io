@@ -76,3 +76,10 @@
   width: 1200
   height: 750
   wait: 9000   # let TimelineJS pull the Google Sheet and render the title slide
+
+- output: images/storage.png
+  # the bucket front door: a static index Caddy serves at the vhost root
+  url: https://storage.calcofi.io/
+  width: 1200
+  height: 750
+  wait: 2000

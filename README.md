@@ -8,10 +8,16 @@ styled as a sibling of [schema](https://github.com/CalCOFI/db-schema),
 ## Editing products
 
 All cards are driven by [`_data/products.yml`](_data/products.yml) — one entry
-per product with `key`, `title`, `section` (`featured` | `explore` | `data` |
-`build` | `students`), `live_url`, `source_url`, `img`, `description`, and
-optionally `status` (`interim` | `superseded` | `archived`), `superseded_by`,
-`tech` chips and `credits` (for student contributions).
+per product with `key`, `title`, `section` (`apps` | `services` | `developer` |
+`documentation` | `students`), `live_url`, `source_url`, `img`, `description`,
+and optionally `status` (`interim` | `superseded` | `archived`),
+`superseded_by`, `extra_links` (`[{label, url}]`, extra deep links in the card's
+link row), `tech` chips and `credits` (for student contributions).
+
+Cards are named for the thing itself — the repo or app name used everywhere
+else (`db-viz-hex`, not "Integrated App") — so a card, its source, its status
+page and its usage report are recognizably the same product. Student
+contributions keep human-friendly titles.
 
 Edit the YAML, push to main, and GitHub Actions
 ([`.github/workflows/pages.yml`](.github/workflows/pages.yml)) rebuilds and

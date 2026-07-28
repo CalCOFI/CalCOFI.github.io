@@ -29,6 +29,9 @@
       {%- if p.source_url and p.source_url != p.live_url -%}
       <a href="{{ p.source_url }}">source ↗</a>
       {%- endif -%}
+      {%- for l in p.extra_links -%}
+      <a href="{{ l.url }}">{{ l.label }} ↗</a>
+      {%- endfor -%}
     </div>
   </div>
 </article>
