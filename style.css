@@ -178,6 +178,18 @@ main#panel { padding: 1.25rem 1.5rem 4rem; max-width: 1180px; width: 100%; margi
   display: flex; flex-wrap: wrap; gap: 0.35rem 0.9rem;
 }
 
+/* status / usage: metadata, pushed to the right edge of the link row. .links is
+   flex+wrap with no justify-content, so margin-left:auto right-aligns the pair
+   and lets it drop to its own line on a narrow card. Muted like .header-links,
+   so they read as secondary to open ↗ / source ↗ rather than as peers. */
+.prod-card .links .links-meta {
+  margin-left: auto;
+  display: inline-flex; gap: 0.7rem;
+  white-space: nowrap;
+}
+.prod-card .links .links-meta a { color: var(--muted); }
+.prod-card .links .links-meta a:hover { color: var(--accent); text-decoration: none; }
+
 /* ── footer ──────────────────────────────────────────────────────────────── */
 
 .app-footer {

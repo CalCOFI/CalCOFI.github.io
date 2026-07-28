@@ -47,6 +47,8 @@ products:
   # ── apps ─────────────────────────────────────────────────────────────────
   - key: db-viz-station
     title: db-viz-station
+    uptime: db-viz-station
+    usage: db-viz-station
     section: apps
     live_url: https://calcofi.io/db-viz-station/
     source_url: https://github.com/CalCOFI/db-viz-station
@@ -60,6 +62,8 @@ products:
 
   - key: db-viz-hex
     title: db-viz-hex
+    uptime: db-viz-hex
+    usage: db-viz-hex
     section: apps
     live_url: https://app.calcofi.io/db-viz-hex/
     source_url: https://github.com/CalCOFI/db-viz-hex
@@ -72,6 +76,8 @@ products:
 
   - key: db-viz-cruise
     title: db-viz-cruise
+    uptime: db-viz-cruise
+    usage: db-viz-cruise
     section: apps
     live_url: https://app.calcofi.io/db-viz-cruise/
     source_url: https://github.com/CalCOFI/apps/tree/main/db-viz-cruise
@@ -83,6 +89,8 @@ products:
 
   - key: ctd-viz
     title: ctd-viz
+    uptime: ctd-viz
+    usage: ctd-viz
     section: apps
     live_url: https://app.calcofi.io/ctd/
     source_url: https://github.com/CalCOFI/apps/tree/main/ctd-viz
@@ -94,6 +102,8 @@ products:
 
   - key: oceano
     title: oceano
+    uptime: oceano
+    usage: oceano
     section: apps
     status: superseded
     superseded_by: db-viz-hex
@@ -106,6 +116,8 @@ products:
 
   - key: pollutants
     title: pollutants
+    uptime: pollutants
+    usage: pollutants
     section: apps
     live_url: https://app.calcofi.io/pollutants/
     source_url: https://github.com/CalCOFI/pollutants-app
@@ -117,6 +129,7 @@ products:
   # ── services ─────────────────────────────────────────────────────────────
   - key: erddap
     title: erddap
+    uptime: erddap
     section: services
     live_url: https://erddap.calcofi.io/
     source_url: https://github.com/CalCOFI/erddap
@@ -127,6 +140,7 @@ products:
 
   - key: storage
     title: storage
+    uptime: storage
     section: services
     live_url: https://storage.calcofi.io/
     source_url: https://github.com/CalCOFI/server
@@ -141,6 +155,8 @@ products:
   # ── developer ────────────────────────────────────────────────────────────
   - key: calcofi4r
     title: calcofi4r
+    uptime: calcofi4r
+    usage: calcofi4r
     section: developer
     live_url: https://calcofi.io/calcofi4r/
     source_url: https://github.com/CalCOFI/calcofi4r
@@ -152,6 +168,8 @@ products:
 
   - key: calcofi4db
     title: calcofi4db
+    uptime: calcofi4db
+    usage: calcofi4db
     section: developer
     live_url: https://calcofi.io/calcofi4db/
     source_url: https://github.com/CalCOFI/calcofi4db
@@ -163,6 +181,8 @@ products:
 
   - key: db-query
     title: db-query
+    uptime: db-query
+    usage: db-query
     section: developer
     live_url: https://calcofi.io/db-query/
     source_url: https://github.com/CalCOFI/db-query
@@ -174,6 +194,8 @@ products:
 
   - key: db-schema
     title: db-schema
+    uptime: db-schema
+    usage: db-schema
     section: developer
     live_url: https://calcofi.io/db-schema/
     source_url: https://github.com/CalCOFI/db-schema
@@ -184,6 +206,8 @@ products:
 
   - key: workflows
     title: workflows
+    uptime: workflows
+    usage: workflows
     section: developer
     live_url: https://calcofi.io/workflows/
     source_url: https://github.com/CalCOFI/workflows
@@ -196,6 +220,8 @@ products:
   # ── documentation ────────────────────────────────────────────────────────
   - key: docs
     title: docs
+    uptime: docs
+    usage: docs
     section: documentation
     live_url: https://calcofi.io/docs/
     source_url: https://github.com/CalCOFI/docs
@@ -206,6 +232,7 @@ products:
 
   - key: server
     title: server
+    uptime: shiny-server
     section: documentation
     live_url: https://github.com/CalCOFI/server
     source_url: https://github.com/CalCOFI/server
@@ -218,6 +245,8 @@ products:
   # ── student contributions (sorted by year desc, then title) ──────────────
   - key: ucla-monitoring-map
     title: CA Ocean & Coastal Monitoring Map
+    uptime: ucla-monitoring-map
+    usage: ucla-monitoring-map
     section: students
     live_url: https://calcofi.io/2026-ucla-cal-ocean-coastal-monitoring-map/
     source_url: https://github.com/CalCOFI/2026-ucla-cal-ocean-coastal-monitoring-map
@@ -234,6 +263,8 @@ products:
 
   - key: ucsb-larvae-dashboard
     title: Larvae Dashboard
+    uptime: ucsb-larvae-dashboard
+    usage: ucsb-larvae-dashboard
     section: students
     live_url: https://app.calcofi.io/2026-ucsb-larvae-dashboard/
     source_url: https://github.com/CalCOFI/2026-ucsb-larvae-dashboard
@@ -249,6 +280,7 @@ products:
 
   - key: ucsb-station-portal
     title: Station Data Portal
+    uptime: ucsb-station-portal
     section: students
     status: archived
     superseded_by: db-viz-station
@@ -266,6 +298,8 @@ products:
 
   - key: marmam
     title: Marine Mammal App
+    uptime: marmam
+    usage: marmam
     section: students
     live_url: https://app.calcofi.io/marmam/
     source_url: https://github.com/CalCOFI/marmam-app
@@ -295,6 +329,8 @@ products:
 
   - key: hypoxia-story
     title: Hypoxia Story
+    uptime: hypoxia-story
+    usage: hypoxia-story
     section: students
     live_url: https://calcofi.io/hypoxia-story/
     source_url: https://github.com/CalCOFI/hypoxia-story
@@ -323,6 +359,8 @@ products:
 
   - key: saferseafood
     title: SaferSeafood App
+    uptime: saferseafood
+    usage: saferseafood
     section: students
     live_url: https://app.calcofi.io/SaferSeafood/
     source_url: https://github.com/CalCOFI/SaferSeafood
@@ -336,6 +374,8 @@ products:
 
   - key: capstone
     title: Capstone App
+    uptime: capstone
+    usage: capstone
     section: students
     status: archived
     live_url: https://app.calcofi.io/capstone/

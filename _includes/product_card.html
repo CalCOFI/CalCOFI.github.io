@@ -32,6 +32,23 @@
       {%- for l in p.extra_links -%}
       <a href="{{ l.url }}">{{ l.label }} ↗</a>
       {%- endfor -%}
+      {%- comment -%}
+        status / usage are metadata about the product rather than ways into it,
+        so they sit apart at the right, muted and without the ↗ that marks the
+        links above as "go here". Both are absolute: they live on sibling sites.
+      {%- endcomment -%}
+      {%- if p.uptime or p.usage -%}
+      <span class="links-meta">
+        {%- if p.uptime -%}
+        <a href="{{ site.status_url }}/history/{{ p.uptime }}"
+           title="uptime history for {{ p.title }}">status</a>
+        {%- endif -%}
+        {%- if p.usage -%}
+        <a href="{{ site.analytics_url }}/{{ p.usage }}/"
+           title="usage analytics for {{ p.title }}">usage</a>
+        {%- endif -%}
+      </span>
+      {%- endif -%}
     </div>
   </div>
 </article>

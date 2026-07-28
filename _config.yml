@@ -12,6 +12,10 @@ markdown:    kramdown
 
 ga_tag: G-0HVK8TDMCF
 
+# sibling sites each card links to per-product, via its `uptime:` / `usage:` slug
+status_url:    "https://status.calcofi.io"
+analytics_url: "https://calcofi.io/analytics"
+
 exclude:
   - README.md
   - LICENSE
