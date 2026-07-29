@@ -130,6 +130,7 @@ products:
   - key: erddap
     title: erddap
     uptime: erddap
+    usage: erddap
     section: services
     live_url: https://erddap.calcofi.io/
     source_url: https://github.com/CalCOFI/erddap
@@ -141,6 +142,7 @@ products:
   - key: storage
     title: storage
     uptime: storage
+    usage: storage
     section: services
     live_url: https://storage.calcofi.io/
     source_url: https://github.com/CalCOFI/server
