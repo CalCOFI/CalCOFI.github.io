@@ -281,6 +281,7 @@ products:
   - key: ucsb-station-portal
     title: Station Data Portal
     uptime: ucsb-station-portal
+    usage: ucsb-station-portal
     section: students
     status: archived
     superseded_by: db-viz-station
