@@ -45,6 +45,22 @@ sections:
 products:
 
   # ── apps ─────────────────────────────────────────────────────────────────
+  - key: ctd-transects
+    title: ctd-transects
+    uptime: ctd-transects
+    usage: ctd-transects
+    section: apps
+    live_url: https://calcofi.io/ctd-transects/
+    source_url: https://github.com/CalCOFI/ctd-transects
+    img: images/ctd-transects.jpg
+    description: >-
+      Cross-shelf temperature, salinity, oxygen, density and fluorescence
+      sections along every CalCOFI line, for every cruise since 1993 — drawn
+      nearshore to offshore with no station picking, and mapped so you can see
+      where each transect is. Flags each cruise's processing stage, and shows
+      the uncorrected sensor series on cruises whose bottle merge has not run.
+    tech: [DuckDB, Plotly, JavaScript]
+
   - key: db-viz-station
     title: db-viz-station
     uptime: db-viz-station
