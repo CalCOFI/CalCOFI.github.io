@@ -197,6 +197,20 @@ products:
       Parquet conversion, DuckDB management and frozen releases.
     tech: [R]
 
+  - key: calcofi4py
+    title: calcofi4py
+    uptime: calcofi4py
+    usage: calcofi4py
+    section: developer
+    live_url: https://calcofi.io/calcofi4py/
+    source_url: https://github.com/CalCOFI/calcofi4py
+    img: images/calcofi4py.png
+    description: >-
+      Python package mirroring calcofi4r — query the versioned database
+      releases with DuckDB and the CTD team's PostgreSQL working database,
+      credentials-free via .pgpass.
+    tech: [Python]
+
   - key: db-query
     title: db-query
     uptime: db-query
