@@ -126,8 +126,11 @@ products:
       Cross-shelf temperature, salinity, oxygen, density and fluorescence
       sections along every CalCOFI line, for every cruise since 1993 — drawn
       nearshore to offshore with no station picking, and mapped so you can see
-      where each transect is. Flags each cruise's processing stage, and shows
-      the uncorrected sensor series on cruises whose bottle merge has not run.
+      where each transect is. Opens on the anomaly against each station's
+      day-of-year climatology (warmer or colder than usual, and by how much),
+      with the measured value one click away. Flags each cruise's processing
+      stage, and shows the uncorrected sensor series on cruises whose bottle
+      merge has not run.
     tech: [DuckDB, Plotly, JavaScript]
 
   - key: ctd-viz
