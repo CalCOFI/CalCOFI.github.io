@@ -14,10 +14,17 @@
 sections:
   - id: apps
     emoji: "🔭"
-    title: Apps
+    featured: true
+    title: Apps — by Spatial Unit
     blurb: >-
-      Visualize and download subsets of data from the integrated database via
-      these applications, oriented by station, hexagon or cruise.
+      Explore the whole integrated database, each app summarizing by a
+      different spatial unit — station, hexagon, cruise, or contour.
+  - id: apps-dataset
+    emoji: "🎯"
+    featured: true
+    title: Apps — Dataset-Specific
+    blurb: >-
+      Apps focused on a single dataset or data source.
   - id: services
     emoji: "☁️"
     title: Services
@@ -46,10 +53,10 @@ products:
 
   # ── apps ─────────────────────────────────────────────────────────────────
   - key: ctd-transects
-    title: ctd-transects
+    title: CTD Transects
     uptime: ctd-transects
     usage: ctd-transects
-    section: apps
+    section: apps-dataset
     live_url: https://calcofi.io/ctd-transects/
     source_url: https://github.com/CalCOFI/ctd-transects
     img: images/ctd-transects.jpg
@@ -62,11 +69,11 @@ products:
     tech: [DuckDB, Plotly, JavaScript]
 
   - key: db-viz-station
-    title: db-viz-station
+    title: Station Explorer
     uptime: db-viz-station
     usage: db-viz-station
     section: apps
-    live_url: https://calcofi.io/db-viz-station/
+    live_url: https://app.calcofi.io/station/
     source_url: https://github.com/CalCOFI/db-viz-station
     img: images/ucsb-station-portal.png
     description: >-
@@ -77,11 +84,11 @@ products:
     tech: [DuckDB, JavaScript, MapLibre]
 
   - key: db-viz-hex
-    title: db-viz-hex
+    title: Hexagon Explorer
     uptime: db-viz-hex
     usage: db-viz-hex
     section: apps
-    live_url: https://app.calcofi.io/db-viz-hex/
+    live_url: https://app.calcofi.io/hex/
     source_url: https://github.com/CalCOFI/db-viz-hex
     img: images/db-viz-hex.png
     description: >-
@@ -91,11 +98,11 @@ products:
     tech: [R, Shiny, DuckDB, H3, MapLibre]
 
   - key: db-viz-cruise
-    title: db-viz-cruise
+    title: Cruise Explorer
     uptime: db-viz-cruise
     usage: db-viz-cruise
     section: apps
-    live_url: https://app.calcofi.io/db-viz-cruise/
+    live_url: https://app.calcofi.io/cruise/
     source_url: https://github.com/CalCOFI/apps/tree/main/db-viz-cruise
     img: images/db-viz-cruise.png
     description: >-
@@ -104,10 +111,10 @@ products:
     tech: [R, Shiny, DuckDB]
 
   - key: ctd-viz
-    title: ctd-viz
+    title: CTD Explorer
     uptime: ctd-viz
     usage: ctd-viz
-    section: apps
+    section: apps-dataset
     live_url: https://app.calcofi.io/ctd/
     source_url: https://github.com/CalCOFI/apps/tree/main/ctd-viz
     img: images/ctd-viz.png
@@ -117,13 +124,13 @@ products:
     tech: [R, Shiny, DuckDB, MapLibre]
 
   - key: oceano
-    title: oceano
+    title: Contour Explorer
     uptime: oceano
     usage: oceano
     section: apps
     status: superseded
     superseded_by: db-viz-hex
-    live_url: https://app.calcofi.io/oceano/
+    live_url: https://app.calcofi.io/contour/
     source_url: https://github.com/CalCOFI/apps/tree/main/oceano
     img: images/oceano.png
     description: >-
@@ -131,10 +138,10 @@ products:
       and depth-profile views.
 
   - key: pollutants
-    title: pollutants
+    title: Pollutants
     uptime: pollutants
     usage: pollutants
-    section: apps
+    section: apps-dataset
     live_url: https://app.calcofi.io/pollutants/
     source_url: https://github.com/CalCOFI/pollutants-app
     img: images/pollutants.png

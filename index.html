@@ -25,15 +25,16 @@ layout: default
 </nav>
 
 {%- comment -%}
-  Every section renders the same way; Apps leads and gets the wider grid
-  (`featured-grid`) so the flagship applications read first.
+  Every section renders the same way; sections flagged `featured: true` in
+  products.yml (the two Apps sections) get the wider grid (`featured-grid`)
+  so the flagship applications read first.
 {%- endcomment -%}
 {%- for s in data.sections -%}
 {%- assign items = data.products | where: "section", s.id -%}
 <section class="prod-section" id="{{ s.id }}">
   <h2>{{ s.emoji }} {{ s.title }} <span class="count">{{ items | size }}</span></h2>
   <p class="blurb">{{ s.blurb }}</p>
-  <div class="card-grid{% if s.id == 'apps' %} featured-grid{% endif %}">
+  <div class="card-grid{% if s.featured %} featured-grid{% endif %}">
     {%- for p in items -%}
       {% include product_card.html p=p %}
     {%- endfor -%}
