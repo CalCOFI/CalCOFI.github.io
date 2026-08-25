@@ -9,6 +9,9 @@
 # status:       active (default, no badge) | interim | superseded | archived
 # superseded_by: key of the replacing product (renders "superseded by <link>")
 # extra_links:  [{label, url}] — extra deep links in the card's link row
+# shots:        themed — the product honours ?theme= and has images/<key>_{dark,light}.png
+#               (img: then just names the dark one as a fallback)
+#               (scripts/shots.py); the card swaps them with the site's theme toggle
 # credits:      {org, year, team[]} — shown on student contributions
 
 sections:
@@ -59,7 +62,8 @@ products:
     section: apps-dataset
     live_url: https://calcofi.io/ctd-transects/
     source_url: https://github.com/CalCOFI/ctd-transects
-    img: images/ctd-transects.jpg
+    img: images/ctd-transects_dark.png   # fallback; the card shows the _dark/_light pair
+    shots: themed
     description: >-
       Cross-shelf temperature, salinity, oxygen, density and fluorescence
       sections along every CalCOFI line, for every cruise since 1993 — drawn
@@ -75,7 +79,8 @@ products:
     section: apps
     live_url: https://app.calcofi.io/station/
     source_url: https://github.com/CalCOFI/db-viz-station
-    img: images/ucsb-station-portal.png
+    img: images/db-viz-station_dark.png   # fallback; the card shows the _dark/_light pair
+    shots: themed
     description: >-
       Discover what's measured at each CalCOFI station — station × dataset
       coverage (time, depth, observations, surveys) built from the integrated
@@ -90,7 +95,8 @@ products:
     section: apps
     live_url: https://app.calcofi.io/hex/
     source_url: https://github.com/CalCOFI/db-viz-hex
-    img: images/db-viz-hex.png
+    img: images/db-viz-hex_dark.png   # fallback; the card shows the _dark/_light pair
+    shots: themed
     description: >-
       Explore decades of fish larvae and oceanographic bottle data together —
       filter by taxa, depth and season over dynamic hexagon maps, time series
@@ -104,7 +110,8 @@ products:
     section: apps
     live_url: https://app.calcofi.io/cruise/
     source_url: https://github.com/CalCOFI/apps/tree/main/db-viz-cruise
-    img: images/db-viz-cruise.png
+    img: images/db-viz-cruise_dark.png   # fallback; the card shows the _dark/_light pair
+    shots: themed
     description: >-
       Cross-dataset observation explorer — compare coverage across cruises,
       datasets and depths, with shareable deep-link URLs.
@@ -117,7 +124,8 @@ products:
     section: apps-dataset
     live_url: https://app.calcofi.io/ctd/
     source_url: https://github.com/CalCOFI/apps/tree/main/ctd-viz
-    img: images/ctd-viz.png
+    img: images/ctd-viz_dark.png   # fallback; the card shows the _dark/_light pair
+    shots: themed
     description: >-
       Visualize CTD casts — temperature, salinity, oxygen and more — by
       cruise, station and depth, from individual profiles to whole-grid maps.
@@ -144,7 +152,8 @@ products:
     section: apps-dataset
     live_url: https://app.calcofi.io/pollutants/
     source_url: https://github.com/CalCOFI/pollutants-app
-    img: images/pollutants.png
+    img: images/pollutants_dark.png   # fallback; the card shows the _dark/_light pair
+    shots: themed
     description: >-
       Map pollutants in the Southern California Bight from the Regional
       Monitoring Program via SCCWRP.
@@ -157,7 +166,8 @@ products:
     section: services
     live_url: https://erddap.calcofi.io/
     source_url: https://github.com/CalCOFI/erddap
-    img: images/erddap.png
+    img: images/erddap_dark.png   # fallback; the card shows the _dark/_light pair
+    shots: themed
     description: >-
       CalCOFI datasets served through NOAA's ERDDAP — subset and download in
       CSV, NetCDF, JSON and more, or connect from analysis tools.
@@ -169,7 +179,8 @@ products:
     section: services
     live_url: https://storage.calcofi.io/
     source_url: https://github.com/CalCOFI/server
-    img: images/storage.png
+    img: images/storage_dark.png   # fallback; the card shows the _dark/_light pair
+    shots: themed
     description: >-
       Browse the public CalCOFI cloud buckets over HTTPS — versioned database
       releases, source files and project outputs, with folder listings that
@@ -198,7 +209,8 @@ products:
     section: developer
     live_url: https://calcofi.io/calcofi4db/
     source_url: https://github.com/CalCOFI/calcofi4db
-    img: images/calcofi4db.png
+    img: images/calcofi4db_dark.png   # fallback; the card shows the _dark/_light pair
+    shots: themed
     description: >-
       R package of database tools for ingest workflows — cloud storage,
       Parquet conversion, DuckDB management and frozen releases.
@@ -211,7 +223,8 @@ products:
     section: developer
     live_url: https://calcofi.io/calcofi4py/
     source_url: https://github.com/CalCOFI/calcofi4py
-    img: images/calcofi4py.png
+    img: images/calcofi4py_dark.png   # fallback; the card shows the _dark/_light pair
+    shots: themed
     description: >-
       Python package mirroring calcofi4r — query the versioned database
       releases with DuckDB and the CTD team's PostgreSQL working database,
@@ -225,7 +238,8 @@ products:
     section: developer
     live_url: https://calcofi.io/db-query/
     source_url: https://github.com/CalCOFI/db-query
-    img: images/db-query.png
+    img: images/db-query_dark.png   # fallback; the card shows the _dark/_light pair
+    shots: themed
     description: >-
       Run SQL on the CalCOFI database right in your browser — DuckDB-WASM
       reads the released Parquet files directly; no server, no credentials.
@@ -238,7 +252,8 @@ products:
     section: developer
     live_url: https://calcofi.io/db-schema/
     source_url: https://github.com/CalCOFI/db-schema
-    img: images/db-schema.png
+    img: images/db-schema_dark.png   # fallback; the card shows the _dark/_light pair
+    shots: themed
     description: >-
       Browse tables, columns, datasets and entity-relationship diagrams of
       each versioned database release.
@@ -250,7 +265,8 @@ products:
     section: developer
     live_url: https://calcofi.io/workflows/
     source_url: https://github.com/CalCOFI/workflows
-    img: images/workflows.png
+    img: images/workflows_dark.png   # fallback; the card shows the _dark/_light pair
+    shots: themed
     description: >-
       Reproducible Quarto notebooks that ingest each dataset into the
       versioned database — the pipeline behind every release.
@@ -264,7 +280,8 @@ products:
     section: documentation
     live_url: https://calcofi.io/docs/
     source_url: https://github.com/CalCOFI/docs
-    img: images/docs.png
+    img: images/docs_dark.png   # fallback; the card shows the _dark/_light pair
+    shots: themed
     description: >-
       Technical documentation of the data ecosystem — data access, database,
       API, apps, maps and reports.
