@@ -312,6 +312,7 @@ products:
     uptime: ucsb-larvae-dashboard
     usage: ucsb-larvae-dashboard
     section: students
+    status: archived   # GitHub repo archived 2026-07-29; the site keeps serving
     live_url: https://app.calcofi.io/2026-ucsb-larvae-dashboard/
     source_url: https://github.com/CalCOFI/2026-ucsb-larvae-dashboard
     img: images/ucsb-larvae-dashboard.png
@@ -348,6 +349,7 @@ products:
     uptime: marmam
     usage: marmam
     section: students
+    status: archived   # GitHub repo archived 2026-07-29; the site keeps serving
     live_url: https://app.calcofi.io/marmam/
     source_url: https://github.com/CalCOFI/marmam-app
     img: images/marmam-app.png
@@ -379,6 +381,7 @@ products:
     uptime: hypoxia-story
     usage: hypoxia-story
     section: students
+    status: archived   # GitHub repo archived 2026-07-29; the site keeps serving
     live_url: https://calcofi.io/hypoxia-story/
     source_url: https://github.com/CalCOFI/hypoxia-story
     img: images/hypoxia.png
@@ -409,6 +412,7 @@ products:
     uptime: saferseafood
     usage: saferseafood
     section: students
+    status: archived   # GitHub repo archived 2026-07-29; the site keeps serving
     live_url: https://app.calcofi.io/SaferSeafood/
     source_url: https://github.com/CalCOFI/SaferSeafood
     img: images/saferseafood.png
