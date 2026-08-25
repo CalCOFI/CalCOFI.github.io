@@ -20,7 +20,7 @@ sections:
     featured: true
     title: Apps
     blurb: >-
-      Explore the CalCOFI integrated database, each app summarizing by a
+      Explore the CalCOFI integrated database, across all ingested datasets, each app summarizing by a
       different spatial grain — station, hexagon, cruise, or contour.
   - id: apps-dataset
     emoji: "🎯"
@@ -51,23 +51,7 @@ sections:
 products:
 
   # ── apps ─────────────────────────────────────────────────────────────────
-  - key: ctd-transects
-    title: CTD Transects
-    uptime: ctd-transects
-    usage: ctd-transects
-    section: apps-dataset
-    live_url: https://calcofi.io/ctd-transects/
-    source_url: https://github.com/CalCOFI/ctd-transects
-    img: images/ctd-transects_dark.png   # fallback; the card shows the _dark/_light pair
-    shots: themed
-    description: >-
-      Cross-shelf temperature, salinity, oxygen, density and fluorescence
-      sections along every CalCOFI line, for every cruise since 1993 — drawn
-      nearshore to offshore with no station picking, and mapped so you can see
-      where each transect is. Flags each cruise's processing stage, and shows
-      the uncorrected sensor series on cruises whose bottle merge has not run.
-    tech: [DuckDB, Plotly, JavaScript]
-
+  
   - key: db-viz-station
     title: Station Explorer
     uptime: db-viz-station
@@ -113,20 +97,6 @@ products:
       datasets and depths, with shareable deep-link URLs.
     tech: [R, Shiny, DuckDB]
 
-  - key: ctd-viz
-    title: CTD Explorer
-    uptime: ctd-viz
-    usage: ctd-viz
-    section: apps-dataset
-    live_url: https://app.calcofi.io/ctd/
-    source_url: https://github.com/CalCOFI/apps/tree/main/ctd-viz
-    img: images/ctd-viz_dark.png   # fallback; the card shows the _dark/_light pair
-    shots: themed
-    description: >-
-      Visualize CTD casts — temperature, salinity, oxygen and more — by
-      cruise, station and depth, from individual profiles to whole-grid maps.
-    tech: [R, Shiny, DuckDB, MapLibre]
-
   - key: oceano
     title: Contour Explorer
     uptime: oceano
@@ -141,8 +111,41 @@ products:
       Visualize and download CalCOFI oceanographic data in map, time-series
       and depth-profile views.
 
+# ── apps-dataset ─────────────────────────────────────────────────────────────────
+  
+  - key: ctd-transects
+    title: CTD Transects
+    uptime: ctd-transects
+    usage: ctd-transects
+    section: apps-dataset
+    live_url: https://calcofi.io/ctd-transects/
+    source_url: https://github.com/CalCOFI/ctd-transects
+    img: images/ctd-transects_dark.png   # fallback; the card shows the _dark/_light pair
+    shots: themed
+    description: >-
+      Cross-shelf temperature, salinity, oxygen, density and fluorescence
+      sections along every CalCOFI line, for every cruise since 1993 — drawn
+      nearshore to offshore with no station picking, and mapped so you can see
+      where each transect is. Flags each cruise's processing stage, and shows
+      the uncorrected sensor series on cruises whose bottle merge has not run.
+    tech: [DuckDB, Plotly, JavaScript]
+
+  - key: ctd-viz
+    title: CTD Explorer
+    uptime: ctd-viz
+    usage: ctd-viz
+    section: apps-dataset
+    live_url: https://app.calcofi.io/ctd/
+    source_url: https://github.com/CalCOFI/apps/tree/main/ctd-viz
+    img: images/ctd-viz_dark.png   # fallback; the card shows the _dark/_light pair
+    shots: themed
+    description: >-
+      Visualize CTD casts — temperature, salinity, oxygen and more — by
+      cruise, station and depth, from individual profiles to whole-grid maps.
+    tech: [R, Shiny, DuckDB, MapLibre]
+
   - key: pollutants
-    title: Pollutants
+    title: Pollutants Explorer
     uptime: pollutants
     usage: pollutants
     section: apps-dataset
@@ -269,9 +272,8 @@ products:
       versioned database — the pipeline behind every release.
     tech: [R, Quarto, DuckDB, Parquet]
 
-  # ── documentation ────────────────────────────────────────────────────────
   - key: docs
-    title: Docs
+    title: docs
     uptime: docs
     usage: docs
     section: developer
