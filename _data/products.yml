@@ -194,7 +194,6 @@ products:
     source_url: https://github.com/CalCOFI/calcofi4r
     img: images/calcofi4r_dark.png   # fallback; the card shows the _dark/_light pair
     shots: themed
-    shots: themed
     description: >-
       R package of helper functions to read, analyze and visualize CalCOFI
       data — connects directly to versioned database releases.
