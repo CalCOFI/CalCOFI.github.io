@@ -1,0 +1,25 @@
+# Weekly: is every product still on the brand contract (brand/v1/README.md)?
+# scripts/check_brand.py opens each live_url at ?theme=light and ?theme=dark and
+# checks the theme took, the favicon resolves, the calcofi.io back-link and the
+# toggle exist. A `shots: themed` product that drifts fails the run — a red run
+# is the signal; nothing here rewrites anything.
+name: Check brand contract
+
+on:
+  schedule:
+    - cron: "17 6 * * 1"   # Mondays 06:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install shot-scraper pyyaml && shot-scraper install
+      - run: python3 scripts/check_brand.py --required-only
