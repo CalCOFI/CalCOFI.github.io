@@ -39,12 +39,8 @@ sections:
     title: Developer
     blurb: >-
       R packages with documented functions, browser-based query and schema
-      tools, and the reproducible workflows behind every release.
-  - id: documentation
-    emoji: "📖"
-    title: Documentation
-    blurb: >-
-      How the data ecosystem works, and the server stack it runs on.
+      tools, the reproducible workflows behind every release, and the
+      technical documentation tying it all together.
   - id: students
     emoji: "🎓"
     title: Student Contributions
@@ -274,10 +270,10 @@ products:
 
   # ── documentation ────────────────────────────────────────────────────────
   - key: docs
-    title: docs
+    title: Docs
     uptime: docs
     usage: docs
-    section: documentation
+    section: developer
     live_url: https://calcofi.io/docs/
     source_url: https://github.com/CalCOFI/docs
     img: images/docs_dark.png   # fallback; the card shows the _dark/_light pair
@@ -285,18 +281,6 @@ products:
     description: >-
       Technical documentation of the data ecosystem — data access, database,
       API, apps, maps and reports.
-
-  - key: server
-    title: server
-    uptime: shiny-server
-    section: documentation
-    live_url: https://github.com/CalCOFI/server
-    source_url: https://github.com/CalCOFI/server
-    img: images/server.png
-    description: >-
-      Docker Compose stack running calcofi.io services — Shiny, PostGIS, tile
-      server, ERDDAP and Caddy.
-    tech: [Docker, Caddy]
 
   # ── student contributions (sorted by year desc, then title) ──────────────
   - key: ucla-monitoring-map
