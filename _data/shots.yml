@@ -64,3 +64,9 @@ calcofi-75th-timeline:
 
 storage:
   wait: 2000
+
+erddap:
+  # the vhost root redirects to /erddap/index.html and drops the query string,
+  # so ?theme= must be applied to the real index page
+  url: https://erddap.calcofi.io/erddap/index.html
+  wait: 6000

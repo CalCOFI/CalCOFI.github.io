@@ -33,7 +33,7 @@ new Promise(done => setTimeout(() => done((() => {
   const icons = [...document.querySelectorAll('link[rel~="icon"]')].map(l => l.href);
   const home  = !!document.querySelector('a[href="https://calcofi.io"], a[href="https://calcofi.io/"]');
   const toggle = !!document.querySelector('.cc-theme-toggle, [data-cc-theme-toggle], #theme-toggle, bslib-input-dark-mode, .quarto-color-scheme-toggle, [data-md-color-scheme] .md-header__option, .dropdown-item[data-bs-theme-value], button[aria-label*="Switch to"]');
-  return {theme: d.dataset.theme || null, bs: d.getAttribute("data-bs-theme"), icons, home, toggle, title: document.title};
+  return {theme: d.dataset.theme || null, bs: d.getAttribute("data-bs-theme"), icons, home, toggle, title: document.title, href: location.href};
 })()), WAIT_MS))
 """
 
@@ -64,13 +64,22 @@ def status(url):
         return None
 
 
+def probe_theme(url, theme, wait, browser):
+    """Probe url?theme=…; if a redirect dropped the query string (erddap.calcofi.io/ →
+    /erddap/index.html), probe the landing URL again with the parameter re-applied."""
+    r = probe(with_param(url, f"theme={theme}&tour=off"), wait, browser)
+    if "error" not in r and "theme=" not in (r.get("href") or "") and r.get("href"):
+        r = probe(with_param(r["href"].split("#")[0], f"theme={theme}&tour=off"), wait, browser)
+    return r
+
+
 def check(p, browser):
     url = p["live_url"]
     wait = 12000 if "app.calcofi.io" in url else 4000
-    light = probe(with_param(url, "theme=light&tour=off"), wait, browser)
+    light = probe_theme(url, "light", wait, browser)
     if "error" in light:
         return {"error": light["error"]}
-    dark = probe(with_param(url, "theme=dark&tour=off"), wait, browser)
+    dark = probe_theme(url, "dark", wait, browser)
     icons = light.get("icons") or []
     icon_ok = any((status(i) or 0) in (200, 206) for i in icons)
     if p["key"] not in OWN_MARK:
