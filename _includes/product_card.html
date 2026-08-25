@@ -17,9 +17,17 @@
   <div class="prod-body">
     <h3>
       <a href="{{ p.live_url }}">{{ p.title }}</a>
-      {%- if p.status == 'superseded' and p.superseded_by -%}
+      {%- comment -%}
+        A superseded_by names the continuation whatever the lifecycle status:
+        "superseded by X" for a live-but-replaced app (oceano), and
+        "archived · superseded by X" for an archived project that continued
+        as a maintained one (the UCSB station portal -> Station Explorer).
+      {%- endcomment -%}
+      {%- if p.superseded_by -%}
         {%- assign sup = site.data.products.products | where: "key", p.superseded_by | first -%}
-        <span class="badge superseded">superseded by <a href="{{ sup.live_url }}">{{ sup.title }}</a></span>
+        <span class="badge {{ p.status | default: 'superseded' }}">
+          {%- if p.status and p.status != 'superseded' %}{{ p.status }} · {% endif -%}
+          superseded by <a href="{{ sup.live_url }}">{{ sup.title }}</a></span>
       {%- elsif p.status and p.status != 'active' -%}
         <span class="badge {{ p.status }}">{{ p.status }}</span>
       {%- endif -%}
