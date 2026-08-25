@@ -8,7 +8,7 @@ is `v2/`, and consumers opt in.
 
 | file | what |
 |---|---|
-| `theme.css` | colour tokens (`--bg --panel --panel-2 --border --fg --muted --accent --accent-d --warn`), `.cc-header` / `.cc-footer` chrome, `.cc-dark-only` / `.cc-light-only` image pairing |
+| `theme.css` | colour tokens (`--bg --panel --panel-2 --border --fg --muted --accent --accent-d --warn`), `.cc-header` / `.cc-footer` chrome, `.cc-release` chip, `.cc-dark-only` / `.cc-light-only` image pairing |
 | `theme.js` | resolve → apply → persist → toggle → notify (see below) |
 | `head.html` | the `<head>` block to paste verbatim: favicon links, the inline pre-paint snippet, the two tags above |
 | `logo_calcofi.svg` / `logo_calcofi_light.svg` | the logo on a dark / light ground |
@@ -29,11 +29,16 @@ is `v2/`, and consumers opt in.
    links; the 🌓 toggle at the right. Where a framework owns the top bar (Quarto,
    pkgdown, mkdocs, bslib `page_navbar`) the logo goes in its brand slot and its
    native toggle is bridged — a page never has two bars or two toggles.
-4. **Favicon**: the set above, except products with their own designed mark
+4. **Release**: a product built on the integrated database shows which release, as
+   `<a class="cc-release" href="https://calcofi.io/db-schema/#erd?v=vYYYY.MM.DD">release <b>vYYYY.MM.DD</b></a>`
+   immediately after the title (Shiny: `cc_brand_header(release = …)` /
+   `cc_release_chip()`). The version is what the page's data was *built from*, never
+   "latest" fetched at load — the two diverge between a release and a redeploy.
+5. **Favicon**: the set above, except products with their own designed mark
    (`calcofi4r` hex, `calcofi4py` squircle).
-5. **`?tour=off`** suppresses any guided tour / welcome modal, so a screenshot
+6. **`?tour=off`** suppresses any guided tour / welcome modal, so a screenshot
    shows the interface.
-6. **Two screenshots** for the calcofi.io card, `images/<key>_dark.png` and
+7. **Two screenshots** for the calcofi.io card, `images/<key>_dark.png` and
    `_light.png`, captured at `live_url?theme=<t>&tour=off` (1200×750).
 
 ## Using it
