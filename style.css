@@ -1,34 +1,7 @@
 /* CalCOFI.io — style.css
-   Shares the palette and header/footer idiom with CalCOFI/db-schema, /db-query and
-   /workflows so the sites read as siblings. Dark default; light overrides via
-   :root[data-theme="light"]. */
-
-:root {
-  --bg:       #1b1d20;
-  --panel:    #24272b;
-  --panel-2:  #2c3035;
-  --border:   #3a3f44;
-  --fg:       #e6e9ed;
-  --muted:    #9aa0a6;
-  --accent:   #4dabf7;
-  --accent-d: #339af0;
-  --warn:     #fcc419;
-  --mono:     ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
-  --sans:     system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  color-scheme: dark;
-}
-:root[data-theme="light"] {
-  --bg:       #ffffff;
-  --panel:    #f8f9fa;
-  --panel-2:  #ffffff;
-  --border:   #dee2e6;
-  --fg:       #212529;
-  --muted:    #6c757d;
-  --accent:   #2780e3;
-  --accent-d: #1c69bf;
-  --warn:     #b08800;
-  color-scheme: light;
-}
+   Tokens, header and footer come from brand/v1/theme.css (the contract every
+   CalCOFI product shares; linked before this file in _layouts/default.html).
+   This file is only what is specific to the landing page. */
 
 * { box-sizing: border-box; }
 
@@ -49,33 +22,6 @@ code, .mono { font-family: var(--mono); font-size: 0.9em; }
 
 #layout { display: grid; grid-template-rows: auto 1fr; min-height: 100vh; }
 
-header.app-header {
-  position: sticky; top: 0; z-index: 10;
-  display: flex; align-items: center; gap: 0.85rem;
-  padding: 0.55rem 1rem;
-  background: var(--panel);
-  border-bottom: 1px solid var(--border);
-  font-size: 0.9rem;
-}
-header.app-header .app-logo { display: inline-flex; align-items: center; height: 32px; }
-header.app-header .app-logo img { height: 32px; width: auto; display: block; }
-:root[data-theme="dark"]  header.app-header .logo-light,
-:root:not([data-theme="light"]) header.app-header .logo-light { display: none; }
-:root[data-theme="light"] header.app-header .logo-dark  { display: none; }
-
-header.app-header h1 { margin: 0; font-size: 1.05rem; font-weight: 700; letter-spacing: 0.01em; }
-header.app-header .spacer { flex: 1; }
-
-.header-links { display: inline-flex; flex-wrap: wrap; gap: 0.85rem; font-family: var(--mono); font-size: 0.82rem; }
-.header-links a { color: var(--muted); }
-.header-links a:hover { color: var(--accent); text-decoration: none; }
-
-header.app-header button#theme-toggle {
-  background: transparent; border: 1px solid var(--border);
-  color: var(--fg); font: inherit; cursor: pointer;
-  border-radius: 4px; padding: 0.2rem 0.55rem;
-}
-header.app-header button#theme-toggle:hover { background: var(--panel-2); }
 
 main#panel { padding: 1.25rem 1.5rem 4rem; max-width: 1180px; width: 100%; margin: 0 auto; }
 
@@ -144,6 +90,9 @@ main#panel { padding: 1.25rem 1.5rem 4rem; max-width: 1180px; width: 100%; margi
   aspect-ratio: 16 / 10; object-fit: cover; object-position: top;
   border-bottom: 1px solid var(--border);
 }
+/* a `shots: themed` card carries images/<key>_dark.png + _light.png as two lazy
+   <img> siblings; theme.css hides the inactive one (.cc-dark-only / .cc-light-only),
+   and a display:none lazy image is never fetched. */
 
 .prod-card .prod-body { display: flex; flex-direction: column; flex: 1; padding: 0.8rem 1rem 0.9rem; }
 .prod-card h3 {
@@ -180,7 +129,7 @@ main#panel { padding: 1.25rem 1.5rem 4rem; max-width: 1180px; width: 100%; margi
 
 /* status / usage: metadata, pushed to the right edge of the link row. .links is
    flex+wrap with no justify-content, so margin-left:auto right-aligns the pair
-   and lets it drop to its own line on a narrow card. Muted like .header-links,
+   and lets it drop to its own line on a narrow card. Muted like .cc-links,
    so they read as secondary to open ↗ / source ↗ rather than as peers. */
 .prod-card .links .links-meta {
   margin-left: auto;
@@ -190,13 +139,3 @@ main#panel { padding: 1.25rem 1.5rem 4rem; max-width: 1180px; width: 100%; margi
 .prod-card .links .links-meta a { color: var(--muted); }
 .prod-card .links .links-meta a:hover { color: var(--accent); text-decoration: none; }
 
-/* ── footer ──────────────────────────────────────────────────────────────── */
-
-.app-footer {
-  margin-top: 3rem; padding-top: 1rem;
-  border-top: 1px solid var(--border);
-  color: var(--muted); font-size: 0.82rem;
-}
-.app-footer p { margin: 0.25rem 0; }
-.app-footer a { color: var(--muted); }
-.app-footer a:hover { color: var(--accent); }

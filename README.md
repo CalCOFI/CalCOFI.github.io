@@ -32,36 +32,39 @@ bundle exec jekyll serve
 # open http://localhost:4000
 ```
 
+## Brand: theme, header, favicon (`brand/v1/`)
+
+[`brand/v1/`](brand/v1/) is the contract every CalCOFI product wears — colour
+tokens, the `.cc-header` chrome (logo far-left linking to calcofi.io, 🌓 toggle),
+`theme.js` (`?theme=dark|light` → `cc_theme` cookie on `.calcofi.io` →
+`localStorage.theme` → dark) and the logo/favicon set — served at
+`https://calcofi.io/brand/v1/`. This site is its first consumer. Read
+[`brand/v1/README.md`](brand/v1/README.md) before touching a product's chrome;
+v1 is frozen once adopted, breaking changes go to `v2/`.
+
 ## Screenshots
 
-Card images live in `images/<key>.png` (1200×750, top-cropped to 16:10 by
-CSS). Cards whose app shows a welcome modal or guided tour on load — or needs
-a long cold-start wait — have a recipe in [`_data/shots.yml`](_data/shots.yml); regenerate
-them reproducibly with [`scripts/shots.sh`](scripts/shots.sh):
+Every card that honours `?theme=` is captured **twice** — `images/<key>_dark.png`
+and `images/<key>_light.png` (1200×750, top-cropped to 16:10 by CSS) — and the
+card swaps between them with the site's theme toggle. Flip a product to
+`shots: themed` in `_data/products.yml` once it passes the theme check; until
+then it keeps its single `img:`. Overrides (a bookmark URL to open a view, a
+longer `wait:`, JS to dismiss a modal that ignores `?tour=off`) live in
+[`_data/shots.yml`](_data/shots.yml).
 
 ```bash
 # one-time setup
 pipx install shot-scraper && shot-scraper install   # Playwright driver
 brew install pngquant                                # or apt, etc.
 
-scripts/shots.sh               # (re)capture every card in _data/shots.yml
-scripts/shots.sh db-viz-hex    # just one (arg matches the image name)
+scripts/shots.py                 # (re)capture every `shots: themed` card, both themes
+scripts/shots.py db-viz-hex      # just one
+scripts/shots.py --all           # plus the single-image cards
+scripts/shots.py check           # luminance-check every themed image
 ```
 
-Each recipe captures at 1200×750, dismisses the modal/tour via a `javascript:`
-block, then compresses with [pngquant](https://pngquant.org). The script drives
-your installed Google Chrome (`-b chrome`) because the map apps render H3/WebGL
-hexagon layers that Playwright's bundled Chromium leaves blank (override with
-`SHOT_BROWSER=chromium`).
-
-For a simple static page not worth a recipe, the [shot-scraper](https://shot-scraper.datasette.io)
-one-liner still works:
-
-```bash
-shot-scraper https://calcofi.io/db-query/ -o images/db-query.png \
-  --width 1200 --height 750 --wait 5000
-pngquant --force --ext .png images/db-query.png
-```
-
-Shiny apps cold-start in ~10–20 s; bump the recipe's `wait:` (or `--wait`) for
-`app.calcofi.io/<app>/` URLs.
+The script drives your installed Google Chrome (`--browser chrome`) because the
+map apps render H3/WebGL hexagon layers that Playwright's bundled Chromium
+leaves blank (override with `SHOT_BROWSER=chromium`). After capture it checks
+that a `_dark` image is actually dark and a `_light` one light: a failure means
+the product ignored `?theme=` — fix the product, do not commit the image.

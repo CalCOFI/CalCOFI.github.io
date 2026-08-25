@@ -1,7 +1,18 @@
 {%- assign p = include.p -%}
 <article class="prod-card{% if include.featured %} featured{% endif %}{% if p.status == 'superseded' or p.status == 'archived' %} demoted{% endif %}">
   <a class="shot" href="{{ p.live_url }}" aria-label="Open {{ p.title }}">
+    {%- comment -%}
+      `shots: themed` = the product honours ?theme= and has been captured twice
+      (scripts/shots.py). Both images are lazy; the one theme.css hides is never
+      fetched, and the swap on toggle is pure CSS. Anything else keeps its
+      single `img:` (student work, third-party hosts, not-yet-migrated sites).
+    {%- endcomment -%}
+    {%- if p.shots == "themed" -%}
+    <img class="cc-dark-only"  loading="lazy" src="{{ 'images/' | append: p.key | append: '_dark.png'  | relative_url }}" alt="Screenshot of {{ p.title }} (dark theme)">
+    <img class="cc-light-only" loading="lazy" src="{{ 'images/' | append: p.key | append: '_light.png' | relative_url }}" alt="Screenshot of {{ p.title }} (light theme)">
+    {%- else -%}
     <img loading="lazy" src="{{ p.img | relative_url }}" alt="Screenshot of {{ p.title }}">
+    {%- endif -%}
   </a>
   <div class="prod-body">
     <h3>

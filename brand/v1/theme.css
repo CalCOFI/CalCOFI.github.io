@@ -1,0 +1,94 @@
+/* calcofi.io brand — theme.css (v1)
+   Contract: https://calcofi.io/brand/v1/  (README.md beside this file)
+
+   The colour tokens and the header/footer chrome every CalCOFI product wears.
+   Dark is the default; light is opted into by `:root[data-theme="light"]`,
+   which theme.js sets from  ?theme=  →  cc_theme cookie  →  localStorage.theme.
+   v1 is frozen once adopted: additive changes only; anything else is v2. */
+
+:root {
+  --bg:       #1b1d20;
+  --panel:    #24272b;
+  --panel-2:  #2c3035;
+  --border:   #3a3f44;
+  --fg:       #e6e9ed;
+  --muted:    #9aa0a6;
+  --accent:   #4dabf7;
+  --accent-d: #339af0;
+  --warn:     #fcc419;
+  --mono:     ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --sans:     system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color-scheme: dark;
+}
+:root[data-theme="light"] {
+  --bg:       #ffffff;
+  --panel:    #f8f9fa;
+  --panel-2:  #ffffff;
+  --border:   #dee2e6;
+  --fg:       #212529;
+  --muted:    #6c757d;
+  --accent:   #2780e3;
+  --accent-d: #1c69bf;
+  --warn:     #b08800;
+  color-scheme: light;
+}
+
+/* ── header ───────────────────────────────────────────────────────────────
+   <header class="cc-header">
+     <a class="cc-home" href="https://calcofi.io"><img class="cc-logo-dark" …><img class="cc-logo-light" …></a>
+     <a class="cc-title" href="./">Product</a>
+     <span class="cc-spacer"></span>
+     <nav class="cc-links">…</nav>
+     <button class="cc-theme-toggle">🌓</button>
+   </header>
+   Self-contained (explicit font, colour, size) so it reads the same inside a
+   Bootstrap page (Shiny, Quarto, pkgdown) as on a plain one. */
+
+.cc-header {
+  position: sticky; top: 0; z-index: 1020;
+  display: flex; align-items: center; gap: 0.85rem;
+  margin: 0; padding: 0.55rem 1rem;
+  background: var(--panel); color: var(--fg);
+  border-bottom: 1px solid var(--border);
+  font-family: var(--sans); font-size: 0.9rem; line-height: 1.5;
+}
+.cc-header .cc-home { display: inline-flex; align-items: center; height: 32px; flex: none; }
+.cc-header .cc-home img { height: 32px; width: auto; display: block; }
+:root:not([data-theme="light"]) .cc-logo-light { display: none; }
+:root[data-theme="light"]       .cc-logo-dark  { display: none; }
+
+.cc-header .cc-title {
+  margin: 0; font-size: 1.05rem; font-weight: 700; letter-spacing: 0.01em;
+  color: var(--fg); text-decoration: none; white-space: nowrap;
+}
+.cc-header .cc-title:hover { color: var(--accent); text-decoration: none; }
+.cc-header .cc-title small { font-weight: 400; color: var(--muted); font-size: 0.78rem; margin-left: 0.4rem; }
+.cc-header .cc-spacer { flex: 1; }
+
+.cc-header .cc-links { display: inline-flex; flex-wrap: wrap; gap: 0.85rem; font-family: var(--mono); font-size: 0.82rem; }
+.cc-header .cc-links a { color: var(--muted); text-decoration: none; }
+.cc-header .cc-links a:hover { color: var(--accent); text-decoration: none; }
+
+.cc-theme-toggle {
+  background: transparent; border: 1px solid var(--border);
+  color: var(--fg); font: inherit; line-height: 1.2; cursor: pointer;
+  border-radius: 4px; padding: 0.2rem 0.55rem;
+}
+.cc-theme-toggle:hover { background: var(--panel-2); }
+
+/* ── footer ─────────────────────────────────────────────────────────────── */
+
+.cc-footer {
+  margin-top: 3rem; padding-top: 1rem;
+  border-top: 1px solid var(--border);
+  color: var(--muted); font-family: var(--sans); font-size: 0.82rem;
+}
+.cc-footer p { margin: 0.25rem 0; }
+.cc-footer a { color: var(--muted); }
+.cc-footer a:hover { color: var(--accent); }
+
+/* ── theme-paired images ───────────────────────────────────────────────────
+   Two <img loading="lazy"> siblings, one per theme; the hidden one is never
+   fetched. Same idiom as the header logo. */
+:root:not([data-theme="light"]) .cc-light-only { display: none; }
+:root[data-theme="light"]       .cc-dark-only  { display: none; }
