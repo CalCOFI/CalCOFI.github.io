@@ -18,10 +18,10 @@ sections:
   - id: apps
     emoji: "🔭"
     featured: true
-    title: Apps — by Spatial Unit
+    title: Apps
     blurb: >-
-      Explore the whole integrated database, each app summarizing by a
-      different spatial unit — station, hexagon, cruise, or contour.
+      Explore the CalCOFI integrated database, each app summarizing by a
+      different spatial grain — station, hexagon, cruise, or contour.
   - id: apps-dataset
     emoji: "🎯"
     featured: true
