@@ -39,7 +39,7 @@
      <a class="cc-title" href="./">Product</a>
      <span class="cc-spacer"></span>
      <nav class="cc-links">…</nav>
-     <button class="cc-theme-toggle">🌓</button>
+     <button class="cc-theme-toggle">🌓</button>   (🌓 = no-JS fallback; theme.js draws the icon)
    </header>
    Self-contained (explicit font, colour, size) so it reads the same inside a
    Bootstrap page (Shiny, Quarto, pkgdown) as on a plain one. */
@@ -87,12 +87,30 @@
 .cc-header .cc-links a { color: var(--muted); text-decoration: none; }
 .cc-header .cc-links a:hover { color: var(--accent); text-decoration: none; }
 
-.cc-theme-toggle {
-  background: transparent; border: 1px solid var(--border);
-  color: var(--fg); font: inherit; line-height: 1.2; cursor: pointer;
-  border-radius: 4px; padding: 0.2rem 0.55rem;
+/* the theme toggle — the sun while the page is dark, the moon-in-sun while it is
+   light: the icon is what a click switches TO. That is the pair mkdocs-material
+   shows and the most legible of the four the fleet had grown (adopted 2026-08-29
+   from calcofi4py, replacing the 🌓 emoji everywhere at once — the point of a
+   shared brand asset). Material Design Icons brightness-7 / brightness-4
+   (Pictogrammers, Apache-2.0). theme.js swaps the markup's 🌓 fallback for the
+   two <svg>s; these rules hide the fallback text, show one icon per theme and
+   draw it in the text colour. The masks are exported as custom properties so a
+   framework's own toggle (Quarto's on docs, pkgdown's on the package sites) can
+   wear the same pair — see docs/brand-head.html and the packages' _pkgdown.yml. */
+:root {
+  --cc-icon-sun:  url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z'/%3E%3C/svg%3E");
+  --cc-icon-moon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z'/%3E%3C/svg%3E");
 }
-.cc-theme-toggle:hover { background: var(--panel-2); }
+.cc-theme-toggle {
+  display: inline-flex; align-items: center; justify-content: center; flex: none;
+  width: 2rem; height: 2rem; padding: 0; border: 0; border-radius: 4px;
+  background: transparent; color: var(--fg); cursor: pointer;
+  font: inherit; font-size: 0; line-height: 1;   /* font-size 0 hides the 🌓 fallback until theme.js runs */
+}
+.cc-theme-toggle:hover { background: var(--panel-2); color: var(--accent); }
+.cc-theme-toggle .cc-theme-icon { display: none; width: 1.25rem; height: 1.25rem; fill: currentColor; }
+:root:not([data-theme="light"]) .cc-theme-toggle .cc-icon-sun  { display: block; }
+:root[data-theme="light"]       .cc-theme-toggle .cc-icon-moon { display: block; }
 
 /* ── footer ─────────────────────────────────────────────────────────────── */
 

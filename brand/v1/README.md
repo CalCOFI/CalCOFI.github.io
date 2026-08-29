@@ -9,7 +9,7 @@ is `v2/`, and consumers opt in.
 | file | what |
 |---|---|
 | `theme.css` | colour tokens (`--bg --panel --panel-2 --border --fg --muted --accent --accent-d --warn`), `.cc-header` / `.cc-footer` chrome, `.cc-release` chip, `.cc-dark-only` / `.cc-light-only` image pairing |
-| `theme.js` | resolve → apply → persist → toggle → notify (see below) |
+| `theme.js` | resolve → apply → persist → toggle → notify (see below); draws the toggle's icon |
 | `head.html` | the `<head>` block to paste verbatim: favicon links, the inline pre-paint snippet, the two tags above |
 | `logo_calcofi.svg` / `logo_calcofi_light.svg` | the logo on a dark / light ground |
 | `favicon.ico` `favicon-32x32.png` `favicon-16x16.png` `apple-touch-icon.png` | the favicon set |
@@ -26,9 +26,15 @@ is `v2/`, and consumers opt in.
    `[data-theme="light"]` — never against `prefers-color-scheme`.
 3. **Header**: the CalCOFI logo far left, linking to `https://calcofi.io`; the
    product's title beside it, linking to the product's own root; the product's own
-   links; the 🌓 toggle at the right. Where a framework owns the top bar (Quarto,
-   pkgdown, mkdocs, bslib `page_navbar`) the logo goes in its brand slot and its
-   native toggle is bridged — a page never has two bars or two toggles.
+   links; the theme toggle at the right — **a sun while the page is dark, a
+   moon-in-sun while it is light**, i.e. the icon shows what a click switches *to*
+   (the mkdocs-material pair, Material Design Icons brightness-7 / brightness-4;
+   `theme.js` draws it over the snippet's `🌓` fallback, and `theme.css` exports
+   the two masks as `--cc-icon-sun` / `--cc-icon-moon`). Where a framework owns
+   the top bar (Quarto, pkgdown, mkdocs, bslib `page_navbar`) the logo goes in its
+   brand slot and its native toggle is bridged **and dressed in the same pair**
+   (docs' `brand-head.html`, the packages' `_pkgdown.yml`) — a page never has two
+   bars or two toggles.
 4. **Release**: a product built on the integrated database shows which release, as
    `<a class="cc-release" href="https://calcofi.io/db-schema/#erd?v=vYYYY.MM.DD">release <b>vYYYY.MM.DD</b></a>`
    immediately after the title (Shiny: `cc_brand_header(release = …)` /
@@ -61,6 +67,7 @@ Plain HTML / Jekyll / Hugo:
   <span class="cc-spacer"></span>
   <nav class="cc-links"><a href="…">query</a><a href="…">docs</a></nav>
   <button class="cc-theme-toggle" type="button" aria-label="Toggle dark / light theme">🌓</button>
+  <!-- 🌓 is the no-JS fallback: theme.js replaces it with the sun / moon-in-sun icons -->
 </header>
 ```
 
@@ -79,3 +86,12 @@ bar, `cc_theme_init(session)` in `server` (reads `?theme=`, drives
 (`workflows/.claude/plans/2026-08-25 Consistent dark-light theme …`).
 
 Consistency is checked weekly by `scripts/check_brand.py` in this repo, not assumed.
+
+## Changes within v1
+
+- **2026-08-29 — the toggle's glyph.** The fleet had grown four different pickers
+  (Quarto's icon-less switch on docs, the coloured 🌓 emoji on calcofi.io and the
+  explorer, pkgdown's sun/moon, mkdocs-material's sun / moon-in-sun on calcofi4py);
+  Ben chose the last as the only obvious one. Changed in place rather than as v2 —
+  the purpose is that every product changes at once; the markup, classes,
+  selectors and behaviour are unchanged, so nothing opts in or out.
