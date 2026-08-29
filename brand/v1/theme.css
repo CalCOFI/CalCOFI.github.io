@@ -112,6 +112,18 @@
 :root:not([data-theme="light"]) .cc-theme-toggle .cc-icon-sun  { display: block; }
 :root[data-theme="light"]       .cc-theme-toggle .cc-icon-moon { display: block; }
 
+/* the flat 2 rem icon button — the theme toggle's style generalized for a header's
+   help · about · feedback cluster and a panel's fold / maximize / export / close
+   (explorer UI plan D15/D16; additive, 2026-08-29). Glyphs: icons.css masks or an
+   inline <svg> of brand/v1/icons/calcofi-icons.svg. */
+.cc-icon-button {
+  display: inline-flex; align-items: center; justify-content: center; flex: none;
+  width: 2rem; height: 2rem; padding: 0; border: 0; border-radius: 4px;
+  background: transparent; color: var(--fg); cursor: pointer; font: inherit;
+}
+.cc-icon-button:hover { background: var(--panel-2); color: var(--accent); }
+.cc-icon-button:disabled { opacity: 0.4; cursor: default; }
+
 /* ── footer ─────────────────────────────────────────────────────────────── */
 
 .cc-footer {

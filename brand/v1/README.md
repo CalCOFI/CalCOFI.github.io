@@ -89,6 +89,19 @@ Consistency is checked weekly by `scripts/check_brand.py` in this repo, not assu
 
 ## Changes within v1
 
+- **2026-08-29 — an icon set.** `icons/calcofi-icons.svg` (a `<symbol>` sprite, ids
+  `cat-*` for the twelve data categories of `metadata/category.csv`, `lens-*` for the
+  explorer's five lenses, `realm-*`, `ui-*` for header and panel actions) and
+  `icons.css` (every glyph as a `--cc-icon-<id>` mask custom property plus
+  `<i class="cc-i cc-i-cat-fish">`, the way `theme.css` exports the toggle's sun /
+  moon) — Material Design Icons (Pictogrammers, Apache-2.0) in the toggle's idiom,
+  plus bespoke marine glyphs (copepod, krill, diatom, whale, a ship on its track, a
+  section curtain) drawn to the same 24-px grid and weight. Generated from
+  `CalCOFI/explore` `src/icon-paths.ts` by `scripts/build_icons.mjs`; the contact sheet
+  is `icons/index.html`. `theme.css` gains `.cc-icon-button`, the toggle's flat 2 rem
+  button generalized. Additive: no existing page changes; db-viz-station swapped its
+  category emoji for the masks the same day.
+
 - **2026-08-29 — the toggle's glyph.** The fleet had grown four different pickers
   (Quarto's icon-less switch on docs, the coloured 🌓 emoji on calcofi.io and the
   explorer, pkgdown's sun/moon, mkdocs-material's sun / moon-in-sun on calcofi4py);
