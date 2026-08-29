@@ -20,8 +20,9 @@ sections:
     featured: true
     title: Apps
     blurb: >-
-      Explore the CalCOFI integrated database, across all ingested datasets, each app summarizing by a
-      different spatial grain — station, hexagon, cruise, or contour.
+      Explore the CalCOFI integrated database, across all ingested datasets. The Explorer brings the
+      spatial grains together as lenses in one app; the others each go deep on one grain — station,
+      hexagon, cruise, or contour.
   - id: apps-dataset
     emoji: "🎯"
     featured: true
@@ -51,7 +52,28 @@ sections:
 products:
 
   # ── apps ─────────────────────────────────────────────────────────────────
-  
+
+  - key: explore
+    title: CalCOFI Explorer
+    uptime: explore
+    usage: explore
+    section: apps
+    live_url: https://calcofi.io/explore/
+    source_url: https://github.com/CalCOFI/explore
+    img: images/explore_dark.png   # fallback; the card shows the _dark/_light pair
+    shots: themed
+    extra_links:
+      - label: Hexagons
+        url: https://calcofi.io/explore/?lens=hex&res=5
+      - label: Sections
+        url: https://calcofi.io/explore/?lens=section&var=temperature&line=90
+    description: >-
+      One app, five lenses — stations, hexagons, cruises, regions and sections — for one
+      organism or one ocean variable at a time over the frozen release. The queries run in your
+      browser (no server), every view is a URL you can share, every download carries its SQL, and
+      feedback comes with an annotated screenshot.
+    tech: [DuckDB-WASM, TypeScript, MapLibre, deck.gl, Plotly]
+
   - key: db-viz-station
     title: Station Explorer
     uptime: db-viz-station
