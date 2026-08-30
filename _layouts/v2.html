@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ page.title | default: site.title }}</title>
+  <meta name="description" content="{{ page.description | default: site.description }}">
+
+  <!-- calcofi.io brand contract v2 (brand/v2/head.html, with same-origin paths so local preview works).
+       A PREVIEW of the SIO look at /v2/ until the 9/8 decision; on the flip this layout becomes
+       default.html and v2/ is deleted. The inline script sets the theme (light by default) before first
+       paint; the page scale needs no meta. -->
+  <link rel="icon" type="image/x-icon" href="{{ '/brand/v2/favicon.ico' | relative_url }}">
+  <link rel="icon" type="image/png" sizes="32x32" href="{{ '/brand/v2/favicon-32x32.png' | relative_url }}">
+  <link rel="icon" type="image/png" sizes="16x16" href="{{ '/brand/v2/favicon-16x16.png' | relative_url }}">
+  <link rel="apple-touch-icon" sizes="180x180" href="{{ '/brand/v2/apple-touch-icon.png' | relative_url }}">
+  <link rel="preload" href="{{ '/brand/v2/fonts/SourceSans3-VF.woff2' | relative_url }}" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="{{ '/brand/v2/fonts/Teko-VF.woff2' | relative_url }}" as="font" type="font/woff2" crossorigin>
+  <script>(function(){var d=document.documentElement,m=/[?&]theme=(dark|light)\b/.exec(location.search),k=/(?:^|;\s*)cc_theme_src=user\b/.test(document.cookie),c=k&&/(?:^|;\s*)cc_theme=(dark|light)\b/.exec(document.cookie),s=null;try{if(localStorage.getItem("cc_theme_src")==="user")s=localStorage.getItem("cc_theme")}catch(e){}var t=(m&&m[1])||(c&&c[1])||(s==="dark"||s==="light"?s:null)||"light";d.dataset.theme=t;d.setAttribute("data-bs-theme",t);d.setAttribute("data-md-color-scheme",t==="dark"?"slate":"default");d.style.colorScheme=t;var sc=document.querySelector('meta[name="cc-scale"]');if(sc&&sc.content)d.setAttribute("data-cc-scale",sc.content)})();</script>
+  <link rel="stylesheet" href="{{ '/brand/v2/fonts.css' | relative_url }}">
+  <link rel="stylesheet" href="{{ '/brand/v2/theme.css' | relative_url }}">
+  <script defer src="{{ '/brand/v2/theme.js' | relative_url }}"></script>
+  <link rel="stylesheet" href="{{ '/style-v2.css' | relative_url }}">
+
+  {% if jekyll.environment == "production" %}
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id={{ site.ga_tag }}"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    // navigator.webdriver is set in every WebDriver/CDP-controlled browser, so
+    // Playwright, Puppeteer and our own shot-scraper screenshots stop counting.
+    if (!navigator.webdriver) gtag('config', '{{ site.ga_tag }}');
+  </script>
+  {% endif %}
+</head>
+<body>
+
+<div id="layout">
+
+  {%- comment -%}
+    The v2 header: the horizontal lockup far left → calcofi.io (absolute, so the brand check's
+    back-link test passes on a local build too), the site as an uppercase nav item → its root,
+    the section anchors as uppercase links (from products.yml, so the header can never drift from
+    the sections rendered), calcofi.org ↗ where the SIO template's utility strip would carry
+    UCSD.EDU, and the toggle.
+  {%- endcomment -%}
+  <header class="cc-header">
+    <a class="cc-home" href="https://calcofi.io" aria-label="CalCOFI.io — home">
+      <img class="cc-logo-dark"  src="{{ '/brand/v2/logo_calcofi_h.svg'       | relative_url }}" alt="CalCOFI">
+      <img class="cc-logo-light" src="{{ '/brand/v2/logo_calcofi_h_light.svg' | relative_url }}" alt="CalCOFI">
+    </a>
+    <a class="cc-title" href="{{ page.url | relative_url }}">{{ site.title }} <small>open data ecosystem</small></a>
+
+    <span class="cc-spacer"></span>
+
+    <nav class="cc-links">
+      {%- for s in site.data.products.sections -%}
+      {%- comment -%} short nav labels: the two Apps sections would both read "Apps" {%- endcomment -%}
+      {%- case s.id -%}
+        {%- when "apps-dataset" -%}{%- assign lbl = "Dataset apps" -%}
+        {%- when "students" -%}{%- assign lbl = "Students" -%}
+        {%- else -%}{%- assign lbl = s.title | split: " — " | first -%}
+      {%- endcase -%}
+      <a href="#{{ s.id }}">{{ lbl }}</a>
+      {%- endfor -%}
+      <a href="https://calcofi.org">calcofi.org ↗</a>
+    </nav>
+
+    <button class="cc-theme-toggle" type="button" aria-label="Toggle dark / light theme">🌓</button>
+  </header>
+
+  <main id="panel">
+    {{ content }}
+  </main>
+
+  {%- comment -%}
+    The SIO footer shape: the partner strip (CalCOFI is NOAA + CDFW + SIO — the institutional
+    identity lives here, not in the masthead; plan Decision 7), three link columns on the page
+    ground, then the navy copyright bar.
+  {%- endcomment -%}
+  <footer class="v2-footer cc-band">
+    <div class="cc-container">
+      <div class="partners">
+        <a href="https://www.fisheries.noaa.gov/" title="NOAA Fisheries"><img src="{{ '/images/partners/noaa.png' | relative_url }}" alt="NOAA Fisheries" loading="lazy"></a>
+        <a href="https://wildlife.ca.gov/" title="California Department of Fish and Wildlife"><img src="{{ '/images/partners/cdfw.png' | relative_url }}" alt="California Department of Fish and Wildlife" loading="lazy"></a>
+        <a href="https://scripps.ucsd.edu/" title="Scripps Institution of Oceanography, UC San Diego"><img src="{{ '/images/partners/sio.png' | relative_url }}" alt="Scripps Institution of Oceanography, UC San Diego" loading="lazy"></a>
+        <p class="partners-lede"><span class="cc-eyebrow">A partnership since 1949</span><br>NOAA Fisheries · California Department of Fish and Wildlife · Scripps Institution of Oceanography, UC San Diego</p>
+      </div>
+      <div class="cols">
+        <div>
+          <h4 class="cc-h3">Program</h4>
+          <p>Erin Satterthwaite<br><a href="mailto:esatterthwaite@ucsd.edu">esatterthwaite@ucsd.edu</a></p>
+        </div>
+        <div>
+          <h4 class="cc-h3">Technical</h4>
+          <p>Ben Best<br><a href="mailto:ben@ecoquants.com">ben@ecoquants.com</a></p>
+        </div>
+        <div>
+          <h4 class="cc-h3">Links</h4>
+          <p>
+            <a href="https://calcofi.org">CalCOFI.org</a><br>
+            <a href="https://github.com/CalCOFI">github.com/CalCOFI</a><br>
+            <a href="https://status.calcofi.io">status</a> · <a href="{{ '/analytics/' | relative_url }}">usage</a><br>
+            <a href="{{ '/brand/v2/' | relative_url }}">brand v2</a> · <a href="{{ '/' | relative_url }}">the current calcofi.io</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </footer>
+  <div class="cc-footer-bar"><div class="cc-container">© {{ site.time | date: "%Y" }} CalCOFI · calcofi.io · a preview of brand v2, proposed 2026-08-30</div></div>
+
+</div>
+</body>
+</html>

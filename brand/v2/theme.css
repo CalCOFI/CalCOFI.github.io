@@ -215,9 +215,10 @@
 }
 .cc-text-link:hover { color: var(--accent); text-decoration: none; }
 
-/* inline links in prose: the accent, no underline, underline on hover */
-.cc-prose a { color: var(--accent); text-decoration: none; }
-.cc-prose a:hover { color: var(--accent-d); text-decoration: underline; }
+/* inline links in prose: the accent with a faint underline (WCAG 1.4.1: a link in running text must not
+   rely on colour alone — the accent is 2:1 against the navy text), the full underline on hover */
+.cc-prose a { color: var(--accent); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.15em; text-decoration-color: color-mix(in srgb, var(--accent) 45%, transparent); }
+.cc-prose a:hover { color: var(--accent-d); text-decoration-color: currentColor; }
 
 /* ── bands & container (page scale) ───────────────────────────────────────────
    Full-width, --band-pad vertical, alternating: .cc-band (the page ground) / .cc-band-alt (Sand in light,

@@ -1,0 +1,66 @@
+---
+layout: v2
+permalink: /v2/
+title: "CalCOFI.io — brand v2 preview"
+---
+{%- assign data = site.data.products -%}
+
+{%- comment -%}
+  The landing page on brand v2, as a preview (plan Phase 1). Today's index.html with the SIO page
+  rhythm: a Sand hero with the display heading and one yellow CTA, the section nav as an uppercase
+  tab row, sections on alternating white / Sand bands, .cc-card cards. On the flip this content
+  moves into index.html and this file is deleted — one commit.
+{%- endcomment -%}
+
+<section class="hero cc-band cc-band-alt">
+  <div class="cc-container">
+    <div class="cc-eyebrow">Since 1949 · the California Current · one of the longest-running ocean observing programs anywhere</div>
+    <h1 class="cc-h1">From ship to screen</h1>
+    <p class="hero-lede cc-lede cc-prose">
+      <a href="https://calcofi.org">CalCOFI</a> cruises have sampled the California Current for
+      seventy-five years. CalCOFI.io turns those observations into an open data ecosystem:
+      reproducible workflows load each dataset into a versioned integrated database, which powers
+      interactive apps, a browser SQL playground, standards-based services and scientific
+      programming packages in R and Python — for scientists, resource managers, students and the
+      curious.
+    </p>
+    <p class="hero-pipeline">ship → workflows → database → apps · services · R · Python</p>
+    <p class="hero-actions">
+      <a class="cc-btn cc-btn-cta" href="https://calcofi.io/explore/">Explore the data</a>
+      <a class="cc-text-link" href="#developer">Build on it</a>
+    </p>
+  </div>
+</section>
+
+<nav class="section-tabs" aria-label="Sections">
+  <div class="cc-container">
+    {%- for s in data.sections -%}
+    {%- assign items = data.products | where: "section", s.id -%}
+    <a href="#{{ s.id }}">{{ s.title }}<span class="n">{{ items | size }}</span></a>
+    {%- endfor -%}
+  </div>
+</nav>
+
+{%- comment -%}
+  Every section renders the same way; sections flagged `featured: true` in products.yml (the two
+  Apps sections) get the wider grid so the flagship applications read first. Bands alternate
+  white / Sand down the page (navy in dark), the SIO page rhythm.
+{%- endcomment -%}
+{%- for s in data.sections -%}
+{%- assign items = data.products | where: "section", s.id -%}
+{%- assign section_title = s.title | split: " — " | first -%}
+<section class="prod-section cc-band{% cycle '', ' cc-band-alt' %}" id="{{ s.id }}">
+  <div class="cc-container">
+    <div class="cc-eyebrow">{{ items | size }} product{% if items.size != 1 %}s{% endif %}</div>
+    <h2 class="cc-h2">{{ s.title }}</h2>
+    <p class="blurb">{{ s.blurb }}
+      {%- if s.id == "developer" %} <a class="cc-text-link" href="https://calcofi.io/docs/">Read the docs</a>{% endif -%}
+    </p>
+    <div class="card-grid{% if s.featured %} featured-grid{% endif %}">
+      {%- for p in items -%}
+        {% include product_card_v2.html p=p section=section_title featured=s.featured %}
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+{%- endfor -%}
