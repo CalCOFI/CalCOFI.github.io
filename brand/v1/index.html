@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>calcofi.io brand v1 — specimen</title>
+<meta name="description" content="The calcofi.io brand v1: the theme tokens at both themes with their contrast, the header chrome, the release chip, the icon set and the files a consumer pastes.">
+<!-- brand/v1/head.html with relative paths, so this page previews from a checkout; a consumer pastes head.html verbatim -->
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<script>(function(){var m=/[?&]theme=(dark|light)\b/.exec(location.search),c=/(?:^|;\s*)cc_theme=(dark|light)/.exec(document.cookie),s=null;try{s=localStorage.getItem("theme")}catch(e){}var t=(m&&m[1])||(c&&c[1])||(s==="light"||s==="dark"?s:null)||"dark",d=document.documentElement;d.dataset.theme=t;d.setAttribute("data-bs-theme",t);d.setAttribute("data-md-color-scheme",t==="dark"?"slate":"default");d.style.colorScheme=t})();</script>
+<link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="icons.css">
+<script defer src="theme.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body { font: 15px/1.55 var(--sans); color: var(--fg); background: var(--bg); }
+  main { max-width: 1040px; margin: 0 auto; padding: 24px 20px 64px; }
+  h1 { font-size: 1.6rem; margin: 0 0 0.25em; }
+  h2 { font-size: 1.15rem; margin: 2em 0 0.5em; padding-top: 1em; border-top: 1px solid var(--border); }
+  p, li { max-width: 76ch; }
+  .note { color: var(--muted); font-size: 0.9em; }
+  code { font-family: var(--mono); font-size: 0.85em; background: var(--panel); padding: 0.1em 0.35em; border-radius: 3px; }
+  pre { background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; overflow-x: auto; font-size: 0.8em; }
+  a { color: var(--accent); }
+  table { border-collapse: collapse; width: 100%; font-size: 0.9em; }
+  th, td { text-align: left; padding: 0.35em 0.6em; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.8em; color: var(--muted); white-space: nowrap; }
+  table.tokens td { white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .sw { display: inline-block; width: 1.5em; height: 1.5em; border-radius: 4px; vertical-align: middle; margin-right: 0.5em; border: 1px solid var(--border); }
+  .tok, .cr { font-family: var(--mono); font-size: 0.9em; }
+  .cr.fail { color: #e03131; font-weight: 700; }
+  .cr.ok::after { content: " ✓"; color: #2f9e44; }
+  .table-wrap { overflow-x: auto; }
+  .icons { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px; }
+  .icons .c { display: flex; align-items: center; gap: 8px; padding: 6px; border: 1px solid var(--border); border-radius: 6px; font-size: 11px; }
+  .icons .c span { color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .versions { display: flex; gap: 10px; flex-wrap: wrap; margin: 0.5em 0 0; }
+  .versions a { border: 1px solid var(--border); border-radius: 999px; padding: 2px 12px; text-decoration: none; color: var(--fg); background: var(--panel); }
+  .versions a.cur { border-color: var(--accent); }
+  .chip-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+<header class="cc-header">
+  <a class="cc-home" href="https://calcofi.io" aria-label="CalCOFI.io home">
+    <img class="cc-logo-dark"  src="logo_calcofi.svg"       alt="CalCOFI" width="32" height="32">
+    <img class="cc-logo-light" src="logo_calcofi_light.svg" alt="CalCOFI" width="32" height="32">
+  </a>
+  <a class="cc-title" href="./">brand v1</a>
+  <span class="cc-spacer"></span>
+  <nav class="cc-links"><a href="icons/">icons</a><a href="README.md">README</a><a href="../v2/">v2 (proposed)</a></nav>
+  <button class="cc-theme-toggle" type="button" aria-label="Toggle dark / light theme">🌓</button>
+</header>
+<main>
+  <h1>calcofi.io brand v1</h1>
+  <p class="note">One source for the theme, the header chrome, the logo, the favicon and the icon set that every CalCOFI product shares — served from <code>https://calcofi.io/brand/v1/</code>. <b>v1 is the brand in force</b>; it is frozen once adopted: token additions are fine, anything that changes how an existing page looks or behaves is <a href="../v2/">v2</a>, and consumers opt in. The rule is checked weekly, not assumed (<code>scripts/check_brand.py</code>).</p>
+  <div class="versions"><a class="cur" href="./">v1 · in force</a><a href="../v2/">v2 · proposed (the SIO look)</a></div>
+
+  <h2 id="contract">The contract, in one breath</h2>
+  <ol>
+    <li><b>Theme resolution</b> — <code>?theme=dark|light</code> on any URL → cookie <code>cc_theme</code> on <code>.calcofi.io</code> → <code>localStorage.theme</code> → <b>dark</b>. <code>theme.js</code> sets <code>data-theme</code> / <code>data-bs-theme</code> / <code>data-md-color-scheme</code> on <code>&lt;html&gt;</code> and fires <code>cc:theme</code>; maps, Plotly and Mermaid restyle on it. Never key on <code>prefers-color-scheme</code>.</li>
+    <li><b>The header</b> — logo far left → <code>https://calcofi.io</code>; the product's title beside it → its own root; the theme toggle at the right shows what a click switches <em>to</em> (a sun while the page is dark, a moon-in-sun while it is light). Where a framework owns the bar (Quarto, pkgdown, mkdocs, bslib) the logo goes in its brand slot and its toggle is bridged — never two bars, never two toggles.</li>
+    <li><b>The favicon set</b>, except <code>calcofi4r</code> (hex) and <code>calcofi4py</code> (squircle).</li>
+    <li><b><code>?tour=off</code></b> suppresses any guided tour, so <code>live_url?theme=&lt;t&gt;&amp;tour=off</code> is a deterministic screenshot.</li>
+  </ol>
+
+  <h2 id="chrome">Header and release chip</h2>
+  <p class="note">The bar above is the contract's header, drawn by <code>theme.css</code> alone (explicit font, colour, size, so it reads the same inside a Bootstrap page as on a plain one). The chip a product puts beside its title to say which database release it is reading:</p>
+  <div class="chip-row"><a class="cc-release" href="https://calcofi.io/db-schema/">release <b>v2026.08.25</b></a><span class="note">→ the schema site at that version</span></div>
+<pre>&lt;header class="cc-header"&gt;
+  &lt;a class="cc-home" href="https://calcofi.io" aria-label="CalCOFI.io home"&gt;
+    &lt;img class="cc-logo-dark"  src="https://calcofi.io/brand/v1/logo_calcofi.svg"       alt="CalCOFI" width="32" height="32"&gt;
+    &lt;img class="cc-logo-light" src="https://calcofi.io/brand/v1/logo_calcofi_light.svg" alt="CalCOFI" width="32" height="32"&gt;
+  &lt;/a&gt;
+  &lt;a class="cc-title" href="./"&gt;Product&lt;/a&gt;
+  &lt;span class="cc-spacer"&gt;&lt;/span&gt;
+  &lt;nav class="cc-links"&gt;&lt;a href="…"&gt;query&lt;/a&gt;&lt;a href="…"&gt;docs&lt;/a&gt;&lt;/nav&gt;
+  &lt;button class="cc-theme-toggle" type="button" aria-label="Toggle dark / light theme"&gt;🌓&lt;/button&gt;
+&lt;/header&gt;</pre>
+
+  <h2 id="tokens">Tokens &amp; contrast</h2>
+  <p class="note">Read live from <code>theme.css</code>: each text token against the <code>--bg</code> and <code>--panel</code> grounds of its theme, WCAG AA (4.5:1) marked ✓. <span id="summary"></span></p>
+  <div class="table-wrap"><table class="tokens">
+    <thead><tr><th>token</th><th colspan="3">dark</th><th colspan="3">light</th><th>role</th></tr>
+    <tr><th></th><th>value</th><th>on bg</th><th>on panel</th><th>value</th><th>on bg</th><th>on panel</th><th></th></tr></thead>
+    <tbody id="tok"></tbody>
+  </table></div>
+
+  <h2 id="icons">Icons</h2>
+  <p class="note">48 glyphs on the 24-px grid — Material Design Icons (Pictogrammers, Apache-2.0) plus the bespoke marine set (drawn by <code>CalCOFI/explore scripts/icon_glyphs.py</code>): <code>cat-*</code> the twelve data categories, <code>lens-*</code> the Explorer's lenses, <code>realm-*</code>, <code>ui-*</code>. <code>icons.css</code> exports each as a mask (<code>&lt;i class="cc-i cc-i-cat-fish"&gt;&lt;/i&gt;</code> draws it in the text colour on any page); <code>icons/calcofi-icons.svg</code> is the same set as a sprite for same-origin <code>&lt;use&gt;</code>. <a href="icons/">The full contact sheet at 16 / 24 / 40 px →</a></p>
+  <div class="icons" id="iconrow"></div>
+
+  <h2 id="files">Files</h2>
+  <table>
+    <tr><th>file</th><th>what</th></tr>
+    <tr><td><code>head.html</code></td><td>the <code>&lt;head&gt;</code> block to paste verbatim, before any stylesheet: favicon links, the inline pre-paint snippet, <code>theme.css</code>, <code>theme.js</code></td></tr>
+    <tr><td><code>theme.css</code></td><td>the tokens (<code>--bg --panel --panel-2 --border --fg --muted --accent --accent-d --warn</code>, both themes), <code>.cc-header</code> / <code>.cc-footer</code>, <code>.cc-release</code>, <code>.cc-dark-only</code> / <code>.cc-light-only</code> image pairing, the toggle icons as <code>--cc-icon-sun</code> / <code>--cc-icon-moon</code></td></tr>
+    <tr><td><code>theme.js</code></td><td>resolve → apply → persist → toggle → notify (<code>cc:theme</code>); draws the toggle's icon over the 🌓 fallback</td></tr>
+    <tr><td><code>icons.css</code> · <code>icons/</code></td><td>the icon set as CSS masks and as a sprite, with its contact sheet</td></tr>
+    <tr><td><code>logo_calcofi.svg</code> · <code>logo_calcofi_light.svg</code></td><td>the mark on a dark / light ground</td></tr>
+    <tr><td><code>favicon.ico</code> · <code>favicon-32x32.png</code> · <code>favicon-16x16.png</code> · <code>apple-touch-icon.png</code></td><td>the favicon set</td></tr>
+    <tr><td><code>README.md</code></td><td>the contract in full — resolution order, the toggle, bridging a framework's own bar, the new-product checklist</td></tr>
+  </table>
+  <p class="note">Consumers in R: <code>calcofi4r::cc_brand_head()</code>, <code>cc_brand_header(mode = cc_theme(request))</code>, <code>cc_is_dark(input)</code>, <code>cc_tour_enabled()</code>. Quarto: include <code>libs/brand/quarto_head.html</code> + <code>quarto_header.html</code>.</p>
+</main>
+<script>
+(function () {
+  function lum(h) { var c = h.match(/\w\w/g).map(function (x) { x = parseInt(x, 16) / 255; return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4); }); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; }
+  function cr(a, b) { var x = lum(a), y = lum(b), hi = Math.max(x, y), lo = Math.min(x, y); return (hi + 0.05) / (lo + 0.05); }
+  // the token blocks: :root (dark, the default) and :root[data-theme="light"]
+  function block(css, sel) { var re = new RegExp(sel + "\\s*\\{([^}]*)\\}", "g"), m, out = {}; while ((m = re.exec(css))) { m[1].replace(/--([\w-]+):\s*(#[0-9a-fA-F]{6})/g, function (_, k, v) { out[k] = v.toLowerCase(); }); } return out; }
+  var TEXT = [["fg", "body text"], ["muted", "secondary text, axis labels"], ["accent", "links, the active control"], ["accent-d", "hover / pressed accent"], ["warn", "a caution"]];
+  fetch("theme.css").then(function (r) { return r.text(); }).then(function (css) {
+    var D = block(css, ":root(?!\\[)"), L = block(css, ':root\\[data-theme="light"\\]');
+    var tb = document.getElementById("tok"), n = 0, fails = 0, min = 99;
+    function cell(tok, T) { var v = T[tok]; if (!v) return "<td></td><td></td><td></td>"; var s = '<td><span class="sw" style="background:' + v + '"></span><span class="tok">' + v + "</span></td>"; ["bg", "panel"].forEach(function (g) { var c = cr(v, T[g]); n++; if (c < 4.5) fails++; if (c < min) min = c; s += '<td class="cr ' + (c >= 4.5 ? "ok" : "fail") + '">' + c.toFixed(1) + "</td>"; }); return s; }
+    TEXT.forEach(function (t) { var tr = document.createElement("tr"); tr.innerHTML = '<td class="tok">--' + t[0] + "</td>" + cell(t[0], D) + cell(t[0], L) + "<td>" + t[1] + "</td>"; tb.appendChild(tr); });
+    ["bg", "panel", "panel-2", "border"].forEach(function (g) { var tr = document.createElement("tr"); tr.innerHTML = '<td class="tok">--' + g + '</td><td><span class="sw" style="background:' + D[g] + '"></span><span class="tok">' + D[g] + '</span></td><td></td><td></td><td><span class="sw" style="background:' + L[g] + '"></span><span class="tok">' + L[g] + '</span></td><td></td><td></td><td>a ground</td>'; tb.appendChild(tr); });
+    document.getElementById("summary").textContent = n + " pairs, " + fails + " below 4.5:1, min " + min.toFixed(2) + ":1.";
+  });
+  // the icon row: the data categories and the lenses (every glyph is on the contact sheet)
+  var row = document.getElementById("iconrow");
+  ["lens-stations", "lens-hexagons", "lens-cruises", "lens-regions", "lens-sections", "realm-bio", "realm-env", "cat-physical", "cat-nutrients", "cat-carbonate", "cat-productivity", "cat-meteorology", "cat-phytoplankton", "cat-picoplankton", "cat-zooplankton", "cat-krill", "cat-ichthyo", "cat-fish", "cat-birds-mammals", "cat-whale", "cat-other"].forEach(function (k) {
+    var d = document.createElement("div"); d.className = "c"; d.innerHTML = '<i class="cc-i cc-i-' + k + '" style="font-size:16px"></i><i class="cc-i cc-i-' + k + '" style="font-size:24px"></i><span>' + k + "</span>"; row.appendChild(d);
+  });
+})();
+</script>
+</body>
+</html>
