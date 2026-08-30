@@ -159,6 +159,10 @@ the mark on a narrow phone:
 </picture>
 ```
 
+— unless the page screenshots itself with html-to-image (the explorer's share / feedback capture): its
+clone loses the image inside a `<picture>`, silently. Use two `<img>`s and a media query instead
+(`.cc-logo-lockup` / `.cc-logo-mark`, as `explore/src/style.css` does).
+
 React to a change (basemap, Plotly template, Mermaid theme) — unchanged from v1:
 
 ```js
