@@ -13,9 +13,10 @@
   body { margin: 0; font: 15px/1.55 var(--sans); color: var(--fg); background: var(--bg); }
   main { max-width: 760px; margin: 0 auto; padding: 32px 20px 64px; }
   h1 { font-size: 1.6rem; margin: 0 0 0.25em; }
-  .v { display: block; border: 1px solid var(--border); border-radius: 8px; padding: 14px 18px; margin: 14px 0; text-decoration: none; color: var(--fg); background: var(--panel); }
+  .v { border: 1px solid var(--border); border-radius: 8px; padding: 14px 18px; margin: 14px 0; background: var(--panel); }
   .v:hover { border-color: var(--accent); }
-  .v b { font-size: 1.1em; }
+  .v .t { color: var(--fg); text-decoration: none; font-size: 1.1em; }
+  .v .t:hover { color: var(--accent); }
   .v .s { display: block; color: var(--muted); font-size: 0.9em; margin-top: 2px; }
   a { color: var(--accent); }
   code { font-family: var(--mono); font-size: 0.85em; }
@@ -31,8 +32,8 @@
 <main>
   <h1>calcofi.io brand</h1>
   <p>Every CalCOFI product wears one theme, one header, one favicon and one icon set, served from this directory and versioned so a change never lands on a product that did not opt in.</p>
-  <a class="v" href="v1/"><b>v1</b> — in force<span class="s">dark default · system font · <code>calcofi.io/brand/v1/</code> · <a href="v1/icons/">icons</a> · <a href="v1/README.md">README</a></span></a>
-  <a class="v" href="v2/"><b>v2</b> — proposed (the SIO look; decision 2026-09-08)<span class="s">light default · Source Sans 3 / Teko · the horizontal lockup · previews at <a href="https://calcofi.io/v2/">calcofi.io/v2/</a> and <a href="https://calcofi.io/explore/v2/">explore/v2/</a> · <a href="v2/icons/">icons</a> · <a href="v2/README.md">README</a></span></a>
+  <div class="v"><a class="t" href="v1/"><b>v1</b> — in force</a><span class="s">dark default · system font · <code>calcofi.io/brand/v1/</code> · <a href="v1/icons/">icons</a> · <a href="v1/README.md">README</a></span></div>
+  <div class="v"><a class="t" href="v2/"><b>v2</b> — proposed (the SIO look; decision 2026-09-08)</a><span class="s">light default · Source Sans 3 / Teko · the horizontal lockup · previews at <a href="https://calcofi.io/v2/">calcofi.io/v2/</a> and <a href="https://calcofi.io/explore/v2/">explore/v2/</a> · <a href="v2/icons/">icons</a> · <a href="v2/README.md">README</a></span></div>
   <p><code>?theme=dark|light</code> on any URL sets the theme for the whole <code>.calcofi.io</code> domain; <code>?tour=off</code> makes a deterministic screenshot.</p>
 </main>
 </body>
