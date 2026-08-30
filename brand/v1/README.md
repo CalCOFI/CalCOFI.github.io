@@ -87,6 +87,11 @@ bar, `cc_theme_init(session)` in `server` (reads `?theme=`, drives
 
 Consistency is checked weekly by `scripts/check_brand.py` in this repo, not assumed.
 
+> **v2 is proposed (2026-08-30)** — [`../v2/`](../v2/): the SIO look, light by default, Source Sans 3 +
+> Teko, the horizontal lockup, two scales. Previewed at `calcofi.io/brand/v2/`, `calcofi.io/v2/` and
+> `calcofi.io/explore/v2/` for the 9/8 decision; the flip date will be recorded here. **v1 remains served
+> and frozen** — a product that never migrates keeps working.
+
 ## Changes within v1
 
 - **2026-08-29 — an icon set.** `icons/calcofi-icons.svg` (a `<symbol>` sprite, ids

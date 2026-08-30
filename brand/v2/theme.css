@@ -1,0 +1,273 @@
+/* calcofi.io brand — theme.css (v2)
+   Contract: https://calcofi.io/brand/v2/  (README.md beside this file)
+
+   The SIO look as tokens: the UC San Diego palette (navy text on white, UCSD blue links, one yellow
+   accent, Sand and navy bands), Source Sans 3 + Teko (fonts.css), the SIO-shaped one-bar header, the
+   button / text-link / card / band idiom — at two scales. LIGHT IS THE DEFAULT; dark is the same brand on
+   a navy ground, opted into by `:root[data-theme="dark"]`, which theme.js sets from
+   ?theme=  →  cc_theme cookie (only when the visitor chose it)  →  localStorage  →  light.
+   Semantic token names are v1's, so a consumer's CSS keeps resolving after the one-URL swap.
+   v2 is frozen once adopted: additive changes only; anything else is v3. */
+
+/* ── tokens: colour ────────────────────────────────────────────────────────── */
+:root {
+  --bg:        #ffffff;
+  --panel:     #f5f5f5;
+  --panel-2:   #ffffff;
+  --border:    #dddddd;
+  --fg:        #182b49;   /* UCSD Navy — navy type on white is the most SIO thing on the page (14.2:1) */
+  --muted:     #66686a;   /* Cool Gray #747678 darkened for AA on the panel gray and the Sand band (brand value: 4.2:1 on #f5f5f5) */
+  --accent:    #00629b;   /* UCSD Blue — links, the active state (6.5:1 on white) */
+  --accent-d:  #004663;   /* hover */
+  --on-accent: #ffffff;   /* text on an accent fill */
+  --warn:      #8a6500;   /* UCSD Gold darkened for AA as text (the brand's #C69214 is 2.8:1 on white) */
+  --band:      #f5f0e6;   /* Sand — the alternating page band */
+  --header-bg: #ffffff;
+  --cta-bg:    #ffcd00;   /* UCSD Yellow — the one CTA per view, navy text (9.5:1) */
+  --cta-fg:    #182b49;
+  --cc-green:  #457a1c;   /* UCSD Green #6E963B darkened for AA on white (a "go" state) */
+  --cc-red:    #b3261e;   /* a "no-go" state; not a brand colour, chosen for AA on both grounds */
+  /* the UC San Diego palette by name, for a product's own use (a highlight, a chart annotation) */
+  --cc-navy:   #182b49;
+  --cc-blue:   #00629b;
+  --cc-yellow: #ffcd00;
+  --cc-gold:   #c69214;
+  --cc-cyan:   #00c6d7;
+  --cc-sand:   #f5f0e6;
+  --cc-gray:   #747678;
+  --cc-stone:  #b6b1a9;
+  /* type, by role — fonts.css supplies the faces; edit that file (and this stack) if Brix Sans is licensed */
+  --sans:      "Source Sans 3", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --display:   "Teko", "Source Sans 3", Impact, "Arial Narrow", sans-serif;   /* page h1 / h2 only; an app never uses it */
+  --mono:      ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  color-scheme: light;
+}
+:root[data-theme="dark"] {
+  --bg:        #0f1a2e;   /* just below UCSD Navy, so navy panels read as panels */
+  --panel:     #182b49;   /* UCSD Navy — SIO's own dark band is the dark panel */
+  --panel-2:   #21375c;
+  --border:    #34486b;
+  --fg:        #e9edf3;
+  --muted:     #9fb0c8;
+  --accent:    #4fb6e6;   /* UCSD Blue lifted for the dark ground (7.6:1) */
+  --accent-d:  #8ad0f0;
+  --on-accent: #0f1a2e;   /* white on the lifted accent is 2.3:1, so dark uses navy */
+  --warn:      #ffcd00;   /* the yellow itself (11.6:1) */
+  --band:      #182b49;
+  --header-bg: #182b49;
+  --cc-green:  #8fbf4f;
+  --cc-red:    #ff8080;
+  color-scheme: dark;
+}
+
+/* ── tokens: scale ─────────────────────────────────────────────────────────────
+   Two scales, one attribute. A page gets SIO's reading rhythm (18 px / 40 px bands / 1170 px); an app
+   declares <meta name="cc-scale" content="app"> (head.html's snippet copies it onto <html>) and gets the
+   same tokens at its own density. The whitespace does not transfer between them and is not meant to. */
+:root {
+  --fs:          18px;    /* body */
+  --lh:          1.44;
+  --fs-sm:       14px;    /* captions, eyebrows, chips */
+  --nav-fs:      15px;    /* header title + links */
+  --space:       8px;     /* the spacing unit */
+  --band-pad:    40px;    /* vertical padding of a .cc-band */
+  --header-h:    72px;
+  --lockup-h:    36px;    /* the header lockup's height */
+  --container:   1170px;
+  --radius:      8px;     /* buttons, inputs */
+  --radius-card: 12px;
+}
+:root[data-cc-scale="app"] {
+  --fs:          13px;
+  --lh:          1.35;
+  --fs-sm:       11.5px;  /* Source Sans 3's x-height is smaller than system-ui's: 11 px labels want half a pixel */
+  --nav-fs:      13px;
+  --space:       4px;
+  --band-pad:    0px;
+  --header-h:    44px;
+  --lockup-h:    28px;
+  --container:   100%;
+  --radius:      4px;
+  --radius-card: 6px;
+}
+/* the brand does not set body type — a framework page (Bootstrap, Quarto) owns its root size. A plain
+   page applies the rhythm with one rule:  body { font: var(--fs)/var(--lh) var(--sans); color: var(--fg); background: var(--bg); } */
+
+/* ── header ───────────────────────────────────────────────────────────────────
+   <header class="cc-header">
+     <a class="cc-home" href="https://calcofi.io" aria-label="CalCOFI.io home">
+       <img class="cc-logo-dark"  src="…/brand/v2/logo_calcofi_h.svg"       alt="CalCOFI">
+       <img class="cc-logo-light" src="…/brand/v2/logo_calcofi_h_light.svg" alt="CalCOFI">
+     </a>
+     <a class="cc-title" href="./">Explorer <small>Stations</small></a>
+     <a class="cc-release" …>release <b>v2026.08.25</b></a>
+     <span class="cc-spacer"></span>
+     <nav class="cc-links"><a href="#apps">Apps</a> … <a href="https://calcofi.org">calcofi.org ↗</a></nav>
+     <button class="cc-theme-toggle" type="button" aria-label="Toggle dark / light theme">🌓</button>
+   </header>
+   One bar, SIO-shaped: the horizontal lockup far left → calcofi.io, the product's title as an uppercase
+   nav item → its own root, the release chip, uppercase links, the toggle. White in light, navy in dark.
+   Self-contained (explicit font, colour, size) so it reads the same inside a Bootstrap page. */
+.cc-header {
+  position: sticky; top: 0; z-index: 1020;
+  display: flex; align-items: center; gap: calc(var(--space) * 2.5);
+  box-sizing: border-box; min-height: var(--header-h); margin: 0;
+  padding: calc(var(--space) * 1) max(calc(var(--space) * 2), calc((100% - var(--container)) / 2));
+  background: var(--header-bg); color: var(--fg);
+  border-bottom: 1px solid var(--border);
+  font-family: var(--sans); font-size: var(--nav-fs); line-height: 1.2;
+}
+.cc-header .cc-home { display: inline-flex; align-items: center; height: var(--lockup-h); flex: none; text-decoration: none; }
+.cc-header .cc-home img { height: var(--lockup-h); width: auto; display: block; }
+:root[data-theme="dark"]       .cc-logo-light { display: none; }
+:root:not([data-theme="dark"]) .cc-logo-dark  { display: none; }
+
+/* the SIO nav idiom: bold, uppercase, tracked, navy; hover and the current item in the accent */
+.cc-header .cc-title, .cc-header .cc-links a {
+  font-weight: 700; font-size: var(--nav-fs); letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--fg); text-decoration: none; white-space: nowrap;
+}
+.cc-header .cc-title { display: inline-flex; align-items: baseline; margin: 0; }
+.cc-header .cc-title:hover, .cc-header .cc-links a:hover, .cc-header .cc-links a[aria-current] { color: var(--accent); text-decoration: none; }
+.cc-header .cc-title small {
+  font-weight: 400; font-size: calc(var(--nav-fs) - 1px); letter-spacing: 0; text-transform: none;
+  color: var(--muted); margin-left: 0.6em; white-space: nowrap;
+}
+.cc-header .cc-spacer { flex: 1; }
+.cc-header .cc-links { display: inline-flex; flex-wrap: wrap; align-items: center; gap: calc(var(--space) * 2.5); }
+
+/* the integrated-database release everything on the page came from — right after the title, so it
+   survives a collapsed sidebar and travels with a screenshot. Not scoped to .cc-header: a framework-owned
+   bar puts it in its own brand slot. */
+.cc-release {
+  display: inline-flex; align-items: baseline; gap: 0.35em;
+  font-family: var(--mono); font-size: 0.76rem; line-height: 1.2;
+  color: var(--muted); text-decoration: none; white-space: nowrap;
+  border: 1px solid var(--border); border-radius: 999px; padding: 0.15rem 0.6rem;
+  font-variant-numeric: tabular-nums;
+}
+.cc-release b { font-weight: 600; color: var(--fg); }
+.cc-release:hover { border-color: var(--accent); color: var(--accent); text-decoration: none; }
+.cc-release:hover b { color: var(--accent); }
+.navbar-brand .cc-release { margin-left: 0.5rem; vertical-align: middle; }
+
+/* the theme toggle — the sun while the page is dark, the moon-in-sun while it is light: the icon is what
+   a click switches TO (Material Design Icons brightness-7 / brightness-4, Pictogrammers, Apache-2.0).
+   theme.js swaps the markup's 🌓 fallback for the two <svg>s; these rules show one per theme. The masks
+   are exported so a framework's own toggle (Quarto, pkgdown) can wear the same pair. */
+:root {
+  --cc-icon-sun:  url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z'/%3E%3C/svg%3E");
+  --cc-icon-moon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z'/%3E%3C/svg%3E");
+}
+.cc-theme-toggle, .cc-icon-button {
+  display: inline-flex; align-items: center; justify-content: center; flex: none;
+  width: 2rem; height: 2rem; padding: 0; border: 0; border-radius: var(--radius);
+  background: transparent; color: var(--fg); cursor: pointer; font: inherit;
+}
+.cc-theme-toggle { font-size: 0; line-height: 1; }   /* font-size 0 hides the 🌓 fallback until theme.js runs */
+.cc-theme-toggle:hover, .cc-icon-button:hover { background: var(--panel); color: var(--accent); }
+:root[data-theme="dark"] .cc-theme-toggle:hover, :root[data-theme="dark"] .cc-icon-button:hover { background: var(--panel-2); }
+.cc-icon-button:disabled { opacity: 0.4; cursor: default; }
+.cc-theme-toggle .cc-theme-icon { display: none; width: 1.25rem; height: 1.25rem; fill: currentColor; }
+:root[data-theme="dark"]       .cc-theme-toggle .cc-icon-sun  { display: block; }
+:root:not([data-theme="dark"]) .cc-theme-toggle .cc-icon-moon { display: block; }
+
+/* a narrow phone: the lockup keeps its height but a product may swap in the mark below 480 px —
+   <picture><source media="(max-width: 479px)" srcset="…/logo_calcofi_light.svg"><img class="cc-logo-light" …></picture> */
+@media (max-width: 479px) {
+  .cc-header { gap: calc(var(--space) * 1.5); }
+  .cc-header .cc-title small, .cc-header .cc-links { display: none; }
+}
+
+/* ── type helpers (page scale) ────────────────────────────────────────────────
+   The SIO hierarchy: display headings in Teko (uppercase, tight), h3 down in Source Sans 3 700 uppercase
+   with a little tracking, an uppercase muted eyebrow. Opt-in classes; an app never needs them. */
+.cc-display, .cc-h1, .cc-h2 { font-family: var(--display); font-weight: 500; line-height: 1; text-transform: uppercase; letter-spacing: 0.02em; margin: 0 0 0.35em; color: var(--fg); }
+.cc-h1 { font-size: clamp(44px, 6vw, 72px); }
+.cc-h2 { font-size: clamp(32px, 3.4vw, 41px); }
+.cc-h3 { font-family: var(--sans); font-weight: 700; font-size: 1.15em; line-height: 1.2; text-transform: uppercase; letter-spacing: 0.04em; margin: 0 0 0.4em; color: var(--fg); }
+.cc-eyebrow { font-family: var(--sans); font-weight: 700; font-size: var(--fs-sm); line-height: 1.3; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+.cc-lede { font-size: 1.15em; line-height: 1.44; max-width: 60ch; }
+.cc-muted { color: var(--muted); }
+
+/* ── buttons & text-links ──────────────────────────────────────────────────── */
+.cc-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.5em;
+  box-sizing: border-box; min-height: 42px; min-width: 200px; padding: 0.4em 1.5em;
+  border: 2px solid transparent; border-radius: var(--radius);
+  font-family: var(--sans); font-weight: 700; font-size: 15px; line-height: 1.2;
+  text-transform: uppercase; letter-spacing: 0.08em; text-decoration: none; text-align: center;
+  cursor: pointer; transition: background-color 120ms, color 120ms, border-color 120ms;
+}
+.cc-btn:hover { text-decoration: none; }
+.cc-btn-cta     { background: var(--cta-bg); color: var(--cta-fg); border-color: var(--cta-bg); }
+.cc-btn-cta:hover { background: #f5c400; border-color: var(--cta-fg); color: var(--cta-fg); }
+.cc-btn-primary { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+.cc-btn-primary:hover { background: var(--accent-d); border-color: var(--accent-d); color: var(--on-accent); }
+.cc-btn-ghost   { background: transparent; color: var(--fg); border-color: var(--fg); }
+.cc-btn-ghost:hover { color: var(--accent); border-color: var(--accent); }
+:root[data-cc-scale="app"] .cc-btn { min-height: 28px; min-width: 0; padding: 0.2em 0.9em; font-size: 12px; }
+
+.cc-text-link {
+  display: inline-block; font-family: var(--sans); font-weight: 700; font-size: 0.8em; line-height: 1.3;
+  text-transform: uppercase; letter-spacing: 0.08em; color: var(--fg); text-decoration: none;
+  border-bottom: 1px solid currentColor; padding-bottom: 1px;
+}
+.cc-text-link:hover { color: var(--accent); text-decoration: none; }
+
+/* inline links in prose: the accent, no underline, underline on hover */
+.cc-prose a { color: var(--accent); text-decoration: none; }
+.cc-prose a:hover { color: var(--accent-d); text-decoration: underline; }
+
+/* ── bands & container (page scale) ───────────────────────────────────────────
+   Full-width, --band-pad vertical, alternating: .cc-band (the page ground) / .cc-band-alt (Sand in light,
+   navy in dark) / .cc-band-navy (navy in both themes, white text). The navy band re-tokens its subtree so
+   anything inside — cards, text-links, chips — reads on it without a second rule set. */
+.cc-band { padding: var(--band-pad) 0; background: var(--bg); color: var(--fg); }
+.cc-band-alt { background: var(--band); }
+.cc-band-navy {
+  --bg: #182b49; --panel: #21375c; --panel-2: #2a4470; --border: #3d5480;
+  --fg: #ffffff; --muted: #b9c6da; --accent: #8ad0f0; --accent-d: #bfe5f7; --on-accent: #182b49;
+  background: var(--bg); color: var(--fg);
+}
+.cc-container { box-sizing: border-box; max-width: var(--container); margin: 0 auto; padding: 0 calc(var(--space) * 3); }
+
+/* ── cards ─────────────────────────────────────────────────────────────────────
+   Rounded, borderless, no shadow (the SIO panel): --panel on the page ground, --panel-2 on a band.
+   <article class="cc-card"><a class="cc-card-shot"><img></a><div class="cc-card-body">
+     <div class="cc-eyebrow">Apps</div><h3><a>Title</a></h3><p>…</p><a class="cc-text-link">Open →</a></div></article> */
+.cc-card { display: flex; flex-direction: column; background: var(--panel); border-radius: var(--radius-card); overflow: hidden; color: var(--fg); }
+.cc-band-alt .cc-card, .cc-band-navy .cc-card { background: var(--panel-2); }
+.cc-card .cc-card-shot { display: block; background: var(--panel-2); }
+.cc-card .cc-card-shot img { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; object-position: top; }
+.cc-card .cc-card-body { display: flex; flex-direction: column; flex: 1; padding: calc(var(--space) * 2.5) calc(var(--space) * 3) calc(var(--space) * 3); }
+.cc-card h3 { margin: 0.15em 0 0.35em; font-family: var(--sans); font-weight: 700; font-size: 1.1em; line-height: 1.25; text-transform: none; letter-spacing: 0; }
+.cc-card h3 a { color: var(--accent); text-decoration: none; }
+.cc-card h3 a:hover { text-decoration: underline; }
+.cc-card p { margin: 0 0 0.75em; }
+
+/* chips: a small rounded label (a tech tag, a status) */
+.cc-chip {
+  display: inline-block; padding: 0.05em 0.6em; border: 1px solid var(--border); border-radius: 999px;
+  background: var(--panel-2); color: var(--muted); font-family: var(--mono); font-size: 0.72em; line-height: 1.6; white-space: nowrap;
+}
+.cc-band-alt .cc-chip { background: var(--bg); }
+
+/* ── footer ─────────────────────────────────────────────────────────────────── */
+.cc-footer {
+  margin-top: calc(var(--space) * 6); padding-top: calc(var(--space) * 2);
+  border-top: 1px solid var(--border);
+  color: var(--muted); font-family: var(--sans); font-size: var(--fs-sm);
+}
+.cc-footer p { margin: 0.25rem 0; }
+.cc-footer a { color: var(--muted); }
+.cc-footer a:hover { color: var(--accent); }
+/* the navy copyright bar a page may close with */
+.cc-footer-bar { background: var(--cc-navy); color: #ffffff; padding: calc(var(--space) * 2) 0; font-size: var(--fs-sm); }
+.cc-footer-bar a { color: #ffffff; }
+
+/* ── theme-paired images ──────────────────────────────────────────────────────
+   Two <img loading="lazy"> siblings, one per theme; the hidden one is never fetched. Same idiom as the
+   header logo. */
+:root[data-theme="dark"]       .cc-light-only { display: none; }
+:root:not([data-theme="dark"]) .cc-dark-only  { display: none; }

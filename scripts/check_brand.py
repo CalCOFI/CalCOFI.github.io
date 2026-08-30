@@ -4,6 +4,7 @@
     scripts/check_brand.py                 # every product in _data/products.yml
     scripts/check_brand.py db-schema erddap
     scripts/check_brand.py --required-only # only products that must pass (shots: themed)
+    scripts/check_brand.py --url http://localhost:4000/v2/   # one URL, held to the required level (a preview)
 
 For each product's live_url, a headless browser opens  ?theme=light  and  ?theme=dark
 (appending to any existing query string) and reports:
@@ -98,9 +99,12 @@ def main():
     ap.add_argument("keys", nargs="*")
     ap.add_argument("--required-only", action="store_true")
     ap.add_argument("--browser", default="chromium", help="shot-scraper browser (chromium is enough: no WebGL needed)")
+    ap.add_argument("--url", help="check this one URL instead of products.yml, at the required level (a preview page, a local build)")
     a = ap.parse_args()
 
     products = yaml.safe_load((ROOT / "_data/products.yml").read_text())["products"]
+    if a.url:
+        products = [{"key": "url", "live_url": a.url, "shots": "themed"}]
     if a.keys:
         products = [p for p in products if p["key"] in a.keys]
     if a.required_only:

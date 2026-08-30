@@ -42,6 +42,13 @@ tokens, the `.cc-header` chrome (logo far-left linking to calcofi.io, 🌓 toggl
 [`brand/v1/README.md`](brand/v1/README.md) before touching a product's chrome;
 v1 is frozen once adopted, breaking changes go to `v2/`.
 
+[`brand/v2/`](brand/v2/) is the **proposed** SIO look (2026-08-30; light by default,
+Source Sans 3 + Teko, the horizontal lockup, two scales) — previewed at
+`calcofi.io/brand/v2/` (the specimen) and `calcofi.io/v2/` (this page on v2:
+`_layouts/v2.html`, `v2/index.html`, `style-v2.css`, `_includes/product_card_v2.html`)
+until the 9/8 decision; nothing live changes until the flip. See
+[`brand/v2/README.md`](brand/v2/README.md).
+
 ## Screenshots
 
 Every card that honours `?theme=` is captured **twice** — `images/<key>_dark.png`

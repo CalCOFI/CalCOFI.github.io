@@ -1,0 +1,42 @@
+/* calcofi.io brand — fonts.css (v2)
+   Contract: https://calcofi.io/brand/v2/  (README.md beside this file)
+
+   The two typefaces the brand names by ROLE in theme.css (--sans, --display), self-hosted here so a
+   product makes one origin's worth of requests and the feedback screenshot can embed them (GitHub Pages
+   answers every asset with access-control-allow-origin: *). Latin subsets, variable weight.
+
+   - Source Sans 3 (Adobe, OFL 1.1; fonts/OFL-SourceSans3.txt) — body and UI, 200–900, roman + italic.
+     The UC San Diego typography page names it as the free substitute for Brix Sans.
+   - Teko (Indian Type Foundry, OFL 1.1; fonts/OFL-Teko.txt) — page display headings, 300–700. The
+     substitute for Refrigerator Deluxe.
+
+   If Brix Sans / Refrigerator Deluxe are ever licensed for calcofi.io, THIS is the one file to edit:
+   swap the sources, and put "Brix Sans" at the front of --sans in theme.css. Nothing else names a font. */
+
+@font-face {
+  font-family: "Source Sans 3";
+  font-style: normal;
+  font-weight: 200 900;
+  font-display: swap;
+  src: url("fonts/SourceSans3-VF.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Source Sans 3";
+  font-style: italic;
+  font-weight: 200 900;
+  font-display: swap;
+  src: url("fonts/SourceSans3-Italic-VF.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Teko";
+  font-style: normal;
+  font-weight: 300 700;
+  font-display: swap;
+  src: url("fonts/Teko-VF.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
