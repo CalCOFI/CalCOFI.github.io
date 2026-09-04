@@ -1,141 +1,123 @@
-/* CalCOFI.io — style.css
-   Tokens, header and footer come from brand/v1/theme.css (the contract every
-   CalCOFI product shares; linked before this file in _layouts/default.html).
-   This file is only what is specific to the landing page. */
+/* CalCOFI.io — style.css (the landing page on brand v2)
+   Tokens, header, footer, buttons, text-links, cards and bands come from brand/v2/theme.css (linked
+   before this file in _layouts/default.html). This file is only what is specific to the landing page, on
+   the page scale. */
 
 * { box-sizing: border-box; }
 
 html { scroll-behavior: smooth; }
 html, body {
   margin: 0; padding: 0;
-  font-family: var(--sans);
-  font-size: 15px; line-height: 1.5;
+  font: var(--fs) / var(--lh) var(--sans);
   color: var(--fg);
   background: var(--bg);
 }
 a { color: var(--accent); text-decoration: none; }
 a:hover { color: var(--accent-d); text-decoration: underline; }
+/* a link inside running text (a blurb, a description) must not rely on colour alone: a faint underline */
+.blurb a, .desc a, .tagline a { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.15em; text-decoration-color: color-mix(in srgb, var(--accent) 45%, transparent); }
+a.cc-text-link:hover, a.cc-btn:hover { text-decoration: none; }
 code, .mono { font-family: var(--mono); font-size: 0.9em; }
-.muted { color: var(--muted); }
 
 /* ── page shell ──────────────────────────────────────────────────────────── */
 
-#layout { display: grid; grid-template-rows: auto 1fr; min-height: 100vh; }
+#layout { display: grid; grid-template-rows: auto 1fr auto auto; min-height: 100vh; }
+main#panel { width: 100%; }
 
+/* ── hero: the Sand band, the display heading, one yellow CTA ───────────── */
 
-main#panel { padding: 1.25rem 1.5rem 4rem; max-width: 1180px; width: 100%; margin: 0 auto; }
+.hero { padding-top: calc(var(--band-pad) * 1.5); padding-bottom: calc(var(--band-pad) * 1.5); }
+.hero .cc-eyebrow { margin-bottom: calc(var(--space) * 2); }
+.hero .cc-h1 { font-size: clamp(48px, 7vw, 80px); margin-bottom: 0.25em; }
+.hero .hero-lede { margin: 0 0 calc(var(--space) * 2); }
+.hero .hero-pipeline { margin: 0 0 calc(var(--space) * 3); font-family: var(--mono); font-size: var(--fs-sm); color: var(--muted); }
+.hero .hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--space) * 3); margin: 0; }
+/* designed to take calcofi.org's imagery once the SIO team shares it (Decision 8): */
+.hero.has-photo { background: var(--band) url() center / cover no-repeat; }
+.hero.has-photo, .hero.has-photo .cc-eyebrow, .hero.has-photo .cc-h1, .hero.has-photo .hero-pipeline { color: #ffffff; }
 
-/* ── hero ────────────────────────────────────────────────────────────────── */
+/* ── section nav: the SIO uppercase tab row under the hero ──────────────── */
 
-.hero { margin: 0.5rem 0 1.5rem; max-width: 75ch; }
-.hero h2 { margin: 0 0 0.4rem; font-size: 1.5rem; }
-.hero .hero-lede { margin: 0 0 0.6rem; }
-.hero .hero-pipeline { font-size: 0.82rem; }
-
-/* ── section nav ─────────────────────────────────────────────────────────── */
-
-.section-nav {
-  display: flex; flex-wrap: wrap; gap: 0.4rem;
-  margin: 1.75rem 0;
-  padding-bottom: 1rem; border-bottom: 1px solid var(--border);
+.section-tabs { position: sticky; top: var(--header-h); z-index: 1010; background: var(--bg); border-bottom: 1px solid var(--border); }
+.section-tabs .cc-container { display: flex; flex-wrap: wrap; gap: 0 calc(var(--space) * 3); }
+.section-tabs a {
+  display: inline-block; padding: calc(var(--space) * 1.5) 0;
+  font-weight: 700; font-size: var(--nav-fs); letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--fg); border-bottom: 3px solid transparent; margin-bottom: -1px;
 }
-.section-nav a {
-  font-family: var(--mono); font-size: 0.8rem;
-  color: var(--fg);
-  background: var(--panel); border: 1px solid var(--border);
-  border-radius: 999px; padding: 0.18rem 0.7rem;
-}
-.section-nav a:hover { border-color: var(--accent); text-decoration: none; }
-.section-nav a .n { color: var(--muted); margin-left: 0.3rem; }
+.section-tabs a:hover { color: var(--accent); border-bottom-color: var(--accent); text-decoration: none; }
+.section-tabs a .n { color: var(--muted); font-weight: 400; margin-left: 0.4em; font-variant-numeric: tabular-nums; }
 
-/* ── product sections ────────────────────────────────────────────────────── */
+/* ── product sections: alternating bands ────────────────────────────────── */
 
-.prod-section { margin: 2rem 0; scroll-margin-top: 3.5rem; }
-.prod-section > h2 {
-  margin: 0 0 0.2rem; font-size: 1.15rem;
-  display: flex; align-items: baseline; gap: 0.5rem;
-}
-.prod-section > h2 .count {
-  font-family: var(--mono); font-size: 0.78rem; font-weight: 400;
-  color: var(--muted);
-}
-.prod-section > .blurb { margin: 0 0 1rem; color: var(--muted); font-size: 0.86rem; max-width: 80ch; }
+.prod-section { scroll-margin-top: calc(var(--header-h) + 48px); }
+.prod-section .cc-eyebrow { margin-bottom: 0.4em; }
+.prod-section .cc-h2 { margin-bottom: 0.2em; }
+.prod-section > .cc-container > .blurb { margin: 0 0 calc(var(--space) * 3); max-width: 75ch; }
+.prod-section .blurb .cc-text-link { margin-left: 0.5em; }
 
 /* ── cards ───────────────────────────────────────────────────────────────── */
 
 .card-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 0.85rem;
+  gap: calc(var(--space) * 3);
 }
 .card-grid.featured-grid {
   grid-template-columns: repeat(auto-fill, minmax(min(420px, 100%), 1fr));
-  margin-bottom: 0.5rem;
 }
 
-.prod-card {
-  display: flex; flex-direction: column;
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  overflow: hidden;
-  font-size: 0.88rem;
-}
-.prod-card.featured { border-color: var(--accent); }
-.prod-card.demoted { opacity: 0.75; }
+.prod-card { font-size: 16px; }                  /* the card's own size: 16 px on an 18 px page */
+/* superseded / archived: the SHOT is dimmed, never the text (an opacity on the card took every
+   word below AA — Lighthouse counts it); the badge says why */
+.prod-card.demoted .cc-card-shot img { filter: grayscale(0.5) opacity(0.7); }
+.prod-card.featured { }                           /* no accent border in v2: the wider grid says featured */
 
-.prod-card .shot { display: block; background: var(--panel-2); }
-.prod-card .shot img {
-  display: block; width: 100%;
-  aspect-ratio: 16 / 10; object-fit: cover; object-position: top;
-  border-bottom: 1px solid var(--border);
-}
-/* a `shots: themed` card carries images/<key>_dark.png + _light.png as two lazy
-   <img> siblings; theme.css hides the inactive one (.cc-dark-only / .cc-light-only),
-   and a display:none lazy image is never fetched. */
+.prod-card h3 { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.45rem; }
+.prod-card .tagline { margin: -0.2em 0 0.5em; color: var(--muted); font-size: 0.95em; }
+.prod-card .desc { margin: 0 0 0.75em; }
+.prod-card .tech { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-bottom: 0.75em; }
+.prod-card .credits { margin: 0 0 0.6em; font-size: var(--fs-sm); }
 
-.prod-card .prod-body { display: flex; flex-direction: column; flex: 1; padding: 0.8rem 1rem 0.9rem; }
-.prod-card h3 {
-  margin: 0 0 0.3rem; font-size: 0.98rem;
-  display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.45rem;
-}
-.prod-card h3 a { color: var(--accent); }
-
-.badge {
-  font-family: var(--mono); font-size: 0.68rem; font-weight: 400;
-  border: 1px solid var(--border); border-radius: 999px;
-  padding: 0.02rem 0.5rem; color: var(--muted);
-  white-space: nowrap;
-}
+/* a status badge is a chip that takes the warn colour for interim */
 .badge.interim { border-color: var(--warn); color: var(--warn); }
-.badge a { color: inherit; text-decoration: underline; }
+.prod-card h3 .badge a { color: inherit; text-decoration: underline; }   /* outranks theme.css's .cc-card h3 a */
 
-.prod-card .desc { margin: 0 0 0.5rem; color: var(--muted); font-size: 0.84rem; }
-
-.prod-card .tech { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-bottom: 0.5rem; }
-.chip {
-  display: inline-block;
-  background: var(--panel-2); border: 1px solid var(--border);
-  border-radius: 999px; padding: 0.03rem 0.5rem;
-  font-family: var(--mono); font-size: 0.72rem; color: var(--muted);
-}
-
-.prod-card .credits { margin: 0 0 0.5rem; font-size: 0.76rem; }
-
+/* the link row: text-links for the ways in; status / usage muted at the right edge */
 .prod-card .links {
-  margin-top: auto; font-size: 0.78rem;
-  display: flex; flex-wrap: wrap; gap: 0.35rem 0.9rem;
+  margin-top: auto; padding-top: 0.25em;
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.5em 1.2em;
 }
-
-/* status / usage: metadata, pushed to the right edge of the link row. .links is
-   flex+wrap with no justify-content, so margin-left:auto right-aligns the pair
-   and lets it drop to its own line on a narrow card. Muted like .cc-links,
-   so they read as secondary to open ↗ / source ↗ rather than as peers. */
 .prod-card .links .links-meta {
   margin-left: auto;
-  display: inline-flex; gap: 0.7rem;
-  white-space: nowrap;
+  display: inline-flex; gap: 0.8em;
+  white-space: nowrap; font-size: var(--fs-sm);
 }
 .prod-card .links .links-meta a { color: var(--muted); }
 .prod-card .links .links-meta a:hover { color: var(--accent); text-decoration: none; }
 
+/* ── footer: partner strip, three columns, then the navy bar (in the layout) ── */
+
+.v2-footer { border-top: 1px solid var(--border); }
+.v2-footer .partners { display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--space) * 4); margin-bottom: calc(var(--space) * 4); }
+.v2-footer .partners img { height: 72px; width: auto; display: block; }
+:root[data-theme="dark"] .v2-footer .partners img { background: #ffffff; border-radius: var(--radius); padding: 6px; }
+.v2-footer .partners-lede { margin: 0; font-size: var(--fs-sm); color: var(--muted); max-width: 40ch; }
+.v2-footer .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: calc(var(--space) * 4); }
+.v2-footer .cols h4 { margin-bottom: 0.3em; font-size: 0.9em; }
+.v2-footer .cols p { margin: 0; font-size: 16px; line-height: 1.5; }
+.v2-footer .cols a { color: var(--fg); }
+.v2-footer .cols a:hover { color: var(--accent); }
+.cc-footer-bar .cc-container a { text-decoration: underline; }
+
+/* ── phone ───────────────────────────────────────────────────────────────── */
+
+@media (max-width: 640px) {
+  :root { --band-pad: 28px; }
+  .hero { padding-top: 32px; padding-bottom: 32px; }
+  .hero .cc-h1 { font-size: clamp(40px, 12vw, 56px); }
+  .section-tabs .cc-container { gap: 0 calc(var(--space) * 2); }
+  .section-tabs a { font-size: 13px; padding: 10px 0; }
+  .card-grid, .card-grid.featured-grid { grid-template-columns: 1fr; }
+  .cc-header .cc-title small { display: none; }
+}

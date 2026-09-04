@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check every live calcofi.io product against the brand contract (brand/v1/README.md).
+"""Check every live calcofi.io product against the brand contract (brand/v2/README.md; v1 superseded 2026-09-04).
 
     scripts/check_brand.py                 # every product in _data/products.yml
     scripts/check_brand.py db-schema erddap
@@ -13,8 +13,12 @@ For each product's live_url, a headless browser opens  ?theme=light  and  ?theme
             (or the product's own designed mark for the two exceptions)
   home      an <a href="https://calcofi.io"> in the page chrome       — the far-left back-link
   toggle    a .cc-theme-toggle / bslib dark-mode switch / framework light-switch exists
+  ver       window.ccTheme.version — "2" is the contract in force; "1" is reported as a WARNING
+  dflt      a third probe with NO ?theme= in a fresh context: a v2 product must open LIGHT with the
+            fonts loaded (document.fonts.check('16px "Source Sans 3"')) and the lockup <img> present
 
-A product declared `shots: themed` in products.yml MUST pass all four (exit 1 otherwise);
+A product declared `shots: themed` in products.yml MUST pass all four (exit 1 otherwise), and a
+v2 product must also pass `dflt`;
 everything else is reported for information (student work, third-party hosts, not yet
 migrated). Consistency is checked here weekly (.github/workflows/check-brand.yml), not assumed.
 
@@ -34,7 +38,10 @@ new Promise(done => setTimeout(() => done((() => {
   const icons = [...document.querySelectorAll('link[rel~="icon"]')].map(l => l.href);
   const home  = !!document.querySelector('a[href="https://calcofi.io"], a[href="https://calcofi.io/"]');
   const toggle = !!document.querySelector('.cc-theme-toggle, [data-cc-theme-toggle], #theme-toggle, bslib-input-dark-mode, .quarto-color-scheme-toggle, [data-md-color-scheme] .md-header__option, .dropdown-item[data-bs-theme-value], button[aria-label*="Switch to"]');
-  return {theme: d.dataset.theme || null, bs: d.getAttribute("data-bs-theme"), icons, home, toggle, title: document.title, href: location.href};
+  const fonts = !!(document.fonts && document.fonts.check('16px "Source Sans 3"'));
+  const lockup = !!document.querySelector('img[src*="logo_calcofi_h"]');
+  const version = (window.ccTheme && window.ccTheme.version) || null;
+  return {theme: d.dataset.theme || null, bs: d.getAttribute("data-bs-theme"), icons, home, toggle, version, fonts, lockup, title: document.title, href: location.href};
 })()), WAIT_MS))
 """
 
@@ -81,6 +88,9 @@ def check(p, browser):
     if "error" in light:
         return {"error": light["error"]}
     dark = probe_theme(url, "dark", wait, browser)
+    # the default: no ?theme=, fresh context (shot-scraper's is) — v2 must open light with fonts + lockup
+    dflt = probe(with_param(url, "tour=off"), wait, browser)
+    version = str(light.get("version") or dflt.get("version") or "")
     icons = light.get("icons") or []
     icon_ok = any((status(i) or 0) in (200, 206) for i in icons)
     if p["key"] not in OWN_MARK:
@@ -90,6 +100,8 @@ def check(p, browser):
         "favicon": icon_ok,
         "home":    bool(light.get("home")),
         "toggle":  bool(light.get("toggle")),
+        "version": version,
+        "dflt":    version != "2" or (dflt.get("theme") == "light" and bool(dflt.get("fonts")) and bool(dflt.get("lockup"))),
         "title":   light.get("title"),
     }
 
@@ -112,8 +124,8 @@ def main():
     if not products:
         sys.exit("nothing to check")
 
-    fails = []
-    print(f"{'product':28s} {'req':3s} {'theme':5s} {'icon':4s} {'home':4s} {'tog':3s}  title")
+    fails, warns = [], []
+    print(f"{'product':28s} {'req':3s} {'theme':5s} {'icon':4s} {'home':4s} {'tog':3s} {'ver':3s} {'dflt':4s}  title")
     for p in products:
         req = p.get("shots") == "themed"
         r = check(p, a.browser)
@@ -121,10 +133,14 @@ def main():
             print(f"{p['key']:28s} {'*' if req else ' ':3s} ERROR {r['error'][:70]}")
             if req: fails.append(p["key"])
             continue
-        ok = all(r[k] for k in ("theme", "favicon", "home", "toggle"))
+        ok = all(r[k] for k in ("theme", "favicon", "home", "toggle", "dflt"))
         mark = lambda k: "ok " if r[k] else "NO "
-        print(f"{p['key']:28s} {'*' if req else ' ':3s} {mark('theme'):5s} {mark('favicon'):4s} {mark('home'):4s} {mark('toggle'):3s}  {(r['title'] or '')[:40]}")
+        ver = r["version"] or "-"
+        print(f"{p['key']:28s} {'*' if req else ' ':3s} {mark('theme'):5s} {mark('favicon'):4s} {mark('home'):4s} {mark('toggle'):3s} {ver:3s} {mark('dflt'):4s}  {(r['title'] or '')[:40]}")
         if req and not ok: fails.append(p["key"])
+        if req and ver != "2": warns.append(p["key"])
+    if warns:
+        print(f"\nWARNING — required products still on brand v1 (superseded 2026-09-04): {', '.join(warns)}")
     if fails:
         sys.exit(f"\nFAIL — required products off the brand contract: {', '.join(fails)}")
     print("\nall required products pass")

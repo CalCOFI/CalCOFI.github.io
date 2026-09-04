@@ -1,7 +1,8 @@
-# Weekly: is every product still on the brand contract (brand/v1/README.md)?
+# Weekly: is every product still on the brand contract (brand/v2/README.md)?
 # scripts/check_brand.py opens each live_url at ?theme=light and ?theme=dark and
-# checks the theme took, the favicon resolves, the calcofi.io back-link and the
-# toggle exist. A `shots: themed` product that drifts fails the run — a red run
+# checks the theme took, the favicon resolves, the calcofi.io back-link and the toggle exist,
+# and that a v2 product opens light by default with the fonts and lockup (v1 is a warning).
+# A `shots: themed` product that drifts fails the run — a red run
 # is the signal; nothing here rewrites anything.
 name: Check brand contract
 

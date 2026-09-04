@@ -32,22 +32,18 @@ bundle exec jekyll serve
 # open http://localhost:4000
 ```
 
-## Brand: theme, header, favicon (`brand/v1/`)
+## Brand: theme, header, favicon (`brand/v2/`)
 
-[`brand/v1/`](brand/v1/) is the contract every CalCOFI product wears — colour
-tokens, the `.cc-header` chrome (logo far-left linking to calcofi.io, 🌓 toggle),
-`theme.js` (`?theme=dark|light` → `cc_theme` cookie on `.calcofi.io` →
-`localStorage.theme` → dark) and the logo/favicon set — served at
-`https://calcofi.io/brand/v1/`. This site is its first consumer. Read
-[`brand/v1/README.md`](brand/v1/README.md) before touching a product's chrome;
-v1 is frozen once adopted, breaking changes go to `v2/`.
+[`brand/v2/`](brand/v2/) is the contract every CalCOFI product wears — the SIO look (UCSD palette,
+**light by default**, Source Sans 3 + Teko, the horizontal lockup, two scales via `data-cc-scale`),
+the `.cc-header` chrome (lockup far-left linking to calcofi.io, sun/moon toggle), `theme.js`
+(`?theme=dark|light` → `cc_theme` cookie on `.calcofi.io`, persisted only on an explicit choice →
+light) and the favicon set — served at `https://calcofi.io/brand/v2/`. In force since the flip on
+2026-09-04 (`_layouts/default.html`, `index.html`, `style.css`, `_includes/product_card.html`). Read
+[`brand/v2/README.md`](brand/v2/README.md) before touching a product's chrome.
 
-[`brand/v2/`](brand/v2/) is the **proposed** SIO look (2026-08-30; light by default,
-Source Sans 3 + Teko, the horizontal lockup, two scales) — previewed at
-`calcofi.io/brand/v2/` (the specimen) and `calcofi.io/v2/` (this page on v2:
-`_layouts/v2.html`, `v2/index.html`, `style-v2.css`, `_includes/product_card_v2.html`)
-until the 9/8 decision; nothing live changes until the flip. See
-[`brand/v2/README.md`](brand/v2/README.md).
+[`brand/v1/`](brand/v1/) (dark default, system font) is superseded but stays served and frozen for
+any product that has not migrated.
 
 ## Screenshots
 

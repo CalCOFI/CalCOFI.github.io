@@ -1,5 +1,7 @@
 # calcofi.io brand — v1
 
+> **Superseded by [v2](../v2/) on 2026-09-04.** v1 stays served and frozen; a product that never migrates keeps working.
+
 One source for the theme, the header chrome, the logo and the favicon that every
 CalCOFI product shares. Served from `https://calcofi.io/brand/v1/` (this
 directory in `CalCOFI/CalCOFI.github.io`). **v1 is frozen once adopted** — token

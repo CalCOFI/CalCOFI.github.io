@@ -203,5 +203,7 @@ font-load result (`window.__contrast`, `window.__fonts`).
 
 ## Changes within v2
 
+- **2026-09-04 — in force.** The flip: calcofi.io, the Explorer and the fleet default to v2 (light). v1 is
+  superseded, frozen and still served. `check_brand.py` reports `ver`/`dflt` and warns on a v1 product.
 - **2026-08-30 — proposed.** Everything above. Values measured from scripps.ucsd.edu and brand.ucsd.edu on
   2026-08-30 (the plan's Appendices A–B); the SIO template will move — re-measure when calcofi.org launches.
