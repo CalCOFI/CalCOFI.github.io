@@ -1,0 +1,73 @@
+{%- comment -%}
+  The reference frame, as its own full-width band under the grid (plan D-2, Decision 2).
+
+  It used to be the fourteenth tile, and it was the one that doubled the grid's height: 25 rows
+  against a median of three, so the tile beside it in the last row was drawn nine times its
+  natural height. It is also the one tile whose rows are not datasets — the frame every dataset
+  joins to — so the filter row ignores it, as it always has.
+
+  Three columns: the release tables · the spatial layers, grouped as the record groups them ·
+  the bathymetry. Rung 4 of the ladder: --fg at 400, the count in mono, no chips but the group's.
+  include params: none
+{%- endcomment -%}
+{%- assign ref = site.data.catalog.reference -%}
+<section class="ds-refband" id="reference" data-tile="reference">
+  <header class="ds-refband-head">
+    <i class="cc-i cc-i-{{ ref.icon | escape }}" aria-hidden="true"></i>
+    <h3 class="ds-refband-name">The reference frame</h3>
+    <span class="cc-eyebrow ds-tile-n">{{ ref.n | escape }} reference rows</span>
+    <p class="ds-refband-lede cc-muted">Not datasets: the frame every dataset joins to — the cruise
+      and ship registry, the station grid, the boundary layers and the bathymetry.</p>
+  </header>
+
+  <div class="ds-refband-cols">
+    <div class="ds-refband-col">
+      <h4 class="cc-eyebrow ds-refband-h">Release tables</h4>
+      <ul class="ds-rows">
+        {%- for t in ref.tables -%}
+        <li class="ds-row ds-row-ref">
+          <a class="ds-row-name" href="{{ t.schema_url | default: t.url }}">{{ t.name | escape }}</a>
+          <span class="ds-row-meta">
+            {%- if t.count %}<span class="ds-n">{{ t.count | escape }} {{ t.count_label | escape }}</span>{% endif -%}
+            {%- if t.url %}<a class="cc-text-link" href="{{ t.url }}">parquet ↗</a>{% endif -%}
+          </span>
+          {%- if t.desc %}<span class="ds-ref-desc">{{ t.desc | escape }}</span>{% endif -%}
+        </li>
+        {%- endfor -%}
+      </ul>
+    </div>
+
+    <div class="ds-refband-col">
+      <h4 class="cc-eyebrow ds-refband-h">{{ ref.layers | size | escape }} spatial layers</h4>
+      {%- for g in ref.layer_groups -%}
+      <p class="ds-refband-group">{{ g.name | escape }}</p>
+      <ul class="ds-rows">
+        {%- for l in g.rows -%}
+        <li class="ds-row ds-row-ref">
+          <a class="ds-row-name" href="{{ l.url }}">{{ l.name | escape }}</a>
+          <span class="ds-row-meta">
+            {%- if l.count %}<span class="ds-n">{{ l.count | escape }} {{ l.count_label | escape }}</span>{% endif -%}
+          </span>
+        </li>
+        {%- endfor -%}
+      </ul>
+      {%- endfor -%}
+    </div>
+
+    <div class="ds-refband-col">
+      <h4 class="cc-eyebrow ds-refband-h">Bathymetry</h4>
+      <ul class="ds-rows">
+        {%- for r in ref.rasters -%}
+        <li class="ds-row ds-row-ref">
+          <a class="ds-row-name" href="{{ r.url }}">{{ r.name | escape }}</a>
+          <span class="ds-row-meta">
+            {%- for o in r.objects %}<a class="cc-text-link" href="{{ o | escape }}">{{ o | split: '.' | last | escape }} ↗</a>{% endfor -%}
+          </span>
+          {%- if r.desc %}<span class="ds-ref-desc">{{ r.desc | escape }}</span>{% endif -%}
+          {%- if r.attribution %}<span class="ds-ref-desc cc-muted">{{ r.attribution | escape }}</span>{% endif -%}
+        </li>
+        {%- endfor -%}
+      </ul>
+    </div>
+  </div>
+</section>

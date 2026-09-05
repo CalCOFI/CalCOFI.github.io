@@ -36,7 +36,11 @@ main#panel { width: 100%; }
 .hero.has-photo { background: var(--band) url() center / cover no-repeat; }
 .hero.has-photo, .hero.has-photo .cc-eyebrow, .hero.has-photo .cc-h1, .hero.has-photo .hero-pipeline { color: #ffffff; }
 
-/* ── section nav: the SIO uppercase tab row under the hero ──────────────── */
+/* ── section nav: the SIO uppercase tab row under the hero ────────────────
+   Moved into the brand contract as `.cc-tabs` (theme.css, additions 2026-09-05) so the dataset
+   page's sub-nav is the same row. `.section-tabs` stays as an alias for one release — the markup
+   carries both classes — and these rules are the alias, not a second definition: they repeat what
+   .cc-tabs says so a page that has not been updated still renders. */
 
 .section-tabs { position: sticky; top: var(--header-h); z-index: 1010; background: var(--bg); border-bottom: 1px solid var(--border); }
 .section-tabs .cc-container { display: flex; flex-wrap: wrap; gap: 0 calc(var(--space) * 3); }
@@ -171,9 +175,16 @@ main#panel { width: 100%; }
 .ds-clear { background: none; border: none; border-bottom: 1px solid currentColor; cursor: pointer; margin-bottom: 8px; }
 .ds-empty { margin: calc(var(--space) * 4) 0; color: var(--muted); }
 
-/* ── the category tiles ──────────────────────────────────────────────────── */
-.ds-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(460px, 100%), 1fr)); gap: calc(var(--space) * 3); }
+/* ── the category tiles ──────────────────────────────────────────────────────
+   Packing (plan D-2, Decision 1). `align-items: start` is the no-JS state: the tiles stop being
+   stretched to the tallest tile in their row, which is where 2,838 px of the measured 4,910 px grid
+   came from. assets/masonry.js then gives each tile a `grid-row-end: span n` from its measured
+   height, so a short tile does not hold the row open; when CSS masonry ships the script sets
+   `grid-template-rows: masonry` and does nothing else. Reading order is the DOM's either way. */
+.ds-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(460px, 100%), 1fr)); gap: calc(var(--space) * 3); align-items: start; }
+.ds-grid.is-masonry { grid-auto-rows: 8px; row-gap: 0; }
 .ds-tile { padding: calc(var(--space) * 2.5) calc(var(--space) * 3) calc(var(--space) * 3); }
+.ds-tile-desc { flex-basis: 100%; margin: -2px 0 0; font-size: var(--fs-sm); }
 .ds-tile-head { display: flex; flex-wrap: wrap; align-items: center; gap: 4px calc(var(--space) * 1.5); margin-bottom: calc(var(--space) * 1.5); }
 .ds-tile-head .cc-i { font-size: 24px; color: var(--accent); flex: none; }
 .ds-tile-name { margin: 0; font-family: var(--sans); font-size: 1.05em; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
@@ -183,18 +194,75 @@ main#panel { width: 100%; }
 .ds-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; padding: 7px 0; border-top: 1px solid var(--border); font-size: 15px; }
 .ds-row:first-child { border-top: none; }
 .ds-row-name { font-weight: 700; color: var(--accent); }
-.ds-row-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin-left: auto; font-size: var(--fs-sm); color: var(--muted); }
-.ds-years, .ds-n { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+/* 57 + 68 + 66 + 105 + 173 px of content and four 7 px gaps = 497 px in the 501 px a 549 px column
+   leaves — measured, which is why these sizes are not round numbers. A licence chip pushes it to a
+   second line, and that is fine: the format phrase moves as one thing, where three chips broke. */
+.ds-row-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 7px; margin-left: auto; font-size: var(--fs-sm); color: var(--muted); }
+.ds-years, .ds-n { font-family: var(--mono); font-size: 12.5px; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .ds-ref-desc { max-width: 46ch; }
-.ds-spark-wrap { display: inline-block; width: 74px; height: 14px; color: var(--accent); opacity: 0.8; }
+.ds-spark-wrap { display: inline-block; width: 66px; height: 14px; color: var(--accent); opacity: 0.8; }
 .ds-spark-wrap .ds-spark { width: 100%; height: 100%; fill: currentColor; display: block; }
 .ds-rows-sep { border-top: 1px solid var(--border); padding: 9px 0 3px; }
 .ds-rows-sep span { font-size: var(--fs-sm); font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
-/* a contribution: a dataset homed elsewhere, named with the variables it contributes here */
-.ds-row-contrib .ds-row-name { font-weight: 400; }
+/* ── the emphasis ladder (plan D-1) ───────────────────────────────────────────
+   Four rungs, in tokens, so both themes follow. The rule underneath is that YELLOW IS RESERVED:
+   --warn marks a state that needs attention, never a kind of thing. Before this, a holding was
+   --fg at 700 with the page's only --warn chip while the dataset above it was the softer accent —
+   the emphasis was upside down. */
+
+/* rung 1 · a dataset in the release: the accent at 700, its own colour as a 9 px dot */
+.ds-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--dot, var(--accent)); margin-right: 6px; vertical-align: 1px; flex: none; }
+/* rung 2 · a contribution: --fg at 400, a hollow dot, an italic lead, the variables collapsed */
+.ds-dot-hollow { width: 7px; height: 7px; background: transparent; border: 2px solid var(--dot, var(--muted)); vertical-align: 0; }
+.ds-row-contrib .ds-row-name { font-weight: 400; color: var(--fg); }
 .ds-contrib-lead, .ds-contrib-home { font-style: italic; }
-.ds-row-holding .ds-row-name { color: var(--fg); }
-.ds-chip-stage { border-color: var(--warn); color: var(--warn); }
+.ds-contrib-det { display: inline; }
+.ds-contrib-det summary { display: inline; cursor: pointer; color: var(--accent); list-style: none; }
+.ds-contrib-det summary::-webkit-details-marker { display: none; }
+.ds-contrib-det summary::after { content: " ▸"; }
+.ds-contrib-det[open] summary::after { content: " ▾"; }
+.ds-contrib-det .cc-chip { margin: 2px 2px 0 0; }
+/* rung 3 · a holding: --muted at 400, one line. The link keeps an underline on hover, so it is
+   still recognisably a link (WCAG 1.4.1: the row's only text IS the link). */
+.ds-row-holding { padding: 4px 0; border-top: 1px dashed var(--border); }
+.ds-row-holding .ds-row-name {
+  color: var(--muted); font-weight: 400; font-size: 0.95em;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 60%;
+}
+.ds-row-holding .ds-row-name:hover { color: var(--accent); text-decoration: underline; }
+.ds-row-holding .ds-row-meta { font-size: 13px; }
+.ds-row-holding .ds-row-src { font-size: 11px; color: var(--muted); }
+.ds-row-holding .ds-row-src:hover { color: var(--accent); }
+.ds-rows-more { padding: 2px 0 0; }
+.ds-holdings-det > summary { cursor: pointer; font-size: var(--fs-sm); color: var(--muted); }
+.ds-holdings-det > summary:hover { color: var(--accent); }
+.ds-holdings-det .ds-rows { margin-top: 2px; }
+/* the format phrase: one mono line where three chips used to wrap */
+.ds-fmt { font-family: var(--mono); font-size: 11.5px; white-space: nowrap; }
+/* the licence is the one chip that does not fit beside the rest at 549 px, so it wraps — alone,
+   at the right edge, rather than dragging the format phrase with it */
+.ds-chip-lic { margin-left: auto; }
+/* a pipeline stage is information, not a warning — the chip is neutral wherever it is drawn */
+.ds-chip-stage { border-color: var(--border); color: var(--muted); }
+
+/* ── the reference band (plan D-2, Decision 2) ────────────────────────────────
+   The reference frame left the grid: it is the one tile whose rows are not datasets, and 25 rows
+   against a median of three is what forced the tile beside it to nine times its natural height.
+   Full width under the grid, three columns, and the filter row ignores it exactly as it ignored
+   the tile. */
+.ds-refband { margin-top: calc(var(--space) * 3); padding: calc(var(--space) * 3); background: var(--panel); border-radius: var(--radius-card); }
+.cc-band-alt .ds-refband { background: var(--panel-2); }
+.ds-refband-head { display: flex; flex-wrap: wrap; align-items: center; gap: 4px calc(var(--space) * 1.5); margin-bottom: calc(var(--space) * 2); }
+.ds-refband-head .cc-i { font-size: 24px; color: var(--accent); flex: none; }
+.ds-refband-name { margin: 0; font-family: var(--sans); font-size: 1.05em; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+.ds-refband-lede { flex-basis: 100%; margin: 0; font-size: var(--fs-sm); max-width: 88ch; }
+.ds-refband-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: calc(var(--space) * 2) calc(var(--space) * 4); align-items: start; }
+.ds-refband-h { margin: 0 0 4px; }
+.ds-refband-group { margin: calc(var(--space) * 1.5) 0 0; font-size: 13px; font-weight: 700; color: var(--muted); }
+/* rung 4 · a reference row: --fg at 400, the count in mono */
+.ds-row-ref { font-size: 14px; }
+.ds-row-ref .ds-row-name { font-weight: 400; color: var(--accent); }
+.ds-refband .ds-ref-desc { flex-basis: 100%; margin-left: 0; font-size: var(--fs-sm); color: var(--muted); max-width: 60ch; }
 
 /* ── a dataset page ──────────────────────────────────────────────────────── */
 .ds-page-head { padding-top: calc(var(--band-pad) * 1.1); }
@@ -268,6 +336,10 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 }
 @media (max-width: 640px) {
   .ds-grid { grid-template-columns: 1fr; }
+  .ds-refband { padding: calc(var(--space) * 2); }
+  .ds-refband-cols { grid-template-columns: 1fr; }
+  /* one line becomes two on a phone, so the clamp comes off and the name may wrap */
+  .ds-row-holding .ds-row-name { max-width: 100%; white-space: normal; overflow: visible; text-overflow: clip; }
   /* the tile's count line wraps under the name rather than pushing the card wider */
   .ds-tile-n { margin-left: 0; white-space: normal; flex-basis: 100%; }
   .ds-tile-name { font-size: 1em; }
