@@ -11,11 +11,11 @@ or behaves is `v3/`.
 
 | file | what |
 |---|---|
-| `theme.css` | the tokens (both themes, both scales), `.cc-header` / `.cc-footer`, `.cc-release`, the toggle and `.cc-icon-button`, `.cc-btn*`, `.cc-text-link`, `.cc-card`, `.cc-band*`, the type helpers, `.cc-dark-only` / `.cc-light-only` |
+| `theme.css` | the tokens (both themes, both scales), `.cc-header` / `.cc-footer`, `.cc-release`, the toggle and `.cc-icon-button`, `.cc-btn*`, `.cc-text-link`, `.cc-card`, `.cc-band*`, the type helpers, `.cc-dark-only` / `.cc-light-only`; **added 2026-09**: `.cc-chip-ok/-warn/-na/-nogo/-accent`, `.cc-chip-quiet`, `.cc-tabs`, `.cc-copy`, `.cc-map` |
 | `fonts.css` + `fonts/` | `@font-face` for **Source Sans 3** (variable 200–900, roman + italic) and **Teko** (300–700), self-hosted latin subsets (72 KB), OFL 1.1 (`fonts/OFL-*.txt`). The one file to edit if Brix Sans is licensed |
 | `theme.js` | resolve → apply → persist (an explicit choice only) → toggle → notify; `ccTheme.version === "2"` |
 | `head.html` | the `<head>` block to paste verbatim: favicons, the two font preloads, the pre-paint snippet, `fonts.css`, `theme.css`, `theme.js` |
-| `icons.css` + `icons/` | the 48-glyph sprite and masks, regenerated here from `CalCOFI/explore` (`node scripts/build_icons.mjs ../CalCOFI.github.io/brand/v2`) |
+| `icons.css` + `icons/` | the 51-glyph sprite and masks, regenerated here from `CalCOFI/explore` (`node scripts/build_icons.mjs ../CalCOFI.github.io/brand/v2`) |
 | `logo_calcofi_h.svg` / `logo_calcofi_h_light.svg` | **the horizontal lockup** — the mark + "CalCOFI" wordmark, for a dark / light ground; 36 px tall on pages, 28 px in apps |
 | `logo_calcofi.svg` / `logo_calcofi_light.svg` | the mark, as v1 (favicons, cards, a phone header under 480 px) |
 | `favicon.ico` `favicon-32x32.png` `favicon-16x16.png` `apple-touch-icon.png` | the favicon set, unchanged |
@@ -68,11 +68,39 @@ sizes (the specimen computes every pair; this table is 2026-08-30's run).
 | `--cta-bg` / `--cta-fg` | `#ffcd00` / `#182b49` | same | NEW — the yellow button, 9.4:1 in both themes |
 | `--cc-green` / `--cc-red` | `#457a1c` / `#b3261e` | `#8fbf4f` / `#ff8080` | NEW — an app's go / no-go text (UCSD Green darkened; red is not a brand colour), ≥ 4.6:1 everywhere |
 | `--cc-navy --cc-blue --cc-yellow --cc-gold --cc-cyan --cc-sand --cc-gray --cc-stone` | constants | constants | the palette by name, for a product's own use |
+| `--ok-bg` / `--warn-bg` / `--na-bg` / `--nogo-bg` / `--accent-bg` | `#eef5e9` `#fff6dc` `#ececec` `#fbe9e7` `#e3eef6` | `#1e3a22` `#3a2d0a` `#25344f` `#4a1f1f` `#12314a` | **added 2026-09** — the status chip's tint; the text stays `--cc-green` / `--warn` / `--muted` / `--cc-red` / `--accent`, ≥ 4.66:1 in both themes |
+| `--cc-map-water` / `--cc-map-land` / `--cc-map-coast` / `--cc-map-grid` / `--cc-map-mark` | `#e6eef4` `#f5f0e6` `#66686a` `#66686a` `#00629b` | `#0f1a2e` `#21375c` `#9fb0c8` `#9fb0c8` `#4fb6e6` | **added 2026-09** — a static SVG map's parts (`.cc-map`); marks on water 5.6:1 light / 7.6:1 dark |
 | `--sans` / `--display` / `--mono` | Source Sans 3 stack / Teko stack / as v1 | | |
 | scale: `--fs --lh --fs-sm --nav-fs --space --band-pad --header-h --lockup-h --container --radius --radius-card` | 18px 1.44 14px 15px 8px 40px 72px 36px 1170px 8px 12px | | `[data-cc-scale="app"]`: 13px 1.35 11.5px 13px 4px 0 44px 28px 100% 4px 6px |
 
 The brand does not set body type: a framework page owns its root size. A plain page applies the rhythm
 with `body { font: var(--fs)/var(--lh) var(--sans); color: var(--fg); background: var(--bg); }`.
+
+## Additions, 2026-09-05
+
+The dataset catalog needed four things the contract did not carry, so v2 grew — **additively**: every name
+below is new, no existing token, class or rule changed, and every product on v2 renders exactly as before.
+The plan is `workflows/.claude/plans/2026-09-05 CalCOFI.io UI refresh …` (§ D-8, Decision 12); the specimen
+shows each one and computes its contrast from `theme.css`.
+
+- **A chip that carries a state, apart from the chip that carries a fact.** `.cc-chip` stayed what it was —
+  an outline mono label for a provider, a licence, a format. `.cc-chip-ok / -warn / -na / -nogo / -accent`
+  are tinted sans 700 labels for a *state*, over the five `--*-bg` tokens. The rule that comes with them:
+  **`--warn` marks a state that needs attention** — a planned registration, an interim product, a superseded
+  endpoint — **never a kind of thing**. A pipeline stage and a holding are information: `.cc-chip-na`, or
+  `.cc-chip-quiet`, which has neither border nor fill.
+- **`.cc-tabs`** — the landing page's sticky uppercase section nav, values unchanged, moved out of
+  `style.css` so a dataset page or any product can use it. Markup: `<nav class="cc-tabs"><div
+  class="cc-container"><a href="#x">Overview <span class="n">6</span></a>…</div></nav>`.
+- **`.cc-copy`** — `.cc-icon-button` at the height of a line of text, for the button beside a URL, a code
+  line or a citation. Progressive: with no JS the text beside it is still selectable.
+- **`.cc-map`** and its parts (`.water .land .st .st-on .bbox .tk`) over the five `--cc-map-*` tokens — a
+  static SVG map a page draws itself, with no library, no tile server and no external asset, so the theme
+  toggle repaints it. The element has **no background**: the drawing carries its own `<rect class="water">`,
+  so a cell taller than the drawing stays page-coloured instead of pretending the ocean continues.
+- **Two glyphs**, `ui-copy` and `ui-external`, through `CalCOFI/explore`'s `scripts/build_icons.mjs`
+  (49 → 51). `ui-external` shares MDI *open-in-new* with `ui-open` by intent: `ui-open` is an app action,
+  `ui-external` marks a link that leaves calcofi.io.
 
 ## The contract
 
@@ -203,6 +231,10 @@ font-load result (`window.__contrast`, `window.__fonts`).
 
 ## Changes within v2
 
+- **2026-09-05 — additive.** Status chips (`.cc-chip-ok/-warn/-na/-nogo/-accent` over `--ok-bg` …
+  `--accent-bg`), `.cc-chip-quiet`, `.cc-tabs`, `.cc-copy`, `.cc-map` + `--cc-map-*`, and the `ui-copy` /
+  `ui-external` glyphs — see **Additions, 2026-09-05** above. Zero lines deleted from `theme.css`; the
+  specimen's contrast table grew by 13 pairs and its minimum still passes AA.
 - **2026-09-04 — in force.** The flip: calcofi.io, the Explorer and the fleet default to v2 (light). v1 is
   superseded, frozen and still served. `check_brand.py` reports `ver`/`dflt` and warns on a v1 product.
 - **2026-08-30 — proposed.** Everything above. Values measured from scripps.ucsd.edu and brand.ucsd.edu on

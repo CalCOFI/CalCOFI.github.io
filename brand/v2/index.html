@@ -114,6 +114,8 @@
   <button class="cc-theme-toggle" type="button" aria-label="Toggle dark / light theme">🌓</button>
 </header>
 
+<main>
+
 <!-- ── hero: the page scale's rhythm in one band ─────────────────────────────── -->
 <section class="cc-band cc-band-alt sec" id="top">
   <div class="cc-container">
@@ -207,6 +209,67 @@
       <button class="cc-theme-toggle" type="button" aria-label="Toggle dark / light theme">🌓</button>
       <span class="note">icons.css: <i class="cc-i cc-i-cat-fish"></i> <i class="cc-i cc-i-cat-zooplankton"></i> <i class="cc-i cc-i-cat-physical"></i> <i class="cc-i cc-i-lens-hexagons"></i> <i class="cc-i cc-i-lens-cruises"></i> <i class="cc-i cc-i-realm-bio"></i> <i class="cc-i cc-i-realm-env"></i> — <a class="cc-prose" href="icons/">the sheet</a></span>
     </div>
+
+    <!-- ── added 2026-09-05 (UI refresh, D-8): status chips, the quiet chip, .cc-tabs, .cc-copy, .cc-map ── -->
+    <h3 class="cc-h3" style="margin-top: calc(var(--space) * 3)">Chips: a fact, or a state</h3>
+    <div class="row">
+      <span class="cc-eyebrow">facts</span>
+      <span class="cc-chip">CalCOFI</span><span class="cc-chip">CC0-1.0</span><span class="cc-chip">parquet</span>
+      <span class="cc-eyebrow" style="margin-left: calc(var(--space) * 2)">states</span>
+      <span class="cc-chip cc-chip-ok">published</span>
+      <span class="cc-chip cc-chip-warn">planned</span>
+      <span class="cc-chip cc-chip-na">n/a</span>
+      <span class="cc-chip cc-chip-nogo">superseded</span>
+      <span class="cc-chip cc-chip-accent">this dataset</span>
+      <span class="cc-eyebrow" style="margin-left: calc(var(--space) * 2)">quiet</span>
+      <span class="cc-chip cc-chip-quiet">external</span><span class="cc-chip cc-chip-quiet">archived</span>
+    </div>
+    <p class="note">An outline mono <code>.cc-chip</code> carries a fact — a provider, a licence, a format. A
+      tinted sans <code>.cc-chip-ok / -warn / -na / -nogo / -accent</code> carries a state, and is the only place
+      <code>--warn</code> may mean "needs attention": a pipeline stage or a holding is information, not a warning.
+      <code>.cc-chip-quiet</code> has neither border nor fill, for a label that must be present without asking for
+      attention. Every tint is in the table above, ≥ 4.5:1 in both themes.</p>
+
+    <h3 class="cc-h3" style="margin-top: calc(var(--space) * 3)">The tab row, and copy</h3>
+    <nav class="cc-tabs" style="position: static; margin-bottom: calc(var(--space) * 2)">
+      <div class="cc-container" style="padding: 0">
+        <a href="#tokens" class="on">Overview <span class="n">6</span></a>
+        <a href="#tokens">Coverage <span class="n">33</span></a>
+        <a href="#tokens">Access <span class="n">29</span></a>
+        <a href="#tokens">Cite</a>
+        <a href="#tokens">Provenance</a>
+      </div>
+    </nav>
+    <div class="row">
+      <code>SELECT * FROM read_parquet('https://storage.googleapis.com/…/data_0.parquet')</code>
+      <button class="cc-copy" type="button" aria-label="Copy"><i class="cc-i cc-i-ui-copy" aria-hidden="true"></i></button>
+      <a class="cc-text-link" href="https://calcofi.org">calcofi.org <i class="cc-i cc-i-ui-external" aria-hidden="true"></i></a>
+      <span class="note"><code>.cc-tabs</code> is the landing page's section nav, unchanged, in the contract;
+        <code>.cc-copy</code> is <code>.cc-icon-button</code> at the height of a line of text. The two new glyphs
+        are <code>ui-copy</code> and <code>ui-external</code> (51 in the sprite).</span>
+    </div>
+
+    <h3 class="cc-h3" style="margin-top: calc(var(--space) * 3)">The map tokens</h3>
+    <div class="row">
+      <svg class="cc-map" style="width: 120px" viewBox="0 0 120 80" role="img" aria-label="A sample of the map parts: water, land with a coastline, the station grid, three sampled stations and an extent box">
+        <rect class="water" width="120" height="80"/>
+        <path class="land" d="M0 0 L34 6 L40 22 L30 44 L36 62 L28 80 L0 80 Z"/>
+        <g><circle class="st" cx="58" cy="20" r="1.3"/><circle class="st" cx="72" cy="20" r="1.3"/><circle class="st" cx="86" cy="20" r="1.3"/>
+           <circle class="st" cx="58" cy="34" r="1.3"/><circle class="st" cx="72" cy="34" r="1.3"/><circle class="st" cx="86" cy="34" r="1.3"/>
+           <circle class="st" cx="58" cy="48" r="1.3"/><circle class="st" cx="72" cy="48" r="1.3"/><circle class="st" cx="86" cy="48" r="1.3"/>
+           <circle class="st st-on" cx="58" cy="34" r="5.2"/><circle class="st st-on" cx="72" cy="20" r="3.4"/><circle class="st st-on" cx="86" cy="48" r="2.2"/></g>
+        <rect class="bbox" x="52" y="14" width="42" height="42"/>
+        <text class="tk" x="4" y="76">30°N</text>
+      </svg>
+      <span class="sw" style="display: flex; flex-wrap: wrap; gap: 10px">
+        <span style="display: flex; align-items: center; gap: 8px; font-size: var(--fs-sm)"><i style="width: 22px; height: 22px; border-radius: 6px; border: 1px solid var(--border); background: var(--cc-map-water)"></i>--cc-map-water</span>
+        <span style="display: flex; align-items: center; gap: 8px; font-size: var(--fs-sm)"><i style="width: 22px; height: 22px; border-radius: 6px; border: 1px solid var(--cc-map-coast); background: var(--cc-map-land)"></i>--cc-map-land · --cc-map-coast</span>
+        <span style="display: flex; align-items: center; gap: 8px; font-size: var(--fs-sm)"><i style="width: 22px; height: 22px; border-radius: 6px; border: 1px solid var(--border); background: var(--cc-map-mark)"></i>--cc-map-mark · --cc-map-grid</span>
+      </span>
+    </div>
+    <p class="note">A static SVG the page draws itself — no map library, no tile server, no external asset. The
+      class is on the token, so the theme toggle repaints the map. The element has no background: the drawing
+      carries its own <code>&lt;rect class="water"&gt;</code>, so a cell taller than the drawing stays page-coloured.</p>
   </div>
 </section>
 
@@ -218,20 +281,20 @@
     <p class="note">Rounded, borderless, no shadow; the image on top; an uppercase eyebrow; the title in the accent; the "open · source" row as text-links. <code>--panel-2</code> on a band, <code>--panel</code> on the page ground.</p>
     <div class="grid-3">
       <article class="cc-card">
-        <a class="cc-card-shot" href="https://calcofi.io/explore/"><img class="cc-dark-only" loading="lazy" src="../../images/explore_dark.png" alt=""><img class="cc-light-only" loading="lazy" src="../../images/explore_light.png" alt=""></a>
+        <a class="cc-card-shot" href="https://calcofi.io/explore/" aria-label="CalCOFI Explorer (screenshot)"><img class="cc-dark-only" loading="lazy" src="../../images/explore_dark.png" alt=""><img class="cc-light-only" loading="lazy" src="../../images/explore_light.png" alt=""></a>
         <div class="cc-card-body"><div class="cc-eyebrow">Apps</div><h3><a href="https://calcofi.io/explore/">CalCOFI Explorer</a></h3>
           <p>One app, five lenses — stations, hexagons, cruises, regions and sections — for one organism or one ocean variable at a time over the frozen release.</p>
           <p><span class="cc-chip">DuckDB-WASM</span> <span class="cc-chip">MapLibre</span> <span class="cc-chip">Plotly</span></p>
           <p class="row" style="margin-top: auto; margin-bottom: 0"><a class="cc-text-link" href="#">Open ↗</a> <a class="cc-text-link" href="#">Source ↗</a> <span class="cc-muted" style="margin-left: auto; font-size: var(--fs-sm)">status · usage</span></p></div>
       </article>
       <article class="cc-card">
-        <a class="cc-card-shot" href="https://app.calcofi.io/station/"><img class="cc-dark-only" loading="lazy" src="../../images/db-viz-station_dark.png" alt=""><img class="cc-light-only" loading="lazy" src="../../images/db-viz-station_light.png" alt=""></a>
+        <a class="cc-card-shot" href="https://app.calcofi.io/station/" aria-label="Station Explorer (screenshot)"><img class="cc-dark-only" loading="lazy" src="../../images/db-viz-station_dark.png" alt=""><img class="cc-light-only" loading="lazy" src="../../images/db-viz-station_light.png" alt=""></a>
         <div class="cc-card-body"><div class="cc-eyebrow">Apps</div><h3><a href="https://app.calcofi.io/station/">Station Explorer</a></h3>
           <p>Every dataset at a station: what was sampled, when, and the time series behind it.</p>
           <p class="row" style="margin-top: auto; margin-bottom: 0"><a class="cc-text-link" href="#">Open ↗</a> <a class="cc-text-link" href="#">Source ↗</a></p></div>
       </article>
       <article class="cc-card">
-        <a class="cc-card-shot" href="https://calcofi.io/db-query/"><img class="cc-dark-only" loading="lazy" src="../../images/db-query_dark.png" alt=""><img class="cc-light-only" loading="lazy" src="../../images/db-query_light.png" alt=""></a>
+        <a class="cc-card-shot" href="https://calcofi.io/db-query/" aria-label="CalCOFI Query (screenshot)"><img class="cc-dark-only" loading="lazy" src="../../images/db-query_dark.png" alt=""><img class="cc-light-only" loading="lazy" src="../../images/db-query_light.png" alt=""></a>
         <div class="cc-card-body"><div class="cc-eyebrow">Developer</div><h3><a href="https://calcofi.io/db-query/">db-query</a></h3>
           <p>SQL in the browser against the release, with saved queries and CSV export.</p>
           <p class="row" style="margin-top: auto; margin-bottom: 0"><a class="cc-text-link" href="#">Open ↗</a> <a class="cc-text-link" href="#">Source ↗</a></p></div>
@@ -323,6 +386,8 @@
     </footer>
   </div>
 </div>
+</main>
+
 <div class="cc-footer-bar"><div class="cc-container">© 2026 CalCOFI · calcofi.io · <a href="https://calcofi.io/brand/v2/">brand v2</a></div></div>
 
 <script>
@@ -356,9 +421,27 @@
     TEXT.forEach(function (t) { var tr = document.createElement("tr"); tr.innerHTML = '<td class="tok">--' + t[0] + "</td>" + cell(t[0], L) + cell(t[0], D) + '<td class="note">' + t[1] + "</td>"; tb.appendChild(tr); });
     // the fills: text on an accent fill, the CTA, and the grounds themselves
     var extra = [["--on-accent on --accent", cr(L["on-accent"], L.accent), cr(D["on-accent"], D.accent), "white on the light accent; navy on the dark one (white would be 2.3)"], ["--cta-fg on --cta-bg", cr(L["cta-fg"], L["cta-bg"]), cr(D["cta-fg"], D["cta-bg"]), "the yellow button, both themes"], ["white on --cc-navy (the navy band)", cr("#ffffff", L["cc-navy"]), cr("#ffffff", L["cc-navy"]), ".cc-band-navy re-tokens its subtree"]];
+    // added 2026-09-05 (UI refresh, D-8): every new pair — the five chip tints and the map marks — computed
+    // from theme.css like the rest. Text pairs join the AA count; land on water is not text and is listed
+    // below the table, unrated.
+    [["ok", "cc-green", "ok-bg", "status chip: published / current"],
+     ["warn", "warn", "warn-bg", "status chip: planned, an interim product — the only place --warn means \u201cattention\u201d"],
+     ["na", "muted", "na-bg", "status chip: n/a, a pipeline stage (information, not a warning)"],
+     ["nogo", "cc-red", "nogo-bg", "status chip: superseded, retired"],
+     ["accent", "accent", "accent-bg", "status chip: this dataset (an affirmative, not a state to fix)"]
+    ].forEach(function (c) {
+      var l = cr(L[c[1]], L[c[2]]), d = cr(D[c[1]], D[c[2]]);
+      extra.push([".cc-chip-" + c[0] + " \u2014 --" + c[1] + " on --" + c[2], l, d, c[3]]);
+    });
+    [["--cc-map-mark on --cc-map-water", "cc-map-mark", "cc-map-water", "the sampled stations over the ocean"],
+     ["--cc-map-coast on --cc-map-water", "cc-map-coast", "cc-map-water", "the coastline stroke — what makes land readable at 1.03:1"],
+     ["--muted (.tk) on --cc-map-water", "muted", "cc-map-water", "the map's graticule labels"]
+    ].forEach(function (m) { extra.push([m[0], cr(L[m[1]], L[m[2]]), cr(D[m[1]], D[m[2]]), m[3]]); });
     extra.forEach(function (e) { var tr = document.createElement("tr"); tr.innerHTML = '<td class="tok">' + e[0] + '</td><td></td><td class="cr ' + (e[1] >= 4.5 ? "ok" : "fail") + '">' + e[1].toFixed(1) + '</td><td></td><td></td><td></td><td class="cr ' + (e[2] >= 4.5 ? "ok" : "fail") + '">' + e[2].toFixed(1) + '</td><td></td><td></td><td class="note">' + e[3] + "</td>"; tb.appendChild(tr); n += 2; if (e[1] < 4.5) fails++; if (e[2] < 4.5) fails++; min = Math.min(min, e[1], e[2]); });
     ["bg", "panel", "panel-2", "border", "band", "header-bg"].forEach(function (g) { var tr = document.createElement("tr"); tr.innerHTML = '<td class="tok">--' + g + '</td><td><span class="sw" style="background:' + L[g] + '"></span><span class="tok">' + L[g] + '</span></td><td></td><td></td><td></td><td><span class="sw" style="background:' + D[g] + '"></span><span class="tok">' + D[g] + '</span></td><td></td><td></td><td></td><td class="note">a ground</td>'; tb.appendChild(tr); });
-    document.getElementById("tokens-summary").textContent = n + " text/ground pairs checked · minimum " + min.toFixed(2) + ":1 · " + (fails ? fails + " BELOW AA" : "all ≥ 4.5:1 (AA)");
+    var lw = [cr(L["cc-map-land"], L["cc-map-water"]), cr(D["cc-map-land"], D["cc-map-water"])];
+    document.getElementById("tokens-summary").textContent = n + " text/ground pairs checked · minimum " + min.toFixed(2) + ":1 · " + (fails ? fails + " BELOW AA" : "all ≥ 4.5:1 (AA)") +
+      " · unrated (not text): --cc-map-land on --cc-map-water " + lw[0].toFixed(2) + ":1 light, " + lw[1].toFixed(2) + ":1 dark — the shoreline is legible because it is stroked in --cc-map-coast";
     window.__contrast = { pairs: n, min: min, fails: fails, lines: lines };
   });
 })();
