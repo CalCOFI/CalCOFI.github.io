@@ -3,11 +3,16 @@
 # dataset pages from the record and nothing else. Run before `bundle exec jekyll build`
 # (scripts/build.sh does both; .github/workflows/{pages,refresh}.yml run it too).
 #
-#   _data/datasets.json   the record (calcofi4db::build_dataset_catalog(), schema 1.0)
-#   _data/versions.json   the release history (the release strip's "all releases")
-#   _data/grid.geojson    the 218 station-grid cells (the bbox map's backdrop)
+#   _data/datasets.json           the record (calcofi4db::build_dataset_catalog(), schema 1.x)
+#   _data/versions.json           the release history (the release strip's "all releases")
+#   _data/grid.geojson            the 218 station-grid cells (the extent map's backdrop)
+#   _data/coverage_stations.json  which grid cells each dataset actually sampled, and how much
+#                                 (~470 KB; read at BUILD time to draw the map's filled marks —
+#                                 never shipped to the browser)
 #
-# All three are git-ignored: the site is a rendering of the promoted release, never a copy of it.
+# All four are git-ignored: the site is a rendering of the promoted release, never a copy of it.
+# `_data/land.geojson` is NOT here: the coastline is cartography, not a dataset fact, so it is a
+# committed asset built once by scripts/build_land.py.
 #
 # Resolution order — the production prefix's own `latest.txt`, and nothing else from that prefix:
 #   1. GET {RELEASE_BASE}/latest.txt  → the promoted version
@@ -61,7 +66,11 @@ fi
 # station grid and the bboxes drawn over it always come from one release
 record_dir="${record_url%/*}"
 get "$record_dir/grid.geojson" "$DATA/grid.geojson" ||
-  echo "WARN: no grid.geojson beside the record — the bbox maps will draw without the station grid" >&2
+  echo "WARN: no grid.geojson beside the record — the extent maps will draw without the station grid" >&2
+
+# which cells each dataset sampled: the map's filled marks, and the frame rule's second half
+get "$record_dir/coverage_stations.json" "$DATA/coverage_stations.json" ||
+  echo "WARN: no coverage_stations.json beside the record — the maps will draw the grid but not the sampled stations" >&2
 
 # versions.json is release-history, kept at the prefix root, never inside a version folder
 get "$RELEASE_BASE/versions.json" "$DATA/versions.json" ||

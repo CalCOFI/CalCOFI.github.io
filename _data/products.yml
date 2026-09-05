@@ -74,6 +74,10 @@ products:
     group: across
     datasets: all
     live_url: https://calcofi.io/explore/
+    # dataset_url: the deep link a dataset page builds for this product — {key} is the dataset_key.
+    # This is the ONE place a product-to-dataset link is written (UI plan Decision 10); a product
+    # with no template gets a row that says it opens the app, not the dataset.
+    dataset_url: https://calcofi.io/explore/?datasets={key}
     source_url: https://github.com/CalCOFI/explore
     img: images/explore_dark.png   # fallback; the card shows the _dark/_light pair
     shots: themed
@@ -132,6 +136,7 @@ products:
     group: across
     datasets: all
     live_url: https://app.calcofi.io/cruise/
+    dataset_url: https://app.calcofi.io/cruise/?datasets={key}
     source_url: https://github.com/CalCOFI/apps/tree/main/db-viz-cruise
     img: images/db-viz-cruise_dark.png   # fallback; the card shows the _dark/_light pair
     shots: themed

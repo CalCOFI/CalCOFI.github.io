@@ -96,6 +96,53 @@ The catalog's layout follows four rules, and `scripts/check_layout.py` is what k
 from the next release. `Catalog#normalize_variables` is the one place that knows, so the tiles, the
 search index and `page.variables` all read one shape; a build against either renders.
 
+### A dataset page: the map is the hero, and nothing below the head is two columns
+
+`/datasets/{key}/` follows D-4 to D-7 of the same plan:
+
+1. **The head band is the only two-column region**, and its second column is a map of where the
+   dataset was actually sampled. It is bounded to the title block's height *by construction* — the
+   cell stretches to the grid row and the SVG fits inside it (`preserveAspectRatio="xMaxYMin meet"`,
+   `position: absolute; inset: 0`) — so the two columns end together whatever the abstract's
+   length. The first cut put a 418 px column beside a 1,346 px one and left **928 px of blank page**
+   under the abstract; two columns whose contents differ that much cannot be made to end together,
+   so everything below the head is one column.
+2. **The map** (`Catalog#map_svg`) is a static inline SVG drawn at build time — no library, no tile
+   server, no external asset, every colour a `--cc-map-*` token so the theme toggle repaints it.
+   The frame is **the standard + extended grid ∪ the cells this dataset sampled**, padded 6 % —
+   never the record's bbox, which for the ichthyoplankton reads 0–54° N × 180–77° W from bad
+   upstream coordinates. The bbox is still drawn, clipped to the frame, dashed, with *extent
+   continues beyond the frame* in the corner when it is clipped. Sampled cells are filled with a
+   radius ∝ √n_obs and carry a `<title>`; unsampled cells are hollow and carry none (the hovers on
+   218 unsampled cells were two thirds of the file).
+   - `_data/land.geojson` is the coastline and is **committed**, unlike everything else in `_data/`:
+     it is cartography, not a dataset fact. `scripts/build_land.py` builds it once from Natural
+     Earth 1:50 m (public domain), clipped to 135–105° W × 19–49° N and simplified at 0.012°
+     (28 rings, 791 points, 18 KB). Run it only to change the clip or the tolerance.
+   - `_data/coverage_stations.json` (~470 KB, from `fetch_release.sh`, git-ignored) says which
+     cells each dataset sampled. It is read at build time and **never shipped to the browser**.
+3. **Access is full-width rows, not a table.** Each row is two lines: label · chips · meta · copy,
+   then the URL on its own line, middle-elided (`Catalog#split_url` — a head that shrinks 999×
+   faster than the tail, so the informative end survives to the last pixel). ERDDAP is listed
+   **once**, as a matrix of id × (CSV · netCDF · JSON · page · info · graph) with the grain glossary
+   under it; *Metadata records* holds the records about the data; *Archives & portals* lists each
+   portal's own identifier.
+4. **The generator checks its own output.** `Catalog#unlisted_endpoints` compares every URL in the
+   record's `distributions[]` and `registrations[]` against the rows actually rendered and warns at
+   build on any that reach no Access row. It caught two legacy ERDDAP ids that carry no `format`
+   key and had silently vanished from the CTD casts' page.
+5. **`_test/derive_id_test.rb`** (`ruby _test/derive_id_test.rb`, also run by `scripts/build.sh`)
+   pins `_plugins/derive_id.rb` — the rule that reads a portal's own identifier off its URL — to
+   every URL shape in the record. calcofi4db 4.5.0 derives the same ids, so the two have one list
+   to agree on.
+
+**Fallbacks awaiting the record.** Each is marked `# until the record carries …` in
+`_plugins/datasets.rb` and is deleted when the release that carries the field renders (plan D-9):
+`GRAIN_FALLBACK` (an ERDDAP grain's meaning), `PORTAL_NAMES` + `PORTAL_ABOUT` (a portal's name and
+one-liner), `stac_collection_url` (the STAC collection), `_plugins/derive_id.rb` (a registration's
+identifier), and `STAGE_MEANING`, which is site-side text by nature — the stage vocabulary is
+`dataset_status.csv`'s, not any one dataset's.
+
 ## Local preview
 
 ```bash
@@ -121,6 +168,8 @@ scripts/check_layout.py                          # the four catalog pages at 147
                                                  # no horizontal scroll, the dataset page's columns
 scripts/check_layout.py --url http://localhost:4000/datasets/ --widths 1470 --themes light
 scripts/check_layout.py --base https://calcofi.io          # against the deployed site
+
+ruby _test/derive_id_test.rb                     # the portal-identifier parser
 ```
 
 `check_layout.py` needs `shot-scraper` (`pipx install shot-scraper && shot-scraper install`), like

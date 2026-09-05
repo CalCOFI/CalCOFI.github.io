@@ -21,7 +21,7 @@ code, .mono { font-family: var(--mono); font-size: 0.9em; }
 
 /* ── page shell ──────────────────────────────────────────────────────────── */
 
-#layout { display: grid; grid-template-rows: auto 1fr auto auto; min-height: 100vh; }
+#layout { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr auto auto; min-height: 100vh; }
 main#panel { width: 100%; }
 
 /* ── hero: the Sand band, the display heading, one yellow CTA ───────────── */
@@ -264,20 +264,59 @@ main#panel { width: 100%; }
 .ds-row-ref .ds-row-name { font-weight: 400; color: var(--accent); }
 .ds-refband .ds-ref-desc { flex-basis: 100%; margin-left: 0; font-size: var(--fs-sm); color: var(--muted); max-width: 60ch; }
 
-/* ── a dataset page ──────────────────────────────────────────────────────── */
+/* ── a dataset page (plan D-4 to D-7) ─────────────────────────────────────────
+   The first cut put an abstract of unknown length beside a sidebar of 33 variable chips: the main
+   column measured 418 px against 1,346 px, so 928 px of blank page sat between the abstract and
+   Access. Two columns whose contents are that different can never be made to end together.
+
+   So: the head band is the ONLY two-column region, its second column is the map, and the map is
+   bounded to the first column's height by construction — the cell stretches to the grid row and
+   the SVG fits inside it. Everything below the head is one column. */
 .ds-page-head { padding-top: calc(var(--band-pad) * 1.1); }
+.ds-hero { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: calc(var(--space) * 3); align-items: stretch; }
+.ds-hero-main { min-width: 0; }
+/* the map cell: a row that takes the leftover height, and a caption under it */
+.ds-mapwrap { display: grid; grid-template-rows: minmax(0, 1fr) auto; gap: 4px; min-height: 0; min-width: 0; justify-self: end; width: 100%; }
+.ds-mapbox { position: relative; min-height: 0; }
+.ds-mapbox .cc-map { position: absolute; inset: 0; width: 100%; height: 100%; }
+.ds-mapcap { font-size: var(--fs-sm); color: var(--muted); max-width: 46ch; }
+
 .ds-crumb { display: flex; gap: 8px; font-size: var(--fs-sm); color: var(--muted); margin-bottom: var(--space); }
 .ds-title { display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--space) * 2); font-size: clamp(30px, 5vw, 60px); overflow-wrap: anywhere; }
 .ds-title .cc-i { font-size: 0.8em; color: var(--accent); flex: none; }
-.ds-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: calc(var(--space) * 2) 0 0; }
+/* a record whose only name runs past 80 characters would be six lines of Teko caps at the h1 size
+   (the EDI holdings' names run 40–60 words) — the generator flags it, this sets it at the h2 size */
+.ds-title-long { font-size: clamp(26px, 3.4vw, 38px); }
+/* past 180 characters the name is a sentence, and uppercase Teko is unreadable at that length
+   whatever the size — so it becomes a sans title in the record's own case (calcofi_prodo's name is
+   416 characters). Nothing is hidden: the whole name is the h1. */
+.ds-title-vlong { font-family: var(--sans); font-weight: 700; font-size: clamp(21px, 2vw, 27px); line-height: 1.25; letter-spacing: 0; text-transform: none; max-width: 46ch; }
+/* a block, not the h1's flex row: at 46ch the icon and the first words cannot share a line, so
+   the flex row put the icon alone above the title */
+.ds-title-vlong { display: block; }
+.ds-title-vlong .cc-i { font-size: 1.1em; vertical-align: -0.1em; margin-right: 0.4em; }
+.ds-lede { margin: 0 0 calc(var(--space) * 1.5); color: var(--muted); max-width: 68ch; }
+.ds-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: calc(var(--space) * 1.5) 0 0; }
 .ds-chips .cc-chip { font-size: 0.8em; }
 a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decoration: none; }
 .ds-chip-key { font-weight: 700; }
 .ds-holding-note { margin-top: calc(var(--space) * 2); max-width: 70ch; }
-.ds-section { scroll-margin-top: calc(var(--header-h) + 16px); }
-.ds-cols { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: calc(var(--space) * 5); align-items: start; }
+
+/* at a glance: 3 x 2, the numbers in mono, under the chips */
+.ds-glance { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: calc(var(--space) * 1.5) calc(var(--space) * 2); margin: calc(var(--space) * 2.5) 0 var(--space); }
+.ds-glance div { min-width: 0; }
+.ds-glance dt { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
+.ds-glance dd { margin: 0; font-family: var(--mono); font-size: 1.05em; font-weight: 600; font-variant-numeric: tabular-nums; }
+.ds-spark-fig { margin: var(--space) 0 0; }
+
+.ds-tabs { z-index: 1010; }
+.ds-section { scroll-margin-top: calc(var(--header-h) + 56px); }
+/* one column, and the assertion in check_layout.py says so: no grid with more than one column
+   sits between the head band and Cite */
+.ds-one > .cc-container { display: block; }
 .ds-desc { max-width: 72ch; }
-.ds-meta, .ds-stats { margin: calc(var(--space) * 2) 0; }
+.ds-cols { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: calc(var(--space) * 5); align-items: start; }
+.ds-meta, .ds-stats { margin: calc(var(--space) * 2) 0; max-width: 88ch; }
 .ds-meta div, .ds-stats div { display: flex; flex-wrap: wrap; gap: 4px 12px; padding: 5px 0; border-top: 1px solid var(--border); }
 .ds-meta dt, .ds-stats dt { min-width: 12ch; font-size: var(--fs-sm); text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
 .ds-meta dd, .ds-stats dd { margin: 0; }
@@ -286,37 +325,75 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 /* a GCMD keyword is one long token ("EARTH SCIENCE > BIOLOGICAL CLASSIFICATION > …"); the brand's
    chip is nowrap, so let these wrap or a phone gets a horizontally scrolling page */
 .ds-kw .cc-chip, .ds-chips .cc-chip { white-space: normal; overflow-wrap: anywhere; }
+.ds-varchips .cc-chip small { color: var(--muted); margin-left: 0.35em; font-family: var(--sans); }
+/* "all 33" reads as a link, not as a heading — .ds-details' summary is uppercase and muted */
+.ds-more-vars { display: inline; }
+.ds-more-vars > summary { display: inline; cursor: pointer; list-style: none; font: inherit; font-size: var(--fs-sm); text-transform: none; letter-spacing: 0; font-weight: 400; color: var(--accent); }
+.ds-more-vars > summary::-webkit-details-marker { display: none; }
+.ds-more-vars > summary::after { content: " ▸"; }
+.ds-more-vars[open] > summary::after { content: " ▾"; }
+.ds-more-vars .cc-chip { margin: 2px 2px 0 0; }
+.ds-cov-h { margin-top: calc(var(--space) * 3); }
+.ds-taxa { list-style: none; margin: var(--space) 0; padding: 0; columns: 2; column-gap: calc(var(--space) * 5); font-size: 15px; }
+.ds-taxa li { break-inside: avoid; padding: 2px 0; }
 .ds-headlinks { display: flex; flex-wrap: wrap; gap: calc(var(--space) * 2); margin-top: calc(var(--space) * 2); }
 .ds-side-h { margin-top: calc(var(--space) * 3); }
 .ds-figure { margin: calc(var(--space) * 2) 0; }
 .ds-figure figcaption { margin-top: 4px; font-size: var(--fs-sm); color: var(--muted); }
-.ds-figure .ds-spark { width: 100%; height: 56px; fill: var(--accent); display: block; }
-.ds-bbox { width: 100%; height: auto; max-height: 240px; display: block; background: var(--panel); border-radius: var(--radius); }
-.cc-band-alt .ds-bbox { background: var(--panel-2); }
-.ds-bbox-grid circle { fill: var(--muted); opacity: 0.55; }
-.ds-bbox-box { fill: var(--accent); fill-opacity: 0.14; stroke: var(--accent); stroke-width: 1.5; }
+.ds-figure .ds-spark { width: 100%; height: 44px; fill: var(--accent); display: block; }
 .ds-contrib-list, .ds-questions, .ds-objects, .ds-versions, .ds-parts { list-style: none; margin: var(--space) 0; padding: 0; font-size: 15px; }
 .ds-contrib-list li, .ds-questions li, .ds-objects li, .ds-versions li, .ds-parts li { padding: 4px 0; border-top: 1px solid var(--border); }
 .ds-versions li { display: flex; flex-wrap: wrap; gap: 4px 8px; }
 .ds-v { font-family: var(--mono); }
 .ds-v-now { font-weight: 700; color: var(--accent); }
 
-/* the Access table: one row per real endpoint, grouped by how */
+/* ── Access: rows that span the page, the URL on its own line ─────────────────
+   No table columns anywhere in Access except the ERDDAP matrix. The old .ds-table put its `th` at
+   34 %, which is what forced code and URLs into a narrow right-hand column. */
 .ds-access-group { margin-bottom: calc(var(--space) * 4); }
-.ds-table { width: 100%; border-collapse: collapse; font-size: 15px; }
-.ds-table th, .ds-table td { text-align: left; vertical-align: top; padding: 8px 12px 8px 0; border-top: 1px solid var(--border); }
-.ds-table th { font-weight: 700; width: 34%; }
-.ds-table th .cc-chip { margin-left: 6px; font-weight: 400; }
-.ds-cell-meta, .ds-cell-note, .ds-hash { display: block; font-size: var(--fs-sm); color: var(--muted); }
-.ds-hash { font-family: var(--mono); }
-.ds-cell-note { max-width: 68ch; margin-top: 3px; }
-.ds-chip-published { border-color: var(--cc-green); color: var(--cc-green); }
-.ds-chip-planned { border-color: var(--warn); color: var(--warn); }
-.ds-chip-superseded, .ds-chip-retired { border-color: var(--cc-red); color: var(--cc-red); }
+.ds-access-h { margin-top: calc(var(--space) * 2); margin-bottom: 0.15em; }
+.ds-access-lede { margin: 0 0 var(--space); font-size: var(--fs-sm); max-width: 80ch; }
+.ds-access-sub { margin: calc(var(--space) * 2.5) 0 2px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+.ds-arow { padding: 8px 0; border-top: 1px solid var(--border); font-size: 15px; }
+.ds-arow-l1 { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
+.ds-arow-k { font-weight: 700; }
+.ds-arow-id { font-family: var(--mono); font-size: 13px; color: var(--fg); }
+.ds-arow-t { color: var(--fg); }
+.ds-arow-m, .ds-arow-hash { color: var(--muted); font-size: var(--fs-sm); }
+.ds-arow-hash { font-family: var(--mono); font-size: 12.5px; }
+.ds-arow-issue { font-size: 11px; }
+.ds-arow-note { margin-top: 4px; }
+.ds-arow-code { display: flex; align-items: flex-start; gap: 4px; margin-top: 4px; }
+.ds-arow-code .ds-code { flex: 1 1 auto; min-width: 0; margin: 0; }
+/* the URL line: a head that shrinks and elides, a tail that never does, so the informative end
+   stays visible at 375 px and the line NEVER wraps */
+.ds-url { display: flex; align-items: center; min-width: 0; margin: 3px 0 0; font-family: var(--mono); font-size: 12.5px; line-height: 1.5; color: var(--accent); }
+.ds-url { min-width: 0; }
+.ds-url-h { flex: 0 999 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ds-url-t { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* the copy button sits on a 17 px line of mono, so it is smaller here than beside a code block */
+.ds-url .cc-copy { flex: none; width: 1.25rem; height: 1.25rem; margin-left: 4px; }
+.ds-url .cc-copy .cc-i { font-size: 0.8rem; }
+.ds-url-dim { color: var(--muted); }
+
+/* the ONE ERDDAP listing: a CSS grid, folding to one id per row on a phone */
+.ds-matrix { display: grid; grid-template-columns: max-content max-content minmax(0, 1fr); gap: 5px 16px; align-items: baseline; margin-top: var(--space); font-size: 15px; }
+.ds-matrix-hd { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); padding-bottom: 4px; border-bottom: 1px solid var(--border); }
+.ds-matrix-id { font-family: var(--mono); font-size: 13px; }
+.ds-matrix-g { color: var(--muted); font-size: var(--fs-sm); }
+.ds-matrix-f { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 12px; }
+.ds-matrix-f a { white-space: nowrap; }
+.ds-matrix-sep { color: var(--border); }
+.ds-gloss { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 2px 14px; margin: calc(var(--space) * 1.5) 0 0; font-size: var(--fs-sm); color: var(--muted); }
+.ds-gloss dt { font-family: var(--mono); font-size: 12.5px; color: var(--fg); font-weight: 600; }
+.ds-gloss dd { margin: 0; }
+.ds-legacy { margin: var(--space) 0 0; font-size: var(--fs-sm); }
 .ds-access-foot { margin-top: calc(var(--space) * 3); max-width: 78ch; }
 
 .ds-code { margin: var(--space) 0; padding: calc(var(--space) * 1.5) calc(var(--space) * 2); background: var(--panel); border-radius: var(--radius); overflow-x: auto; font-size: 14px; line-height: 1.45; white-space: pre-wrap; word-break: break-word; }
 .cc-band-alt .ds-code { background: var(--panel-2); }
+.ds-copywrap { display: flex; align-items: flex-start; gap: 4px; }
+.ds-copywrap .ds-code { flex: 1 1 auto; min-width: 0; }
 .ds-cite { font-family: var(--sans); }
 .ds-details summary { cursor: pointer; font-size: var(--fs-sm); font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
 .ds-details summary:hover { color: var(--accent); }
@@ -334,6 +411,22 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 @media (max-width: 900px) {
   .ds-cols { grid-template-columns: 1fr; gap: calc(var(--space) * 3); }
 }
+/* the head band collapses; the map is no longer bounded by a neighbour, so it takes the drawing's
+   own aspect ratio, written on the element by the generator */
+@media (max-width: 820px) {
+  .ds-hero { grid-template-columns: 1fr; }
+  .ds-mapbox { aspect-ratio: var(--map-ar, 360 / 387); }
+  .ds-taxa { columns: 1; }
+}
+/* the ERDDAP matrix folds to one id per row */
+@media (max-width: 520px) {
+  .ds-url { font-size: 11.5px; }
+  .ds-matrix { grid-template-columns: 1fr; gap: 2px 0; }
+  .ds-matrix-hd { display: none; }
+  .ds-matrix-id { margin-top: 10px; font-weight: 600; }
+  .ds-gloss { grid-template-columns: 1fr; }
+  .ds-gloss dd { margin-bottom: 6px; }
+}
 @media (max-width: 640px) {
   .ds-grid { grid-template-columns: 1fr; }
   .ds-refband { padding: calc(var(--space) * 2); }
@@ -346,9 +439,9 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
   .ds-release-links { margin-left: 0; }
   .ds-row { flex-direction: column; align-items: flex-start; }
   .ds-row-meta { margin-left: 0; }
-  .ds-table th, .ds-table td { display: block; width: auto; padding-right: 0; }
-  .ds-table td { border-top: none; padding-top: 0; }
+  .ds-glance { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .ds-title { font-size: clamp(26px, 8vw, 36px); }
+  .ds-title-long { font-size: clamp(22px, 6vw, 28px); }
   .ds-meta dt, .ds-stats dt { min-width: 0; flex-basis: 100%; }
   .ds-ref-desc { max-width: 100%; }
   .ds-filters { gap: var(--space); }
@@ -358,9 +451,9 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 
 /* WCAG 1.4.1: a link that sits in a row of text beside muted text is distinguished by colour alone
    unless it is underlined — the same faint underline brand v2 gives a link in prose. */
-.ds-table th a, .ds-parts a, .ds-related li a, .ds-objects a, .ds-versions a, .ds-contrib-list a,
-.ds-questions a, .ds-access-foot a {
+.ds-arow-k[href], .ds-parts a, .ds-related li a, .ds-objects a, .ds-versions a, .ds-contrib-list a,
+.ds-questions a, .ds-access-foot a, .ds-matrix-f a, .ds-legacy a {
   text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.15em;
   text-decoration-color: color-mix(in srgb, currentColor 45%, transparent);
 }
-.ds-table th a:hover, .ds-parts a:hover, .ds-related li a:hover { text-decoration-color: currentColor; }
+.ds-arow-k[href]:hover, .ds-parts a:hover, .ds-related li a:hover, .ds-matrix-f a:hover { text-decoration-color: currentColor; }
