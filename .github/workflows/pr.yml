@@ -1,0 +1,70 @@
+# On a pull request: build the site the way Pages will, and hold it to the same checks — the
+# structured-data contract (`check_jsonld.py`) and the layout contract (`check_layout.py`, plan
+# D-10). Nothing here deploys; `pages.yml` still owns that on a push to main.
+#
+# The point is that the two problems this refresh fixed cannot come back unnoticed: a tile drawn
+# taller than its content, a holding louder than the datasets above it, a dataset page whose
+# columns do not end together, a URL that wraps on a phone, an ERDDAP id listed twice.
+name: PR checks
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: true
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install --quiet jsonschema pyyaml shot-scraper && shot-scraper install chromium
+
+      # the portal-identifier parser: a pure rule with its own fixtures, so it runs before anything
+      # is built (scripts/build.sh runs it too)
+      - name: Unit tests
+        run: ruby _test/derive_id_test.rb
+
+      # a products.yml `datasets:` key that is in neither datasets[] nor holdings[] of the record
+      # fails the build right here, which is the point of fetching before building
+      - name: Fetch the release record
+        run: scripts/fetch_release.sh
+        env:
+          DATASETS_RELEASE_URL: ${{ vars.DATASETS_RELEASE_URL }}
+
+      - name: Build with Jekyll
+        run: bundle exec jekyll build
+        env:
+          JEKYLL_ENV: production
+
+      - name: Validate the JSON-LD, the sitemap and data.json
+        run: scripts/check_jsonld.py _site
+
+      - name: Serve _site
+        run: |
+          python3 -m http.server 4000 --directory _site >/dev/null 2>&1 &
+          for i in $(seq 1 30); do curl -sf -o /dev/null http://localhost:4000/datasets/ && break; sleep 1; done
+
+      # /datasets/, the two biggest dataset pages and a holding, at 1470 and 375 px, both themes
+      - name: Check the layout
+        run: python3 scripts/check_layout.py --base http://localhost:4000
+
+      - name: Check the brand contract on the built pages
+        run: |
+          python3 scripts/check_brand.py --url http://localhost:4000/datasets/
+          python3 scripts/check_brand.py --url http://localhost:4000/datasets/calcofi_ctd-cast/

@@ -1,10 +1,11 @@
-# Weekly: is every product still on the brand contract (brand/v2/README.md)?
+# Weekly: is every product still on the brand contract (brand/v2/README.md), and does the dataset
+# catalog still lay out the way the UI refresh left it?
 # scripts/check_brand.py opens each live_url at ?theme=light and ?theme=dark and
 # checks the theme took, the favicon resolves, the calcofi.io back-link and the toggle exist,
 # and that a v2 product opens light by default with the fonts and lockup (v1 is a warning).
 # A `shots: themed` product that drifts fails the run — a red run
 # is the signal; nothing here rewrites anything.
-name: Check brand contract
+name: Check brand contract and catalog layout
 
 on:
   schedule:
@@ -24,3 +25,33 @@ jobs:
           python-version: "3.12"
       - run: pip install shot-scraper pyyaml && shot-scraper install
       - run: python3 scripts/check_brand.py --required-only
+
+  # the layout rules the UI refresh set (plan D-10): tile stretch, the emphasis ladder's colours,
+  # the dataset page's two columns, a URL that never wraps, one ERDDAP listing per id. They are
+  # measured in a real browser at two widths in both themes, so they need the built site — which
+  # is why this is its own job with Ruby and the release record, not a step beside check_brand.
+  layout:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install shot-scraper && shot-scraper install chromium
+
+      - name: Fetch the release record
+        run: scripts/fetch_release.sh
+        env:
+          DATASETS_RELEASE_URL: ${{ vars.DATASETS_RELEASE_URL }}
+      - name: Build with Jekyll
+        run: bundle exec jekyll build
+      - name: Serve _site
+        run: |
+          python3 -m http.server 4000 --directory _site >/dev/null 2>&1 &
+          for i in $(seq 1 30); do curl -sf -o /dev/null http://localhost:4000/datasets/ && break; sleep 1; done
+      - name: Check the layout
+        run: python3 scripts/check_layout.py --base http://localhost:4000

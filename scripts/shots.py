@@ -10,7 +10,9 @@
 
 The capture list is _data/products.yml (`shots: themed` => images/<key>_dark.png +
 _light.png at live_url?theme=<t>&tour=off; otherwise images/<key>.png, no param);
-per-card overrides (url, wait, javascript, themed) are _data/shots.yml. Each PNG is
+per-card overrides (url, wait, javascript, themed) are _data/shots.yml. That file's
+`pages:` section adds shots of calcofi.io's OWN pages — the dataset catalog and two
+dataset pages — which are not products and have no card. Each PNG is
 1200x750, compressed in place with pngquant, then luminance-checked: a "dark" shot
 whose mean luminance says it is white means the product ignored ?theme= — that is
 a bug in the product, and the image is NOT what the card should show.
@@ -38,7 +40,26 @@ DARK_MAX, LIGHT_MIN = 110, 140
 def load():
     products = yaml.safe_load((ROOT / "_data/products.yml").read_text())["products"]
     overrides = yaml.safe_load((ROOT / "_data/shots.yml").read_text()) or {}
-    return {p["key"]: p for p in products}, overrides
+    # `pages:` is not a product list: it is calcofi.io's own pages, which have no card
+    pages = overrides.pop("pages", {}) or {}
+    return {p["key"]: p for p in products}, overrides, pages
+
+
+def page_recipes(pages, keys, themes):
+    """One entry per (page, theme) for calcofi.io's own pages (_data/shots.yml `pages:`)."""
+    out = []
+    for key, cfg in pages.items():
+        if keys and key not in keys:
+            continue
+        base = cfg["url"]
+        wait = cfg.get("wait", DEFAULT_WAIT)
+        for t in themes:
+            r = {"output": f"images/{key}_{t}.png", "url": with_params(base, t),
+                 "width": WIDTH, "height": cfg.get("height", HEIGHT), "wait": wait}
+            if cfg.get("javascript"):
+                r["javascript"] = cfg["javascript"]
+            out.append(r)
+    return out
 
 
 def with_params(url, theme):
@@ -91,9 +112,11 @@ def check(paths):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("keys", nargs="*", help="product keys (or `check`)")
+    ap.add_argument("keys", nargs="*", help="product or page keys (or `check`)")
     ap.add_argument("--all", action="store_true", help="also capture non-themed products once")
     ap.add_argument("--theme", choices=["dark", "light"], help="only this theme")
+    ap.add_argument("--pages", action="store_true",
+                    help="also capture calcofi.io's own pages (_data/shots.yml `pages:`)")
     ap.add_argument("--dry-run", action="store_true")
     a = ap.parse_args()
 
@@ -101,12 +124,18 @@ def main():
     if a.keys and a.keys[0] == "check":
         sys.exit(1 if check(list(Path("images").glob("*_dark.png")) + list(Path("images").glob("*_light.png"))) else 0)
 
-    products, overrides = load()
-    unknown = [k for k in a.keys if k not in products]
+    products, overrides, pages = load()
+    unknown = [k for k in a.keys if k not in products and k not in pages]
     if unknown:
-        sys.exit(f"error: not in _data/products.yml: {', '.join(unknown)}")
+        sys.exit(f"error: not in _data/products.yml or _data/shots.yml `pages:`: {', '.join(unknown)}")
     themes = [a.theme] if a.theme else ["dark", "light"]
-    rs = recipes(products, overrides, set(a.keys), themes, a.all)
+    prod_keys = set(a.keys) & set(products)
+    # naming only page keys must not fall through to "no keys given => every themed product"
+    rs = [] if (a.keys and not prod_keys) else recipes(products, overrides, prod_keys, themes, a.all)
+    if a.keys:
+        rs += page_recipes(pages, set(a.keys), themes)
+    elif a.all or a.pages:
+        rs += page_recipes(pages, set(), themes)
     if not rs:
         sys.exit("error: nothing to capture (no `shots: themed` product or override matched)")
     cfg = yaml.safe_dump(rs, sort_keys=False, width=1000)
