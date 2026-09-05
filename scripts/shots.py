@@ -116,7 +116,7 @@ def main():
     ap.add_argument("--all", action="store_true", help="also capture non-themed products once")
     ap.add_argument("--theme", choices=["dark", "light"], help="only this theme")
     ap.add_argument("--pages", action="store_true",
-                    help="also capture calcofi.io's own pages (_data/shots.yml `pages:`)")
+                    help="capture ONLY calcofi.io's own pages (_data/shots.yml `pages:`)")
     ap.add_argument("--dry-run", action="store_true")
     a = ap.parse_args()
 
@@ -130,8 +130,10 @@ def main():
         sys.exit(f"error: not in _data/products.yml or _data/shots.yml `pages:`: {', '.join(unknown)}")
     themes = [a.theme] if a.theme else ["dark", "light"]
     prod_keys = set(a.keys) & set(products)
-    # naming only page keys must not fall through to "no keys given => every themed product"
-    rs = [] if (a.keys and not prod_keys) else recipes(products, overrides, prod_keys, themes, a.all)
+    # `--pages` means the pages and NOTHING else; naming only page keys must not fall through to
+    # "no keys given => every themed product" either
+    skip_products = a.pages or (a.keys and not prod_keys)
+    rs = [] if skip_products else recipes(products, overrides, prod_keys, themes, a.all)
     if a.keys:
         rs += page_recipes(pages, set(a.keys), themes)
     elif a.all or a.pages:
