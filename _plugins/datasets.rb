@@ -395,7 +395,8 @@ module CalCOFI
       px = ->(lon) { (lon - x0) * k / wl * w }
       py = ->(lat) { (y1 - lat) / hl * h }
 
-      out = +%(<rect class="water" width="#{w.to_i}" height="#{h}"/>)
+      # rx matches .cc-map's border-radius so the water's corners ARE the map's corners
+      out = +%(<rect class="water" width="#{w.to_i}" height="#{h}" rx="6"/>)
 
       # the coast, clipped to this frame at draw time (the asset is clipped to the whole region)
       d = land.filter_map do |ring|
@@ -436,15 +437,22 @@ module CalCOFI
       end
 
       # a 5° graticule as edge ticks, so the map says where it is without a legend
+      # A label centred on a tick at the frame's edge is half outside the viewBox, and an SVG root
+      # clips: `135°W` rendered as `1°W` (measured on swfsc_ichthyo, whose frame starts at -135.3).
+      # So a label within a label-width of an edge anchors to that edge instead of straddling it,
+      # and a latitude label is kept a line clear of the top and bottom.
       ticks = +""
       (-180..180).step(5) do |lon|
         next unless lon > x0 && lon < x1
-        ticks << format('<text class="tk" x="%.1f" y="%.1f" text-anchor="middle">%d°W</text>',
-                        px.(lon), h - 3.0, lon.abs)
+        tx = px.(lon)
+        anchor, tx = if tx < 26 then ["start", 2.0] elsif tx > w - 26 then ["end", w - 2.0] else ["middle", tx] end
+        ticks << format('<text class="tk" x="%.1f" y="%.1f" text-anchor="%s">%d°W</text>',
+                        tx, h - 3.0, anchor, lon.abs)
       end
       (-90..90).step(5) do |lat|
         next unless lat > y0 && lat < y1
-        ticks << format('<text class="tk" x="4" y="%.1f">%d°N</text>', py.(lat) + 3.5, lat)
+        ty = [[py.(lat) + 3.5, 11.0].max, h - 4.0].min
+        ticks << format('<text class="tk" x="4" y="%.1f">%d°N</text>', ty, lat)
       end
       ticks << %(<text class="tk" x="#{(w - 4).to_i}" y="12" text-anchor="end">extent continues beyond the frame</text>) if beyond
       out << %(<g class="ticks">#{ticks}</g>)
