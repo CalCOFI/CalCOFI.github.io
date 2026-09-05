@@ -539,8 +539,13 @@ module CalCOFI
       node["distribution"] = dists unless dists.empty?
       same = same_as(r)
       node["sameAs"] = same unless same.empty?
+      # Google's Rich Results Test parses this nested node as a Dataset of its own, so it needs the
+      # fields a Dataset must have (description, url), not just an @id (WS-M2, 2026-09-05)
       node["isPartOf"] = { "@type" => "Dataset", "@id" => abs("/datasets/release/"),
-                           "name" => "CalCOFI Integrated Database, release #{release['version']}" }
+                           "url" => abs("/datasets/release/"),
+                           "name" => "CalCOFI Integrated Database, release #{release['version']}",
+                           "description" => Fmt.present(release["citation"]) ||
+                             "The CalCOFI Integrated Database, release #{release['version']}: every dataset in one schema, published as versioned Parquet." }.compact
       node["version"] = release["version"]
       node["dateModified"] = Fmt.present(release["release_date"])
       node["isAccessibleForFree"] = true
