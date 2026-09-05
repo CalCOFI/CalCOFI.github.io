@@ -1,0 +1,20 @@
+{%- comment -%}
+  Rung 3 of the emphasis ladder (plan D-1, D-3): a holding — something CalCOFI has that is not in
+  the integrated database yet. One line, --muted at 400, the short name with the full one in
+  `title=` (and the full one is what the search box matches, through search.json), quiet chips for
+  the provider and the pipeline stage, and the source link. Nothing here is --warn: a holding is
+  not a warning.
+
+  Rendered both directly in a tile and inside the "and n more" <details>, so it is an include.
+  include params: h (a holding row from site.data.catalog) · cat (the category name, for the filter)
+{%- endcomment -%}
+<li class="ds-row ds-row-holding" data-kind="holding" data-key="{{ include.h.key | escape }}" data-cat="{{ include.cat | escape }}"
+    data-realm="" data-prov="{{ include.h.provider | escape }}" data-lic="" data-fmt=""
+    data-stage="{{ include.h.stage | escape }}">
+  <a class="ds-row-name" href="{{ include.h.url | relative_url }}"{% if include.h.name_full %} title="{{ include.h.name_full | escape }}"{% endif %}>{{ include.h.name | escape }}</a>
+  <span class="ds-row-meta">
+    {%- if include.h.provider %}<span class="cc-chip cc-chip-quiet">{{ include.h.provider | escape }}</span>{% endif -%}
+    {%- if include.h.stage %}<span class="cc-chip cc-chip-quiet">{{ include.h.stage | escape }}</span>{% endif -%}
+    {%- if include.h.link %}<a class="cc-text-link ds-row-src" href="{{ include.h.link }}">source ↗</a>{% endif -%}
+  </span>
+</li>

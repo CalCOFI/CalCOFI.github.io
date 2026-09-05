@@ -138,6 +138,10 @@ module CalCOFI
           next if c.nil? || Fmt.blank?(c["name"])
           cats[c["name"]] ||= {
             "name" => c["name"], "realm" => c["realm"], "order" => c["order"],
+            # the tile's one-line lede. The record carries it from schema 1.1 (category.csv already
+            # has the column, plan D-9); until a release does, this is nil and the tile draws no
+            # lede — a category description is a fact, so it is never typed into this site.
+            "description" => Fmt.present(c["description"]),
             "icon" => icon_for(c["icon"]), "datasets" => [], "contributions" => [], "holdings" => []
           }
         end
@@ -154,12 +158,15 @@ module CalCOFI
         datasets.each do |d|
           (d.dig("coverage", "contributes_to") || []).each do |ct|
             c = cats[ct["category"]] or next
+            vars = ct["variables"] || []
             c["contributions"] << {
               "key"       => d["dataset_key"],
               "name"      => d["dataset_name_short"] || d["dataset_name"] || d["dataset_key"],
               "home"      => d.dig("category", "name"),
               "url"       => page_url(d),
-              "variables" => ct["variables"] || []
+              "color"     => dot_color(d),
+              "n"         => vars.size,
+              "variables" => vars
             }
           end
         end
@@ -169,6 +176,8 @@ module CalCOFI
           c["datasets"].sort_by! { |t| t["name"].to_s.downcase }
           c["contributions"].sort_by! { |t| t["name"].to_s.downcase }
           c["holdings"].sort_by! { |t| t["name"].to_s.downcase }
+          c["holdings_shown"] = c["holdings"].first(HOLDINGS_SHOWN)
+          c["holdings_more"]  = c["holdings"].drop(HOLDINGS_SHOWN)
           c["n"] = c["datasets"].size
         end
         list
@@ -183,8 +192,12 @@ module CalCOFI
                 cat-birds-mammals cat-whale cat-genomics cat-other lens-stations].freeze
     def icon_for(id) = SPRITE.include?(id) ? id : "cat-other"
 
-    def reference_tile
-      @reference_tile ||= begin
+    # The reference frame is not a category of datasets and it is the tile that doubled the grid's
+    # height (25 rows against a median of 3), so it leaves the grid and becomes a full-width band
+    # under it — three columns: the tables, the layers by group, the bathymetry (plan D-2,
+    # Decision 2). Groups keep the record's own order of first appearance.
+    def reference_band
+      @reference_band ||= begin
         rows = reference.map do |r|
           {
             "key"   => r["key"],
@@ -196,8 +209,15 @@ module CalCOFI
             "schema_url" => r["schema_url"],
             "count" => r["rows"] || r["n_features"],
             "count_label" => r["rows"] ? "rows" : (r["n_features"] ? "features" : nil),
-            "attribution" => r["attribution"]
+            "attribution" => r["attribution"],
+            # the raster's downloadable artefacts; the old tile's template looped over these but the
+            # row never carried them, so the bathymetry row drew no links at all
+            "objects" => r["objects"] || []
           }
+        end
+        layers = rows.select { |r| r["kind"] == "layer" }
+        groups = layers.map { |l| l["group"] }.uniq.map do |g|
+          { "name" => g, "rows" => layers.select { |l| l["group"] == g } }
         end
         {
           "name"  => "Cruises, stations & spatial",
@@ -205,7 +225,8 @@ module CalCOFI
           "icon"  => "lens-stations",
           "n"     => rows.size,
           "tables" => rows.select { |r| r["kind"] == "table" },
-          "layers" => rows.select { |r| r["kind"] == "layer" },
+          "layers" => layers,
+          "layer_groups" => groups,
           "rasters" => rows.select { |r| r["kind"] == "raster" }
         }
       end
@@ -221,6 +242,35 @@ module CalCOFI
         "formats"    => datasets.flat_map { |d| formats(d) }.uniq.sort,
         "stages"     => records.filter_map { |r| Fmt.present(r.dig("status", "stage")) }.uniq.sort
       }
+    end
+
+    # ── coverage.variables[], one shape ──────────────────────────────────────
+    # The record carries variables as bare strings in schema 1.0 and as
+    # {name, units, uri, category} objects from the next release (calcofi4db main b4eb5062).
+    # Everything on this site reads them through here, so the shape change is one method wide
+    # rather than one `is_a?(Hash)` per template.
+    def normalize_variables(cov)
+      (cov && cov["variables"] || []).map do |v|
+        if v.is_a?(Hash)
+          { "name" => v["name"] || v["key"], "units" => Fmt.present(v["units"]),
+            "uri" => Fmt.present(v["uri"]), "category" => Fmt.present(v["category"]) }
+        else
+          { "name" => v.to_s, "units" => nil, "uri" => nil, "category" => nil }
+        end
+      end.reject { |v| Fmt.blank?(v["name"]) }
+    end
+
+    def variable_names(cov) = normalize_variables(cov).map { |v| v["name"] }
+
+    # rung 1 and 2 of the emphasis ladder carry the dataset's own colour as a 9 px dot — the one
+    # visual the Explorer, the Station Explorer and this catalog share. Never as text colour
+    # (plan Decision 4); a record with no colour falls back to the accent in CSS.
+    def dot_color(d) = Fmt.present(d["color"])
+
+    # the format chips were three chips and a wrap; D-1 makes them one mono phrase
+    def formats_phrase(d)
+      f = formats(d)
+      f.empty? ? nil : f.join(" · ")
     end
 
     # ── one dataset as a tile row in the category grid ───────────────────────
@@ -241,6 +291,9 @@ module CalCOFI
         "license"    => d.dig("attribution", "license"),
         "doi"        => d.dig("attribution", "doi"),
         "formats"    => formats(d),
+        "formats_phrase" => formats_phrase(d),
+        "color"      => dot_color(d),
+        "n_variables" => cov["n_variables"] || normalize_variables(cov).size,
         "stage"      => d.dig("status", "stage"),
         "years_bar"  => years_bar(cov["years"], cov["year_min"], cov["year_max"])
       }
@@ -248,14 +301,19 @@ module CalCOFI
 
     def holding_row(h)
       {
-        "key"      => h["dataset_key"],
-        "name"     => h["dataset_name_short"] || h["dataset_name"] || h["dataset_key"],
-        "url"      => page_url(h),
-        "provider" => h.dig("provider", "short") || h.dig("provider", "key"),
-        "stage"    => h.dig("status", "stage"),
-        "link"     => h.dig("links", "data_source")
+        "key"       => h["dataset_key"],
+        "name"      => h["dataset_name_short"] || h["dataset_name"] || h["dataset_key"],
+        "name_full" => h["dataset_name"],
+        "url"       => page_url(h),
+        "provider"  => h.dig("provider", "short") || h.dig("provider", "key"),
+        "stage"     => h.dig("status", "stage"),
+        "link"      => h.dig("links", "data_source")
       }
     end
+
+    # rung 3: at most four holdings are drawn before "and n more" (plan D-3, Decision 3). The rest
+    # stay in the DOM inside the <details>, so the search box still matches them.
+    HOLDINGS_SHOWN = 4
 
     def year_span(cov)
       a, b = cov["year_min"], cov["year_max"]
@@ -782,7 +840,7 @@ module CalCOFI
           "text"  => [
             r["dataset_name"], r["dataset_name_short"], r["dataset_key"],
             plain(r["description_md"]), (r["keywords"] || []).join(" "),
-            (cov["variables"] || []).map { |v| v.is_a?(Hash) ? v["name"] : v }.join(" "),
+            variable_names(cov).join(" "),
             (taxa_by_key[r["dataset_key"]] || []).join(" ")
           ].compact.join(" ").downcase
         }.compact
@@ -808,8 +866,11 @@ module CalCOFI
               "_data/datasets.json is missing or unreadable — run scripts/fetch_release.sh " \
               "(or scripts/build.sh, which does both) before jekyll build."
       end
-      unless rec["schema_version"] == "1.0"
-        Jekyll.logger.warn "datasets:", "record schema #{rec['schema_version'].inspect}, expected \"1.0\""
+      # 1.1 adds fields (category descriptions, grain/table descriptions, registration ids,
+      # portals[], coverage.months) — all optional here, so any 1.x renders. A different MAJOR
+      # would mean a field this site reads has changed shape: warn.
+      unless rec["schema_version"].to_s.start_with?("1.")
+        Jekyll.logger.warn "datasets:", "record schema #{rec['schema_version'].inspect}, expected \"1.x\""
       end
 
       rec = deep_unescape(rec)
@@ -821,7 +882,7 @@ module CalCOFI
         "counts"     => { "datasets" => cat.datasets.size, "holdings" => cat.holdings.size,
                           "reference" => cat.reference.size },
         "categories" => cat.categories,
-        "reference"  => cat.reference_tile,
+        "reference"  => cat.reference_band,
         "facets"     => cat.facets,
         "jsonld"     => JSON.pretty_generate(cat.catalog_jsonld),
         # key → {name, url}: what a product card's `datasets:` chips resolve through
@@ -901,6 +962,8 @@ module CalCOFI
         "release_bibtex" => cat.release_bibtex,
         "jsonld"      => JSON.pretty_generate(jsonld),
         "related"     => related(cat, r),
+        # normalised once here so a template never asks whether a variable is a string or an object
+        "variables"   => cat.normalize_variables(cov),
         "n_obs_fmt"   => Fmt.num(cov["n_obs"]),
         "n_roots_fmt" => Fmt.num(cov["n_roots"]),
         "objects"     => (r["objects"] || []).map { |o| o.merge("bytes_fmt" => Fmt.bytes(o["bytes"])) }

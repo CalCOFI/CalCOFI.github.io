@@ -3,7 +3,10 @@
    descriptions, keywords and variables that are NOT in the DOM, so it fetches /datasets/search.json
    (one small file, 16–33 rows) the first time someone types. Filtering works with the fetch still in
    flight — it just matches on the visible text until the index lands.
-   Every filter is reflected in the URL query so a filtered grid is a link you can share. */
+   Every filter is reflected in the URL query so a filtered grid is a link you can share.
+   The reference frame is a band below the grid (plan D-2), not a tile inside it, so it is outside
+   #ds-grid and the filters never see it — which is what they always did, by a special case that is
+   now unnecessary. */
 (function () {
   "use strict";
   var form = document.getElementById("ds-filters");
@@ -64,9 +67,7 @@
     // a tile with nothing left to show goes away, separators with it
     tiles.forEach(function (tile) {
       var any = tile.querySelectorAll(".ds-row[data-key]:not([hidden])").length;
-      var isRef = tile.getAttribute("data-tile") === "reference";
-      var filtered = !!(state.q || selects.some(function (el) { return el.value; }));
-      tile.hidden = isRef ? filtered : !any;
+      tile.hidden = !any;
       Array.prototype.forEach.call(tile.querySelectorAll(".ds-rows-sep"), function (sep) {
         var next = sep.nextElementSibling, live = false;
         while (next && next.classList.contains("ds-row")) {
@@ -76,9 +77,18 @@
         sep.hidden = !live;
       });
     });
+    // "and n more" holds rows too: a filter that matches only those should open it
+    Array.prototype.forEach.call(grid.querySelectorAll(".ds-holdings-det"), function (det) {
+      var live = det.querySelectorAll(".ds-row[data-key]:not([hidden])").length;
+      var filtered = !!(state.q || selects.some(function (el) { return el.value; }));
+      det.parentNode.hidden = !live;
+      if (filtered && live) det.open = true;
+    });
     if (count) count.textContent = shown + " dataset" + (shown === 1 ? "" : "s") + " shown";
     if (empty) empty.hidden = shown > 0;
     sync(state);
+    // the grid's spans are wrong the moment a row is hidden — assets/masonry.js listens for this
+    document.dispatchEvent(new CustomEvent("ds:filtered"));
   }
 
   function sync(state) {

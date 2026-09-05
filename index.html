@@ -33,7 +33,7 @@ layout: default
   </div>
 </section>
 
-<nav class="section-tabs" aria-label="Sections">
+<nav class="cc-tabs section-tabs" aria-label="Sections">
   <div class="cc-container">
     {%- for s in data.sections -%}
     {%- if s.id == "datasets" -%}
@@ -61,6 +61,7 @@ layout: default
     </p>
     {% include release_strip.html %}
     {% include catalog_grid.html %}
+    {% include reference_band.html %}
   </div>
 </section>
 

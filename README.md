@@ -67,6 +67,35 @@ row and no search row.
 (`test_release.qmd` fires it the moment a release is promoted), on a weekly cron and by hand.
 `pages.yml` does the same three steps on a push to main.
 
+### The grid: an emphasis ladder, packed, with the reference frame in its own band
+
+The catalog's layout follows four rules, and `scripts/check_layout.py` is what keeps them true
+(plan `2026-09-05 CalCOFI.io UI refresh …` § D-1 to D-3, D-10):
+
+1. **Emphasis is a ladder.** A dataset in the release is `--accent` at 700 with its own colour as a
+   9 px dot and one line of meta (provider · years · sparkline · n obs · the formats as ONE mono
+   phrase). A dataset homed elsewhere that *contributes* variables here is `--fg` at 400 with a
+   hollow dot and its variables collapsed behind "n variables ▸". A **holding** — something CalCOFI
+   has that is not in the database — is `--muted` at 400 on one line with quiet chips. A reference
+   row is `--fg` at 400 with its count in mono.
+2. **Yellow is reserved.** `--warn` marks a state that needs attention, never a kind of thing. A
+   pipeline stage (`ingested`, `validated`, `metadata`, `published`; `external`, `archived`) is
+   information: a neutral or quiet chip. Before this, the 17 holdings each wore the page's only
+   yellow chip and read louder than the 16 datasets above them.
+3. **The grid packs.** `align-items: start` is the no-JS state; `assets/masonry.js` (40 lines, no
+   dependency) then gives each tile a `grid-row-end: span n` from its measured height, on load,
+   after `document.fonts.ready`, on resize and on the `ds:filtered` event `assets/catalog.js`
+   dispatches. Where CSS masonry is supported the script sets `grid-template-rows: masonry` and
+   stops. Reading order is always the DOM's. The grid went from **4,910 px to 2,096 px**.
+4. **The reference frame is a band, not a tile** (`_includes/reference_band.html`): 25 rows of
+   cruise/ship/grid tables, 19 spatial layers grouped as the record groups them, and the
+   bathymetry — the one tile whose rows are not datasets, and the one that forced its neighbour to
+   nine times its natural height. The filter row ignores it, as it always did.
+
+`coverage.variables[]` are bare strings in schema 1.0 and `{name, units, uri, category}` objects
+from the next release. `Catalog#normalize_variables` is the one place that knows, so the tiles, the
+search index and `page.variables` all read one shape; a build against either renders.
+
 ## Local preview
 
 ```bash
@@ -86,6 +115,27 @@ scripts/check_jsonld.py _site                    # JSON-LD + sitemap + data.json
                                                  # for full DCAT-US schema validation)
 scripts/check_brand.py --url http://localhost:4000/datasets/
 scripts/check_brand.py --url http://localhost:4000/datasets/swfsc_ichthyo/
+
+scripts/check_layout.py                          # the four catalog pages at 1470 and 375 px,
+                                                 # both themes: tile stretch, the ladder's colours,
+                                                 # no horizontal scroll, the dataset page's columns
+scripts/check_layout.py --url http://localhost:4000/datasets/ --widths 1470 --themes light
+scripts/check_layout.py --base https://calcofi.io          # against the deployed site
+```
+
+`check_layout.py` needs `shot-scraper` (`pipx install shot-scraper && shot-scraper install`), like
+`check_brand.py`. `shot-scraper javascript` has no `--width`, so the script loads each page in a
+same-origin iframe of exactly the width under test and measures inside it. **To add an assertion**,
+return the measurement from `PROBE` (plain data — no judgement in the page) and judge it in
+`check()`, so a failure prints what it measured; then prove it bites by reintroducing the problem
+before you commit.
+
+Accessibility is Lighthouse, not this script (it wants its own Chrome and ~30 s a page). Both
+themes, expected **100**:
+
+```bash
+npx lighthouse "http://localhost:4000/datasets/?theme=dark" --only-categories=accessibility \
+  --quiet --chrome-flags="--headless=new"
 ```
 
 ## Brand: theme, header, favicon (`brand/v2/`)
