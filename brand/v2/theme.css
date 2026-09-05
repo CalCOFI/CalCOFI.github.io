@@ -27,6 +27,21 @@
   --cta-fg:    #182b49;
   --cc-green:  #457a1c;   /* UCSD Green #6E963B darkened for AA on white (a "go" state) */
   --cc-red:    #b3261e;   /* a "no-go" state; not a brand colour, chosen for AA on both grounds */
+  /* added 2026-09-05 (UI refresh, D-8) — the status chip's tint, one per state. Text stays --cc-green /
+     --warn / --muted / --cc-red / --accent; every pair is ≥ 4.5:1 in both themes (the specimen computes them). */
+  --ok-bg:     #eef5e9;   /* --cc-green on it: 4.66:1 (the first tint tried, #e7f0e0, was 4.43 — below AA) */
+  --warn-bg:   #fff6dc;   /* --warn 4.94:1 */
+  --na-bg:     #ececec;   /* --muted 4.74:1 */
+  --nogo-bg:   #fbe9e7;   /* --cc-red 5.58:1 */
+  --accent-bg: #e3eef6;   /* --accent 5.54:1 */
+  /* added 2026-09-05 — a static map drawn on the tokens (.cc-map below): water, land, the coastline
+     stroke, the station grid, a mark. Land on water is 1.03:1 and is not text; the coast is stroked in
+     --muted, so the shoreline reads at 4.77:1. */
+  --cc-map-water: #e6eef4;
+  --cc-map-land:  #f5f0e6;
+  --cc-map-coast: #66686a;   /* = --muted, written literally as every token in this file is */
+  --cc-map-grid:  #66686a;   /* = --muted */
+  --cc-map-mark:  #00629b;   /* = --accent; on the water 5.56:1 */
   /* the UC San Diego palette by name, for a product's own use (a highlight, a chart annotation) */
   --cc-navy:   #182b49;
   --cc-blue:   #00629b;
@@ -57,6 +72,17 @@
   --header-bg: #182b49;
   --cc-green:  #8fbf4f;
   --cc-red:    #ff8080;
+  /* added 2026-09-05 (UI refresh, D-8) */
+  --ok-bg:     #1e3a22;   /* --cc-green 5.78:1 */
+  --warn-bg:   #3a2d0a;   /* --warn 8.97:1 */
+  --na-bg:     #25344f;   /* --muted 5.66:1 */
+  --nogo-bg:   #4a1f1f;   /* --cc-red 5.74:1 */
+  --accent-bg: #12314a;   /* --accent 5.86:1 */
+  --cc-map-water: #0f1a2e;   /* = --bg */
+  --cc-map-land:  #21375c;   /* = --panel-2 */
+  --cc-map-coast: #9fb0c8;   /* = --muted; on the water 7.88:1 */
+  --cc-map-grid:  #9fb0c8;
+  --cc-map-mark:  #4fb6e6;   /* = --accent; on the water 7.59:1 */
   color-scheme: dark;
 }
 
@@ -272,3 +298,72 @@
    header logo. */
 :root[data-theme="dark"]       .cc-light-only { display: none; }
 :root:not([data-theme="dark"]) .cc-dark-only  { display: none; }
+
+/* ── additions, 2026-09-05 (the dataset catalog's UI refresh) ──────────────────
+   Additive only: five status-chip tints and their classes, a quiet chip, the sticky tab row, a copy
+   button, and the parts of a static SVG map. Nothing above this line changed. Plan:
+   workflows/.claude/plans/2026-09-05 CalCOFI.io UI refresh … § D-8, Decision 12. */
+
+/* the status chip — a STATE, not a fact. The outline mono .cc-chip carries facts (a provider, a
+   licence, a format); these carry a state, in sans 700 on a tint, borderless. The tint is the only
+   place --warn is allowed to mean "needs attention": a pipeline stage is information, not a warning. */
+.cc-chip-ok, .cc-chip-warn, .cc-chip-na, .cc-chip-nogo, .cc-chip-accent {
+  font-family: var(--sans); font-weight: 700; font-size: 0.7em; line-height: 1.6;
+  letter-spacing: 0.04em; text-transform: uppercase;
+  border-color: transparent; padding: 0.15em 0.7em;
+}
+.cc-chip-ok     { background: var(--ok-bg);     color: var(--cc-green); }
+.cc-chip-warn   { background: var(--warn-bg);   color: var(--warn); }
+.cc-chip-na     { background: var(--na-bg);     color: var(--muted); }
+.cc-chip-nogo   { background: var(--nogo-bg);   color: var(--cc-red); }
+.cc-chip-accent { background: var(--accent-bg); color: var(--accent); }
+/* on a band the plain .cc-chip re-grounds itself; a tinted chip keeps its tint */
+.cc-band-alt .cc-chip-ok     { background: var(--ok-bg); }
+.cc-band-alt .cc-chip-warn   { background: var(--warn-bg); }
+.cc-band-alt .cc-chip-na     { background: var(--na-bg); }
+.cc-band-alt .cc-chip-nogo   { background: var(--nogo-bg); }
+.cc-band-alt .cc-chip-accent { background: var(--accent-bg); }
+
+/* the quiet chip: no border, no fill — a label that is present without asking for attention */
+.cc-chip-quiet, .cc-band-alt .cc-chip-quiet {
+  border-color: transparent; background: transparent; color: var(--muted); padding: 0 0.2em;
+}
+
+/* the sticky uppercase tab row — the landing page's section nav, promoted to the contract so a
+   dataset page (or any product) can use it. Markup:
+     <nav class="cc-tabs"><div class="cc-container"><a href="#x">Overview <span class="n">6</span></a>…</div></nav>
+   Values are the landing page's .section-tabs, unchanged. */
+.cc-tabs { position: sticky; top: var(--header-h); z-index: 1010; background: var(--bg); border-bottom: 1px solid var(--border); }
+.cc-tabs .cc-container { display: flex; flex-wrap: wrap; gap: 0 calc(var(--space) * 3); }
+.cc-tabs a {
+  display: inline-block; padding: calc(var(--space) * 1.5) 0;
+  font-family: var(--sans); font-weight: 700; font-size: var(--nav-fs); letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--fg); text-decoration: none;
+  border-bottom: 3px solid transparent; margin-bottom: -1px;
+}
+.cc-tabs a:hover, .cc-tabs a.on, .cc-tabs a[aria-current] { color: var(--accent); border-bottom-color: var(--accent); text-decoration: none; }
+.cc-tabs .n { color: var(--muted); font-weight: 400; margin-left: 0.4em; font-variant-numeric: tabular-nums; }
+
+/* the copy button beside a code line, a URL or a citation — .cc-icon-button at the size of a line of
+   text. Progressive: with no JS the text beside it is still selectable. */
+.cc-copy {
+  display: inline-flex; align-items: center; justify-content: center; flex: none;
+  width: 1.6rem; height: 1.6rem; padding: 0; border: 0; border-radius: var(--radius);
+  background: transparent; color: var(--muted); cursor: pointer; font: inherit; vertical-align: middle;
+}
+.cc-copy:hover { background: var(--panel); color: var(--accent); }
+:root[data-theme="dark"] .cc-copy:hover { background: var(--panel-2); }
+.cc-copy .cc-i { font-size: 0.95rem; }
+.cc-copy[data-copied] { color: var(--cc-green); }
+
+/* a static SVG map on the tokens — the dataset page's extent map, the catalog's grid map, and any
+   product that draws one (db-viz-station's coverage thumbnail). No background on the element: the
+   drawing carries its own <rect class="water">, so a box taller than the drawing stays page-coloured
+   rather than pretending the ocean continues. */
+.cc-map { display: block; width: 100%; height: auto; border-radius: var(--radius); }
+.cc-map .water { fill: var(--cc-map-water); }
+.cc-map .land  { fill: var(--cc-map-land); stroke: var(--cc-map-coast); stroke-width: 0.8; stroke-linejoin: round; }
+.cc-map .st    { fill: none; stroke: var(--cc-map-grid); stroke-width: 0.7; opacity: 0.55; }
+.cc-map .st-on { fill: var(--cc-map-mark); stroke: var(--bg); stroke-width: 0.6; opacity: 0.9; }
+.cc-map .bbox  { fill: none; stroke: var(--cc-map-mark); stroke-width: 1; stroke-dasharray: 3 2; }
+.cc-map .tk    { font: 9.5px var(--sans); fill: var(--muted); }
