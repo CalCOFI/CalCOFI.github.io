@@ -33,7 +33,10 @@
     gtag('js', new Date());
     // navigator.webdriver is set in every WebDriver/CDP-controlled browser, so
     // Playwright, Puppeteer and our own shot-scraper screenshots stop counting.
-    if (!navigator.webdriver) gtag('config', '{{ site.ga_tag }}');
+    // the dataset catalog pages report as content group `datasets`, the slug
+    // CalCOFI/analytics attributes by (data/registry.yml); every other page is
+    // the landing site and needs no group of its own
+    {% if page.url contains '/datasets/' %}if (!navigator.webdriver) gtag('config', '{{ site.ga_tag }}', { content_group: 'datasets' });{% else %}if (!navigator.webdriver) gtag('config', '{{ site.ga_tag }}');{% endif %}
   </script>
   {% endif %}
 </head>
