@@ -25,6 +25,14 @@ contact_email:     "data@calcofi.io"        # the public contact in JSON-LD and 
 register_use_url:  "https://github.com/CalCOFI/workflows/issues/new?labels=derived-product&title=Registered+use%3A+"
 stay_informed_url: "mailto:data@calcofi.io?subject=CalCOFI%20release%20updates"  # → a sign-up form when one exists
 
+# Jekyll drops every file whose name starts with `_` — including two of stac-browser's
+# hashed chunks under stac/assets/ (`_commonjsHelpers-*.js`, `__vite-browser-external-*.js`),
+# which left calcofi.io/stac/ a blank page (2026-09-05). After a stac-browser rebuild, update
+# the two hashed names here (stac/README.md).
+include:
+  - stac/assets/_commonjsHelpers-CE1G-McA.js
+  - stac/assets/__vite-browser-external-B1O5LaIO.js
+  - "stac/assets/_*"
 exclude:
   - README.md
   - LICENSE

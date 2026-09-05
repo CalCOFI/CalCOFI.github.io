@@ -46,3 +46,11 @@ Built 2026-09-05 from stac-browser 5.1.0-rc.1 (`e2d14b0`).
   `access-control-allow-origin: *` (checked 2026-09-05).
 - A staging release writes `gs://calcofi-db/stac-staging/` instead, so a rehearsal never rewrites
   what this browser reads.
+
+## After a rebuild: the underscore chunks
+
+Jekyll excludes any file whose name starts with `_`. Vite emits two such chunks
+(`assets/_commonjsHelpers-<hash>.js`, `assets/__vite-browser-external-<hash>.js`); without them the
+module graph fails and the page is blank. `_config.yml`'s `include:` lists them by name — update the
+two hashed names there after every rebuild (`ls stac/assets | grep '^_'`).
+
