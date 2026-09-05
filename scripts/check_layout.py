@@ -20,6 +20,9 @@ can only pass by the layout actually being fixed:
   hero       (dataset pages) the head band's two columns end within 120 px of each other, and no
              two-column region sits between the head and Cite. The CTD page's main column was
              418 px beside a 1,346 px sidebar — 928 px of blank page.
+  filter     (the catalog) choosing a category actually hides the other tiles and rows. `el.hidden`
+             is a UA rule, so `.cc-card { display: flex }` beat it and the filter hid nothing —
+             invisible until the grid packed, then the "hidden" tiles overlapped everything.
   url        (dataset pages) no .ds-url is taller than one line at 375 px. A URL in a right-hand
              table column wrapped to five lines on a phone.
   erddap     (dataset pages) each ERDDAP dataset id's tabledap page appears exactly once. It was
@@ -94,6 +97,31 @@ PROBE = r"""
         ratio: natural[i] > 0 ? +(drawn[i] / natural[i]).toFixed(3) : 1
       }))
     };
+  }
+
+  // ── the filter actually hides ───────────────────────────────────────────────
+  // `el.hidden` is a UA-stylesheet rule, so ANY author rule that sets `display` beats it — and
+  // .cc-card and .ds-row both set `display: flex`. The filter row hid nothing for as long as it
+  // existed (12 tiles and 41 rows stayed painted with one category selected), which only became
+  // visible when the grid packed: a tile JS thinks is hidden gets no span, is drawn one 8 px row
+  // tall, and spills over its neighbours. So: pick a category, apply it, and look.
+  const sel = d.getElementById("ds-cat");
+  if (sel) {
+    const opt = [...sel.options].map(o => o.value).filter(Boolean)[0];
+    if (opt) {
+      sel.value = opt;
+      sel.dispatchEvent(new w.Event("change", { bubbles: true }));
+      void d.body.offsetHeight;
+      out.filter = {
+        category: opt,
+        painted: [...d.querySelectorAll("[hidden]")]
+          .filter(el => cs(el).display !== "none")
+          .map(el => el.tagName + "." + String(el.className).slice(0, 40)),
+        tilesShown: [...(grid ? grid.children : [])].filter(t => !t.hidden).length
+      };
+      sel.value = "";
+      sel.dispatchEvent(new w.Event("change", { bubbles: true }));
+    }
   }
 
   // ── the ladder: a holding row is muted, and carries no --warn ───────────────
@@ -208,6 +236,14 @@ def check(path, r, width, theme, fails, notes):
             fails.append(f"{where}: grid {g['height']}px > {MAX_GRID_H}px")
         if width <= 400 and g["columns"] != 1:
             fails.append(f"{where}: grid is {g['columns']} columns, expected 1")
+
+    f = r.get("filter")
+    if f:
+        notes.append(f"{where}: filter {f['category']!r} -> {f['tilesShown']} tile(s) shown")
+        if f["painted"]:
+            fails.append(f"{where}: filtering by {f['category']!r} left {len(f['painted'])} hidden "
+                         f"element(s) still displayed (an author `display` rule beats [hidden]): "
+                         f"{', '.join(sorted(set(f['painted']))[:4])}")
 
     for h in r.get("holdings", []):
         if h["name"] != r["muted"]:

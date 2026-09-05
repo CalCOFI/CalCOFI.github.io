@@ -5,6 +5,15 @@
 
 * { box-sizing: border-box; }
 
+/* `el.hidden` must actually hide. The UA stylesheet's `[hidden] { display: none }` is at
+   USER-AGENT origin, so any author rule that sets `display` beats it — and this file sets
+   `display: flex` on both `.cc-card` (every tile) and `.ds-row` (every row). The filter row hides
+   by setting `.hidden = true`, so it was hiding nothing: 12 tiles and 41 rows stayed painted with
+   one category selected (measured 2026-09-05). Harmless-looking until the grid packed — a tile
+   that JS thinks is hidden gets no masonry span, is drawn one 8 px row tall, and its content
+   spills over its neighbours. One rule, at the top, before anything sets a display. */
+[hidden] { display: none !important; }
+
 html { scroll-behavior: smooth; }
 html, body {
   margin: 0; padding: 0;
@@ -279,7 +288,12 @@ main#panel { width: 100%; }
 .ds-mapwrap { display: grid; grid-template-rows: minmax(0, 1fr) auto; gap: 4px; min-height: 0; min-width: 0; justify-self: end; width: 100%; }
 .ds-mapbox { position: relative; min-height: 0; }
 .ds-mapbox .cc-map { position: absolute; inset: 0; width: 100%; height: 100%; }
-.ds-mapcap { font-size: var(--fs-sm); color: var(--muted); max-width: 46ch; }
+/* The drawing is portrait and the cell is landscape, so `meet` fits it by height and leaves the
+   slack on the LEFT (the SVG is `xMaxYMin`, flush right against the container edge). A caption
+   starting at the cell's left edge therefore floated 211 px away from the map it captions
+   (measured on swfsc_ichthyo at 1470 px). Push it right so its right edge is the map's right
+   edge — both flush to the container, which is what makes them read as one figure. */
+.ds-mapcap { font-size: var(--fs-sm); color: var(--muted); max-width: 46ch; margin-left: auto; }
 
 .ds-crumb { display: flex; gap: 8px; font-size: var(--fs-sm); color: var(--muted); margin-bottom: var(--space); }
 .ds-title { display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--space) * 2); font-size: clamp(30px, 5vw, 60px); overflow-wrap: anywhere; }
