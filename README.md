@@ -238,7 +238,7 @@ brew install pngquant                                # or apt, etc.
 scripts/shots.py                 # (re)capture every `shots: themed` card, both themes
 scripts/shots.py db-viz-hex      # just one
 scripts/shots.py --all           # plus the single-image cards, plus calcofi.io's own pages
-scripts/shots.py --pages         # only calcofi.io's own pages
+scripts/shots.py --pages         # ONLY calcofi.io's own pages
 scripts/shots.py datasets        # just one of them
 scripts/shots.py check           # luminance-check every themed image
 ```
