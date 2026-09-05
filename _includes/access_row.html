@@ -1,0 +1,48 @@
+{%- comment -%}
+  One Access row (plan D-6, Decisions 9 and 18). TWO LINES that span the full width:
+
+    line 1   the label (a link when it has a URL) · its chips · its meta · the copy button
+    line 2   the URL, mono, on its own line, MIDDLE-ELIDED — a head that shrinks with
+             text-overflow and a tail that never does, so the informative end
+             (`data_0.parquet`, `?datasets=calcofi_ctd-cast`) is still visible at 375 px
+
+  URLs used to sit in a right-hand table column at 34 % width and wrapped to five lines on a
+  phone. The whole URL is in `title=` and one tap away on the copy button.
+
+  include params: row (an Access row from _plugins/datasets.rb) · dim (truthy: draw the URL muted)
+{%- endcomment -%}
+{%- assign r = include.row -%}
+<div class="ds-arow">
+  <div class="ds-arow-l1">
+    {%- if r.label_url -%}
+    <a class="ds-arow-k" href="{{ r.label_url }}"{% if r.label_title %} title="{{ r.label_title | escape }}"{% endif %}>{{ r.label | escape }}</a>
+    {%- else -%}
+    <span class="ds-arow-k"{% if r.label_title %} title="{{ r.label_title | escape }}"{% endif %}>{{ r.label | escape }}</span>
+    {%- endif -%}
+    {%- if r.ident %}<span class="ds-arow-id" title="the identifier this portal knows the dataset by">{{ r.ident | escape }}</span>{% endif -%}
+    {%- for c in r.chips %}<span class="cc-chip {{ c.class }}"{% if c.title %} title="{{ c.title | escape }}"{% endif %}>{{ c.text | escape }}</span>{% endfor -%}
+    {%- if r.title_text %}<span class="ds-arow-t">{{ r.title_text | escape }}</span>{% endif -%}
+    {%- if r.meta %}<span class="ds-arow-m">{{ r.meta | escape }}</span>{% endif -%}
+    {%- if r.hash %}<span class="ds-arow-hash" title="sha256 {{ r.hash | escape }}">sha256 {{ r.hash | slice: 0, 12 | escape }}…</span>
+      <button class="cc-copy" type="button" data-copy="{{ r.hash | escape }}" aria-label="Copy the sha256"><i class="cc-i cc-i-ui-copy" aria-hidden="true"></i></button>{% endif -%}
+    {%- if r.issue %}<a class="cc-text-link ds-arow-issue" href="{{ r.issue }}">issue ↗</a>{% endif -%}
+  </div>
+  {%- if r.code -%}
+  <div class="ds-arow-code">
+    <pre class="ds-code"><code>{{ r.code | escape }}</code></pre>
+    <button class="cc-copy" type="button" data-copy="{{ r.code | escape }}" aria-label="Copy the code"><i class="cc-i cc-i-ui-copy" aria-hidden="true"></i></button>
+  </div>
+  {%- endif -%}
+  {%- if r.note -%}
+  <details class="ds-details ds-arow-note"><summary>{{ r.note_summary | default: "note" | escape }}</summary>
+    <p class="cc-muted">{{ r.note | escape }}</p></details>
+  {%- endif -%}
+  {%- if r.url -%}
+  {%- comment -%} head and tail are split in the plugin (Catalog#split_url): the tail is capped so a
+    long query string cannot push the line through the container {%- endcomment -%}
+  <p class="ds-url{% if include.dim %} ds-url-dim{% endif %}" title="{{ r.url | escape }}">
+    <span class="ds-url-h">{{ r.url_head | escape }}</span><span class="ds-url-t">{{ r.url_tail | escape }}</span>
+    <button class="cc-copy" type="button" data-copy="{{ r.url | escape }}" aria-label="Copy the URL"><i class="cc-i cc-i-ui-copy" aria-hidden="true"></i></button>
+  </p>
+  {%- endif -%}
+</div>

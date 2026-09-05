@@ -1,0 +1,42 @@
+{%- comment -%}
+  THE one ERDDAP listing (plan D-6, Decision 19). ERDDAP used to be listed twice — once under
+  Download for its three data formats per id, once under Services for its page and info link — so
+  three ids became thirteen rows and the word "ERDDAP" never appeared beside them.
+
+  A CSS grid, one row per ERDDAP dataset id: the id in mono · its grain · then the formats and the
+  service links together (CSV · netCDF · JSON · page · info · graph). It folds to one id per row
+  at 520 px. Under it: the grain glossary, and any legacy id with what replaced it, muted.
+
+  include params: block (an Access block carrying matrix[], gloss[], legacy[])
+{%- endcomment -%}
+{%- assign b = include.block -%}
+<div class="ds-matrix">
+  <span class="ds-matrix-hd">ERDDAP dataset</span>
+  <span class="ds-matrix-hd">grain</span>
+  <span class="ds-matrix-hd">data &amp; pages</span>
+  {%- for m in b.matrix -%}
+  <span class="ds-matrix-id"{% if m.title %} title="{{ m.title | escape }}"{% endif %}>{{ m.id | escape }}</span>
+  <span class="ds-matrix-g">{{ m.grain | escape }}</span>
+  <span class="ds-matrix-f">
+    {%- for f in m.formats %}<a href="{{ f.url }}">{{ f.name | escape }}</a>{% endfor -%}
+    <span class="ds-matrix-sep" aria-hidden="true">·</span>
+    <a href="{{ m.page }}">page</a>
+    {%- if m.info %}<a href="{{ m.info }}">info</a>{% endif -%}
+    {%- if m.graph %}<a href="{{ m.graph }}">graph</a>{% endif -%}
+    <button class="cc-copy" type="button" data-copy="{{ m.page }}" aria-label="Copy the ERDDAP URL for {{ m.id | escape }}"><i class="cc-i cc-i-ui-copy" aria-hidden="true"></i></button>
+  </span>
+  {%- endfor -%}
+</div>
+{%- if b.gloss.size > 0 -%}
+<dl class="ds-gloss">
+  {%- for g in b.gloss -%}
+  <dt>{{ g.grain | escape }}</dt><dd>{{ g.desc | escape }}</dd>
+  {%- endfor -%}
+</dl>
+{%- endif -%}
+{%- if b.legacy.size > 0 -%}
+<p class="ds-legacy cc-muted">Legacy ids, still answering until {{ b.legacy[0].sunset | escape }}:
+  {%- for l in b.legacy %} <a class="ds-matrix-id" href="{{ l.url }}">{{ l.id | escape }}</a>
+  <span>({{ l.note | escape }})</span>{% unless forloop.last %} ·{% endunless %}{% endfor -%}
+</p>
+{%- endif -%}

@@ -25,6 +25,8 @@
 # plugin runs; `jekyll build` on a fresh clone runs it too.
 
 require "json"
+require "cgi"
+require_relative "derive_id"
 
 module CalCOFI
   # ── small formatters ───────────────────────────────────────────────────────
@@ -67,14 +69,16 @@ module CalCOFI
   # ── the record, wrapped ────────────────────────────────────────────────────
   class Catalog
     include Fmt
-    attr_reader :rec, :site, :grid
+    attr_reader :rec, :site, :grid, :land, :coverage_stations
 
     ERDDAP_FORMATS = [%w[csv CSV], %w[nc netCDF], %w[json JSON]].freeze
 
-    def initialize(site, rec, grid)
+    def initialize(site, rec, grid, land = [], coverage = {})
       @site = site
       @rec  = rec
       @grid = grid
+      @land = land
+      @coverage_stations = coverage
       @base = site.config["url"].to_s.sub(%r{/\z}, "")
       @contact = site.config["contact_email"] || "data@calcofi.io"
     end
@@ -116,7 +120,9 @@ module CalCOFI
               "url"      => p["live_url"],
               "section"  => sections.dig(p["section"], "title"),
               "group"    => group_titles[p["group"]] || p["group"],
-              "section_id" => p["section"]
+              "section_id" => p["section"],
+              # the ONE place a product-to-dataset link is written (plan Decision 10)
+              "dataset_url" => p["dataset_url"]
             }
           end
         end
@@ -353,139 +359,527 @@ module CalCOFI
         %(role="img" aria-label="Observations per year, #{ymin} to #{ymax}">#{bars.join}</svg>)
     end
 
-    # ── the bbox over the station grid: a static SVG, no map library ─────────
-    # equirectangular with a cos(mean latitude) correction on longitude, over the union of the
-    # grid's extent and the dataset's bbox, so the box is always in frame.
-    def bbox_svg(bbox)
-      pts = grid
-      return nil if bbox.nil? || bbox.values.any?(&:nil?)
-      lons = [bbox["lon_min"], bbox["lon_max"]] + pts.map(&:first)
-      lats = [bbox["lat_min"], bbox["lat_max"]] + pts.map(&:last)
-      x0, x1 = lons.min, lons.max
-      y0, y1 = lats.min, lats.max
-      pad_x = [(x1 - x0) * 0.04, 0.5].max
-      pad_y = [(y1 - y0) * 0.04, 0.5].max
-      x0 -= pad_x; x1 += pad_x; y0 -= pad_y; y1 += pad_y
+    # ── the extent map: where the dataset actually is, over a coast ──────────
+    # A static inline SVG drawn here at build time — no library, no tile server, no external asset,
+    # every colour a brand token so the theme toggle repaints it (plan D-5, Decisions 5–7).
+    #
+    # THE FRAME RULE. Not the record's bbox: the standard + extended grid UNION the cells this
+    # dataset sampled, padded 6 %. The bbox lies for the ichthyoplankton (0–54° N, 180–77° W from
+    # bad upstream coordinates), and the historical lines run to 48° N whether or not a dataset ever
+    # sampled them, so framing on either alone draws the wrong ocean. The record's bbox is still
+    # drawn — clipped to the frame, dashed, with a corner note when it continues beyond.
+    #
+    # Projection: equirectangular with a cos(mean latitude) correction on longitude, as bbox_svg
+    # used. Width is 360; height follows the frame's aspect.
+    MAP_W = 360.0
+
+    def map_svg(r)
+      cells = grid
+      return nil if cells.empty?
+      key     = r && r["dataset_key"]
+      sampled = key ? (coverage_stations[key] || {}) : {}
+
+      core = cells.select { |c| %w[standard extended].include?(c["pattern"]) || sampled.key?(c["key"]) }
+      core = cells if core.empty?
+      x0, x1 = core.map { |c| c["lon"] }.minmax
+      y0, y1 = core.map { |c| c["lat"] }.minmax
+      padx = [(x1 - x0) * 0.06, 0.4].max
+      pady = [(y1 - y0) * 0.06, 0.4].max
+      x0 -= padx; x1 += padx; y0 -= pady; y1 += pady
+
       k  = Math.cos((y0 + y1) / 2 * Math::PI / 180)
       wl = (x1 - x0) * k
       hl = (y1 - y0)
-      w  = 320.0
-      h  = [(w * hl / wl), 40.0].max
+      w  = MAP_W
+      h  = (w * hl / wl).round
       px = ->(lon) { (lon - x0) * k / wl * w }
       py = ->(lat) { (y1 - lat) / hl * h }
 
-      dots = pts.map { |lon, lat| format('<circle cx="%.1f" cy="%.1f" r="1.1"/>', px.(lon), py.(lat)) }
-      bx = px.(bbox["lon_min"])
-      bw = px.(bbox["lon_max"]) - bx
-      byy = py.(bbox["lat_max"])
-      bh = py.(bbox["lat_min"]) - byy
-      label = format("%.1f–%.1f°N, %.1f–%.1f°E", bbox["lat_min"], bbox["lat_max"], bbox["lon_min"], bbox["lon_max"])
-      %(<svg class="ds-bbox" viewBox="0 0 #{format('%.0f', w)} #{format('%.0f', h)}" role="img" ) +
-        %(aria-label="Extent #{label} over the CalCOFI station grid">) +
-        %(<g class="ds-bbox-grid">#{dots.join}</g>) +
-        format('<rect class="ds-bbox-box" x="%.1f" y="%.1f" width="%.1f" height="%.1f"/>', bx, byy, bw, bh) +
-        "</svg>"
+      out = +%(<rect class="water" width="#{w.to_i}" height="#{h}"/>)
+
+      # the coast, clipped to this frame at draw time (the asset is clipped to the whole region)
+      d = land.filter_map do |ring|
+        c = clip_ring(ring, x0, x1, y0, y1)
+        next if c.size < 3
+        "M" + c.map { |lon, lat| format("%.1f %.1f", px.(lon), py.(lat)) }.join(" L") + " Z"
+      end.join(" ")
+      out << %(<path class="land" d="#{d}"/>) unless d.empty?
+
+      # every cell in frame hollow; the ones this dataset sampled filled, radius proportional to
+      # the square root of its observations, and only those carry a <title> — the hovers on 218
+      # unsampled cells were two thirds of the file
+      max = sampled.values.max || 1
+      dots = +""
+      cells.each do |c|
+        next unless c["lon"].between?(x0, x1) && c["lat"].between?(y0, y1)
+        cx = format("%.1f", px.(c["lon"]))
+        cy = format("%.1f", py.(c["lat"]))
+        if (n = sampled[c["key"]])
+          rr = 1.6 + 4.4 * Math.sqrt(n.to_f / max)
+          dots << format('<circle class="st st-on" cx="%s" cy="%s" r="%.1f"><title>%s · %s obs</title></circle>',
+                         cx, cy, rr, c["key"], Fmt.num(n))
+        else
+          dots << %(<circle class="st" cx="#{cx}" cy="#{cy}" r="1.3"/>)
+        end
+      end
+      out << %(<g class="stations">#{dots}</g>)
+
+      beyond = false
+      if (b = r && r.dig("coverage", "bbox")) && b.values.none?(&:nil?)
+        beyond = b["lon_min"] < x0 || b["lon_max"] > x1 || b["lat_min"] < y0 || b["lat_max"] > y1
+        bx  = px.([b["lon_min"], x0].max)
+        bw  = px.([b["lon_max"], x1].min) - bx
+        byy = py.([b["lat_max"], y1].min)
+        bh  = py.([b["lat_min"], y0].max) - byy
+        out << format('<rect class="bbox" x="%.1f" y="%.1f" width="%.1f" height="%.1f"/>',
+                      bx, byy, [bw, 0].max, [bh, 0].max) if bw > 0 && bh > 0
+      end
+
+      # a 5° graticule as edge ticks, so the map says where it is without a legend
+      ticks = +""
+      (-180..180).step(5) do |lon|
+        next unless lon > x0 && lon < x1
+        ticks << format('<text class="tk" x="%.1f" y="%.1f" text-anchor="middle">%d°W</text>',
+                        px.(lon), h - 3.0, lon.abs)
+      end
+      (-90..90).step(5) do |lat|
+        next unless lat > y0 && lat < y1
+        ticks << format('<text class="tk" x="4" y="%.1f">%d°N</text>', py.(lat) + 3.5, lat)
+      end
+      ticks << %(<text class="tk" x="#{(w - 4).to_i}" y="12" text-anchor="end">extent continues beyond the frame</text>) if beyond
+      out << %(<g class="ticks">#{ticks}</g>)
+
+      label = if key
+        "#{sampled.size} CalCOFI station#{'s' unless sampled.size == 1} sampled by this dataset, " \
+        "over the survey grid and the coastline"
+      else
+        "The CalCOFI station grid over the coastline"
+      end
+      {
+        "svg" => %(<svg class="cc-map" viewBox="0 0 #{w.to_i} #{h}" preserveAspectRatio="xMaxYMin meet" ) +
+                 %(role="img" aria-label="#{label}">#{out}</svg>),
+        "w" => w.to_i, "h" => h, "aspect" => format("%d / %d", w.to_i, h),
+        "n_stations" => sampled.size, "beyond" => beyond,
+        "frame" => format("%.1f…%.1f°, %.1f…%.1f°", x0, x1, y0, y1)
+      }
     end
 
-    # ── the Access table, grouped by how (plan D-4 / Decision 4) ─────────────
+    # Sutherland–Hodgman against the frame rectangle — the same clip build_land.py applies once to
+    # the whole region, applied again per map because each dataset frames differently
+    def clip_ring(ring, x0, x1, y0, y1)
+      poly = ring
+      [[0, x0, :>=], [0, x1, :<=], [1, y0, :>=], [1, y1, :<=]].each do |axis, val, cmp|
+        return [] if poly.empty?
+        inside = ->(p) { p[axis].send(cmp, val) }
+        out = []
+        poly.each_with_index do |p, i|
+          q = poly[i - 1]
+          if inside.(p)
+            out << intersect(q, p, axis, val) unless inside.(q)
+            out << p
+          elsif inside.(q)
+            out << intersect(q, p, axis, val)
+          end
+        end
+        poly = out
+      end
+      poly
+    end
+
+    def intersect(a, b, axis, val)
+      return a if (b[axis] - a[axis]).abs < 1e-12
+      t = (val - a[axis]) / (b[axis] - a[axis])
+      axis.zero? ? [val, a[1] + t * (b[1] - a[1])] : [a[0] + t * (b[0] - a[0]), val]
+    end
+
+    # ── Access: full-width rows, one listing per source, the URL always in view ──
+    # Six groups (plan D-6, Decisions 8, 9, 18, 19). What changed from the first cut:
+    #   · a row is TWO LINES that span the page — label + chips + meta, then the URL on its own
+    #     line, middle-elided. URLs in a right-hand table column wrapped to five lines on a phone.
+    #   · Download and Services merged into "Get the data", so ERDDAP is listed ONCE, as a matrix
+    #     of id x (CSV · netCDF · JSON · page · info · graph). It used to appear in both.
+    #   · "Metadata records" is records ABOUT the data, kept apart from the data.
+    #   · Archives & portals lists the portal's own identifier, not just the portal's name.
+    #
+    # Row keys the includes read: label · label_url · chips[] · meta · url · hash · code ·
+    # note (+ note_summary) · issue · ident.
     def access_groups(d)
-      key   = d["dataset_key"]
-      dist  = d["distributions"] || []
+      key    = d["dataset_key"]
+      dist   = d["distributions"] || []
       tables = d["tables"] || []
       groups = []
 
-      # explore — the APPS that declare this dataset in products.yml (the reverse index). The
-      # Access / Build products get their own rows below, so they are not repeated here.
+      # ── Explore ──────────────────────────────────────────────────────────────
+      # Which app opens on THIS dataset and which merely opens is the first thing a reader wants,
+      # so it is a chip, and the deep link comes from the product's own `dataset_url:` template in
+      # products.yml — the one place a product-to-dataset link is written (Decision 10).
       rows = products_by_dataset[key]
              .select { |p| %w[explore students].include?(p["section_id"]) }
              .map do |p|
-        url = p["key"] == "explore" ? "#{p['url']}?datasets=#{key}" : p["url"]
-        { "label" => p["title"], "url" => url,
-          "meta" => p["section_id"] == "students" ? "student contribution" : p["group"] }
+        tmpl = p["dataset_url"]
+        deep = Fmt.present(tmpl)
+        { "label" => p["title"], "label_url" => deep ? tmpl.gsub("{key}", key) : p["url"],
+          "url"   => deep ? tmpl.gsub("{key}", key) : p["url"],
+          "chips" => [deep ?
+            { "text" => "this dataset", "class" => "cc-chip-accent",
+              "title" => "the link opens the app with this dataset already selected" } :
+            { "text" => "the app", "class" => "cc-chip-quiet",
+              "title" => "this app has no dataset parameter yet — it opens at its own start" }],
+          "meta"  => p["section_id"] == "students" ? "student contribution" : p["group"] }
       end
-      groups << { "id" => "explore", "title" => "Explore", "rows" => rows } unless rows.empty?
+      groups << { "id" => "explore", "title" => "Explore",
+                  "lede" => "Apps that read this dataset from the release. A row marked " \
+                            "“this dataset” opens with it already selected.",
+                  "blocks" => [{ "rows" => rows }] } unless rows.empty?
 
-      # query — the browser SQL, with a snippet that resolves this dataset's tables
+      # ── Query ────────────────────────────────────────────────────────────────
+      # A saved query where db-query has one; otherwise the SQL shell with this dataset's SQL
+      # already in the box (?sql=, UI-E). The table is the first of the dataset's own tables that
+      # carries dataset_key — `obs`, else `sample`: `FROM obs` was simply wrong for the datasets
+      # whose only table is `sample`.
       unless tables.empty?
+        tbl = %w[obs sample].find { |t| tables.include?(t) } || tables.first
         sql = "-- #{key} in the CalCOFI release #{release['version']}\n" \
-              "SELECT * FROM obs WHERE dataset_key = '#{key}' LIMIT 100;"
-        groups << { "id" => "query", "title" => "Query", "rows" => [
-          { "label" => "db-query — SQL in your browser", "url" => "https://calcofi.io/db-query/",
-            "meta"  => "DuckDB-WASM over the released parquet" },
-          { "label" => "SQL", "code" => sql, "meta" => "tables: #{tables.join(', ')}" }
-        ] }
+              "SELECT *\nFROM __TBL:#{tbl}__\nWHERE dataset_key = '#{key}'\nLIMIT 100;"
+        saved = SAVED_QUERIES[key]
+        rows = if saved
+          [{ "label" => "db-query — the saved query for this dataset",
+             "label_url" => "https://calcofi.io/db-query/##{saved}",
+             "url" => "https://calcofi.io/db-query/##{saved}",
+             "meta" => "DuckDB-WASM over the released parquet, in your browser" }]
+        else
+          [{ "label" => "db-query — the SQL shell, prefilled",
+             "label_url" => query_shell_url(sql),
+             "url" => query_shell_url(sql),
+             "meta" => "DuckDB-WASM over the released parquet, in your browser",
+             "code" => sql }]
+        end
+        groups << { "id" => "query", "title" => "Query",
+                    "lede" => "SQL against the release itself, in the browser — nothing to install " \
+                              "and nothing downloaded until a query asks for it. `__TBL:#{tbl}__` " \
+                              "resolves to the pinned release’s parquet.",
+                    "blocks" => [{ "rows" => rows }] }
       end
 
-      # code — the two packages, same wording as cc_cite()
-      groups << { "id" => "code", "title" => "Code", "rows" => [
-        { "label" => "R · calcofi4r", "url" => "https://calcofi.io/calcofi4r/",
+      # ── Code ─────────────────────────────────────────────────────────────────
+      obj = (d["objects"] || []).find { |o| o["url"] } || dist.find { |x| x["format"] == "parquet" }
+      code_rows = [
+        { "label" => "R · calcofi4r", "label_url" => "https://calcofi.io/calcofi4r/",
           "code" => "con <- calcofi4r::cc_get_db()\ncalcofi4r::cc_cite(\"#{key}\")" },
-        { "label" => "Python · calcofi4py", "url" => "https://calcofi.io/calcofi4py/",
+        { "label" => "Python · calcofi4py", "label_url" => "https://calcofi.io/calcofi4py/",
           "code" => "con = calcofi4py.cc_get_db()\ncalcofi4py.cite(\"#{key}\")" }
-      ] }
+      ]
+      if obj && obj["url"]
+        code_rows << { "label" => "DuckDB, anywhere",
+                       "meta" => "no CalCOFI package needed — the object is a plain parquet file",
+                       "code" => "SELECT * FROM read_parquet('#{obj['url']}') LIMIT 100;" }
+      end
+      groups << { "id" => "code", "title" => "Code",
+                  "lede" => "The same release, from a script.",
+                  "blocks" => [{ "rows" => code_rows }] }
 
-      # download — parquet objects, the CF netCDF, ERDDAP's data formats, the source download
-      dl = []
-      dist.select { |x| x["format"] == "parquet" }.each do |x|
-        dl << {
-          "label" => x["title"] || x["table"],
-          "url"   => x["url"],
-          "meta"  => [Fmt.bytes(x["bytes"]), x["since"] ? "since #{x['since']}" : nil].compact.join(" · "),
-          "hash"  => x["sha256"]
-        }
+      # ── Get the data ─────────────────────────────────────────────────────────
+      blocks = []
+
+      objs = (d["objects"] || []).map do |o|
+        shared = o["shared"] || o["scope"] == "table"
+        { "label" => o["table"],
+          "label_url" => o["url"],
+          "url"   => o["url"],
+          "meta"  => [shared ? "whole table, shared with every dataset in it" : "this dataset’s rows",
+                      Fmt.bytes(o["bytes"]),
+                      o["since"] ? "since #{o['since']}" : nil,
+                      Fmt.present(o["table_description"])].compact.join(" · "),
+          "hash"  => o["sha256"] }
       end
-      dist.select { |x| x["format"] == "netcdf" }.each do |x|
-        dl << { "label" => x["title"] || "CF netCDF", "url" => x["url"],
-                "meta" => Fmt.bytes(x["bytes"]), "hash" => x["sha256"], "note" => x["cf_scope"] }
-      end
-      erddap_current(dist).each do |x|
-        ERDDAP_FORMATS.each do |ext, name|
-          dl << { "label" => "#{x['id']} · #{name}", "url" => x["url"].sub(/\.html\z/, ".#{ext}"),
-                  "meta" => x["grain"] }
+      if objs.empty?
+        objs = dist.select { |x| x["format"] == "parquet" }.map do |x|
+          { "label" => x["table"] || x["title"], "label_url" => x["url"], "url" => x["url"],
+            "meta" => [Fmt.bytes(x["bytes"]), x["since"] ? "since #{x['since']}" : nil].compact.join(" · "),
+            "hash" => x["sha256"] }
         end
       end
-      dist.select { |x| x["kind"] == "source" && x["portal"] != "edi" }.each do |x|
-        dl << { "label" => x["title"] || "source download", "url" => x["url"],
-                "meta" => x["portal"], "chip" => x["status"] }
-      end
-      groups << { "id" => "download", "title" => "Download", "rows" => dl } unless dl.empty?
+      blocks << { "title" => "Files from the release (Parquet)",
+                  "lede" => "The frozen objects this release is made of. A partition holds only " \
+                            "this dataset’s rows; a shared table holds every dataset’s, so filter " \
+                            "on `dataset_key`.",
+                  "rows" => objs } unless objs.empty?
 
-      # services — the ERDDAP dataset pages, the ISO metadata, a STAC collection when one exists
-      sv = []
-      erddap_current(dist).each do |x|
-        sv << { "label" => x["title"] || x["id"], "url" => x["url"], "meta" => x["grain"],
-                "extra" => x["info_url"] ? { "label" => "info", "url" => x["info_url"] } : nil }
+      nc = dist.select { |x| x["format"] == "netcdf" }.map do |x|
+        { "label" => Fmt.present(x["title"]) || "CF netCDF",
+          "label_url" => x["url"], "url" => x["url"],
+          "meta" => Fmt.bytes(x["bytes"]), "hash" => x["sha256"],
+          "note" => Fmt.present(x["cf_scope"]), "note_summary" => "how far this file is CF" }
       end
+      blocks << { "title" => "CF netCDF",
+                  "lede" => "One self-describing file, for a tool that reads netCDF.",
+                  "rows" => nc } unless nc.empty?
+
+      # THE one ERDDAP listing: a matrix, so the format links and the service links live together
+      cur = erddap_current(dist)
+      unless cur.empty?
+        matrix = cur.map do |x|
+          base = x["url"].sub(/\.html\z/, "")
+          { "id" => x["id"], "grain" => x["grain"], "title" => Fmt.present(x["title"]),
+            "page" => x["url"], "info" => x["info_url"], "graph" => "#{base}.graph",
+            "formats" => ERDDAP_FORMATS.map { |ext, name| { "name" => name, "url" => "#{base}.#{ext}" } } }
+        end
+        grains = cur.map { |x| x["grain"] }.compact.uniq
+        gloss = grains.map do |g|
+          # `grain_description` arrives with calcofi4db 4.5.0 / schema 1.1 (plan D-9)
+          desc = cur.find { |x| x["grain"] == g && Fmt.present(x["grain_description"]) }&.dig("grain_description")
+          { "grain" => g, "desc" => desc || GRAIN_FALLBACK[g] }
+        end.select { |g| g["desc"] }
+        legacy = dist.select { |x| erddap_row?(x) && x["status"] == "superseded" }.map do |x|
+          { "id" => x["id"], "url" => x["url"],
+            "note" => x["superseded_by"] ? "replaced by #{x['superseded_by']}" : "superseded",
+            "sunset" => ERDDAP_SUNSET }
+        end
+        blocks << { "title" => "ERDDAP (erddap.calcofi.io)",
+                    "lede" => "One ERDDAP dataset per grain, each with its own data formats and " \
+                              "its own pages. Subset in the browser or query it from a script.",
+                    "matrix" => matrix, "gloss" => gloss, "legacy" => legacy }
+      end
+
+      src = dist.select { |x| x["kind"] == "source" && x["portal"] != "edi" }.map do |x|
+        { "label" => Fmt.present(x["title"]) || "source download",
+          "label_url" => x["url"], "url" => x["url"],
+          "meta" => portal_name(x["portal"]),
+          "chips" => [status_chip(x["status"])].compact }
+      end
+      blocks << { "title" => "From the provider",
+                  "lede" => "The dataset as its provider publishes it, before CalCOFI ingested it.",
+                  "rows" => src } unless src.empty?
+
+      groups << { "id" => "data", "title" => "Get the data",
+                  "lede" => "Every way to have the bytes, by source. Nothing here asks you to " \
+                            "register first.",
+                  "blocks" => blocks } unless blocks.empty?
+
+      # ── Metadata records ─────────────────────────────────────────────────────
+      # Records ABOUT the data, kept apart from the data (Decision 19: Services dissolves here).
+      meta_rows = []
       dist.select { |x| x["format"] == "iso19115" }.each do |x|
-        sv << { "label" => x["title"] || "ISO 19115-3 metadata", "url" => x["url"], "meta" => "XML" }
+        meta_rows << { "label" => "ISO 19115-3", "label_url" => x["url"], "url" => x["url"],
+                       "meta" => "XML, from the ERDDAP WAF" }
       end
-      dist.select { |x| x["format"] == "stac" }.each do |x|
-        sv << { "label" => x["title"] || "STAC collection", "url" => x["url"], "meta" => "JSON" }
+      if (primary = (cur || []).find { |x| x["id"] == key } || cur&.first)
+        fgdc = "https://erddap.calcofi.io/erddap/metadata/fgdc/xml/#{primary['id']}_fgdc.xml"
+        meta_rows << { "label" => "FGDC CSDGM", "label_url" => fgdc, "url" => fgdc, "meta" => "XML" }
       end
-      dist.select { |x| x["format"] == "erddap" && x["status"] == "superseded" }.each do |x|
-        sv << { "label" => x["title"] || x["id"], "url" => x["url"], "chip" => "superseded",
-                "meta" => x["superseded_by"] ? "replaced by #{x['superseded_by']}" : nil }
-      end
-      groups << { "id" => "services", "title" => "Services", "rows" => sv } unless sv.empty?
+      meta_rows << { "label" => "JSON-LD (schema.org/Dataset)",
+                     "label_url" => abs("/datasets/#{key}.jsonld"), "url" => abs("/datasets/#{key}.jsonld"),
+                     "meta" => "what this page publishes to Google Dataset Search" }
+      meta_rows << { "label" => "the record, verbatim",
+                     "label_url" => abs("/datasets/#{key}.json"), "url" => abs("/datasets/#{key}.json"),
+                     "meta" => "the release’s own entry for this dataset — everything on this page comes from it" }
+      meta_rows << { "label" => "DCAT-US 1.1", "label_url" => abs("/data.json"), "url" => abs("/data.json"),
+                     "meta" => "the whole catalog, for data.gov and any CKAN" }
+      stac = dist.find { |x| x["format"] == "stac" }
+      stac_url = stac ? stac["url"] : stac_collection_url(key)
+      meta_rows << { "label" => "STAC collection", "label_url" => stac_url, "url" => stac_url,
+                     "meta" => "one Collection per dataset, an Item per release" } if stac_url
+      groups << { "id" => "metadata", "title" => "Metadata records",
+                  "lede" => "Records about the data, in the standards each portal harvests.",
+                  "blocks" => [{ "rows" => meta_rows }] }
 
-      # archives & portals — the registrations, then every external record of the same rows
-      ar = (d["registrations"] || []).map do |r|
-        { "label" => portal_name(r["portal"]), "url" => r["url"], "chip" => r["status"],
-          "meta" => r["note"], "issue" => r["issue"] || (r["issues"] || []).first }
+      # ── Archives & portals ───────────────────────────────────────────────────
+      # Portal · identifier · title · status. The identifier is the thing a person needs; the
+      # record carries it on distributions[] and, from calcofi4db 4.5.0, on registrations[] too.
+      ar = (d["registrations"] || []).map do |g|
+        ident = Fmt.present(g["id"]) || DeriveId.call(g["url"])
+        issue = Fmt.present(g["issue"]) || (g["issues"] || []).first
+        { "label" => portal_name(g["portal"]), "label_url" => Fmt.present(g["url"]),
+          "label_title" => PORTAL_ABOUT[g["portal"]],
+          "ident" => ident, "title_text" => Fmt.present(g["title"]),
+          "chips" => [status_chip(g["status"])].compact,
+          "meta"  => Fmt.present(g["note"]), "issue" => issue,
+          "url"   => Fmt.present(g["url"]) }
       end
-      dist.select { |x| %w[mirror archive].include?(x["kind"]) || (x["kind"] == "source" && x["portal"] == "edi") }.each do |x|
-        ar << { "label" => x["title"] || x["id"] || x["portal"], "url" => x["url"],
-                "chip" => x["status"], "meta" => portal_name(x["portal"]), "note" => x["notes"] }
+      dist.select { |x| %w[mirror archive].include?(x["kind"]) ||
+                        (x["kind"] == "source" && x["portal"] == "edi") }.each do |x|
+        ar << { "label" => portal_name(x["portal"]), "label_url" => x["url"],
+                "label_title" => PORTAL_ABOUT[x["portal"]],
+                "ident" => Fmt.present(x["id"]) || DeriveId.call(x["url"]),
+                "title_text" => Fmt.present(x["title"]),
+                "chips" => [status_chip(x["status"])].compact,
+                "meta" => Fmt.present(x["notes"]), "url" => x["url"] }
       end
-      groups << { "id" => "archives", "title" => "Archives & portals", "rows" => ar } unless ar.empty?
+      groups << { "id" => "archives", "title" => "Archives & portals",
+                  "lede" => "Where this dataset is registered outside calcofi.io, by the " \
+                            "identifier each portal knows it as.",
+                  "blocks" => [{ "rows" => ar }] } unless ar.empty?
 
-      groups
+      groups.each { |g| (g["blocks"] || []).each { |b| (b["rows"] || []).each { |row| split_row_url(row) } } }
     end
 
+    def split_row_url(row)
+      return row unless (u = Fmt.present(row["url"]))
+      row["url_head"], row["url_tail"] = split_url(u)
+      row
+    end
+
+    # ── nothing lost in the regrouping ──────────────────────────────────────
+    # The Access model was rewritten from six flat groups into six grouped ones, and the one way
+    # that goes wrong is silently: a distribution whose shape no selector matches simply stops
+    # being on the page. (It happened: the two legacy ERDDAP ids carry no `format` key.) So the
+    # generator checks its own output — every URL in the record's distributions[] and
+    # registrations[] must appear somewhere in the rendered groups.
+    def unlisted_endpoints(r, groups)
+      shown = []
+      groups.each do |g|
+        (g["blocks"] || []).each do |b|
+          (b["rows"] || []).each { |row| shown << row["url"] << row["label_url"] }
+          (b["matrix"] || []).each do |m|
+            shown << m["page"] << m["info"] << m["graph"]
+            (m["formats"] || []).each { |f| shown << f["url"] }
+          end
+          (b["legacy"] || []).each { |l| shown << l["url"] }
+        end
+      end
+      shown = shown.compact.map { |u| u.sub(/\.\w+\z/, "") }.uniq
+      # `notebook` and `page` are context, not access: the ingest notebook and the calcofi.org page
+      # render in Overview's head links (r.links.workflow / r.links.calcofi_org), so they are
+      # exempt here rather than duplicated into Access.
+      want = ((r["distributions"] || []).reject { |x| %w[notebook page].include?(x["kind"]) } +
+              (r["registrations"] || []))
+             .filter_map { |x| Fmt.present(x["url"]) }
+      want.reject { |u| shown.include?(u.sub(/\.\w+\z/, "")) }
+    end
+
+    # ── a holding: where the data live today, and what is holding it up (plan D-7) ──
+    # A holding used to get `access = []` and therefore no Access section at all, which made every
+    # holding page a dead end — the one thing a reader wants from it is where to get the data now.
+    def holding_access(h)
+      st = h["status"] || {}
+      rows = (h["distributions"] || []).select { |x| %w[source page mirror archive].include?(x["kind"]) }
+                                       .map do |x|
+        { "label" => portal_name(x["portal"]), "label_url" => x["url"],
+          "label_title" => PORTAL_ABOUT[x["portal"]],
+          "ident" => Fmt.present(x["id"]) || DeriveId.call(x["url"]),
+          "title_text" => Fmt.present(x["title"]) || Fmt.present(x["notes"]),
+          "url" => x["url"], "chips" => [status_chip(x["status"])].compact }
+      end
+      if rows.empty? && (link = h.dig("links", "data_source"))
+        rows << { "label" => "source", "label_url" => link, "url" => link,
+                  "ident" => DeriveId.call(link) }
+      end
+      groups = []
+      groups << { "id" => "source", "title" => "Where it lives today",
+                  "lede" => "CalCOFI has not ingested this dataset, so there is no release table, " \
+                            "no parquet and no ERDDAP service for it. This is where it is now.",
+                  "blocks" => [{ "rows" => rows }] } unless rows.empty?
+
+      status_rows = []
+      if (stage = Fmt.present(st["stage"]))
+        status_rows << { "label" => "stage", "chips" => [status_chip(stage)].compact,
+                         "meta" => STAGE_MEANING[stage] }
+      end
+      status_rows << { "label" => "module", "meta" => st["module"] } if Fmt.present(st["module"])
+      status_rows << { "label" => "priority (CalOOS)", "meta" => st["priority_caloos"] } if Fmt.present(st["priority_caloos"])
+      status_rows << { "label" => "next step", "meta" => st["next_step"] } if Fmt.present(st["next_step"])
+      if (iss = Fmt.present(st["gh_issue"]))
+        status_rows << { "label" => "tracking", "label_url" => iss, "url" => iss }
+      end
+      groups << { "id" => "status", "title" => "Status",
+                  "lede" => "Where this sits in the ingest queue, and what it is waiting on.",
+                  "blocks" => [{ "rows" => status_rows }] } unless status_rows.empty?
+      groups.each { |g| (g["blocks"] || []).each { |b| (b["rows"] || []).each { |row| split_row_url(row) } } }
+    end
+
+    # db-query's own saved queries, by the dataset they are about (ids are `category--name`;
+    # _queries/datasets/{bottle,ichthyo}.md). Anything else gets the SQL shell, prefilled.
+    SAVED_QUERIES = { "calcofi_bottle" => "datasets--bottle",
+                      "swfsc_ichthyo"  => "datasets--ichthyo" }.freeze
+
+    # ── the URL line, split for display (plan D-6, Decision 18) ──────────────
+    # A URL is rendered as head + tail: the head shrinks and elides, the tail never does, so the
+    # informative end (`data_0.parquet`, `?datasets=calcofi_ctd-cast`) is still visible at 375 px.
+    # The tail is CAPPED: a prefilled SQL statement is a 200-character query string, and an
+    # unshrinkable 200 characters would push the line straight through the container — which is the
+    # wrap this whole design exists to prevent.
+    TAIL_MAX = 46
+    def split_url(u)
+      u = u.to_s
+      i = u.index("?") || u.rindex("/") || 0
+      # a URL that ends in "/" would give a one-character tail, so back up one more segment:
+      # "…/station/" reads better as "…calcofi.io" + "/station/" than as "…/station" + "/"
+      i = (u.rindex("/", i - 1) || i) if i.positive? && i == u.length - 1 && u[i] == "/"
+      tail = u[i..] || ""
+      tail = u[-TAIL_MAX..] if tail.length > TAIL_MAX
+      tail = u if tail.length >= u.length
+      [u[0, u.length - tail.length], tail]
+    end
+
+    def query_shell_url(sql)
+      "https://calcofi.io/db-query/?sql=#{CGI.escape(sql)}#sql-shell--shell"
+    end
+
+    # The STAC collection this dataset has in the release's own static catalog. The record carries
+    # no `stac` distribution yet.
+    # # until the record carries a stac distribution (calcofi4db, plan D-9 / UI-D) — delete then
+    def stac_collection_url(key)
+      "https://calcofi.io/stac/#/collections/#{key}/collection.json"
+    end
+
+    # what an ERDDAP grain means, for a reader who has never met the word.
+    # # until the record carries distributions[].grain_description (calcofi4db 4.5.0 / schema 1.1,
+    # # plan D-9) — delete this map when that release renders
+    GRAIN_FALLBACK = {
+      "sampling events" => "one row per cast, tow or transect — when, where and how it was sampled",
+      "observations" => "one row per measurement, joined to the event it was taken on",
+      "length/stage frequency" => "one row per size or stage class of a specimen",
+      "full resolution (pre-thinning)" => "the unthinned series, every bin as the instrument recorded it"
+    }.freeze
+
+    # the day the legacy erddap.calcofi.io ids stop answering
+    ERDDAP_SUNSET = "2026-12-04"
+
+    # one sentence per pipeline stage, as the chip's title=. Site-side text: the vocabulary is
+    # dataset_status.csv's, not any one dataset's, so it is not a dataset fact.
+    # # Open question 3 (plan): Ben to supply the wording he wants for each stage
+    STAGE_MEANING = {
+      "published"  => "in the release and announced — the endpoints below are live",
+      "validated"  => "in the release and through the validation gates",
+      "ingested"   => "in the release; the record and its endpoints are still being completed",
+      "metadata"   => "the record exists; the data are not in the release yet",
+      "planned"    => "not started — a tracking issue says what it is waiting on",
+      "external"   => "CalCOFI tracks this dataset; it lives with its provider",
+      "archived"   => "held for the record; not maintained"
+    }.freeze
+
+    # a pipeline stage or a registration status as a chip. --warn is reserved for a state that
+    # needs attention (plan D-1, Decision 13): a stage is information, so it is neutral, and
+    # `published` gets the ok tint.
+    CHIP_CLASS = {
+      "published" => "cc-chip-ok", "current" => "cc-chip-ok", "validated" => "cc-chip-ok",
+      "planned"   => "cc-chip-warn",
+      "n/a"       => "cc-chip-na", "ingested" => "cc-chip-na", "metadata" => "cc-chip-na",
+      "external"  => "cc-chip-quiet", "archived" => "cc-chip-quiet",
+      "superseded" => "cc-chip-nogo", "retired" => "cc-chip-nogo"
+    }.freeze
+    def status_chip(v)
+      v = Fmt.present(v) or return nil
+      { "text" => v, "class" => CHIP_CLASS[v] || "cc-chip-na", "title" => STAGE_MEANING[v] }
+    end
+
+    # An ERDDAP row is one the record marks `format: erddap` OR one whose portal is an ERDDAP —
+    # the legacy pre-core ids carry `kind: service` + `portal: erddap-calcofi` and no `format` at
+    # all, and a format-only test dropped them off the page (measured 2026-09-05: two on
+    # calcofi_ctd-cast). The "nothing lost" check below is what caught it.
+    def erddap_row?(x)
+      x["format"] == "erddap" || x["portal"].to_s.start_with?("erddap")
+    end
+
+    # the ERDDAP datasets that are live: the .html tabledap page is what the record lists, and a
+    # superseded id keeps its row under the matrix rather than in it
     def erddap_current(dist)
       dist.select { |x| x["format"] == "erddap" && x["status"] != "superseded" && x["url"].to_s.end_with?(".html") }
     end
 
+    # A portal's display name. The record carries a top-level `portals[]` from calcofi4db 4.5.0 /
+    # schema 1.1 (plan D-9), read here first; this map is what the site falls back to.
+    # # until the record carries portals[] — delete both maps when that release renders
     PORTAL_NAMES = {
       "erddap" => "ERDDAP (calcofi.io)", "erddap-calcofi" => "ERDDAP (calcofi.io)",
       "erddap-noaa" => "NOAA CoastWatch ERDDAP", "edi" => "EDI", "ncei" => "NCEI",
@@ -493,7 +887,27 @@ module CalCOFI
       "ucsd-library" => "UC San Diego Library", "zenodo" => "Zenodo", "ncbi" => "NCBI",
       "calcofi.org" => "CalCOFI.org", "gcs" => "Cloud storage", "other" => "Other"
     }.freeze
-    def portal_name(p) = PORTAL_NAMES[p] || p
+    # one sentence per portal, shown as the link's title= so a reader knows what the place is
+    # # until the record carries portals[].description — same deletion
+    PORTAL_ABOUT = {
+      "erddap" => "CalCOFI's own ERDDAP: every released table as a subsettable service",
+      "erddap-calcofi" => "CalCOFI's own ERDDAP: every released table as a subsettable service",
+      "erddap-noaa" => "NOAA CoastWatch's ERDDAP, which mirrors several CalCOFI datasets",
+      "edi" => "the Environmental Data Initiative repository, which archives LTER data with EML",
+      "ncei" => "NOAA's National Centers for Environmental Information, the federal archive",
+      "obis" => "the Ocean Biodiversity Information System, the global occurrence aggregator",
+      "ipt" => "the OBIS-USA Integrated Publishing Toolkit, which serves the Darwin Core archive",
+      "caloos" => "the Central and Southern California Ocean Observing System's data portal",
+      "datazoo" => "CCE-LTER's DataZoo catalog at UC San Diego",
+      "ucsd-library" => "the UC San Diego Library Digital Collections",
+      "zenodo" => "Zenodo, where each CalCOFI release is deposited and gets a DOI",
+      "ncbi" => "NCBI, where sequence data are deposited",
+      "calcofi.org" => "the CalCOFI program's own site",
+      "gcs" => "the release's own cloud storage"
+    }.freeze
+    def portal_name(p)
+      (rec["portals"] || []).find { |x| x["portal"] == p }&.dig("name") || PORTAL_NAMES[p] || p
+    end
 
     # ── cite: the same wording as calcofi4r::cc_cite() ───────────────────────
     def cite_text(r)
@@ -874,7 +1288,7 @@ module CalCOFI
       end
 
       rec = deep_unescape(rec)
-      cat = Catalog.new(site, rec, read_grid(site))
+      cat = Catalog.new(site, rec, read_grid(site), read_land(site), read_coverage_stations(site))
       cat.products_by_dataset # validate products.yml before anything is written
 
       site.data["catalog"] = {
@@ -882,7 +1296,7 @@ module CalCOFI
         "counts"     => { "datasets" => cat.datasets.size, "holdings" => cat.holdings.size,
                           "reference" => cat.reference.size },
         "categories" => cat.categories,
-        "reference"  => cat.reference_band,
+        "reference"  => cat.reference_band.merge("map" => cat.map_svg(nil)),
         "facets"     => cat.facets,
         "jsonld"     => JSON.pretty_generate(cat.catalog_jsonld),
         # key → {name, url}: what a product card's `datasets:` chips resolve through
@@ -922,17 +1336,57 @@ module CalCOFI
       end
     end
 
-    # the station grid as [[lon, lat], …] — the bbox map's backdrop, read once
+    # the station grid, read once: the map needs each cell's key and pattern, not only its centre
+    # (the frame rule is "standard + extended, union what this dataset sampled").
     def read_grid(site)
       path = File.join(site.source, "_data", "grid.geojson")
       return [] unless File.exist?(path)
       JSON.parse(File.read(path))["features"].filter_map do |f|
         p = f["properties"]
-        [p["lon_ctr"], p["lat_ctr"]] if p["lon_ctr"] && p["lat_ctr"]
+        next unless p["lon_ctr"] && p["lat_ctr"]
+        { "key" => p["grid_key"], "lon" => p["lon_ctr"], "lat" => p["lat_ctr"],
+          "pattern" => p["pattern"] }
       end
     rescue StandardError => e
       Jekyll.logger.warn "datasets:", "could not read _data/grid.geojson (#{e.message})"
       []
+    end
+
+    # the coastline: a COMMITTED asset (scripts/build_land.py, Natural Earth 1:50 m, public domain),
+    # not a release sidecar — it is cartography, not a dataset fact (plan Decision 5).
+    def read_land(site)
+      path = File.join(site.source, "_data", "land.geojson")
+      unless File.exist?(path)
+        Jekyll.logger.warn "datasets:", "_data/land.geojson missing — maps will draw without a coast " \
+                                        "(run scripts/build_land.py once; the file is committed)"
+        return []
+      end
+      JSON.parse(File.read(path))["features"].filter_map do |f|
+        ring = f.dig("geometry", "coordinates", 0)
+        ring&.map { |lon, lat| [lon, lat] }
+      end
+    rescue StandardError => e
+      Jekyll.logger.warn "datasets:", "could not read _data/land.geojson (#{e.message})"
+      []
+    end
+
+    # dataset_key → {grid_key => n_obs}: which cells each dataset actually sampled, and how much.
+    # ~470 KB beside the record, read here at build time and never shipped to the browser.
+    def read_coverage_stations(site)
+      path = File.join(site.source, "_data", "coverage_stations.json")
+      unless File.exist?(path)
+        Jekyll.logger.warn "datasets:", "_data/coverage_stations.json missing — the maps will draw " \
+                                        "the grid but no sampled stations (scripts/fetch_release.sh)"
+        return {}
+      end
+      out = Hash.new { |h, k| h[k] = {} }
+      JSON.parse(File.read(path))["stations"].each do |st|
+        (st["datasets"] || []).each { |d| out[d["dataset_key"]][st["grid_key"]] = d["n_obs"] }
+      end
+      out
+    rescue StandardError => e
+      Jekyll.logger.warn "datasets:", "could not read _data/coverage_stations.json (#{e.message})"
+      {}
     end
 
     def record_pages(site, cat, r)
@@ -941,10 +1395,34 @@ module CalCOFI
       cov = r["coverage"] || {}
       jsonld = cat.jsonld(r)
 
+      # the h1 is the SHORT name when the record has one, and the full name becomes the lede under
+      # it (plan D-3). Where the record has no short name — every holding on the served record; all
+      # 17 are authored in calcofi4db main and land with the next release — the h1 is a sentence,
+      # and the holdings' run 56 to 416 characters. In Teko at 60 px that is six to twelve lines of
+      # display caps, so the size is chosen HERE, from the length, rather than guessed in CSS:
+      #   > 80 chars   the h2 size, still Teko (the eleven names up to 162 characters)
+      #   > 180 chars  the sans face in sentence case — uppercase Teko at any size is unreadable
+      #                at 300 characters (the six from cce-lter_poc-pon to calcofi_prodo)
+      short = Fmt.present(r["dataset_name_short"])
+      full  = Fmt.present(r["dataset_name"])
+      h1    = short || full || key
+      lede  = (short && full && short != full) ? full : nil
+      access = is_holding ? cat.holding_access(r) : cat.access_groups(r)
+      if (lost = cat.unlisted_endpoints(r, access)).any?
+        Jekyll.logger.warn "datasets:", "#{key}: #{lost.size} endpoint(s) in the record reach no " \
+                                        "Access row — #{lost.join(', ')}"
+      end
+
       page = Jekyll::PageWithoutAFile.new(site, site.source, "datasets/#{key}", "index.html")
       page.content = ""
       page.data.merge!(
         "layout"      => "dataset",
+        "h1"          => h1,
+        "lede"        => lede,
+        "title_long"  => lede.nil? && h1.length > 80,
+        "title_vlong" => lede.nil? && h1.length > 180,
+        "stage_chip"  => cat.status_chip(r.dig("status", "stage")),
+        "n_endpoints" => access.sum { |g| (g["blocks"] || []).sum { |b| (b["rows"] || []).size + (b["matrix"] || []).size } },
         "title"       => "#{r['dataset_name'] || key} · CalCOFI datasets",
         "description" => cat.plain(r["description_md"]) || "CalCOFI dataset #{key}",
         "record"      => r,
@@ -953,8 +1431,8 @@ module CalCOFI
         "icon"        => cat.icon_for(r.dig("category", "icon")),
         "years_bar"   => cat.years_bar(cov["years"], cov["year_min"], cov["year_max"]),
         "years_span"  => cat.year_span(cov),
-        "bbox_svg"    => cat.bbox_svg(cov["bbox"]),
-        "access"      => is_holding ? [] : cat.access_groups(r),
+        "map"         => is_holding ? nil : cat.map_svg(r),
+        "access"      => access,
         "formats"     => is_holding ? [] : cat.formats(r),
         "cite_text"   => cat.cite_text(r),
         "bibtex"      => cat.bibtex(r),

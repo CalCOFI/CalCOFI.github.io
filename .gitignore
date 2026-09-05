@@ -11,3 +11,4 @@ Gemfile.lock
 _data/datasets.json
 _data/versions.json
 _data/grid.geojson
+_data/coverage_stations.json

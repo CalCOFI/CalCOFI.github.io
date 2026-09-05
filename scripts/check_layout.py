@@ -127,12 +127,17 @@ PROBE = r"""
     })
     .map(el => (el.parentElement.id || String(el.className)));
 
-  // a URL line must never wrap
-  out.urls = [...d.querySelectorAll(".ds-url")].map(u => ({
-    h: px(u.getBoundingClientRect().height),
-    lh: px(parseFloat(cs(u).lineHeight) || 0),
-    t: (u.textContent || "").trim().slice(0, 60)
-  }));
+  // a URL line must never wrap. Measure the TEXT, not the row: the row also holds a copy button,
+  // which is taller than a line of 11.5 px mono and would read as a wrap that is not there.
+  out.urls = [...d.querySelectorAll(".ds-url")].map(u => {
+    const parts = [...u.querySelectorAll(".ds-url-h, .ds-url-t")];
+    return {
+      h: px(u.getBoundingClientRect().height),
+      textH: px(Math.max(0, ...parts.map(s2 => s2.getBoundingClientRect().height))),
+      lh: px(parseFloat(cs(u).lineHeight) || 0),
+      t: (u.textContent || "").trim().slice(0, 60)
+    };
+  });
 
   // one ERDDAP listing: count each tabledap page link
   const tabledap = {};
@@ -221,8 +226,8 @@ def check(path, r, width, theme, fails, notes):
 
     if width <= 400:
         for u in r.get("urls", []):
-            if u["lh"] and u["h"] > u["lh"] * 1.6:
-                fails.append(f"{where}: URL line wraps ({u['h']}px over a {u['lh']}px line): {u['t']}…")
+            if u["lh"] and u.get("textH", u["h"]) > u["lh"] * 1.6:
+                fails.append(f"{where}: URL text wraps ({u['textH']}px over a {u['lh']}px line): {u['t']}…")
 
     for ds_id, n in (r.get("tabledap") or {}).items():
         if n != 1:
