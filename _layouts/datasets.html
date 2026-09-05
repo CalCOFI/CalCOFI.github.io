@@ -22,6 +22,12 @@ layout: default
 
 <section class="cc-band ds-body">
   <div class="cc-container">
+    {%- comment -%}
+      The tiles are h3 (they sit under an h2 on the landing page). This page's h1 is "Datasets", so
+      it needs the h2 rung for the heading order to be sequential — the name of the grid, announced
+      but not drawn.
+    {%- endcomment -%}
+    <h2 class="sr-only">Datasets by category</h2>
     {% include catalog_grid.html %}
   </div>
 </section>

@@ -100,6 +100,10 @@ module CalCOFI
         bad  = []
         prods = (site.data.dig("products", "products") || [])
         sections = (site.data.dig("products", "sections") || []).to_h { |s| [s["id"], s] }
+        # sections[].groups[] gives an eyebrow group its human title ("Across datasets"), so the
+        # Access table's Explore rows read as the landing page's groups do
+        group_titles = sections.values.flat_map { |s| s["groups"] || [] }
+                               .to_h { |g| [g["id"], g["title"]] }
         prods.each do |p|
           want = p["datasets"]
           next if Fmt.blank?(want)
@@ -111,7 +115,7 @@ module CalCOFI
               "title"    => p["title"],
               "url"      => p["live_url"],
               "section"  => sections.dig(p["section"], "title"),
-              "group"    => p["group"],
+              "group"    => group_titles[p["group"]] || p["group"],
               "section_id" => p["section"]
             }
           end

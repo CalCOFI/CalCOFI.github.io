@@ -17,7 +17,7 @@
     <header class="ds-tile-head">
       <i class="cc-i cc-i-{{ c.icon | escape }}" aria-hidden="true"></i>
       <h3 class="ds-tile-name">{{ c.name | escape }}</h3>
-      <span class="cc-eyebrow ds-tile-n">{{ c.n | escape }} dataset{% if c.n != 1 %}s{% endif %}</span>
+      <span class="cc-eyebrow ds-tile-n">{{ c.n | escape }} dataset{% if c.n != 1 %}s{% endif %}{% if c.contributions.size > 0 %} · {{ c.contributions.size | escape }} contributing{% endif %}{% if c.holdings.size > 0 %} · {{ c.holdings.size | escape }} held{% endif %}</span>
     </header>
     <ul class="ds-rows">
       {%- for d in c.datasets -%}
