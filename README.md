@@ -179,12 +179,32 @@ return the measurement from `PROBE` (plain data — no judgement in the page) an
 `check()`, so a failure prints what it measured; then prove it bites by reintroducing the problem
 before you commit.
 
-Accessibility is Lighthouse, not this script (it wants its own Chrome and ~30 s a page). Both
-themes, expected **100**:
+### In CI
+
+| workflow | when | what it runs |
+|---|---|---|
+| `pages.yml` | push to main | fetch → build → `check_jsonld.py` → deploy |
+| `pr.yml` | pull request | `_test/derive_id_test.rb` → fetch → build → `check_jsonld.py` → **`check_layout.py`** → `check_brand.py --url` on two built pages. No deploy. |
+| `check-brand.yml` | Mondays 06:17 UTC | `check_brand.py --required-only` against every live product, and a second job that builds the site and runs **`check_layout.py`** against it |
+| `refresh.yml` | release dispatch · weekly · by hand | the same three steps as `pages.yml` |
+
+Both layout jobs serve `_site` with `python3 -m http.server` and point `check_layout.py` at
+`--base http://localhost:4000`, so the checks run against the build in hand rather than against
+whatever is deployed.
+
+Accessibility is Lighthouse, not this script, and it is **not in CI**: the five catalog pages in
+both themes measured **106 s** locally (10 s a run, its own Chrome), which is longer than the whole
+PR job and would double it for a number that has not moved since the refresh landed. Run it by hand
+when you change the page's structure — headings, landmarks, labels, a colour — and expect **100**:
 
 ```bash
-npx lighthouse "http://localhost:4000/datasets/?theme=dark" --only-categories=accessibility \
-  --quiet --chrome-flags="--headless=new"
+for u in / /datasets/ /datasets/calcofi_ctd-cast/ /datasets/swfsc_ichthyo/ /datasets/calcofi_prodo/; do
+  for t in light dark; do
+    npx lighthouse "http://localhost:4000$u?theme=$t" --only-categories=accessibility \
+      --quiet --output=json --chrome-flags="--headless=new" \
+      | python3 -c 'import json,sys; d=json.load(sys.stdin); print(f"{d[\"finalDisplayedUrl\"]}: {d[\"categories\"][\"accessibility\"][\"score\"]*100:.0f}")'
+  done
+done
 ```
 
 ## Brand: theme, header, favicon (`brand/v2/`)
@@ -217,9 +237,16 @@ brew install pngquant                                # or apt, etc.
 
 scripts/shots.py                 # (re)capture every `shots: themed` card, both themes
 scripts/shots.py db-viz-hex      # just one
-scripts/shots.py --all           # plus the single-image cards
+scripts/shots.py --all           # plus the single-image cards, plus calcofi.io's own pages
+scripts/shots.py --pages         # only calcofi.io's own pages
+scripts/shots.py datasets        # just one of them
 scripts/shots.py check           # luminance-check every themed image
 ```
+
+**calcofi.io's own pages** are captured too — the dataset catalog and two dataset pages — from the
+`pages:` section of [`_data/shots.yml`](_data/shots.yml). They are not products and have no card,
+so they are a separate list rather than an invented `products.yml` entry; they land in
+`images/<key>_{dark,light}.png` like everything else, so the luminance check covers them.
 
 The script drives your installed Google Chrome (`--browser chrome`) because the
 map apps render H3/WebGL hexagon layers that Playwright's bundled Chromium

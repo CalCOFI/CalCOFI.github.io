@@ -12,6 +12,11 @@
 #   javascript: shot-scraper JS run before the shot — dismiss a modal/tour that
 #               ignores ?tour=off, or wait for layers to paint
 #   themed:     false — force a single capture even though products.yml says themed
+#
+# `pages:` (below) is a separate list: calcofi.io's OWN pages, which are not products and have no
+# card. Each is captured in both themes into images/<key>_{dark,light}.png, the same shape the
+# cards use, so the luminance check covers them too. Capture them with
+#   scripts/shots.py --pages          (or by key: scripts/shots.py datasets)
 
 db-viz-hex:
   wait: 15000   # the sardine/temperature hexagon layers paint several seconds
@@ -70,3 +75,15 @@ erddap:
   # so ?theme= must be applied to the real index page
   url: https://erddap.calcofi.io/erddap/index.html
   wait: 6000
+
+# ── calcofi.io's own pages (not products; see the note at the top) ────────────
+pages:
+  datasets:
+    url: https://calcofi.io/datasets/
+    height: 1400          # the grid packs to ~2,100 px; 1,400 shows the release strip and four tiles
+  dataset-ctd-cast:
+    url: https://calcofi.io/datasets/calcofi_ctd-cast/
+    height: 900           # the head band: the title block beside the map it is bounded to
+  dataset-ichthyo:
+    url: https://calcofi.io/datasets/swfsc_ichthyo/
+    height: 900           # the map whose bbox continues beyond the frame, and says so
