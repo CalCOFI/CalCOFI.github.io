@@ -101,6 +101,7 @@ products:
     group: across
     datasets: all
     live_url: https://app.calcofi.io/station/
+    dataset_url: https://app.calcofi.io/station/?dataset={key}
     source_url: https://github.com/CalCOFI/db-viz-station
     img: images/db-viz-station_dark.png   # fallback; the card shows the _dark/_light pair
     shots: themed
@@ -119,6 +120,7 @@ products:
     group: across
     datasets: all
     live_url: https://app.calcofi.io/hex/
+    dataset_url: https://app.calcofi.io/hex/?datasets={key}
     source_url: https://github.com/CalCOFI/db-viz-hex
     img: images/db-viz-hex_dark.png   # fallback; the card shows the _dark/_light pair
     shots: themed
