@@ -1,0 +1,77 @@
+name: Refresh the dataset catalog (release dispatch → rebuild)
+
+# The pages are a rendering of the promoted release, so they follow a promotion rather than a push.
+# `test_release.qmd`'s gh_dispatch table fires this workflow the moment `latest.txt` is promoted
+# (beside db-query, db-viz-station and ctd-transects); the weekly cron is the backstop for a
+# promotion that happened without a dispatch, and workflow_dispatch is the manual handle.
+#
+# It rebuilds and deploys exactly as pages.yml does — scripts/fetch_release.sh pulls the record,
+# scripts/check_jsonld.py refuses to deploy a catalog whose JSON-LD or data.json broke.
+
+on:
+  repository_dispatch:
+    types: [release-promoted, refresh]
+  workflow_dispatch:
+    inputs:
+      datasets_release_url:
+        description: "Full URL of a datasets.json to build from (blank = the promoted release)"
+        required: false
+        type: string
+  schedule:
+    - cron: "17 9 * * 1"        # Mondays 09:17 UTC
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: true
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install --quiet jsonschema
+
+      - uses: actions/configure-pages@v5
+
+      - name: Fetch the release record
+        run: scripts/fetch_release.sh
+        env:
+          # blank falls through to the script's own default (the staging bridge until the next
+          # data release writes datasets.json to the production prefix)
+          DATASETS_RELEASE_URL: ${{ inputs.datasets_release_url || vars.DATASETS_RELEASE_URL }}
+
+      - name: Build with Jekyll
+        run: bundle exec jekyll build
+        env:
+          JEKYLL_ENV: production
+
+      - name: Validate the JSON-LD, the sitemap and data.json
+        run: scripts/check_jsonld.py _site
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./_site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

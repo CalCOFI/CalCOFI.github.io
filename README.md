@@ -8,11 +8,16 @@ styled as a sibling of [schema](https://github.com/CalCOFI/db-schema),
 ## Editing products
 
 All cards are driven by [`_data/products.yml`](_data/products.yml) — one entry
-per product with `key`, `title`, `section` (`apps` | `services` | `developer` |
-`documentation` | `students`), `live_url`, `source_url`, `img`, `description`,
-and optionally `status` (`interim` | `superseded` | `archived`),
+per product with `key`, `title`, `section` (`datasets` | `explore` | `access` |
+`build` | `students`), `live_url`, `source_url`, `img`, `description`,
+and optionally `group` (an eyebrow group inside a section — Explore's `across` /
+`one`), `datasets` (the dataset keys it covers, or `all`; see below),
+`status` (`interim` | `superseded` | `archived`),
 `superseded_by`, `extra_links` (`[{label, url}]`, extra deep links in the card's
 link row), `tech` chips and `credits` (for student contributions).
+
+The `sections:` list drives the section nav, the header links and the counts, so
+none of the three can drift from the cards.
 
 Cards are named for the thing itself — the repo or app name used everywhere
 else (`db-viz-hex`, not "Integrated App") — so a card, its source, its status
@@ -24,12 +29,63 @@ Edit the YAML, push to main, and GitHub Actions
 deploys the site. The old Google Sheet + `index.Rmd` + `bs4cards` pipeline is
 retired.
 
+## The dataset catalog (`/datasets/`, `/data.json`)
+
+calcofi.io opens on the **dataset grid**, and every dataset has a page at
+`calcofi.io/datasets/{dataset_key}/`. **Not one dataset fact is written in this repo.** The single
+source is `datasets.json` — the record `calcofi4db::build_dataset_catalog()` writes into each release
+(schema 1.0; the schema is `calcofi4db/inst/schema/datasets.schema.json`) — fetched at build time and
+turned into pages by a Jekyll generator.
+
+```
+scripts/fetch_release.sh   latest.txt → _data/{datasets,versions}.json + _data/grid.geojson
+                           (all three git-ignored: the site renders the release, never copies it)
+_plugins/datasets.rb       the record → /datasets/, /datasets/{key}/, {key}.json, {key}.jsonld,
+                           /datasets/release/, /datasets/sitemap.xml, /datasets/search.json,
+                           /data.json — and site.data.catalog for index.html
+scripts/check_jsonld.py    every page's JSON-LD, the sitemap, and data.json against DCAT-US 1.1
+```
+
+**Which release.** `fetch_release.sh` resolves `latest.txt` on the production prefix and uses that
+release's `datasets.json`. It never picks an unpromoted release from that prefix. The promoted
+release `v2026.09.04` predates the catalog, and Ben chose not to cut a release for the sidecars
+alone, so until the next data release the script falls back to the **staging** record and prints a
+loud `NOTE: datasets.json from a non-promoted release …`. Override with `DATASETS_RELEASE_URL` (an
+env var locally, a repo variable in Actions) — a full URL to a `datasets.json`. When the next release
+writes `datasets.json` to the production prefix, the fallback stops firing on its own and the
+default can be deleted.
+
+**Products carry dataset keys, nothing else.** Each card in `_data/products.yml` may declare
+`datasets: [key, …]` or `datasets: all`. The build **fails** on a key that is in neither
+`datasets[]` nor `holdings[]` of the record — that is what keeps the product list and the dataset
+list one list. It is also the reverse index behind each dataset page's *Access → Explore* rows.
+
+**Visibility.** A record marked `visibility: internal` gets no page, no sitemap entry, no `data.json`
+row and no search row.
+
+**Refresh.** `.github/workflows/refresh.yml` rebuilds and deploys on `repository_dispatch`
+(`test_release.qmd` fires it the moment a release is promoted), on a weekly cron and by hand.
+`pages.yml` does the same three steps on a push to main.
+
 ## Local preview
 
 ```bash
+scripts/build.sh          # bundle install + fetch the release record + jekyll build
+scripts/build.sh serve    # …and serve on http://localhost:4000
+
+# or step by step
 bundle install
+scripts/fetch_release.sh
 bundle exec jekyll serve
-# open http://localhost:4000
+```
+
+Checks:
+
+```bash
+scripts/check_jsonld.py _site                    # JSON-LD + sitemap + data.json (pip install jsonschema
+                                                 # for full DCAT-US schema validation)
+scripts/check_brand.py --url http://localhost:4000/datasets/
+scripts/check_brand.py --url http://localhost:4000/datasets/swfsc_ichthyo/
 ```
 
 ## Brand: theme, header, favicon (`brand/v2/`)

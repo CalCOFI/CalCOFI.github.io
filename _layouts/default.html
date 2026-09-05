@@ -18,6 +18,9 @@
   <script>(function(){var d=document.documentElement,m=/[?&]theme=(dark|light)\b/.exec(location.search),k=/(?:^|;\s*)cc_theme_src=user\b/.test(document.cookie),c=k&&/(?:^|;\s*)cc_theme=(dark|light)\b/.exec(document.cookie),s=null;try{if(localStorage.getItem("cc_theme_src")==="user")s=localStorage.getItem("cc_theme")}catch(e){}var t=(m&&m[1])||(c&&c[1])||(s==="dark"||s==="light"?s:null)||"light";d.dataset.theme=t;d.setAttribute("data-bs-theme",t);d.setAttribute("data-md-color-scheme",t==="dark"?"slate":"default");d.style.colorScheme=t;var sc=document.querySelector('meta[name="cc-scale"]');if(sc&&sc.content)d.setAttribute("data-cc-scale",sc.content)})();</script>
   <link rel="stylesheet" href="{{ '/brand/v2/fonts.css' | relative_url }}">
   <link rel="stylesheet" href="{{ '/brand/v2/theme.css' | relative_url }}">
+  <!-- the 49-glyph sprite as CSS masks: the dataset catalog draws the cat-* category icons with
+       <i class="cc-i cc-i-cat-*"> (brand/v2/icons.css, generated from CalCOFI/explore) -->
+  <link rel="stylesheet" href="{{ '/brand/v2/icons.css' | relative_url }}">
   <script defer src="{{ '/brand/v2/theme.js' | relative_url }}"></script>
   <link rel="stylesheet" href="{{ '/style.css' | relative_url }}">
 
@@ -55,14 +58,17 @@
     <span class="cc-spacer"></span>
 
     <nav class="cc-links">
+      {%- comment -%}
+        The section list drives the header, so it can never drift from the page. Every link is
+        absolute to the landing page's anchor, so it works from a dataset page too; Datasets goes to
+        the catalog's own page rather than the landing section.
+      {%- endcomment -%}
       {%- for s in site.data.products.sections -%}
-      {%- comment -%} short nav labels: the two Apps sections would both read "Apps" {%- endcomment -%}
-      {%- case s.id -%}
-        {%- when "apps-dataset" -%}{%- assign lbl = "Dataset apps" -%}
-        {%- when "students" -%}{%- assign lbl = "Students" -%}
-        {%- else -%}{%- assign lbl = s.title | split: " — " | first -%}
-      {%- endcase -%}
-      <a href="#{{ s.id }}">{{ lbl }}</a>
+      {%- if s.id == "datasets" -%}
+      <a href="{{ '/datasets/' | relative_url }}">{{ s.title }}</a>
+      {%- else -%}
+      <a href="{{ '/' | relative_url }}#{{ s.id }}">{{ s.title | split: " — " | first }}</a>
+      {%- endif -%}
       {%- endfor -%}
       <a href="https://calcofi.org">calcofi.org ↗</a>
     </nav>

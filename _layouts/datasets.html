@@ -1,0 +1,35 @@
+---
+layout: default
+---
+{%- comment -%}
+  /datasets/ — the same grid the landing page opens on, full width, with the release strip above it.
+  Nothing here is authored: every tile, row and number comes from the release record through
+  _plugins/datasets.rb.
+{%- endcomment -%}
+<section class="cc-band cc-band-alt ds-head">
+  <div class="cc-container">
+    <div class="cc-eyebrow">{{ site.data.catalog.counts.datasets | escape }} datasets · {{ site.data.catalog.counts.holdings | escape }} holdings · {{ site.data.catalog.counts.reference | escape }} reference rows</div>
+    <h1 class="cc-h1">Datasets</h1>
+    <p class="cc-lede cc-prose">Every dataset CalCOFI holds — the {{ site.data.catalog.counts.datasets | escape }} in the
+      integrated database, each with its coverage, every endpoint it can be reached through and how to cite
+      it, and the {{ site.data.catalog.counts.holdings | escape }} holdings that are not in the database yet.
+      One page per dataset; the machine-readable catalog is
+      <a href="{{ '/data.json' | relative_url }}">data.json</a> and
+      <a href="{{ '/datasets/sitemap.xml' | relative_url }}">sitemap.xml</a>.</p>
+    {% include release_strip.html %}
+  </div>
+</section>
+
+<section class="cc-band ds-body">
+  <div class="cc-container">
+    {%- comment -%}
+      The tiles are h3 (they sit under an h2 on the landing page). This page's h1 is "Datasets", so
+      it needs the h2 rung for the heading order to be sequential — the name of the grid, announced
+      but not drawn.
+    {%- endcomment -%}
+    <h2 class="sr-only">Datasets by category</h2>
+    {% include catalog_grid.html %}
+  </div>
+</section>
+
+<script type="application/ld+json">{{ site.data.catalog.jsonld }}</script>

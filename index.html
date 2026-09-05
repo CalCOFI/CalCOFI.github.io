@@ -4,9 +4,12 @@ layout: default
 {%- assign data = site.data.products -%}
 
 {%- comment -%}
-  The landing page on brand v2 (flipped 2026-09-04). The SIO page
-  rhythm: a Sand hero with the display heading and one yellow CTA, the section nav as an uppercase
-  tab row, sections on alternating white / Sand bands, .cc-card cards.
+  The landing page, re-cut around Datasets (plan D-3, Decision 3). The SIO page rhythm is unchanged —
+  a Sand hero with the display heading and one yellow CTA, the section nav as an uppercase tab row,
+  sections on alternating white / Sand bands, .cc-card cards — but the FIRST section is now the
+  dataset catalog: the release strip, then the category tiles built from the release record by
+  _plugins/datasets.rb. The products follow as Explore / Access / Build / Students, each card
+  carrying the datasets it covers.
 {%- endcomment -%}
 
 <section class="hero cc-band cc-band-alt">
@@ -21,10 +24,11 @@ layout: default
       programming packages in R and Python — for scientists, resource managers, students and the
       curious.
     </p>
-    <p class="hero-pipeline">ship → workflows → database → apps · services · R · Python</p>
+    <p class="hero-pipeline">ship → workflows → database → datasets → apps · services · R · Python · portals</p>
     <p class="hero-actions">
-      <a class="cc-btn cc-btn-cta" href="https://calcofi.io/explore/">Explore the data</a>
-      <a class="cc-text-link" href="#developer">Build on it</a>
+      <a class="cc-btn cc-btn-cta" href="#datasets">Browse the datasets</a>
+      <a class="cc-text-link" href="https://calcofi.io/explore/">Explore the data</a>
+      <a class="cc-text-link" href="#build">Build on it</a>
     </p>
   </div>
 </section>
@@ -32,18 +36,41 @@ layout: default
 <nav class="section-tabs" aria-label="Sections">
   <div class="cc-container">
     {%- for s in data.sections -%}
+    {%- if s.id == "datasets" -%}
+    <a href="#datasets">{{ s.title }}<span class="n">{{ site.data.catalog.counts.datasets }}</span></a>
+    {%- else -%}
     {%- assign items = data.products | where: "section", s.id -%}
     <a href="#{{ s.id }}">{{ s.title }}<span class="n">{{ items | size }}</span></a>
+    {%- endif -%}
     {%- endfor -%}
   </div>
 </nav>
 
 {%- comment -%}
-  Every section renders the same way; sections flagged `featured: true` in products.yml (the two
-  Apps sections) get the wider grid so the flagship applications read first. Bands alternate
-  white / Sand down the page (navy in dark), the SIO page rhythm.
+  1 · Datasets — the catalog: the release strip (the integrated database as the spine), then the
+  category tiles. Full-page-width band; /datasets/ renders the same grid on its own page.
+{%- endcomment -%}
+{%- assign ds_section = data.sections | where: "id", "datasets" | first -%}
+<section class="prod-section ds-section-home cc-band" id="datasets">
+  <div class="cc-container">
+    <div class="cc-eyebrow">{{ site.data.catalog.counts.datasets }} datasets · {{ site.data.catalog.counts.holdings }} holdings · {{ site.data.catalog.counts.reference }} reference rows</div>
+    <h2 class="cc-h2">{{ ds_section.title }}</h2>
+    <p class="blurb">{{ ds_section.blurb }}
+      <a class="cc-text-link" href="{{ '/datasets/' | relative_url }}">All datasets</a>
+      <a class="cc-text-link" href="{{ '/data.json' | relative_url }}">data.json</a>
+    </p>
+    {% include release_strip.html %}
+    {% include catalog_grid.html %}
+  </div>
+</section>
+
+{%- comment -%}
+  2–5 · The products. Same card as before; a section with `groups:` (Explore) renders its cards under
+  eyebrow group headings, so the across-datasets / one-dataset distinction survives without a second
+  tab. Bands keep alternating white / Sand down the page.
 {%- endcomment -%}
 {%- for s in data.sections -%}
+{%- if s.id == "datasets" -%}{%- continue -%}{%- endif -%}
 {%- assign items = data.products | where: "section", s.id -%}
 {%- assign section_title = s.title | split: " — " | first -%}
 <section class="prod-section cc-band{% cycle '', ' cc-band-alt' %}" id="{{ s.id }}">
@@ -51,13 +78,31 @@ layout: default
     <div class="cc-eyebrow">{{ items | size }} product{% if items.size != 1 %}s{% endif %}</div>
     <h2 class="cc-h2">{{ s.title }}</h2>
     <p class="blurb">{{ s.blurb }}
-      {%- if s.id == "developer" %} <a class="cc-text-link" href="https://calcofi.io/docs/">Read the docs</a>{% endif -%}
+      {%- if s.id == "build" %} <a class="cc-text-link" href="https://calcofi.io/docs/">Read the docs</a>{% endif -%}
     </p>
-    <div class="card-grid{% if s.featured %} featured-grid{% endif %}">
-      {%- for p in items -%}
-        {% include product_card.html p=p section=section_title featured=s.featured %}
+
+    {%- if s.groups -%}
+      {%- for g in s.groups -%}
+      {%- assign gitems = items | where: "group", g.id -%}
+      {%- if gitems.size > 0 -%}
+      <div class="prod-group">
+        <div class="cc-eyebrow prod-group-h">{{ g.title }}</div>
+        {%- if g.blurb %}<p class="blurb prod-group-blurb">{{ g.blurb }}</p>{% endif -%}
+        <div class="card-grid{% if s.featured %} featured-grid{% endif %}">
+          {%- for p in gitems -%}
+            {% include product_card.html p=p section=section_title featured=s.featured %}
+          {%- endfor -%}
+        </div>
+      </div>
+      {%- endif -%}
       {%- endfor -%}
-    </div>
+    {%- else -%}
+      <div class="card-grid{% if s.featured %} featured-grid{% endif %}">
+        {%- for p in items -%}
+          {% include product_card.html p=p section=section_title featured=s.featured %}
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
   </div>
 </section>
 {%- endfor -%}

@@ -1,0 +1,27 @@
+{%- comment -%}
+  The release strip — the integrated database as the spine of the catalog. Every number comes from
+  `datasets.json`'s `release` block (calcofi4db writes it at freeze); nothing here is typed.
+  include params: none (reads site.data.catalog)
+{%- endcomment -%}
+{%- assign rel = site.data.catalog.release -%}
+<div class="ds-release">
+  <div class="ds-release-id">
+    <span class="cc-eyebrow">CalCOFI integrated database</span>
+    <a class="ds-release-v" href="{{ '/datasets/release/' | relative_url }}">{{ rel.version | escape }}</a>
+    {%- if rel.release_date %}<span class="ds-release-date">{{ rel.release_date | escape }}</span>{% endif -%}
+  </div>
+  <dl class="ds-release-stats">
+    <div><dt>datasets</dt><dd>{{ site.data.catalog.counts.datasets | escape }}</dd></div>
+    <div><dt>tables</dt><dd>{{ rel.n_tables | escape }}</dd></div>
+    <div><dt>rows</dt><dd>{{ rel.total_rows | divided_by: 1000000 | escape }} M</dd></div>
+    {%- if site.data.catalog.counts.holdings > 0 -%}
+    <div><dt>holdings</dt><dd>{{ site.data.catalog.counts.holdings | escape }}</dd></div>
+    {%- endif -%}
+  </dl>
+  <div class="ds-release-links">
+    <a class="cc-text-link" href="https://calcofi.io/db-schema/?v={{ rel.version | escape }}">schema ↗</a>
+    <a class="cc-text-link" href="https://calcofi.io/db-query/">query ↗</a>
+    <a class="cc-text-link" href="https://storage.googleapis.com/calcofi-db/ducklake/releases/RELEASES.md">changelog ↗</a>
+    <a class="cc-text-link" href="{{ '/datasets/release/' | relative_url }}">cite</a>
+  </div>
+</div>

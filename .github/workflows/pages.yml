@@ -1,5 +1,8 @@
 name: Deploy CalCOFI.io (Jekyll → GitHub Pages)
 
+# A push to main rebuilds the site. The dataset catalog also rebuilds on release dispatch and a
+# weekly cron — see refresh.yml, which runs the same three steps.
+
 on:
   push:
     branches: [main]
@@ -25,12 +28,29 @@ jobs:
           ruby-version: "3.3"
           bundler-cache: true
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install --quiet jsonschema
+
       - uses: actions/configure-pages@v5
+
+      # the dataset catalog is a rendering of the promoted release: the record lands in _data/
+      # (git-ignored) before the build, and _plugins/datasets.rb turns it into /datasets/,
+      # /data.json and the sitemap. A products.yml `datasets:` key that is not in the record
+      # fails right here.
+      - name: Fetch the release record
+        run: scripts/fetch_release.sh
+        env:
+          DATASETS_RELEASE_URL: ${{ vars.DATASETS_RELEASE_URL }}
 
       - name: Build with Jekyll
         run: bundle exec jekyll build
         env:
           JEKYLL_ENV: production
+
+      - name: Validate the JSON-LD, the sitemap and data.json
+        run: scripts/check_jsonld.py _site
 
       - uses: actions/upload-pages-artifact@v3
         with:
