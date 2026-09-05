@@ -6,3 +6,8 @@ Gemfile.lock
 .DS_Store
 .Rproj.user/
 .Rhistory
+
+# the release record, fetched at build time by scripts/fetch_release.sh (never committed)
+_data/datasets.json
+_data/versions.json
+_data/grid.geojson

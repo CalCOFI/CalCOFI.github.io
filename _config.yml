@@ -16,6 +16,15 @@ ga_tag: G-0HVK8TDMCF
 status_url:    "https://status.calcofi.io"
 analytics_url: "https://calcofi.io/analytics"
 
+# ── the dataset catalog (/datasets/, /data.json) ────────────────────────────
+# The record is _data/datasets.json, fetched from the promoted release by scripts/fetch_release.sh
+# and turned into pages by _plugins/datasets.rb. Nothing about a dataset is configured here — these
+# are the site's own addresses, in one place so they change once (plan Decisions 22, 23).
+contact_email:     "data@calcofi.io"        # the public contact in JSON-LD and DCAT (Decision 23)
+# Registration is ENCOURAGED, NEVER REQUIRED (Decision 22): no endpoint on calcofi.io gates on it.
+register_use_url:  "https://github.com/CalCOFI/workflows/issues/new?labels=derived-product&title=Registered+use%3A+"
+stay_informed_url: "mailto:data@calcofi.io?subject=CalCOFI%20release%20updates"  # → a sign-up form when one exists
+
 exclude:
   - README.md
   - LICENSE

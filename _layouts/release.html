@@ -1,0 +1,86 @@
+---
+layout: default
+---
+{%- comment -%}
+  /datasets/release/ — the integrated database itself as a record: the spine the sixteen datasets are
+  parts of (schema.org `hasPart`), with its own DOI, citation and distributions. Everything comes from
+  `datasets.json`'s `release` block and `versions.json`.
+{%- endcomment -%}
+{%- assign rel = site.data.catalog.release -%}
+
+<section class="cc-band cc-band-alt ds-page-head">
+  <div class="cc-container">
+    <nav class="ds-crumb" aria-label="Breadcrumb">
+      <a href="{{ '/datasets/' | relative_url }}">Datasets</a><span aria-hidden="true">/</span><span>Release</span>
+    </nav>
+    <h1 class="cc-h1">CalCOFI Integrated Database</h1>
+    <p class="ds-chips">
+      <span class="cc-chip ds-chip-key">{{ rel.version | escape }}</span>
+      {%- if rel.release_date %}<span class="cc-chip">{{ rel.release_date | escape }}</span>{% endif -%}
+      {%- if rel.doi %}<a class="cc-chip" href="https://doi.org/{{ rel.doi | escape }}">doi:{{ rel.doi | escape }}</a>{% endif -%}
+      {%- if rel.concept_doi %}<a class="cc-chip" href="https://doi.org/{{ rel.concept_doi | escape }}">all versions</a>{% endif -%}
+    </p>
+    <p class="cc-lede cc-prose">Every ingested CalCOFI dataset assembled into one versioned, frozen
+      database — {{ rel.n_tables | escape }} tables, {{ page.rows_fmt | escape }} rows, {{ page.size_fmt | escape }} of Parquet with a
+      JSON catalog. It is what calcofi4r, calcofi4py, the browser SQL playground, ERDDAP and every app on
+      calcofi.io read.</p>
+  </div>
+</section>
+
+<section class="cc-band ds-section">
+  <div class="cc-container ds-cols">
+    <div class="ds-main">
+      <h2 class="cc-h2">Access</h2>
+      <table class="ds-table">
+        <tbody>
+          <tr><th scope="row"><a href="{{ rel.catalog_url }}">catalog.json</a></th>
+              <td><span class="ds-cell-meta">every table and object in this release, with bytes and sha256</span></td></tr>
+          <tr><th scope="row"><a href="{{ rel.url }}datasets.json">datasets.json</a></th>
+              <td><span class="ds-cell-meta">the record every page on this site is built from (schema 1.0)</span></td></tr>
+          <tr><th scope="row"><a href="{{ rel.url }}">release folder</a></th>
+              <td><span class="ds-cell-meta">the sidecars: metadata, coverage, the station grid, spatial layers</span></td></tr>
+          <tr><th scope="row"><a href="{{ rel.schema_url }}">db-schema</a></th>
+              <td><span class="ds-cell-meta">tables, columns and the entity-relationship diagram at this version</span></td></tr>
+          <tr><th scope="row"><a href="https://calcofi.io/db-query/">db-query</a></th>
+              <td><span class="ds-cell-meta">SQL in your browser, straight over the released Parquet</span></td></tr>
+          <tr><th scope="row">R · calcofi4r</th>
+              <td><pre class="ds-code"><code>con &lt;- calcofi4r::cc_get_db()   # {{ rel.version | escape }}</code></pre></td></tr>
+          <tr><th scope="row">Python · calcofi4py</th>
+              <td><pre class="ds-code"><code>con = calcofi4py.cc_get_db()   # {{ rel.version | escape }}</code></pre></td></tr>
+          <tr><th scope="row"><a href="https://storage.googleapis.com/calcofi-db/ducklake/releases/RELEASES.md">RELEASES.md</a></th>
+              <td><span class="ds-cell-meta">what changed between releases, and why</span></td></tr>
+        </tbody>
+      </table>
+
+      <h2 class="cc-h2">Cite</h2>
+      <pre class="ds-code ds-cite"><code>{{ rel.citation | escape }}</code></pre>
+      <details class="ds-details"><summary>BibTeX</summary>
+        <pre class="ds-code"><code>{{ page.release_bibtex }}</code></pre></details>
+
+      <h2 class="cc-h2">Parts</h2>
+      <p class="cc-prose">{{ page.parts | size | escape }} datasets are part of this release.</p>
+      <ul class="ds-parts">
+        {%- for d in page.parts -%}
+        <li><a href="{{ d.url | relative_url }}">{{ d.name | escape }}</a>
+          <span class="cc-muted">{{ d.provider | escape }}{% if d.years %} · {{ d.years | escape }}{% endif %}{% if d.n_obs_fmt %} · {{ d.n_obs_fmt | escape }} obs{% endif %}</span></li>
+        {%- endfor -%}
+      </ul>
+    </div>
+
+    <aside class="ds-side">
+      <h2 class="cc-h3">Releases</h2>
+      <ul class="ds-versions">
+        {%- for v in site.data.catalog.versions limit: 12 -%}
+        <li>
+          <span class="ds-v{% if v.version == rel.version %} ds-v-now{% endif %}">{{ v.version | escape }}</span>
+          <span class="cc-muted">{{ v.release_date | escape }} · {{ v.tables | escape }} tables</span>
+          {%- if v.retired %}<span class="cc-chip">retired</span>{% endif -%}
+        </li>
+        {%- endfor -%}
+      </ul>
+      <p><a class="cc-text-link" href="https://storage.googleapis.com/calcofi-db/ducklake/releases/versions.json">versions.json ↗</a></p>
+    </aside>
+  </div>
+</section>
+
+<script type="application/ld+json">{{ page.jsonld }}</script>

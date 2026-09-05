@@ -1,0 +1,59 @@
+{%- comment -%}
+  The filter row + search box over the grid. Every option is a value that actually occurs in the
+  record (site.data.catalog.facets, computed in _plugins/datasets.rb) — there is no option that
+  matches nothing. The search runs client-side over /datasets/search.json (names, descriptions,
+  keywords and variables); assets/catalog.js is plain JS, no framework.
+{%- endcomment -%}
+{%- assign f = site.data.catalog.facets -%}
+<form class="ds-filters" id="ds-filters" role="search" aria-label="Filter datasets"
+      onsubmit="return false">
+  <div class="ds-filter ds-filter-q">
+    <label for="ds-q">Search</label>
+    <input type="search" id="ds-q" name="q" placeholder="name, description, variable, taxon…"
+           autocomplete="off" spellcheck="false">
+  </div>
+  <div class="ds-filter">
+    <label for="ds-cat">Category</label>
+    <select id="ds-cat" data-facet="cat">
+      <option value="">all</option>
+      {%- for v in f.categories %}<option value="{{ v | escape }}">{{ v | escape }}</option>{% endfor -%}
+    </select>
+  </div>
+  <div class="ds-filter">
+    <label for="ds-prov">Provider</label>
+    <select id="ds-prov" data-facet="prov">
+      <option value="">all</option>
+      {%- for v in f.providers %}<option value="{{ v | escape }}">{{ v | escape }}</option>{% endfor -%}
+    </select>
+  </div>
+  <div class="ds-filter">
+    <label for="ds-realm">Realm</label>
+    <select id="ds-realm" data-facet="realm">
+      <option value="">all</option>
+      {%- for v in f.realms %}<option value="{{ v | escape }}">{{ v | escape }}</option>{% endfor -%}
+    </select>
+  </div>
+  <div class="ds-filter">
+    <label for="ds-lic">Licence</label>
+    <select id="ds-lic" data-facet="lic">
+      <option value="">all</option>
+      {%- for v in f.licenses %}<option value="{{ v | escape }}">{{ v | escape }}</option>{% endfor -%}
+    </select>
+  </div>
+  <div class="ds-filter">
+    <label for="ds-fmt">Format</label>
+    <select id="ds-fmt" data-facet="fmt">
+      <option value="">all</option>
+      {%- for v in f.formats %}<option value="{{ v | escape }}">{{ v | escape }}</option>{% endfor -%}
+    </select>
+  </div>
+  <div class="ds-filter">
+    <label for="ds-stage">Status</label>
+    <select id="ds-stage" data-facet="stage">
+      <option value="">all</option>
+      {%- for v in f.stages %}<option value="{{ v | escape }}">{{ v | escape }}</option>{% endfor -%}
+    </select>
+  </div>
+  <p class="ds-filter-status" id="ds-count" role="status" aria-live="polite"></p>
+  <button type="button" class="cc-text-link ds-clear" id="ds-clear">Clear</button>
+</form>

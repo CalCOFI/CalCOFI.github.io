@@ -7,44 +7,62 @@
 {%- endcomment -%}
 {%- assign p = include.p -%}
 <article class="prod-card cc-card{% if include.featured %} featured{% endif %}{% if p.status == 'superseded' or p.status == 'archived' %} demoted{% endif %}">
-  <a class="cc-card-shot" href="{{ p.live_url }}" aria-label="Open {{ p.title }}">
+  <a class="cc-card-shot" href="{{ p.live_url }}" aria-label="Open {{ p.title | escape }}">
     {%- comment -%}
       `shots: themed` = the product honours ?theme= and has been captured twice (scripts/shots.py).
       Both images are lazy; the one theme.css hides is never fetched; in v2 the LIGHT shot is the
       default face. Anything else keeps its single `img:`.
     {%- endcomment -%}
     {%- if p.shots == "themed" -%}
-    <img class="cc-light-only" loading="lazy" src="{{ 'images/' | append: p.key | append: '_light.png' | relative_url }}" alt="Screenshot of {{ p.title }} (light theme)">
-    <img class="cc-dark-only"  loading="lazy" src="{{ 'images/' | append: p.key | append: '_dark.png'  | relative_url }}" alt="Screenshot of {{ p.title }} (dark theme)">
+    <img class="cc-light-only" loading="lazy" src="{{ 'images/' | append: p.key | append: '_light.png' | relative_url }}" alt="Screenshot of {{ p.title | escape }} (light theme)">
+    <img class="cc-dark-only"  loading="lazy" src="{{ 'images/' | append: p.key | append: '_dark.png'  | relative_url }}" alt="Screenshot of {{ p.title | escape }} (dark theme)">
     {%- else -%}
-    <img loading="lazy" src="{{ p.img | relative_url }}" alt="Screenshot of {{ p.title }}">
+    <img loading="lazy" src="{{ p.img | relative_url }}" alt="Screenshot of {{ p.title | escape }}">
     {%- endif -%}
   </a>
   <div class="cc-card-body">
-    <div class="cc-eyebrow">{{ include.section }}</div>
+    <div class="cc-eyebrow">{{ include.section | escape }}</div>
     <h3>
-      <a href="{{ p.live_url }}">{{ p.title }}</a>
+      <a href="{{ p.live_url }}">{{ p.title | escape }}</a>
       {%- if p.superseded_by -%}
         {%- assign sup = site.data.products.products | where: "key", p.superseded_by | first -%}
-        <span class="badge cc-chip {{ p.status | default: 'superseded' }}">
-          {%- if p.status and p.status != 'superseded' %}{{ p.status }} · {% endif -%}
-          superseded by <a href="{{ sup.live_url }}">{{ sup.title }}</a></span>
+        <span class="badge cc-chip {{ p.status | default: 'superseded' | escape }}">
+          {%- if p.status and p.status != 'superseded' %}{{ p.status | escape }} · {% endif -%}
+          superseded by <a href="{{ sup.live_url }}">{{ sup.title | escape }}</a></span>
       {%- elsif p.status and p.status != 'active' -%}
-        <span class="badge cc-chip {{ p.status }}">{{ p.status }}</span>
+        <span class="badge cc-chip {{ p.status | escape }}">{{ p.status | escape }}</span>
       {%- endif -%}
     </h3>
     {%- if p.tagline -%}
-    <p class="tagline">{{ p.tagline }}</p>
+    <p class="tagline">{{ p.tagline | escape }}</p>
     {%- endif -%}
-    <p class="desc">{{ p.description }}</p>
+    <p class="desc">{{ p.description | escape }}</p>
     {%- if p.tech -%}
     <div class="tech">
-      {%- for t in p.tech -%}<span class="cc-chip">{{ t }}</span>{%- endfor -%}
+      {%- for t in p.tech -%}<span class="cc-chip">{{ t | escape }}</span>{%- endfor -%}
+    </div>
+    {%- endif -%}
+    {%- comment -%}
+      the datasets this product covers, from products.yml `datasets:` (a list, or `all`). The names
+      and links resolve through site.data.catalog.index — the release record — so a card can name a
+      dataset but never describe one.
+    {%- endcomment -%}
+    {%- if p.datasets -%}
+    <div class="card-datasets">
+      <span class="cc-eyebrow">Datasets</span>
+      {%- if p.datasets == "all" -%}
+      <a class="cc-chip" href="{{ '/datasets/' | relative_url }}">all {{ site.data.catalog.counts.datasets | escape }}</a>
+      {%- else -%}
+      {%- for k in p.datasets -%}
+      {%- assign d = site.data.catalog.index[k] -%}
+      <a class="cc-chip" href="{{ d.url | relative_url }}">{{ d.name | default: k | escape }}</a>
+      {%- endfor -%}
+      {%- endif -%}
     </div>
     {%- endif -%}
     {%- if p.credits -%}
     <p class="credits cc-muted">
-      {{ p.credits.org }} · {{ p.credits.year }}{% if p.credits.team %} · {{ p.credits.team | join: ", " }}{% endif %}
+      {{ p.credits.org | escape }} · {{ p.credits.year | escape }}{% if p.credits.team %} · {{ p.credits.team | join: ", " | escape }}{% endif %}
     </p>
     {%- endif -%}
     <div class="links">
@@ -53,15 +71,15 @@
       <a class="cc-text-link" href="{{ p.source_url }}">source ↗</a>
       {%- endif -%}
       {%- for l in p.extra_links -%}
-      <a class="cc-text-link" href="{{ l.url }}">{{ l.label }} ↗</a>
+      <a class="cc-text-link" href="{{ l.url }}">{{ l.label | escape }} ↗</a>
       {%- endfor -%}
       {%- if p.uptime or p.usage -%}
       <span class="links-meta">
         {%- if p.uptime -%}
-        <a href="{{ site.status_url }}/history/{{ p.uptime }}" title="uptime history for {{ p.title }}">status</a>
+        <a href="{{ site.status_url }}/history/{{ p.uptime | escape }}" title="uptime history for {{ p.title | escape }}">status</a>
         {%- endif -%}
         {%- if p.usage -%}
-        <a href="{{ site.analytics_url }}/{{ p.usage }}/" title="usage analytics for {{ p.title }}">usage</a>
+        <a href="{{ site.analytics_url }}/{{ p.usage | escape }}/" title="usage analytics for {{ p.title | escape }}">usage</a>
         {%- endif -%}
       </span>
       {%- endif -%}

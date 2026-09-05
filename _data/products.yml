@@ -13,51 +13,66 @@
 #               (img: then just names the dark one as a fallback)
 #               (scripts/shots.py); the card swaps them with the site's theme toggle
 # credits:      {org, year, team[]} — shown on student contributions
+# group:        an eyebrow group inside a section (Explore's `across` / `one`), from sections[].groups
+# datasets:     the dataset_keys this product covers — a list, or `all` (every dataset in the
+#               release record). Validated at build against _data/datasets.json's datasets[] and
+#               holdings[]: an unknown key FAILS the build (plan D-2). It is also the reverse index
+#               behind each dataset page's Access > Explore rows, so this is the ONE place a
+#               product-to-dataset link is written.
 
 sections:
-  - id: apps
+  - id: datasets
+    emoji: "🗂"
+    title: Datasets
+    blurb: >-
+      Find what has been collected. One record per dataset — coverage, every endpoint it can be
+      reached through, its licence and how to cite it — by category, with the holdings CalCOFI has
+      but has not ingested yet.
+  - id: explore
     emoji: "🔭"
     featured: true
-    title: Apps
+    title: Explore
+    groups:
+      - id: across
+        title: Across datasets
+        blurb: >-
+          The Explorer brings the spatial grains together as lenses in one app; the others each go
+          deep on one grain — station, hexagon, cruise, or contour.
+      - id: one
+        title: One dataset
+        blurb: >-
+          Apps focused on a single dataset or data source.
     blurb: >-
-      Explore the CalCOFI integrated database, across all ingested datasets. The Explorer brings the
-      spatial grains together as lenses in one app; the others each go deep on one grain — station,
-      hexagon, cruise, or contour.
-  - id: apps-dataset
-    emoji: "🎯"
-    featured: true
-    title: Apps — Dataset-Specific
-    blurb: >-
-      Apps focused on a single dataset or data source.
-  - id: services
+      Explore CalCOFI data in the browser — across every ingested dataset, or deep on one.
+  - id: access
     emoji: "☁️"
-    title: Services
+    title: Access
     blurb: >-
-      Hosted endpoints serving the data directly — standards-based access and
-      public cloud storage.
-  - id: developer
+      The ways to get the data: standards-based services, public cloud storage, browser SQL, and
+      the R and Python packages that read a release directly.
+  - id: build
     emoji: "🛠"
-    title: Developer
+    title: Build
     blurb: >-
-      R packages with documented functions, browser-based query and schema
-      tools, the reproducible workflows behind every release, and the
-      technical documentation tying it all together.
+      The pipeline behind every release and the documentation tying it together — the ingest
+      workflows, the database tooling, the schema browser and the technical docs.
   - id: students
     emoji: "🎓"
-    title: Student Contributions
+    title: Students
     blurb: >-
-      Capstone and fellowship projects by university students partnering with
-      CalCOFI.
+      Capstone and fellowship projects by university students partnering with CalCOFI.
 
 products:
 
-  # ── apps ─────────────────────────────────────────────────────────────────
+  # ── explore · across datasets ────────────────────────────────────────────
 
   - key: explore
     title: CalCOFI Explorer
     uptime: explore
     usage: explore
-    section: apps
+    section: explore
+    group: across
+    datasets: all
     live_url: https://calcofi.io/explore/
     source_url: https://github.com/CalCOFI/explore
     img: images/explore_dark.png   # fallback; the card shows the _dark/_light pair
@@ -78,7 +93,9 @@ products:
     title: Station Explorer
     uptime: db-viz-station
     usage: db-viz-station
-    section: apps
+    section: explore
+    group: across
+    datasets: all
     live_url: https://app.calcofi.io/station/
     source_url: https://github.com/CalCOFI/db-viz-station
     img: images/db-viz-station_dark.png   # fallback; the card shows the _dark/_light pair
@@ -94,7 +111,9 @@ products:
     title: Hexagon Explorer
     uptime: db-viz-hex
     usage: db-viz-hex
-    section: apps
+    section: explore
+    group: across
+    datasets: all
     live_url: https://app.calcofi.io/hex/
     source_url: https://github.com/CalCOFI/db-viz-hex
     img: images/db-viz-hex_dark.png   # fallback; the card shows the _dark/_light pair
@@ -109,7 +128,9 @@ products:
     title: Cruise Explorer
     uptime: db-viz-cruise
     usage: db-viz-cruise
-    section: apps
+    section: explore
+    group: across
+    datasets: all
     live_url: https://app.calcofi.io/cruise/
     source_url: https://github.com/CalCOFI/apps/tree/main/db-viz-cruise
     img: images/db-viz-cruise_dark.png   # fallback; the card shows the _dark/_light pair
@@ -123,7 +144,9 @@ products:
     title: Contour Explorer
     uptime: oceano
     usage: oceano
-    section: apps
+    section: explore
+    group: across
+    datasets: [calcofi_bottle]
     status: superseded
     superseded_by: db-viz-hex
     live_url: https://app.calcofi.io/contour/
@@ -133,13 +156,15 @@ products:
       Visualize and download CalCOFI oceanographic data in map, time-series
       and depth-profile views.
 
-# ── apps-dataset ─────────────────────────────────────────────────────────────────
+# ── explore · one dataset ────────────────────────────────────────────────────
   
   - key: ctd-transects
     title: CTD Transects
     uptime: ctd-transects
     usage: ctd-transects
-    section: apps-dataset
+    section: explore
+    group: one
+    datasets: [calcofi_ctd-cast]
     live_url: https://calcofi.io/ctd-transects/
     source_url: https://github.com/CalCOFI/ctd-transects
     img: images/ctd-transects_dark.png   # fallback; the card shows the _dark/_light pair
@@ -159,7 +184,9 @@ products:
     title: CTD Explorer
     uptime: ctd-viz
     usage: ctd-viz
-    section: apps-dataset
+    section: explore
+    group: one
+    datasets: [calcofi_ctd-cast]
     live_url: https://app.calcofi.io/ctd/
     source_url: https://github.com/CalCOFI/apps/tree/main/ctd-viz
     img: images/ctd-viz_dark.png   # fallback; the card shows the _dark/_light pair
@@ -173,7 +200,8 @@ products:
     title: Pollutants Explorer
     uptime: pollutants
     usage: pollutants
-    section: apps-dataset
+    section: explore
+    group: one
     live_url: https://app.calcofi.io/pollutants/
     source_url: https://github.com/CalCOFI/pollutants-app
     img: images/pollutants_dark.png   # fallback; the card shows the _dark/_light pair
@@ -182,12 +210,13 @@ products:
       Map pollutants in the Southern California Bight from the Regional
       Monitoring Program via SCCWRP.
 
-  # ── services ─────────────────────────────────────────────────────────────
+  # ── access (services, then the browser SQL and the two packages) ─────────
   - key: erddap
     title: erddap
     uptime: erddap
     usage: erddap
-    section: services
+    section: access
+    datasets: all
     live_url: https://erddap.calcofi.io/
     source_url: https://github.com/CalCOFI/erddap
     img: images/erddap_dark.png   # fallback; the card shows the _dark/_light pair
@@ -200,7 +229,8 @@ products:
     title: storage
     uptime: storage
     usage: storage
-    section: services
+    section: access
+    datasets: all
     live_url: https://storage.calcofi.io/
     source_url: https://github.com/CalCOFI/server
     img: images/storage_dark.png   # fallback; the card shows the _dark/_light pair
@@ -212,12 +242,13 @@ products:
     extra_links:
       - { label: netcdf, url: "https://storage.calcofi.io/calcofi-files-public/netcdf/" }
 
-  # ── developer ────────────────────────────────────────────────────────────
+  # ── access / build interleaved: calcofi4r, calcofi4py, db-query are Access ─
   - key: calcofi4r
     title: calcofi4r
     uptime: calcofi4r
     usage: calcofi4r
-    section: developer
+    section: access
+    datasets: all
     live_url: https://calcofi.io/calcofi4r/
     source_url: https://github.com/CalCOFI/calcofi4r
     img: images/calcofi4r_dark.png   # fallback; the card shows the _dark/_light pair
@@ -231,7 +262,8 @@ products:
     title: calcofi4db
     uptime: calcofi4db
     usage: calcofi4db
-    section: developer
+    section: build
+    datasets: all
     live_url: https://calcofi.io/calcofi4db/
     source_url: https://github.com/CalCOFI/calcofi4db
     img: images/calcofi4db_dark.png   # fallback; the card shows the _dark/_light pair
@@ -245,7 +277,8 @@ products:
     title: calcofi4py
     uptime: calcofi4py
     usage: calcofi4py
-    section: developer
+    section: access
+    datasets: all
     live_url: https://calcofi.io/calcofi4py/
     source_url: https://github.com/CalCOFI/calcofi4py
     img: images/calcofi4py_dark.png   # fallback; the card shows the _dark/_light pair
@@ -260,7 +293,8 @@ products:
     title: db-query
     uptime: db-query
     usage: db-query
-    section: developer
+    section: access
+    datasets: all
     live_url: https://calcofi.io/db-query/
     source_url: https://github.com/CalCOFI/db-query
     img: images/db-query_dark.png   # fallback; the card shows the _dark/_light pair
@@ -274,7 +308,8 @@ products:
     title: db-schema
     uptime: db-schema
     usage: db-schema
-    section: developer
+    section: build
+    datasets: all
     live_url: https://calcofi.io/db-schema/
     source_url: https://github.com/CalCOFI/db-schema
     img: images/db-schema_dark.png   # fallback; the card shows the _dark/_light pair
@@ -287,7 +322,8 @@ products:
     title: workflows
     uptime: workflows
     usage: workflows
-    section: developer
+    section: build
+    datasets: all
     live_url: https://calcofi.io/workflows/
     source_url: https://github.com/CalCOFI/workflows
     img: images/workflows_dark.png   # fallback; the card shows the _dark/_light pair
@@ -301,7 +337,8 @@ products:
     title: docs
     uptime: docs
     usage: docs
-    section: developer
+    section: build
+    datasets: all
     live_url: https://calcofi.io/docs/
     source_url: https://github.com/CalCOFI/docs
     img: images/docs_dark.png   # fallback; the card shows the _dark/_light pair
@@ -310,7 +347,7 @@ products:
       Technical documentation of the data ecosystem — data access, database,
       API, apps, maps and reports.
 
-  # ── student contributions (sorted by year desc, then title) ──────────────
+  # ── students (sorted by year desc, then title) ───────────────────────────
   - key: ucla-monitoring-map
     title: CA Ocean & Coastal Monitoring Map
     uptime: ucla-monitoring-map
@@ -334,6 +371,7 @@ products:
     uptime: ucsb-larvae-dashboard
     usage: ucsb-larvae-dashboard
     section: students
+    datasets: [swfsc_ichthyo]
     status: archived   # GitHub repo archived 2026-07-29; the site keeps serving
     live_url: https://app.calcofi.io/2026-ucsb-larvae-dashboard/
     source_url: https://github.com/CalCOFI/2026-ucsb-larvae-dashboard
@@ -352,6 +390,7 @@ products:
     uptime: ucsb-station-portal
     usage: ucsb-station-portal
     section: students
+    datasets: [cce-lter_euphausiids, cce-lter_zoodb]
     status: archived
     superseded_by: db-viz-station
     live_url: https://calcofi.io/2026-ucsb-station-data-portal/
@@ -403,6 +442,7 @@ products:
     uptime: hypoxia-story
     usage: hypoxia-story
     section: students
+    datasets: [calcofi_bottle]
     status: archived   # GitHub repo archived 2026-07-29; the site keeps serving
     live_url: https://calcofi.io/hypoxia-story/
     source_url: https://github.com/CalCOFI/hypoxia-story
@@ -450,6 +490,7 @@ products:
     uptime: capstone
     usage: capstone
     section: students
+    datasets: [calcofi_bottle]
     status: archived
     live_url: https://app.calcofi.io/capstone/
     source_url: https://github.com/PK0207/CalCOFI22

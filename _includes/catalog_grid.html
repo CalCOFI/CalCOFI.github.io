@@ -1,0 +1,119 @@
+{%- comment -%}
+  The dataset grid: one tile per category in `category.order`, then the reference tile last.
+  Inside a tile, in this order —
+    · the datasets HOMED here, in full (provider · years · observations · licence · format chips)
+    · a dataset homed elsewhere that CONTRIBUTES variables here, as a muted row naming those
+      variables (coverage.contributes_to, computed at release — never a bare "also in" pointer)
+    · the holdings, as grey rows: what CalCOFI has that is not yet in the database
+  Everything is `site.data.catalog`, built by _plugins/datasets.rb from the release record.
+  include params: none
+{%- endcomment -%}
+
+{% include catalog_filters.html %}
+
+<div class="ds-grid" id="ds-grid">
+  {%- for c in site.data.catalog.categories -%}
+  <section class="ds-tile cc-card" data-tile="{{ c.name | slugify | escape }}">
+    <header class="ds-tile-head">
+      <i class="cc-i cc-i-{{ c.icon | escape }}" aria-hidden="true"></i>
+      <h3 class="ds-tile-name">{{ c.name | escape }}</h3>
+      <span class="cc-eyebrow ds-tile-n">{{ c.n | escape }} dataset{% if c.n != 1 %}s{% endif %}</span>
+    </header>
+    <ul class="ds-rows">
+      {%- for d in c.datasets -%}
+      <li class="ds-row" data-kind="dataset" data-key="{{ d.key | escape }}" data-cat="{{ c.name | escape }}"
+          data-realm="{{ d.realm | escape }}" data-prov="{{ d.provider | escape }}"
+          data-lic="{{ d.license | default: 'unstated' | escape }}" data-fmt="{{ d.formats | join: ' ' | escape }}"
+          data-stage="{{ d.stage | default: 'published' | escape }}">
+        <a class="ds-row-name" href="{{ d.url | relative_url }}">{{ d.name | escape }}</a>
+        <span class="ds-row-meta">
+          <span class="cc-chip ds-chip-prov">{{ d.provider | escape }}</span>
+          {%- if d.years %}<span class="ds-years">{{ d.years | escape }}</span>{% endif -%}
+          {%- if d.years_bar %}<span class="ds-spark-wrap">{{ d.years_bar }}</span>{% endif -%}
+          {%- if d.n_obs_fmt %}<span class="ds-n">{{ d.n_obs_fmt | escape }} obs</span>{% endif -%}
+          {%- if d.license %}<span class="cc-chip">{{ d.license | escape }}</span>{% endif -%}
+          {%- for f in d.formats %}<span class="cc-chip ds-chip-fmt">{{ f | escape }}</span>{% endfor -%}
+        </span>
+      </li>
+      {%- endfor -%}
+
+      {%- for k in c.contributions -%}
+      <li class="ds-row ds-row-contrib" data-kind="contribution" data-key="{{ k.key | escape }}" data-cat="{{ c.name | escape }}"
+          data-realm="env" data-prov="" data-lic="" data-fmt="" data-stage="published">
+        <a class="ds-row-name" href="{{ k.url | relative_url }}">{{ k.name | escape }}</a>
+        <span class="ds-row-meta ds-contrib-vars">
+          <span class="ds-contrib-lead">contributes</span>
+          {%- for v in k.variables %}<span class="cc-chip">{{ v | escape }}</span>{% endfor -%}
+          <span class="ds-contrib-home">homed in {{ k.home | escape }}</span>
+        </span>
+      </li>
+      {%- endfor -%}
+
+      {%- if c.holdings.size > 0 -%}
+      <li class="ds-rows-sep" aria-hidden="true"><span>not yet in the integrated database</span></li>
+      {%- for h in c.holdings -%}
+      <li class="ds-row ds-row-holding" data-kind="holding" data-key="{{ h.key | escape }}" data-cat="{{ c.name | escape }}"
+          data-realm="" data-prov="{{ h.provider | escape }}" data-lic="" data-fmt=""
+          data-stage="{{ h.stage | escape }}">
+        <a class="ds-row-name" href="{{ h.url | relative_url }}">{{ h.name | escape }}</a>
+        <span class="ds-row-meta">
+          <span class="cc-chip ds-chip-prov">{{ h.provider | escape }}</span>
+          <span class="cc-chip ds-chip-stage">{{ h.stage | escape }}</span>
+          {%- if h.link %}<a class="cc-text-link" href="{{ h.link }}">source ↗</a>{% endif -%}
+        </span>
+      </li>
+      {%- endfor -%}
+      {%- endif -%}
+    </ul>
+  </section>
+  {%- endfor -%}
+
+  {%- assign ref = site.data.catalog.reference -%}
+  <section class="ds-tile cc-card ds-tile-ref" data-tile="reference">
+    <header class="ds-tile-head">
+      <i class="cc-i cc-i-{{ ref.icon | escape }}" aria-hidden="true"></i>
+      <h3 class="ds-tile-name">{{ ref.name | escape }}</h3>
+      <span class="cc-eyebrow ds-tile-n">{{ ref.n | escape }} reference rows</span>
+    </header>
+    <p class="ds-tile-lede cc-muted">The frame every dataset joins to — the cruise and ship registry, the
+      station grid, the boundary layers and the bathymetry. Not datasets: the reference the datasets share.</p>
+    <ul class="ds-rows">
+      {%- for t in ref.tables -%}
+      <li class="ds-row ds-row-ref">
+        <a class="ds-row-name" href="{{ t.schema_url | default: t.url }}">{{ t.name | escape }}</a>
+        <span class="ds-row-meta">
+          {%- if t.desc %}<span class="ds-ref-desc">{{ t.desc | escape }}</span>{% endif -%}
+          {%- if t.count %}<span class="ds-n">{{ t.count | escape }} {{ t.count_label | escape }}</span>{% endif -%}
+          {%- if t.url %}<a class="cc-text-link" href="{{ t.url }}">parquet ↗</a>{% endif -%}
+        </span>
+      </li>
+      {%- endfor -%}
+      <li class="ds-rows-sep" aria-hidden="true"><span>{{ ref.layers | size | escape }} spatial layers</span></li>
+      {%- for l in ref.layers -%}
+      <li class="ds-row ds-row-ref">
+        <a class="ds-row-name" href="{{ l.url }}">{{ l.name | escape }}</a>
+        <span class="ds-row-meta">
+          {%- if l.group %}<span class="cc-chip">{{ l.group | escape }}</span>{% endif -%}
+          {%- if l.count %}<span class="ds-n">{{ l.count | escape }} {{ l.count_label | escape }}</span>{% endif -%}
+          {%- if l.attribution %}<span class="ds-ref-desc">{{ l.attribution | escape }}</span>{% endif -%}
+        </span>
+      </li>
+      {%- endfor -%}
+      {%- for r in ref.rasters -%}
+      <li class="ds-rows-sep" aria-hidden="true"><span>bathymetry</span></li>
+      <li class="ds-row ds-row-ref">
+        <a class="ds-row-name" href="{{ r.url }}">{{ r.name | escape }}</a>
+        <span class="ds-row-meta">
+          {%- if r.desc %}<span class="ds-ref-desc">{{ r.desc | escape }}</span>{% endif -%}
+          {%- for o in r.objects %}<a class="cc-text-link" href="{{ o | escape }}">{{ o | split: '.' | last | escape }} ↗</a>{% endfor -%}
+        </span>
+      </li>
+      {%- endfor -%}
+    </ul>
+  </section>
+</div>
+
+<p class="ds-empty" id="ds-empty" hidden>No dataset matches those filters. <button type="button" class="cc-text-link" id="ds-clear2">Clear</button></p>
+
+<script src="{{ '/assets/catalog.js' | relative_url }}" defer
+        data-search="{{ '/datasets/search.json' | relative_url }}"></script>
