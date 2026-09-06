@@ -26,6 +26,8 @@
 
 require "json"
 require "cgi"
+require "net/http"
+require "uri"
 require_relative "derive_id"
 
 module CalCOFI
@@ -824,6 +826,74 @@ module CalCOFI
       groups
     end
 
+    # ── the original input files, on gs://calcofi-files-public ───────────────
+    # Twelve ingests archive what they read with `sync_to_gcs(gcs_prefix = "archive/{provider}/
+    # {dataset}")`; three read straight from the Drive folder the nightly rclone mirrors to `_sync/`
+    # (bottle, CTD casts, ichthyo). METS downloads per cruise into a Drive folder that is not in
+    # either. The prefix is per dataset because the two conventions coexist; the listing itself is
+    # MEASURED at build through the bucket's anonymous JSON API (never typed), and skipped — folder
+    # link only — under CALCOFI_SKIP_LINK_CHECK or when the request fails.
+    # # until the record carries sources[] for every dataset (stamp_source_access() — one ingest
+    # # stamps today) — delete the map then and read the record
+    SOURCE_BUCKET = "calcofi-files-public"
+    SOURCE_PREFIX = {
+      "calcofi_bottle"   => "_sync/calcofi/bottle/",
+      "calcofi_ctd-cast" => "_sync/calcofi/ctd-cast/download/",
+      "swfsc_ichthyo"    => "_sync/swfsc/ichthyo/",
+      "calcofi_mets"     => nil
+    }.freeze
+    def source_prefix(key)
+      return SOURCE_PREFIX[key] if SOURCE_PREFIX.key?(key)
+      pd = key.split("_", 2)
+      pd.size == 2 ? "archive/#{pd[0]}/#{pd[1]}/" : nil
+    end
+
+    # the objects under a prefix, paginated; nil when the network is off or the request fails
+    def list_bucket(prefix)
+      return nil if ENV["CALCOFI_SKIP_LINK_CHECK"].to_s != ""
+      items, token = [], nil
+      loop do
+        q = { "prefix" => prefix, "fields" => "nextPageToken,items(name,size,updated)", "maxResults" => "1000" }
+        q["pageToken"] = token if token
+        uri = URI("https://storage.googleapis.com/storage/v1/b/#{SOURCE_BUCKET}/o?#{URI.encode_www_form(q)}")
+        res = Net::HTTP.start(uri.host, uri.port, use_ssl: true, open_timeout: 8, read_timeout: 20) { |h| h.get(uri) }
+        return nil unless res.is_a?(Net::HTTPSuccess)
+        j = JSON.parse(res.body)
+        items.concat(j["items"] || [])
+        token = j["nextPageToken"]
+        break unless token
+      end
+      items
+    rescue StandardError => e
+      Jekyll.logger.warn "datasets:", "source listing #{prefix}: #{e.message}"
+      nil
+    end
+
+    SOURCE_SHOWN = 12
+    # the section: folder link, the count and bytes measured, the files (mono, capped) — nil when
+    # the dataset has no registered inputs. `.DS_Store` and the generated index.html are not inputs.
+    def source_files(d)
+      key = d["dataset_key"]
+      prefix = source_prefix(key) or return nil
+      folder = "https://storage.calcofi.io/#{SOURCE_BUCKET}/#{prefix}"
+      items = list_bucket(prefix)
+      files = (items || []).reject { |o| o["name"].end_with?("/", "/index.html", "/.DS_Store") }
+                           .map do |o|
+        rel = o["name"].sub(prefix, "")
+        { "name" => rel, "size" => Fmt.bytes(o["size"].to_i), "bytes" => o["size"].to_i,
+          "updated" => o["updated"].to_s[0, 10],
+          "url" => "https://storage.googleapis.com/#{SOURCE_BUCKET}/#{o['name'].split('/').map { |x| CGI.escape(x).gsub('+', '%20') }.join('/')}" }
+      end.sort_by { |f| f["name"] }
+      return nil if items && files.empty?
+      {
+        "prefix" => prefix, "folder" => folder,
+        "kind" => prefix.start_with?("archive/") ? "archived by the ingest" : "mirrored nightly from the shared Drive",
+        "measured" => !items.nil?,
+        "n" => files.size, "bytes" => Fmt.bytes(files.sum { |f| f["bytes"] }),
+        "shown" => files.first(SOURCE_SHOWN), "more" => files.drop(SOURCE_SHOWN)
+      }
+    end
+
     # db-query's own saved queries, by the dataset they are about (ids are `category--name`;
     # _queries/datasets/{bottle,ichthyo}.md). Anything else gets the SQL shell, prefilled.
     SAVED_QUERIES = { "calcofi_bottle" => "datasets--bottle",
@@ -1468,7 +1538,8 @@ module CalCOFI
         "variables"   => cat.normalize_variables(cov),
         "n_obs_fmt"   => Fmt.num(cov["n_obs"]),
         "n_roots_fmt" => Fmt.num(cov["n_roots"]),
-        "objects"     => (r["objects"] || []).map { |o| o.merge("bytes_fmt" => Fmt.bytes(o["bytes"])) }
+        "objects"     => (r["objects"] || []).map { |o| o.merge("bytes_fmt" => Fmt.bytes(o["bytes"])) },
+        "sources"     => is_holding ? nil : cat.source_files(r)
       )
       [page,
        json_page(site, "/datasets/", "#{key}.json", JSON.pretty_generate(r)),

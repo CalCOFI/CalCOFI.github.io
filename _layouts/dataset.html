@@ -112,6 +112,7 @@ layout: default
     <a href="#cite">Cite</a>
     <a href="#provenance">Provenance</a>
     {%- if page.related.category.size > 0 or page.related.tables.size > 0 -%}<a href="#related">Related</a>{%- endif -%}
+    {%- if page.sources %}<a href="#sources">Sources{% if page.sources.measured %} <span class="n">{{ page.sources.n }}</span>{% endif %}</a>{% endif -%}
   </div>
 </nav>
 
@@ -358,6 +359,37 @@ layout: default
       </div>
       {%- endif -%}
     </div>
+  </div>
+</section>
+{%- endif -%}
+
+{%- comment -%} ── Source files: the original inputs the ingest read, as archived on the public
+  files bucket (round 3, 2026-09-06). Small and tight: one mono line per file, capped, the rest
+  collapsed. Measured at build; folder link only when the listing was skipped. ── {%- endcomment -%}
+{%- assign src = page.sources -%}
+{%- if src -%}
+<section class="cc-band cc-band-alt ds-section ds-one" id="sources">
+  <div class="cc-container">
+    <h2 class="cc-h3">Source files</h2>
+    <p class="ds-access-lede cc-muted cc-prose">The original inputs the ingest notebook read, {{ src.kind }} to
+      <a href="{{ src.folder }}">the public files bucket</a>{% if src.measured %} — {{ src.n }} file{% unless src.n == 1 %}s{% endunless %}, {{ src.bytes }}{% endif %}.
+      <button class="cc-copy ds-copy-sm" type="button" data-copy="{{ src.folder | escape }}" aria-label="Copy the folder URL" title="copy the folder URL"><i class="cc-i cc-i-ui-copy" aria-hidden="true"></i></button></p>
+    {%- if src.measured -%}
+    <ul class="ds-src">
+      {%- for f in src.shown -%}
+      <li><a href="{{ f.url }}">{{ f.name | escape }}</a><span class="ds-src-n">{{ f.size | escape }}</span><span class="ds-src-n">{{ f.updated | escape }}</span></li>
+      {%- endfor -%}
+    </ul>
+    {%- if src.more.size > 0 -%}
+    <details class="ds-details ds-arow-note"><summary>and {{ src.more.size }} more</summary>
+      <ul class="ds-src">
+        {%- for f in src.more -%}
+        <li><a href="{{ f.url }}">{{ f.name | escape }}</a><span class="ds-src-n">{{ f.size | escape }}</span><span class="ds-src-n">{{ f.updated | escape }}</span></li>
+        {%- endfor -%}
+      </ul>
+    </details>
+    {%- endif -%}
+    {%- endif -%}
   </div>
 </section>
 {%- endif -%}
