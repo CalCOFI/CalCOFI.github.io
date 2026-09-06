@@ -19,12 +19,25 @@
 
 {% include catalog_filters.html %}
 
-<div class="ds-grid" id="ds-grid">
-  {%- for c in site.data.catalog.categories -%}
+{%- comment -%}
+  Two columns by realm (2026-09-06): Biology on the left, Environment on the right, each under its
+  own heading — larger than a category's, smaller than "Datasets", with the realm glyph (a fish, the
+  waves) that nothing else on the page uses. The tiles stack inside a column; no masonry.
+{%- endcomment -%}
+<div class="ds-grid ds-grid-realms" id="ds-grid">
+  {%- for rlm in site.data.catalog.realms -%}
+  <section class="ds-realm" id="realm-{{ rlm.id }}" data-realm-col="{{ rlm.id }}">
+    <header class="ds-realm-head">
+      <i class="cc-i cc-i-{{ rlm.icon | escape }}" aria-hidden="true"></i>
+      <h3 class="ds-realm-name">{{ rlm.title | escape }}</h3>
+      <span class="ds-realm-lede cc-muted">{{ rlm.lede | escape }}</span>
+    </header>
+    <div class="ds-realm-tiles">
+  {%- for c in rlm.categories -%}
   <section class="ds-tile cc-card" data-tile="{{ c.name | slugify | escape }}">
     <header class="ds-tile-head">
       <i class="cc-i cc-i-{{ c.icon | escape }}" aria-hidden="true"></i>
-      <h3 class="ds-tile-name">{{ c.name | escape }}</h3>
+      <h4 class="ds-tile-name">{{ c.name | escape }}</h4>
       <span class="cc-eyebrow ds-tile-n">{{ c.n | escape }} dataset{% if c.n != 1 %}s{% endif %}{% if c.contributions.size > 0 %} · {{ c.contributions.size | escape }} contributing{% endif %}{% if c.holdings.size > 0 %} · {{ c.holdings.size | escape }} held{% endif %}</span>
       {%- comment -%} the category's own one-line description, once the record carries it (D-9) {%- endcomment -%}
       {%- if c.description %}<p class="ds-tile-desc cc-muted">{{ c.description | escape }}</p>{% endif -%}
@@ -59,7 +72,7 @@
             {%- for v in k.variables %}<span class="cc-chip">{{ v | escape }}</span>{% endfor -%}
           </details>
           {%- endif -%}
-          <span class="ds-contrib-home">· homed in {{ k.home | escape }}</span>
+          <span class="ds-contrib-home" title="homed in {{ k.home | escape }}"><i class="cc-i cc-i-ui-home" role="img" aria-label="homed in"></i> {{ k.home | escape }}</span>
         </span>
       </li>
       {%- endfor -%}
@@ -82,10 +95,13 @@
     </ul>
   </section>
   {%- endfor -%}
+    </div>
+  </section>
+  {%- endfor -%}
 </div>
 
 <p class="ds-empty" id="ds-empty" hidden>No dataset matches those filters. <button type="button" class="cc-text-link" id="ds-clear2">Clear</button></p>
 
 <script src="{{ '/assets/catalog.js' | relative_url }}" defer
         data-search="{{ '/datasets/search.json' | relative_url }}"></script>
-<script src="{{ '/assets/masonry.js' | relative_url }}" defer></script>
+

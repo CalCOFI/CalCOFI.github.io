@@ -198,6 +198,15 @@ main#panel { width: 100%; }
    `grid-template-rows: masonry` and does nothing else. Reading order is the DOM's either way. */
 .ds-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(460px, 100%), 1fr)); gap: calc(var(--space) * 3); align-items: start; }
 .ds-grid.is-masonry { grid-auto-rows: 8px; row-gap: 0; }
+/* the two realm columns: Biology · Environment, tiles stacked inside each (no masonry) */
+.ds-grid-realms { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.ds-realm { min-width: 0; }
+.ds-realm-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; margin: 0 0 calc(var(--space) * 1.5); padding-bottom: 6px; border-bottom: 2px solid var(--accent); }
+.ds-realm-head .cc-i { font-size: 28px; color: var(--accent); flex: none; align-self: center; }
+/* between the page's h2 (Teko 32–41 px) and a category tile's h4 (Source Sans 16 px): Teko at 26 */
+.ds-realm-name { margin: 0; font-family: var(--display); font-size: clamp(24px, 2.2vw, 28px); font-weight: 500; line-height: 1; text-transform: uppercase; letter-spacing: 0.03em; }
+.ds-realm-lede { flex-basis: 100%; font-size: var(--fs-sm); }
+.ds-realm-tiles { display: grid; gap: calc(var(--space) * 3); }
 .ds-tile { padding: calc(var(--space) * 2.5) calc(var(--space) * 3) calc(var(--space) * 3); }
 .ds-tile-desc { flex-basis: 100%; margin: -2px 0 0; font-size: var(--fs-sm); }
 .ds-tile-head { display: flex; flex-wrap: wrap; align-items: center; gap: 4px calc(var(--space) * 1.5); margin-bottom: calc(var(--space) * 1.5); }
@@ -234,7 +243,8 @@ main#panel { width: 100%; }
 /* rung 2 · a contribution: --fg at 400, a hollow dot, an italic lead, the variables collapsed */
 .ds-dot-hollow { width: 7px; height: 7px; background: transparent; border: 2px solid var(--dot, var(--muted)); vertical-align: 0; }
 .ds-row-contrib .ds-row-name { font-weight: 400; color: var(--fg); }
-.ds-contrib-lead, .ds-contrib-home { font-style: italic; }
+.ds-contrib-lead { font-style: italic; }
+.ds-contrib-home .cc-i { color: var(--muted); vertical-align: -0.12em; }
 .ds-contrib-det { display: inline; }
 .ds-contrib-det summary { display: inline; cursor: pointer; color: var(--accent); list-style: none; }
 .ds-contrib-det summary::-webkit-details-marker { display: none; }
@@ -488,7 +498,7 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
   .ds-gloss dd { margin-bottom: 6px; }
 }
 @media (max-width: 640px) {
-  .ds-grid { grid-template-columns: 1fr; }
+  .ds-grid, .ds-grid-realms { grid-template-columns: 1fr; }
   .ds-refband { padding: calc(var(--space) * 2); }
   .ds-refband-cols { grid-template-columns: 1fr; }
   /* one line becomes two on a phone, so the clamp comes off and the name may wrap */

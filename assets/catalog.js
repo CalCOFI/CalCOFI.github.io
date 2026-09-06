@@ -69,6 +69,9 @@
       var any = tile.querySelectorAll(".ds-row[data-key]:not([hidden])").length;
       tile.hidden = !any;
     });
+    Array.prototype.forEach.call(grid.querySelectorAll(".ds-realm"), function (col) {
+      col.hidden = !col.querySelectorAll(".ds-tile:not([hidden])").length;
+    });
     // the holdings are collapsed: a filter that matches only those should open the block, and a
     // block with nothing left in it goes away with its summary
     Array.prototype.forEach.call(grid.querySelectorAll(".ds-holdings-det"), function (det) {

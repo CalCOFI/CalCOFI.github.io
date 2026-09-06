@@ -180,6 +180,12 @@ module CalCOFI
           end
         end
 
+        # a category first met through a contribution has no realm yet; a record of it does
+        cats.each_value do |c|
+          next if c["realm"]
+          src = (datasets + holdings).find { |r| r.dig("category", "name") == c["name"] }
+          c["realm"] = src&.dig("category", "realm")
+        end
         list = cats.values.sort_by { |c| [c["order"] || 999, c["name"]] }
         list.each do |c|
           c["datasets"].sort_by! { |t| t["name"].to_s.downcase }
@@ -188,6 +194,18 @@ module CalCOFI
           c["n"] = c["datasets"].size
         end
         list
+      end
+    end
+
+    # the grid's two columns (2026-09-06): Biology left, Environment right — each realm's categories
+    # in `category.order`. A category with no realm at all lands in Environment.
+    REALMS = [{ "id" => "bio", "title" => "Biology", "icon" => "realm-bio",
+                "lede" => "what lives in the water column — counted, measured, identified" },
+              { "id" => "env", "title" => "Environment", "icon" => "realm-env",
+                "lede" => "the water itself — its physics, chemistry and the air above it" }].freeze
+    def realms
+      @realms ||= REALMS.map do |r|
+        r.merge("categories" => categories.select { |c| (c["realm"] || "env") == r["id"] })
       end
     end
 
@@ -1390,6 +1408,7 @@ module CalCOFI
         "counts"     => { "datasets" => cat.datasets.size, "holdings" => cat.holdings.size,
                           "reference" => cat.reference.size },
         "categories" => cat.categories,
+        "realms"     => cat.realms,
         "reference"  => cat.reference_band.merge("map" => cat.map_svg(nil)),
         "facets"     => cat.facets,
         "jsonld"     => JSON.pretty_generate(cat.catalog_jsonld),
