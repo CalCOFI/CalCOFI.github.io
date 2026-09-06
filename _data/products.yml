@@ -17,6 +17,8 @@
 # lenses:       the spatial grains an Explore app shows the data at — ids from sections[explore].lenses
 #               (stations · hexagons · cruises · regions · sections · contours); drawn as suffix
 #               icons after the card's title and on a dataset page's Access > Explore row
+# dataset_url_realm: bio | env — the deep link only selects a dataset of this realm; a dataset of
+#               the other realm gets the plain app link (db-viz-hex's ?datasets= is taxa-only)
 # datasets:     the dataset_keys this product covers — a list, or `all` (every dataset in the
 #               release record). Validated at build against _data/datasets.json's datasets[] and
 #               holdings[]: an unknown key FAILS the build (plan D-2). It is also the reverse index
@@ -135,6 +137,10 @@ products:
     datasets: all
     live_url: https://app.calcofi.io/hex/
     dataset_url: https://app.calcofi.io/hex/?datasets={key}
+    # ?datasets= drives the TAXA-dataset group only (the environmental variable is chosen
+    # separately), so the deep link opens on a biological dataset and merely opens for an
+    # environmental one — the dataset page says "opens on this dataset" only where it does
+    dataset_url_realm: bio
     source_url: https://github.com/CalCOFI/db-viz-hex
     img: images/db-viz-hex_dark.png   # fallback; the card shows the _dark/_light pair
     shots: themed

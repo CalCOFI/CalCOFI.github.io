@@ -125,7 +125,8 @@ module CalCOFI
               "section_id" => p["section"],
               "lenses"   => p["lenses"] || [],
               # the ONE place a product-to-dataset link is written (plan Decision 10)
-              "dataset_url" => p["dataset_url"]
+              "dataset_url" => p["dataset_url"],
+              "dataset_url_realm" => p["dataset_url_realm"]
             }
           end
         end
@@ -549,6 +550,10 @@ module CalCOFI
              .select { |p| %w[explore students].include?(p["section_id"]) }
              .map do |p|
         tmpl = Fmt.present(p["dataset_url"])
+        # a template scoped to one realm (db-viz-hex: ?datasets= is taxa-only) is a deep link
+        # only for a dataset of that realm; the other realm gets the plain app link
+        realm = d.dig("coverage", "realm") || d.dig("category", "realm")
+        tmpl = nil if tmpl && Fmt.present(p["dataset_url_realm"]) && p["dataset_url_realm"] != realm
         link = tmpl ? tmpl.gsub("{key}", key) : p["url"]
         group = p["section_id"] == "students" ? "Student contribution" : p["group"]
         { "label" => p["title"], "label_url" => link, "url" => link,
