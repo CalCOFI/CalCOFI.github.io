@@ -81,6 +81,13 @@ layout: default
     <p class="blurb">{{ s.blurb }}
       {%- if s.id == "build" %} <a class="cc-text-link" href="https://calcofi.io/docs/">Read the docs</a>{% endif -%}
     </p>
+    {%- comment -%} the lens key: what the suffix icons after an Explore app's title mean {%- endcomment -%}
+    {%- if s.lenses -%}
+    <p class="lens-key" aria-label="Lenses">
+      {%- for l in s.lenses %}<span title="{{ l.blurb | escape }}"><i class="cc-i cc-i-lens-{{ l.id | escape }}" aria-hidden="true"></i>{{ l.title | escape }}</span>{% endfor -%}
+      {%- if s.id == "explore" %}<span title="a capstone or fellowship project"><i class="cc-i cc-i-ui-student" aria-hidden="true"></i>student contribution</span>{% endif -%}
+    </p>
+    {%- endif -%}
 
     {%- if s.groups -%}
       {%- for g in s.groups -%}

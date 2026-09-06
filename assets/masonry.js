@@ -38,4 +38,6 @@
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(schedule);
   window.addEventListener("resize", schedule);
   document.addEventListener("ds:filtered", schedule);   // catalog.js dispatches this after apply()
+  // a tile's collapsed holdings block changes the tile's height when it opens or closes
+  grid.addEventListener("toggle", schedule, true);
 })();

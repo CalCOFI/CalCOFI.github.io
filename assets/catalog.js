@@ -64,20 +64,13 @@
       row.hidden = !ok;
       if (ok && row.getAttribute("data-kind") === "dataset") shown++;
     });
-    // a tile with nothing left to show goes away, separators with it
+    // a tile with nothing left to show goes away
     tiles.forEach(function (tile) {
       var any = tile.querySelectorAll(".ds-row[data-key]:not([hidden])").length;
       tile.hidden = !any;
-      Array.prototype.forEach.call(tile.querySelectorAll(".ds-rows-sep"), function (sep) {
-        var next = sep.nextElementSibling, live = false;
-        while (next && next.classList.contains("ds-row")) {
-          if (!next.hidden) { live = true; break; }
-          next = next.nextElementSibling;
-        }
-        sep.hidden = !live;
-      });
     });
-    // "and n more" holds rows too: a filter that matches only those should open it
+    // the holdings are collapsed: a filter that matches only those should open the block, and a
+    // block with nothing left in it goes away with its summary
     Array.prototype.forEach.call(grid.querySelectorAll(".ds-holdings-det"), function (det) {
       var live = det.querySelectorAll(".ds-row[data-key]:not([hidden])").length;
       var filtered = !!(state.q || selects.some(function (el) { return el.value; }));

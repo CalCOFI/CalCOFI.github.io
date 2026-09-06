@@ -1,0 +1,30 @@
+{%- comment -%}
+  The release tables as a TABLE (UI refresh round 2, 2026-09-06): one row per parquet object —
+  the table (a link into the schema browser) · what it holds · whose rows · size · since · sha256
+  · the copy button for the object's URL. A CSS grid that folds to one field per line on a phone.
+  Rows come from the record's `objects[]` (`table_description` from schema 1.1, else the site's
+  TABLE_ABOUT fallback in _plugins/datasets.rb).
+  include params: block (an Access block with layout: "table" and rows[])
+{%- endcomment -%}
+{%- assign b = include.block -%}
+<div class="ds-tbl">
+  <span class="ds-tbl-hd">table</span>
+  <span class="ds-tbl-hd">holds</span>
+  <span class="ds-tbl-hd">rows</span>
+  <span class="ds-tbl-hd">size</span>
+  <span class="ds-tbl-hd">since</span>
+  <span class="ds-tbl-hd">object</span>
+  {%- for r in b.rows -%}
+  <a class="ds-tbl-k" href="{{ r.label_url }}" title="{{ r.label_title | default: r.label | escape }}">{{ r.label | escape }}</a>
+  <span class="ds-tbl-about">{{ r.about | escape }}</span>
+  <span class="ds-tbl-scope{% if r.shared %} ds-tbl-shared{% endif %}"{% if r.shared %} title="filter on dataset_key"{% endif %}>{{ r.scope | escape }}</span>
+  <span class="ds-tbl-n">{{ r.size | escape }}</span>
+  <span class="ds-tbl-n">{{ r.since | escape }}</span>
+  <span class="ds-tbl-obj">
+    {%- if r.hash %}<span class="ds-arow-hash" title="sha256 {{ r.hash | escape }}">{{ r.hash | slice: 0, 8 | escape }}…</span>
+    <button class="cc-copy ds-copy-sm" type="button" data-copy="{{ r.hash | escape }}" aria-label="Copy the sha256 of {{ r.label | escape }}" title="copy the sha256"><i class="cc-i cc-i-ui-copy" aria-hidden="true"></i></button>{% endif -%}
+    <a class="cc-text-link ds-tbl-dl" href="{{ r.url }}" title="{{ r.url | escape }}">parquet ↗</a>
+    <button class="cc-copy ds-copy-sm" type="button" data-copy="{{ r.url | escape }}" aria-label="Copy the URL of {{ r.label | escape }}" title="copy the URL"><i class="cc-i cc-i-ui-copy" aria-hidden="true"></i></button>
+  </span>
+  {%- endfor -%}
+</div>

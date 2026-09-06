@@ -14,6 +14,9 @@
 #               (scripts/shots.py); the card swaps them with the site's theme toggle
 # credits:      {org, year, team[]} — shown on student contributions
 # group:        an eyebrow group inside a section (Explore's `across` / `one`), from sections[].groups
+# lenses:       the spatial grains an Explore app shows the data at — ids from sections[explore].lenses
+#               (stations · hexagons · cruises · regions · sections · contours); drawn as suffix
+#               icons after the card's title and on a dataset page's Access > Explore row
 # datasets:     the dataset_keys this product covers — a list, or `all` (every dataset in the
 #               release record). Validated at build against _data/datasets.json's datasets[] and
 #               holdings[]: an unknown key FAILS the build (plan D-2). It is also the reverse index
@@ -32,6 +35,14 @@ sections:
     emoji: "🔭"
     featured: true
     title: Explore
+    # the lenses, with the brand glyph each is drawn as (brand/v2/icons/, lens-*)
+    lenses:
+      - { id: stations, title: Stations, blurb: one value per station, the CalCOFI grid as points }
+      - { id: hexagons, title: Hexagons, blurb: H3 hexagons, aggregated at a chosen resolution }
+      - { id: cruises, title: Cruises, blurb: one cruise at a time, along its track }
+      - { id: regions, title: Regions, blurb: pooled over a boundary or a region }
+      - { id: sections, title: Sections, blurb: a vertical section along a CalCOFI line }
+      - { id: contours, title: Contours, blurb: interpolated maps of one variable }
     groups:
       - id: across
         title: Across datasets
@@ -72,6 +83,7 @@ products:
     usage: explore
     section: explore
     group: across
+    lenses: [stations, hexagons, cruises, regions, sections]
     datasets: all
     live_url: https://calcofi.io/explore/
     # dataset_url: the deep link a dataset page builds for this product — {key} is the dataset_key.
@@ -99,6 +111,7 @@ products:
     usage: db-viz-station
     section: explore
     group: across
+    lenses: [stations]
     datasets: all
     live_url: https://app.calcofi.io/station/
     dataset_url: https://app.calcofi.io/station/?dataset={key}
@@ -118,6 +131,7 @@ products:
     usage: db-viz-hex
     section: explore
     group: across
+    lenses: [hexagons]
     datasets: all
     live_url: https://app.calcofi.io/hex/
     dataset_url: https://app.calcofi.io/hex/?datasets={key}
@@ -136,6 +150,7 @@ products:
     usage: db-viz-cruise
     section: explore
     group: across
+    lenses: [cruises]
     datasets: all
     live_url: https://app.calcofi.io/cruise/
     dataset_url: https://app.calcofi.io/cruise/?datasets={key}
@@ -153,6 +168,7 @@ products:
     usage: oceano
     section: explore
     group: across
+    lenses: [contours]
     datasets: [calcofi_bottle]
     status: superseded
     superseded_by: db-viz-hex
@@ -171,6 +187,7 @@ products:
     usage: ctd-transects
     section: explore
     group: one
+    lenses: [sections]
     datasets: [calcofi_ctd-cast]
     live_url: https://calcofi.io/ctd-transects/
     source_url: https://github.com/CalCOFI/ctd-transects
@@ -193,6 +210,7 @@ products:
     usage: ctd-viz
     section: explore
     group: one
+    lenses: [stations, contours]
     datasets: [calcofi_ctd-cast]
     live_url: https://app.calcofi.io/ctd/
     source_url: https://github.com/CalCOFI/apps/tree/main/ctd-viz
@@ -360,6 +378,7 @@ products:
     uptime: ucla-monitoring-map
     usage: ucla-monitoring-map
     section: students
+    lenses: [hexagons]
     live_url: https://calcofi.io/2026-ucla-cal-ocean-coastal-monitoring-map/
     source_url: https://github.com/CalCOFI/2026-ucla-cal-ocean-coastal-monitoring-map
     img: images/ucla-coastal-monitoring-map.png
@@ -397,6 +416,7 @@ products:
     uptime: ucsb-station-portal
     usage: ucsb-station-portal
     section: students
+    lenses: [stations]
     datasets: [cce-lter_euphausiids, cce-lter_zoodb]
     status: archived
     superseded_by: db-viz-station
