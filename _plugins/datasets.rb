@@ -710,6 +710,13 @@ module CalCOFI
                      "meta" => "the release’s own entry for this dataset — everything here comes from it" }
       meta_rows << { "label" => "DCAT-US 1.1", "label_url" => abs("/data.json"), "url" => abs("/data.json"),
                      "meta" => "the whole catalog, for data.gov and any CKAN" }
+      # the EML document the release writes beside datasets.json (release_database.qmd, calcofi4db
+      # >= 4.4 build_eml()) — publish_to-edi.qmd packages it for EDI, it does not create it. Listed
+      # only when it answers: the record the site renders may predate the eml/ chunk.
+      # # until the record carries a `format: eml` distribution — delete the probe then
+      eml = "#{release['url']}eml/#{key}.xml"
+      meta_rows << { "label" => "EML 2.2", "label_url" => eml, "url" => eml,
+                     "meta" => "the Ecological Metadata Language record the release writes; what an EDI package carries" } if url_ok?(eml)
       # the STAC collection: the record's own address from calcofi4db 4.6.0 (`format: stac`); the
       # browser opens the same document by its path under the catalog root
       stac = dist.find { |x| x["format"] == "stac" }
@@ -748,6 +755,21 @@ module CalCOFI
                   "pair" => "right",
                   "blocks" => [{ "rows" => ar }] } unless ar.empty?
       groups
+    end
+
+    # does a URL answer? A ranged GET (EDI answers 405 to HEAD), cached per build, false when the
+    # network is off (CALCOFI_SKIP_LINK_CHECK) — a row is drawn only for an address that exists.
+    def url_ok?(u)
+      return false if ENV["CALCOFI_SKIP_LINK_CHECK"].to_s != ""
+      @url_ok ||= {}
+      return @url_ok[u] if @url_ok.key?(u)
+      uri = URI(u)
+      res = Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == "https", open_timeout: 6, read_timeout: 12) do |h|
+        h.get(uri.request_uri, { "Range" => "bytes=0-0" })
+      end
+      @url_ok[u] = %w[200 206].include?(res.code)
+    rescue StandardError
+      @url_ok[u] = false
     end
 
     # what each release table holds, for the tables listing — the record's own
