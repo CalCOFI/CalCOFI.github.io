@@ -749,6 +749,24 @@ module CalCOFI
                 "chips" => [status_chip(x["status"])].compact,
                 "meta" => Fmt.present(x["notes"]), "url" => x["url"] }
       end
+      # the portal bundles the publishers stage before a deposit (publish_to-obis.qmd /
+      # publish_to-edi.qmd `stage` chunks, 2026-09-06): listed when they answer, marked as built,
+      # not deposited — a reviewer sees the archive that WOULD be uploaded.
+      # # until the record carries them (a `bundle` kind on distributions[]) — delete the probes then
+      v = release["version"]
+      dwca = "https://storage.googleapis.com/calcofi-db/publish/dwca/#{key}/#{key}_#{v}.zip"
+      ar << { "label" => "Darwin Core Archive", "label_url" => dwca, "url" => dwca,
+              "label_title" => "Event core + Occurrence + eMoF + meta.xml + eml.xml, zipped, as it would go to the OBIS-USA IPT",
+              "chips" => [{ "text" => "built, not deposited", "class" => "cc-chip-na",
+                            "title" => "staged by publish_to-obis.qmd for review; the IPT upload is a deliberate manual step" }],
+              "meta" => "for OBIS, release #{v}" } if url_ok?(dwca)
+      edi_dir = "https://storage.googleapis.com/calcofi-db/publish/edi/#{key}/#{key}_#{v}/"
+      edi_man = "#{edi_dir}manifest.json"
+      ar << { "label" => "EDI data package", "label_url" => edi_man, "url" => edi_dir,
+              "label_title" => "the package manifest; the CSV entities and the EML sit beside it",
+              "chips" => [{ "text" => "built, not deposited", "class" => "cc-chip-na",
+                            "title" => "staged by publish_to-edi.qmd for review; evaluate/create at EDI is gated on CALCOFI_PUBLISH_EDI" }],
+              "meta" => "for the Environmental Data Initiative, release #{v}" } if url_ok?(edi_man)
       groups << { "id" => "archives", "title" => "Archives & portals",
                   "lede" => "Where this dataset is registered outside calcofi.io, by the " \
                             "identifier each portal knows it as.",
