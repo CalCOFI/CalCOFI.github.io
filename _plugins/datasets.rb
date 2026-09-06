@@ -720,7 +720,7 @@ module CalCOFI
       # the STAC collection: the record's own address from calcofi4db 4.6.0 (`format: stac`); the
       # browser opens the same document by its path under the catalog root
       stac = dist.find { |x| x["format"] == "stac" }
-      stac_json = stac ? stac["url"] : stac_collection_url(key)
+      stac_json = stac && stac["url"]
       meta_rows << { "label" => "STAC collection", "label_url" => stac_browser_url(key), "url" => stac_json,
                      "label_title" => "open in the STAC browser",
                      "meta" => "one Collection per dataset, an Item per release" } if stac_json
@@ -949,11 +949,6 @@ module CalCOFI
       "https://calcofi.io/stac/#/collections/#{key}/collection.json"
     end
 
-    # The collection's JSON address when the record predates calcofi4db 4.6.0's `format: stac` row.
-    # # until every served record carries a stac distribution (calcofi4db 4.6.0) — delete then
-    def stac_collection_url(key)
-      "https://storage.googleapis.com/calcofi-db/stac/collections/#{key}/collection.json"
-    end
 
     # what an ERDDAP grain means, for a reader who has never met the word.
     # # until the record carries distributions[].grain_description (calcofi4db 4.5.0 / schema 1.1,

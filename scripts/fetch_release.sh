@@ -20,16 +20,15 @@
 #   3. otherwise fall back to $DATASETS_RELEASE_URL (a full URL to a datasets.json), print a
 #      loud NOTE, and never guess another version under the production prefix
 #
-# The fallback is the bridge until the next data release: v2026.09.04 was promoted before
-# build_dataset_catalog() existed, and Ben decided not to cut a release for the sidecars alone
-# (plan § Measured, 2026-09-05), so the record lives on the staging prefix until then.
+# v2026.09.06 (2026-09-06) was the first promoted release to write datasets.json, so step 2 now
+# succeeds and step 3 fires only if DATASETS_RELEASE_URL is set on purpose (a rehearsal).
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DATA="$ROOT/_data"
 
 RELEASE_BASE="${CALCOFI_RELEASE_BASE:-https://storage.googleapis.com/calcofi-db/ducklake/releases}"
-FALLBACK_URL="${DATASETS_RELEASE_URL:-https://storage.googleapis.com/calcofi-db/ducklake-staging/releases/v2026.09.05/datasets.json}"
+FALLBACK_URL="${DATASETS_RELEASE_URL:-}"
 
 mkdir -p "$DATA"
 
@@ -47,6 +46,9 @@ echo "promoted release: $version"
 record_url="$RELEASE_BASE/$version/datasets.json"
 if get "$record_url" "$DATA/datasets.json"; then
   source_kind="promoted"
+elif [ -z "$FALLBACK_URL" ]; then
+  echo "ERROR: $record_url is missing and no DATASETS_RELEASE_URL fallback is set" >&2
+  exit 1
 else
   record_url="$FALLBACK_URL"
   source_kind="fallback"
@@ -54,9 +56,7 @@ else
   echo "NOTE: datasets.json from a non-promoted release ------------------------------------"
   echo "NOTE: the promoted release $version carries no datasets.json (it predates the catalog)."
   echo "NOTE: building from  $record_url"
-  echo "NOTE: set DATASETS_RELEASE_URL (env / repo variable) to change it; this whole fallback"
-  echo "NOTE: goes away with the next data release, which writes datasets.json to the"
-  echo "NOTE: production prefix and makes step 2 above succeed."
+  echo "NOTE: DATASETS_RELEASE_URL is set; unset it to render the promoted release."
   echo "NOTE: ------------------------------------------------------------------------------"
   echo
   get "$record_url" "$DATA/datasets.json"

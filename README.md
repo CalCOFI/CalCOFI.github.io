@@ -47,13 +47,9 @@ scripts/check_jsonld.py    every page's JSON-LD, the sitemap, and data.json agai
 ```
 
 **Which release.** `fetch_release.sh` resolves `latest.txt` on the production prefix and uses that
-release's `datasets.json`. It never picks an unpromoted release from that prefix. The promoted
-release `v2026.09.04` predates the catalog, and Ben chose not to cut a release for the sidecars
-alone, so until the next data release the script falls back to the **staging** record and prints a
-loud `NOTE: datasets.json from a non-promoted release …`. Override with `DATASETS_RELEASE_URL` (an
-env var locally, a repo variable in Actions) — a full URL to a `datasets.json`. When the next release
-writes `datasets.json` to the production prefix, the fallback stops firing on its own and the
-default can be deleted.
+release's `datasets.json` (every promoted release from v2026.09.06 writes one). It never picks an
+unpromoted release; `DATASETS_RELEASE_URL` (a full URL to a `datasets.json`) is the one override,
+for a rehearsal against a staging record.
 
 **Products carry dataset keys, nothing else.** Each card in `_data/products.yml` may declare
 `datasets: [key, …]` or `datasets: all`. The build **fails** on a key that is in neither
@@ -142,8 +138,8 @@ search index and `page.variables` all read one shape; a build against either ren
 **Fallbacks awaiting the record.** Each is marked `# until the record carries …` in
 `_plugins/datasets.rb` and is deleted when the release that carries the field renders (plan D-9):
 `GRAIN_FALLBACK` (an ERDDAP grain's meaning), `PORTAL_NAMES` + `PORTAL_ABOUT` (a portal's name and
-one-liner), `stac_collection_url` (the STAC collection's JSON address — the record carries it as a
-`format: stac` distribution from calcofi4db 4.6.0), `_plugins/derive_id.rb` (a registration's
+one-liner), the EML probe (`url_ok?` on the release's `eml/{key}.xml` — until the record carries a
+`format: eml` distribution), `_plugins/derive_id.rb` (a registration's
 identifier), and `STAGE_MEANING`, which is site-side text by nature — the stage vocabulary is
 `dataset_status.csv`'s, not any one dataset's.
 
