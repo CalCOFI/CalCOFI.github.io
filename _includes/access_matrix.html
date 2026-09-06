@@ -4,8 +4,10 @@
   three ids became thirteen rows and the word "ERDDAP" never appeared beside them.
 
   A CSS grid, one row per ERDDAP dataset id: the id in mono · its grain · then the formats and the
-  service links together (CSV · netCDF · JSON · page · info · graph). It folds to one id per row
-  at 520 px. Under it: the grain glossary, and any legacy id with what replaced it, muted.
+  service links together (CSV · JSON · page · info · graph — no netCDF: the CF netCDF the release
+  publishes is the netCDF to take, and an ERDDAP .nc beside it was a second, different netCDF of
+  the same rows). It folds to one id per row at 520 px. Under it: the grain glossary, and any
+  legacy id with what replaced it, muted.
 
   include params: block (an Access block carrying matrix[], gloss[], legacy[])
 {%- endcomment -%}
@@ -23,7 +25,7 @@
     <a href="{{ m.page }}">page</a>
     {%- if m.info %}<a href="{{ m.info }}">info</a>{% endif -%}
     {%- if m.graph %}<a href="{{ m.graph }}">graph</a>{% endif -%}
-    <button class="cc-copy" type="button" data-copy="{{ m.page }}" aria-label="Copy the ERDDAP URL for {{ m.id | escape }}"><i class="cc-i cc-i-ui-copy" aria-hidden="true"></i></button>
+    <button class="cc-copy ds-copy-sm" type="button" data-copy="{{ m.page }}" aria-label="Copy the ERDDAP URL for {{ m.id | escape }}" title="copy the URL"><i class="cc-i cc-i-ui-copy" aria-hidden="true"></i></button>
   </span>
   {%- endfor -%}
 </div>

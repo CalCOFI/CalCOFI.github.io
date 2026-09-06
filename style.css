@@ -87,6 +87,12 @@ main#panel { width: 100%; }
 .prod-card.featured { }                           /* no accent border in v2: the wider grid says featured */
 
 .prod-card h3 { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.45rem; }
+/* the app's lenses as suffix icons after its title (products.yml `lenses:`); a student
+   contribution carries the mortarboard */
+.prod-card h3 .ds-lenses { font-size: 0.8em; align-self: center; }
+.lens-key { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: -0.6em 0 calc(var(--space) * 2); font-size: var(--fs-sm); color: var(--muted); }
+.lens-key span { display: inline-flex; align-items: center; gap: 5px; }
+.lens-key .cc-i { font-size: 1.15em; }
 .prod-card .tagline { margin: -0.2em 0 0.5em; color: var(--muted); font-size: 0.95em; }
 .prod-card .desc { margin: 0 0 0.75em; }
 .prod-card .tech { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-bottom: 0.75em; }
@@ -211,8 +217,12 @@ main#panel { width: 100%; }
 .ds-ref-desc { max-width: 46ch; }
 .ds-spark-wrap { display: inline-block; width: 66px; height: 14px; color: var(--accent); opacity: 0.8; }
 .ds-spark-wrap .ds-spark { width: 100%; height: 100%; fill: currentColor; display: block; }
-.ds-rows-sep { border-top: 1px solid var(--border); padding: 9px 0 3px; }
-.ds-rows-sep span { font-size: var(--fs-sm); font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+/* the holdings, collapsed: the summary reads as the separator line used to, the rows under it are
+   rung 3 as before. `.ds-arow-note` is the same collapse a dataset page's row note uses. */
+.ds-rows-holdings { border-top: 1px solid var(--border); padding: 7px 0 2px; }
+.ds-holdings-det > summary { font-size: var(--fs-sm); font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); cursor: pointer; }
+.ds-holdings-det > summary:hover { color: var(--accent); }
+.ds-holdings-det .ds-rows { margin-top: 4px; }
 /* ── the emphasis ladder (plan D-1) ───────────────────────────────────────────
    Four rungs, in tokens, so both themes follow. The rule underneath is that YELLOW IS RESERVED:
    --warn marks a state that needs attention, never a kind of thing. Before this, a holding was
@@ -242,10 +252,6 @@ main#panel { width: 100%; }
 .ds-row-holding .ds-row-meta { font-size: 13px; }
 .ds-row-holding .ds-row-src { font-size: 11px; color: var(--muted); }
 .ds-row-holding .ds-row-src:hover { color: var(--accent); }
-.ds-rows-more { padding: 2px 0 0; }
-.ds-holdings-det > summary { cursor: pointer; font-size: var(--fs-sm); color: var(--muted); }
-.ds-holdings-det > summary:hover { color: var(--accent); }
-.ds-holdings-det .ds-rows { margin-top: 2px; }
 /* the format phrase: one mono line where three chips used to wrap */
 .ds-fmt { font-family: var(--mono); font-size: 11.5px; white-space: nowrap; }
 /* the licence is the one chip that does not fit beside the rest at 549 px, so it wraps — alone,
@@ -371,34 +377,47 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 .ds-v { font-family: var(--mono); }
 .ds-v-now { font-weight: 700; color: var(--accent); }
 
-/* ── Access: rows that span the page, the URL on its own line ─────────────────
-   No table columns anywhere in Access except the ERDDAP matrix. The old .ds-table put its `th` at
-   34 %, which is what forced code and URLs into a narrow right-hand column. */
-.ds-access-group { margin-bottom: calc(var(--space) * 4); }
+/* ── Access: one-line rows, the release tables as a table, short groups paired ────
+   No URL line (2026-09-06): the label is the link and the copy button carries the address. The
+   .cc-container is still one column; the grids below are inner regions. */
+.ds-access-group { margin-bottom: calc(var(--space) * 3.5); min-width: 0; }
 .ds-access-h { margin-top: calc(var(--space) * 2); margin-bottom: 0.15em; }
-.ds-access-lede { margin: 0 0 var(--space); font-size: var(--fs-sm); max-width: 80ch; }
+.ds-access-lede { margin: 0 0 var(--space); font-size: var(--fs-sm); max-width: 88ch; }
+.ds-access-lede code { font-size: 0.92em; }
 .ds-access-sub { margin: calc(var(--space) * 2.5) 0 2px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
-.ds-arow { padding: 8px 0; border-top: 1px solid var(--border); font-size: 15px; }
-.ds-arow-l1 { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
+.ds-arow { padding: 6px 0; border-top: 1px solid var(--border); font-size: 15px; }
+.ds-arow-l1 { display: flex; flex-wrap: wrap; align-items: center; gap: 3px 10px; }
 .ds-arow-k { font-weight: 700; }
 .ds-arow-id { font-family: var(--mono); font-size: 13px; color: var(--fg); }
 .ds-arow-t { color: var(--fg); }
 .ds-arow-m, .ds-arow-hash { color: var(--muted); font-size: var(--fs-sm); }
 .ds-arow-hash { font-family: var(--mono); font-size: 12.5px; }
 .ds-arow-issue { font-size: 11px; }
-.ds-arow-note { margin-top: 4px; }
+.ds-arow-note { margin-top: 2px; }
 .ds-arow-code { display: flex; align-items: flex-start; gap: 4px; margin-top: 4px; }
 .ds-arow-code .ds-code { flex: 1 1 auto; min-width: 0; margin: 0; }
-/* the URL line: a head that shrinks and elides, a tail that never does, so the informative end
-   stays visible at 375 px and the line NEVER wraps */
-.ds-url { display: flex; align-items: center; min-width: 0; margin: 3px 0 0; font-family: var(--mono); font-size: 12.5px; line-height: 1.5; color: var(--accent); }
-.ds-url { min-width: 0; }
-.ds-url-h { flex: 0 999 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.ds-url-t { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-/* the copy button sits on a 17 px line of mono, so it is smaller here than beside a code block */
-.ds-url .cc-copy { flex: none; width: 1.25rem; height: 1.25rem; margin-left: 4px; }
-.ds-url .cc-copy .cc-i { font-size: 0.8rem; }
-.ds-url-dim { color: var(--muted); }
+/* the small copy button that sits on a line of text rather than beside a code block */
+.ds-copy-sm { width: 1.3rem; height: 1.3rem; }
+.ds-copy-sm .cc-i { font-size: 0.8rem; }
+.ds-arow-copy { margin-left: auto; }
+/* an app's lenses: suffix icons after its name, in the muted colour, with a title each */
+.ds-lenses { display: inline-flex; align-items: center; gap: 4px; color: var(--muted); font-size: 1.05em; }
+.ds-lenses .cc-i { vertical-align: -0.15em; }
+/* two short rows side by side (the R and Python packages) */
+.ds-arows-pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 0 calc(var(--space) * 3); }
+.ds-arows-pair .ds-arow { min-width: 0; }
+/* two short groups side by side (Metadata records · Archives & portals) */
+.ds-access-pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 0 calc(var(--space) * 4); align-items: start; }
+/* the release tables: a grid with a header row; folds to one field per line on a phone */
+.ds-tbl { display: grid; grid-template-columns: max-content minmax(0, 1fr) max-content max-content max-content max-content; gap: 5px 14px; align-items: baseline; margin-top: var(--space); font-size: 14px; }
+.ds-tbl-hd { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); padding-bottom: 4px; border-bottom: 1px solid var(--border); }
+.ds-tbl-k { font-family: var(--mono); font-size: 13.5px; font-weight: 700; }
+.ds-tbl-about { color: var(--fg); min-width: 0; }
+.ds-tbl-scope { color: var(--muted); font-size: var(--fs-sm); white-space: nowrap; }
+.ds-tbl-shared { color: var(--accent); }
+.ds-tbl-n { font-family: var(--mono); font-size: 12.5px; font-variant-numeric: tabular-nums; color: var(--muted); white-space: nowrap; }
+.ds-tbl-obj { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+.ds-tbl-dl { font-size: var(--fs-sm); }
 
 /* the ONE ERDDAP listing: a CSS grid, folding to one id per row on a phone */
 .ds-matrix { display: grid; grid-template-columns: max-content max-content minmax(0, 1fr); gap: 5px 16px; align-items: baseline; margin-top: var(--space); font-size: 15px; }
@@ -446,9 +465,12 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
   .ds-mapcap { text-align: left; }
   .ds-taxa { columns: 1; }
 }
-/* the ERDDAP matrix folds to one id per row */
+/* the ERDDAP matrix and the tables table fold to one field per line */
 @media (max-width: 520px) {
-  .ds-url { font-size: 11.5px; }
+  .ds-tbl { grid-template-columns: 1fr; gap: 2px 0; }
+  .ds-tbl-hd { display: none; }
+  .ds-tbl-k { margin-top: 10px; }
+  .ds-tbl-scope, .ds-tbl-obj { white-space: normal; }
   .ds-matrix { grid-template-columns: 1fr; gap: 2px 0; }
   .ds-matrix-hd { display: none; }
   .ds-matrix-id { margin-top: 10px; font-weight: 600; }
@@ -480,7 +502,7 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 /* WCAG 1.4.1: a link that sits in a row of text beside muted text is distinguished by colour alone
    unless it is underlined — the same faint underline brand v2 gives a link in prose. */
 .ds-arow-k[href], .ds-parts a, .ds-related li a, .ds-objects a, .ds-versions a, .ds-contrib-list a,
-.ds-questions a, .ds-access-foot a, .ds-matrix-f a, .ds-legacy a {
+.ds-questions a, .ds-access-foot a, .ds-matrix-f a, .ds-legacy a, .ds-tbl-k, .ds-tbl-dl {
   text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.15em;
   text-decoration-color: color-mix(in srgb, currentColor 45%, transparent);
 }

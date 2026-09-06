@@ -24,6 +24,14 @@
     <div class="cc-eyebrow">{{ include.section | escape }}</div>
     <h3>
       <a href="{{ p.live_url }}">{{ p.title | escape }}</a>
+      {%- comment -%} the app's lenses as suffix icons (products.yml `lenses:`); a student
+        contribution carries the mortarboard — the key under the Explore heading names them {%- endcomment -%}
+      {%- if p.lenses.size > 0 or p.section == "students" -%}
+      <span class="ds-lenses">
+        {%- for l in p.lenses %}<i class="cc-i cc-i-lens-{{ l | escape }}" title="{{ l | escape }} lens" role="img" aria-label="{{ l | escape }} lens"></i>{% endfor -%}
+        {%- if p.section == "students" %}<i class="cc-i cc-i-ui-student" title="student contribution" role="img" aria-label="student contribution"></i>{% endif -%}
+      </span>
+      {%- endif -%}
       {%- if p.superseded_by -%}
         {%- assign sup = site.data.products.products | where: "key", p.superseded_by | first -%}
         <span class="badge cc-chip {{ p.status | default: 'superseded' | escape }}">

@@ -1,31 +1,38 @@
 {%- comment -%}
-  One Access row (plan D-6, Decisions 9 and 18). TWO LINES that span the full width:
+  One Access row (UI refresh round 2, 2026-09-06). ONE LINE that spans the width:
 
-    line 1   the label (a link when it has a URL) · its chips · its meta · the copy button
-    line 2   the URL, mono, on its own line, MIDDLE-ELIDED — a head that shrinks with
-             text-overflow and a tail that never does, so the informative end
-             (`data_0.parquet`, `?datasets=calcofi_ctd-cast`) is still visible at 375 px
+    the label (a link when it has a URL) · the app's lens icons · the identifier the portal knows
+    it by · chips · the endpoint's title · meta · sha256 (+ copy) · issue · the COPY button
 
-  URLs used to sit in a right-hand table column at 34 % width and wrapped to five lines on a
-  phone. The whole URL is in `title=` and one tap away on the copy button.
+  There is no URL line any more: the label names the endpoint, the chips and identifier say which
+  one it is, and the copy button (every row that has a URL) puts the address on the clipboard —
+  the whole URL is also the link's `title=` where nothing else claims it. Under the line, when the
+  row has one: a code block, and a collapsed note.
 
-  include params: row (an Access row from _plugins/datasets.rb) · dim (truthy: draw the URL muted)
+  include params: row (an Access row from _plugins/datasets.rb)
 {%- endcomment -%}
 {%- assign r = include.row -%}
 <div class="ds-arow">
   <div class="ds-arow-l1">
     {%- if r.label_url -%}
-    <a class="ds-arow-k" href="{{ r.label_url }}"{% if r.label_title %} title="{{ r.label_title | escape }}"{% endif %}>{{ r.label | escape }}</a>
+    <a class="ds-arow-k" href="{{ r.label_url }}" title="{{ r.label_title | default: r.url | escape }}">{{ r.label | escape }}</a>
     {%- else -%}
     <span class="ds-arow-k"{% if r.label_title %} title="{{ r.label_title | escape }}"{% endif %}>{{ r.label | escape }}</span>
+    {%- endif -%}
+    {%- if r.lenses.size > 0 or r.student -%}
+    <span class="ds-lenses">
+      {%- for l in r.lenses %}<i class="cc-i cc-i-lens-{{ l | escape }}" title="{{ l | escape }} lens" role="img" aria-label="{{ l | escape }} lens"></i>{% endfor -%}
+      {%- if r.student %}<i class="cc-i cc-i-ui-student" title="student contribution" role="img" aria-label="student contribution"></i>{% endif -%}
+    </span>
     {%- endif -%}
     {%- if r.ident %}<span class="ds-arow-id" title="the identifier this portal knows the dataset by">{{ r.ident | escape }}</span>{% endif -%}
     {%- for c in r.chips %}<span class="cc-chip {{ c.class }}"{% if c.title %} title="{{ c.title | escape }}"{% endif %}>{{ c.text | escape }}</span>{% endfor -%}
     {%- if r.title_text %}<span class="ds-arow-t">{{ r.title_text | escape }}</span>{% endif -%}
     {%- if r.meta %}<span class="ds-arow-m">{{ r.meta | escape }}</span>{% endif -%}
     {%- if r.hash %}<span class="ds-arow-hash" title="sha256 {{ r.hash | escape }}">sha256 {{ r.hash | slice: 0, 12 | escape }}…</span>
-      <button class="cc-copy" type="button" data-copy="{{ r.hash | escape }}" aria-label="Copy the sha256"><i class="cc-i cc-i-ui-copy" aria-hidden="true"></i></button>{% endif -%}
+      <button class="cc-copy ds-copy-sm" type="button" data-copy="{{ r.hash | escape }}" aria-label="Copy the sha256"><i class="cc-i cc-i-ui-copy" aria-hidden="true"></i></button>{% endif -%}
     {%- if r.issue %}<a class="cc-text-link ds-arow-issue" href="{{ r.issue }}">issue ↗</a>{% endif -%}
+    {%- if r.url %}<button class="cc-copy ds-copy-sm ds-arow-copy" type="button" data-copy="{{ r.url | escape }}" aria-label="Copy the URL of {{ r.label | escape }}" title="copy the URL"><i class="cc-i cc-i-ui-copy" aria-hidden="true"></i></button>{% endif -%}
   </div>
   {%- if r.code -%}
   <div class="ds-arow-code">
@@ -36,13 +43,5 @@
   {%- if r.note -%}
   <details class="ds-details ds-arow-note"><summary>{{ r.note_summary | default: "note" | escape }}</summary>
     <p class="cc-muted">{{ r.note | escape }}</p></details>
-  {%- endif -%}
-  {%- if r.url -%}
-  {%- comment -%} head and tail are split in the plugin (Catalog#split_url): the tail is capped so a
-    long query string cannot push the line through the container {%- endcomment -%}
-  <p class="ds-url{% if include.dim %} ds-url-dim{% endif %}" title="{{ r.url | escape }}">
-    <span class="ds-url-h">{{ r.url_head | escape }}</span><span class="ds-url-t">{{ r.url_tail | escape }}</span>
-    <button class="cc-copy" type="button" data-copy="{{ r.url | escape }}" aria-label="Copy the URL"><i class="cc-i cc-i-ui-copy" aria-hidden="true"></i></button>
-  </p>
   {%- endif -%}
 </div>

@@ -122,11 +122,14 @@ search index and `page.variables` all read one shape; a build against either ren
    - `_data/coverage_stations.json` (~470 KB, from `fetch_release.sh`, git-ignored) says which
      cells each dataset sampled. It is read at build time and **never shipped to the browser**.
 3. **Access is full-width rows, not a table.** Each row is two lines: label · chips · meta · copy,
-   then the URL on its own line, middle-elided (`Catalog#split_url` — a head that shrinks 999×
-   faster than the tail, so the informative end survives to the last pixel). ERDDAP is listed
-   **once**, as a matrix of id × (CSV · netCDF · JSON · page · info · graph) with the grain glossary
-   under it; *Metadata records* holds the records about the data; *Archives & portals* lists each
-   portal's own identifier.
+   and no URL line (2026-09-06): the label is the link, the chips and identifier say which endpoint
+   it is, and the copy button beside every row copies the address. *Tables from the release* is a
+   table (table · holds · rows · size · since · sha256); *Code* follows it, so "DuckDB, anywhere"
+   reads one of the objects just listed and explains the content-hashed path; ERDDAP is listed
+   **once**, as a matrix of id × (CSV · JSON · page · info · graph — no netCDF, the CF file is the
+   netCDF) with the grain glossary under it; *Metadata records* and *Archives & portals* sit side
+   by side. Explore rows and product cards carry each app's **lenses** (products.yml `lenses:`) as
+   suffix icons, with a key under the landing page's Explore heading.
 4. **The generator checks its own output.** `Catalog#unlisted_endpoints` compares every URL in the
    record's `distributions[]` and `registrations[]` against the rows actually rendered and warns at
    build on any that reach no Access row. It caught two legacy ERDDAP ids that carry no `format`
@@ -139,7 +142,8 @@ search index and `page.variables` all read one shape; a build against either ren
 **Fallbacks awaiting the record.** Each is marked `# until the record carries …` in
 `_plugins/datasets.rb` and is deleted when the release that carries the field renders (plan D-9):
 `GRAIN_FALLBACK` (an ERDDAP grain's meaning), `PORTAL_NAMES` + `PORTAL_ABOUT` (a portal's name and
-one-liner), `stac_collection_url` (the STAC collection), `_plugins/derive_id.rb` (a registration's
+one-liner), `stac_collection_url` (the STAC collection's JSON address — the record carries it as a
+`format: stac` distribution from calcofi4db 4.6.0), `_plugins/derive_id.rb` (a registration's
 identifier), and `STAGE_MEANING`, which is site-side text by nature — the stage vocabulary is
 `dataset_status.csv`'s, not any one dataset's.
 

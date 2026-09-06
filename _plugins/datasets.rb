@@ -71,7 +71,7 @@ module CalCOFI
     include Fmt
     attr_reader :rec, :site, :grid, :land, :coverage_stations
 
-    ERDDAP_FORMATS = [%w[csv CSV], %w[nc netCDF], %w[json JSON]].freeze
+    ERDDAP_FORMATS = [%w[csv CSV], %w[json JSON]].freeze
 
     def initialize(site, rec, grid, land = [], coverage = {})
       @site = site
@@ -121,6 +121,7 @@ module CalCOFI
               "section"  => sections.dig(p["section"], "title"),
               "group"    => group_titles[p["group"]] || p["group"],
               "section_id" => p["section"],
+              "lenses"   => p["lenses"] || [],
               # the ONE place a product-to-dataset link is written (plan Decision 10)
               "dataset_url" => p["dataset_url"]
             }
@@ -182,8 +183,6 @@ module CalCOFI
           c["datasets"].sort_by! { |t| t["name"].to_s.downcase }
           c["contributions"].sort_by! { |t| t["name"].to_s.downcase }
           c["holdings"].sort_by! { |t| t["name"].to_s.downcase }
-          c["holdings_shown"] = c["holdings"].first(HOLDINGS_SHOWN)
-          c["holdings_more"]  = c["holdings"].drop(HOLDINGS_SHOWN)
           c["n"] = c["datasets"].size
         end
         list
@@ -316,10 +315,6 @@ module CalCOFI
         "link"      => h.dig("links", "data_source")
       }
     end
-
-    # rung 3: at most four holdings are drawn before "and n more" (plan D-3, Decision 3). The rest
-    # stay in the DOM inside the <details>, so the search box still matches them.
-    HOLDINGS_SHOWN = 4
 
     def year_span(cov)
       a, b = cov["year_min"], cov["year_max"]
@@ -500,17 +495,29 @@ module CalCOFI
       axis.zero? ? [val, a[1] + t * (b[1] - a[1])] : [a[0] + t * (b[0] - a[0]), val]
     end
 
-    # ── Access: full-width rows, one listing per source, the URL always in view ──
-    # Six groups (plan D-6, Decisions 8, 9, 18, 19). What changed from the first cut:
-    #   · a row is TWO LINES that span the page — label + chips + meta, then the URL on its own
-    #     line, middle-elided. URLs in a right-hand table column wrapped to five lines on a phone.
-    #   · Download and Services merged into "Get the data", so ERDDAP is listed ONCE, as a matrix
-    #     of id x (CSV · netCDF · JSON · page · info · graph). It used to appear in both.
-    #   · "Metadata records" is records ABOUT the data, kept apart from the data.
-    #   · Archives & portals lists the portal's own identifier, not just the portal's name.
+    # ── Access: compact rows, one listing per source, no URL in the prose ──
+    # Five groups, in the order a reader uses them (UI refresh round 2, 2026-09-06):
+    #   Explore · Get the data · Code · Metadata records · Archives & portals
+    # What changed from round 1:
+    #   · NO URL LINE. Every row's label is the link, its chips and identifier say which endpoint
+    #     it is, and the copy button beside it copies the URL. The mono URL under every row was the
+    #     busiest thing on the page and said nothing the label did not.
+    #   · "Tables from the release" is a TABLE: table · what it holds · scope · size · since · sha256.
+    #     They are the release's tables in parquet, not "files".
+    #   · Query is folded into Code, AFTER the tables: "DuckDB, anywhere" reads one listed object, and
+    #     the lede says why the path carries a hash and how to swap in any other table; db-query's
+    #     prefilled shell is the last row, with `__TBL:obs__` explained in one line.
+    #   · Explore rows carry the app's LENSES as suffix icons (products.yml `lenses:`) and the chip is
+    #     the landing page's group — "Across datasets" / "One dataset" / "Student contribution". The
+    #     deep link is used where the product declares a `dataset_url:`; a plain "opens on this
+    #     dataset" is the meta, not a chip, so an app that merely opens is never mis-sold.
+    #   · Metadata records and Archives & portals sit side by side (`pair`): both are short lists.
+    #   · ERDDAP: CSV · JSON · page · info · graph. The netCDF column is gone — the CF netCDF above it
+    #     is the netCDF to take, and two different netCDFs of one table confused.
     #
-    # Row keys the includes read: label · label_url · chips[] · meta · url · hash · code ·
-    # note (+ note_summary) · issue · ident.
+    # Row keys the includes read: label · label_url · label_title · lenses[] · chips[] · ident ·
+    # title_text · meta · url (what the copy button copies) · hash · code · note (+ note_summary) ·
+    # issue · about · scope · size · since (the table layout's columns).
     def access_groups(d)
       key    = d["dataset_key"]
       dist   = d["distributions"] || []
@@ -518,100 +525,57 @@ module CalCOFI
       groups = []
 
       # ── Explore ──────────────────────────────────────────────────────────────
-      # Which app opens on THIS dataset and which merely opens is the first thing a reader wants,
-      # so it is a chip, and the deep link comes from the product's own `dataset_url:` template in
-      # products.yml — the one place a product-to-dataset link is written (Decision 10).
       rows = products_by_dataset[key]
              .select { |p| %w[explore students].include?(p["section_id"]) }
              .map do |p|
-        tmpl = p["dataset_url"]
-        deep = Fmt.present(tmpl)
-        { "label" => p["title"], "label_url" => deep ? tmpl.gsub("{key}", key) : p["url"],
-          "url"   => deep ? tmpl.gsub("{key}", key) : p["url"],
-          "chips" => [deep ?
-            { "text" => "this dataset", "class" => "cc-chip-accent",
-              "title" => "the link opens the app with this dataset already selected" } :
-            { "text" => "the app", "class" => "cc-chip-quiet",
-              "title" => "this app has no dataset parameter yet — it opens at its own start" }],
-          "meta"  => p["section_id"] == "students" ? "student contribution" : p["group"] }
+        tmpl = Fmt.present(p["dataset_url"])
+        link = tmpl ? tmpl.gsub("{key}", key) : p["url"]
+        group = p["section_id"] == "students" ? "Student contribution" : p["group"]
+        { "label" => p["title"], "label_url" => link, "url" => link,
+          "lenses" => p["lenses"] || [],
+          "student" => p["section_id"] == "students",
+          "chips" => [{ "text" => group, "class" => "cc-chip-quiet",
+                        "title" => group == "Student contribution" ? "a capstone or fellowship project" :
+                                   group == "One dataset" ? "an app built on this dataset alone" :
+                                   "reads every dataset in the release; this one among them" }],
+          "meta"  => tmpl ? "opens on this dataset" : nil,
+          "label_title" => tmpl ? "the link opens the app with this dataset already selected" :
+                                  "the app opens at its own start; pick the dataset there" }
       end
       groups << { "id" => "explore", "title" => "Explore",
-                  "lede" => "Apps that read this dataset from the release. A row marked " \
-                            "“this dataset” opens with it already selected.",
+                  "lede" => "Apps that read this dataset from the release. The icons after a name are " \
+                            "the app’s lenses — the spatial grain it shows the data at.",
                   "blocks" => [{ "rows" => rows }] } unless rows.empty?
-
-      # ── Query ────────────────────────────────────────────────────────────────
-      # A saved query where db-query has one; otherwise the SQL shell with this dataset's SQL
-      # already in the box (?sql=, UI-E). The table is the first of the dataset's own tables that
-      # carries dataset_key — `obs`, else `sample`: `FROM obs` was simply wrong for the datasets
-      # whose only table is `sample`.
-      unless tables.empty?
-        tbl = %w[obs sample].find { |t| tables.include?(t) } || tables.first
-        sql = "-- #{key} in the CalCOFI release #{release['version']}\n" \
-              "SELECT *\nFROM __TBL:#{tbl}__\nWHERE dataset_key = '#{key}'\nLIMIT 100;"
-        saved = SAVED_QUERIES[key]
-        rows = if saved
-          [{ "label" => "db-query — the saved query for this dataset",
-             "label_url" => "https://calcofi.io/db-query/##{saved}",
-             "url" => "https://calcofi.io/db-query/##{saved}",
-             "meta" => "DuckDB-WASM over the released parquet, in your browser" }]
-        else
-          [{ "label" => "db-query — the SQL shell, prefilled",
-             "label_url" => query_shell_url(sql),
-             "url" => query_shell_url(sql),
-             "meta" => "DuckDB-WASM over the released parquet, in your browser",
-             "code" => sql }]
-        end
-        groups << { "id" => "query", "title" => "Query",
-                    "lede" => "SQL against the release itself, in the browser — nothing to install " \
-                              "and nothing downloaded until a query asks for it. `__TBL:#{tbl}__` " \
-                              "resolves to the pinned release’s parquet.",
-                    "blocks" => [{ "rows" => rows }] }
-      end
-
-      # ── Code ─────────────────────────────────────────────────────────────────
-      obj = (d["objects"] || []).find { |o| o["url"] } || dist.find { |x| x["format"] == "parquet" }
-      code_rows = [
-        { "label" => "R · calcofi4r", "label_url" => "https://calcofi.io/calcofi4r/",
-          "code" => "con <- calcofi4r::cc_get_db()\ncalcofi4r::cc_cite(\"#{key}\")" },
-        { "label" => "Python · calcofi4py", "label_url" => "https://calcofi.io/calcofi4py/",
-          "code" => "con = calcofi4py.cc_get_db()\ncalcofi4py.cite(\"#{key}\")" }
-      ]
-      if obj && obj["url"]
-        code_rows << { "label" => "DuckDB, anywhere",
-                       "meta" => "no CalCOFI package needed — the object is a plain parquet file",
-                       "code" => "SELECT * FROM read_parquet('#{obj['url']}') LIMIT 100;" }
-      end
-      groups << { "id" => "code", "title" => "Code",
-                  "lede" => "The same release, from a script.",
-                  "blocks" => [{ "rows" => code_rows }] }
 
       # ── Get the data ─────────────────────────────────────────────────────────
       blocks = []
-
       objs = (d["objects"] || []).map do |o|
         shared = o["shared"] || o["scope"] == "table"
-        { "label" => o["table"],
-          "label_url" => o["url"],
-          "url"   => o["url"],
-          "meta"  => [shared ? "whole table, shared with every dataset in it" : "this dataset’s rows",
-                      Fmt.bytes(o["bytes"]),
-                      o["since"] ? "since #{o['since']}" : nil,
-                      Fmt.present(o["table_description"])].compact.join(" · "),
+        { "label" => o["table"], "label_url" => "https://calcofi.io/db-schema/##{o['table']}",
+          "label_title" => "#{o['table']} in the schema browser",
+          "url"   => o["url"], "shared" => shared,
+          "about" => Fmt.present(o["table_description"]) || TABLE_ABOUT[o["table"]],
+          "scope" => shared ? "whole table, every dataset" : "this dataset’s rows",
+          "size"  => Fmt.bytes(o["bytes"]), "since" => o["since"],
           "hash"  => o["sha256"] }
       end
       if objs.empty?
         objs = dist.select { |x| x["format"] == "parquet" }.map do |x|
-          { "label" => x["table"] || x["title"], "label_url" => x["url"], "url" => x["url"],
-            "meta" => [Fmt.bytes(x["bytes"]), x["since"] ? "since #{x['since']}" : nil].compact.join(" · "),
-            "hash" => x["sha256"] }
+          t = x["table"] || x["title"]
+          { "label" => t, "label_url" => "https://calcofi.io/db-schema/##{t}", "url" => x["url"],
+            "shared" => x["shared"] || x["scope"] == "table",
+            "about" => Fmt.present(x["table_description"]) || TABLE_ABOUT[t],
+            "scope" => (x["shared"] || x["scope"] == "table") ? "whole table, every dataset" : "this dataset’s rows",
+            "size" => Fmt.bytes(x["bytes"]), "since" => x["since"], "hash" => x["sha256"] }
         end
       end
-      blocks << { "title" => "Files from the release (Parquet)",
-                  "lede" => "The frozen objects this release is made of. A partition holds only " \
-                            "this dataset’s rows; a shared table holds every dataset’s, so filter " \
-                            "on `dataset_key`.",
-                  "rows" => objs } unless objs.empty?
+      blocks << { "title" => "Tables from the release (Parquet)",
+                  "lede" => "The release’s own tables, as the parquet objects it is frozen from — the " \
+                            "same bytes every app and package below reads. A table this dataset " \
+                            "shares with others holds every dataset’s rows, so filter on " \
+                            "`dataset_key`; a partition holds only this dataset’s. *since* is the " \
+                            "release whose rows these are: an unchanged table keeps its object.",
+                  "layout" => "table", "rows" => objs } unless objs.empty?
 
       nc = dist.select { |x| x["format"] == "netcdf" }.map do |x|
         { "label" => Fmt.present(x["title"]) || "CF netCDF",
@@ -623,7 +587,6 @@ module CalCOFI
                   "lede" => "One self-describing file, for a tool that reads netCDF.",
                   "rows" => nc } unless nc.empty?
 
-      # THE one ERDDAP listing: a matrix, so the format links and the service links live together
       cur = erddap_current(dist)
       unless cur.empty?
         matrix = cur.map do |x|
@@ -634,7 +597,6 @@ module CalCOFI
         end
         grains = cur.map { |x| x["grain"] }.compact.uniq
         gloss = grains.map do |g|
-          # `grain_description` arrives with calcofi4db 4.5.0 / schema 1.1 (plan D-9)
           desc = cur.find { |x| x["grain"] == g && Fmt.present(x["grain_description"]) }&.dig("grain_description")
           { "grain" => g, "desc" => desc || GRAIN_FALLBACK[g] }
         end.select { |g| g["desc"] }
@@ -644,8 +606,8 @@ module CalCOFI
             "sunset" => ERDDAP_SUNSET }
         end
         blocks << { "title" => "ERDDAP (erddap.calcofi.io)",
-                    "lede" => "One ERDDAP dataset per grain, each with its own data formats and " \
-                              "its own pages. Subset in the browser or query it from a script.",
+                    "lede" => "One ERDDAP dataset per grain. Subset in the browser or query it from a " \
+                              "script; for netCDF take the CF file above.",
                     "matrix" => matrix, "gloss" => gloss, "legacy" => legacy }
       end
 
@@ -660,12 +622,57 @@ module CalCOFI
                   "rows" => src } unless src.empty?
 
       groups << { "id" => "data", "title" => "Get the data",
-                  "lede" => "Every way to have the bytes, by source. Nothing here asks you to " \
-                            "register first.",
+                  "lede" => "Every way to have the bytes, by source. Nothing here asks you to register first.",
                   "blocks" => blocks } unless blocks.empty?
 
+      # ── Code ─────────────────────────────────────────────────────────────────
+      # After the tables on purpose: "DuckDB, anywhere" reads one of the objects just listed, and any
+      # other row of that table can stand in for it.
+      code_blocks = []
+      code_blocks << { "title" => "Packages", "layout" => "pair",
+                       "lede" => "The whole release, pinned to a version, with the citation one call away.",
+                       "rows" => [
+        { "label" => "R · calcofi4r", "label_url" => "https://calcofi.io/calcofi4r/", "url" => "https://calcofi.io/calcofi4r/",
+          "code" => "con <- calcofi4r::cc_get_db()\ncalcofi4r::cc_cite(\"#{key}\")" },
+        { "label" => "Python · calcofi4py", "label_url" => "https://calcofi.io/calcofi4py/", "url" => "https://calcofi.io/calcofi4py/",
+          "code" => "con = calcofi4py.cc_get_db()\ncalcofi4py.cite(\"#{key}\")" }] }
+      obj = objs.first
+      if obj && obj["url"]
+        where = obj["shared"] ? "\nWHERE dataset_key = '#{key}'" : ""
+        code_blocks << {
+          "title" => "DuckDB, anywhere",
+          "lede" => "No CalCOFI package needed: each table above is a plain parquet object, readable " \
+                    "by any DuckDB (or Arrow, pandas, Spark) from its URL. The path carries a content " \
+                    "hash — a table whose rows did not change between releases keeps the same object, " \
+                    "so nothing unchanged is stored or downloaded twice. Swap in any table above; one " \
+                    "shared with other datasets needs `WHERE dataset_key = '#{key}'`. Every object of " \
+                    "every release is listed in [db-schema](https://calcofi.io/db-schema/?v=#{release['version']}).",
+          "rows" => [{ "label" => "#{obj['label']} · #{obj['scope']}", "url" => obj["url"],
+                       "code" => "SELECT *\nFROM read_parquet('#{obj['url']}')#{where}\nLIMIT 100;" }] }
+      end
+      unless tables.empty?
+        tbl = %w[obs sample].find { |t| tables.include?(t) } || tables.first
+        sql = "-- #{key} in the CalCOFI release #{release['version']}\n" \
+              "SELECT *\nFROM __TBL:#{tbl}__\nWHERE dataset_key = '#{key}'\nLIMIT 100;"
+        saved = SAVED_QUERIES[key]
+        shell = query_shell_url(sql)
+        rows = [{ "label" => "db-query — the SQL shell, prefilled", "label_url" => shell, "url" => shell,
+                  "meta" => "DuckDB-WASM in your browser; nothing downloaded until a query asks for it",
+                  "code" => sql }]
+        rows.unshift({ "label" => "db-query — the saved query for this dataset",
+                       "label_url" => "https://calcofi.io/db-query/##{saved}",
+                       "url" => "https://calcofi.io/db-query/##{saved}" }) if saved
+        code_blocks << { "title" => "db-query, in the browser",
+                         "lede" => "`__TBL:#{tbl}__` is db-query’s name for the pinned release’s `#{tbl}` " \
+                                   "object — the hashed path above, resolved for you — so the same SQL " \
+                                   "keeps working when a release changes the object.",
+                         "rows" => rows }
+      end
+      groups << { "id" => "code", "title" => "Code",
+                  "lede" => "The same release, from a script or a browser SQL shell.",
+                  "blocks" => code_blocks }
+
       # ── Metadata records ─────────────────────────────────────────────────────
-      # Records ABOUT the data, kept apart from the data (Decision 19: Services dissolves here).
       meta_rows = []
       dist.select { |x| x["format"] == "iso19115" }.each do |x|
         meta_rows << { "label" => "ISO 19115-3", "label_url" => x["url"], "url" => x["url"],
@@ -680,20 +687,22 @@ module CalCOFI
                      "meta" => "what this page publishes to Google Dataset Search" }
       meta_rows << { "label" => "the record, verbatim",
                      "label_url" => abs("/datasets/#{key}.json"), "url" => abs("/datasets/#{key}.json"),
-                     "meta" => "the release’s own entry for this dataset — everything on this page comes from it" }
+                     "meta" => "the release’s own entry for this dataset — everything here comes from it" }
       meta_rows << { "label" => "DCAT-US 1.1", "label_url" => abs("/data.json"), "url" => abs("/data.json"),
                      "meta" => "the whole catalog, for data.gov and any CKAN" }
+      # the STAC collection: the record's own address from calcofi4db 4.6.0 (`format: stac`); the
+      # browser opens the same document by its path under the catalog root
       stac = dist.find { |x| x["format"] == "stac" }
-      stac_url = stac ? stac["url"] : stac_collection_url(key)
-      meta_rows << { "label" => "STAC collection", "label_url" => stac_url, "url" => stac_url,
-                     "meta" => "one Collection per dataset, an Item per release" } if stac_url
+      stac_json = stac ? stac["url"] : stac_collection_url(key)
+      meta_rows << { "label" => "STAC collection", "label_url" => stac_browser_url(key), "url" => stac_json,
+                     "label_title" => "open in the STAC browser",
+                     "meta" => "one Collection per dataset, an Item per release" } if stac_json
       groups << { "id" => "metadata", "title" => "Metadata records",
                   "lede" => "Records about the data, in the standards each portal harvests.",
+                  "pair" => "left",
                   "blocks" => [{ "rows" => meta_rows }] }
 
       # ── Archives & portals ───────────────────────────────────────────────────
-      # Portal · identifier · title · status. The identifier is the thing a person needs; the
-      # record carries it on distributions[] and, from calcofi4db 4.5.0, on registrations[] too.
       ar = (d["registrations"] || []).map do |g|
         ident = Fmt.present(g["id"]) || DeriveId.call(g["url"])
         issue = Fmt.present(g["issue"]) || (g["issues"] || []).first
@@ -716,16 +725,36 @@ module CalCOFI
       groups << { "id" => "archives", "title" => "Archives & portals",
                   "lede" => "Where this dataset is registered outside calcofi.io, by the " \
                             "identifier each portal knows it as.",
+                  "pair" => "right",
                   "blocks" => [{ "rows" => ar }] } unless ar.empty?
-
-      groups.each { |g| (g["blocks"] || []).each { |b| (b["rows"] || []).each { |row| split_row_url(row) } } }
+      groups
     end
 
-    def split_row_url(row)
-      return row unless (u = Fmt.present(row["url"]))
-      row["url_head"], row["url_tail"] = split_url(u)
-      row
-    end
+    # what each release table holds, for the tables listing — the record's own
+    # `objects[].table_description` (schema 1.1) wins; this is the fallback for a record without it.
+    # `sample` is the one whose grain a reader cannot guess: it is an adjacency list. Measured at
+    # v2026.09.04: bottle → cast (calcofi_bottle, calcofi_dic), net → tow → site (swfsc_ichthyo),
+    # subsample → the ichthyo site (cdfw_dungeness-crab); every other dataset's events are roots.
+    TABLE_ABOUT = {
+      "obs" => "observations — one row per measurement or occurrence, at the event it was taken on",
+      "obs_bio" => "biological observations — occurrences with their tow’s gear, effort and densities",
+      "obs_env" => "environmental observations — one object per measurement type",
+      "sample" => "sampling events — casts, bottles, tows, nets, transects; nested where the source nests them (a bottle under its cast, a net under its tow under its station visit) via parent_sample_key, each with its cruise_key",
+      "sample_measurement" => "event-level effort and conditions — volume filtered, tow depth, wind",
+      "obs_attribute" => "sub-occurrence detail — size or stage classes, counts, behaviour",
+      "obs_ctd_full" => "the full-resolution CTD series, every bin as the instrument recorded it",
+      "obs_mets_full" => "the full-resolution underway meteorology series",
+      "measurement_type" => "the measurement vocabulary — units, bounds, NERC ids",
+      "taxon" => "one row per taxon, keyed to WoRMS or ITIS",
+      "dataset_taxon" => "each dataset’s own taxon vocabulary, resolved to taxon",
+      "taxon_group" => "functional and reporting groups over taxon",
+      "cruise" => "one row per cruise — the designated month, ship and date span",
+      "ship" => "the ship registry, by NODC code",
+      "grid" => "the CalCOFI station grid",
+      "site" => "station occupations",
+      "dataset" => "one row per dataset — citation, licence, measured coverage",
+      "climatology" => "the 1993–2013 monthly baseline every anomaly subtracts"
+    }.freeze
 
     # ── nothing lost in the regrouping ──────────────────────────────────────
     # The Access model was rewritten from six flat groups into six grouped ones, and the one way
@@ -792,7 +821,7 @@ module CalCOFI
       groups << { "id" => "status", "title" => "Status",
                   "lede" => "Where this sits in the ingest queue, and what it is waiting on.",
                   "blocks" => [{ "rows" => status_rows }] } unless status_rows.empty?
-      groups.each { |g| (g["blocks"] || []).each { |b| (b["rows"] || []).each { |row| split_row_url(row) } } }
+      groups
     end
 
     # db-query's own saved queries, by the dataset they are about (ids are `category--name`;
@@ -800,34 +829,20 @@ module CalCOFI
     SAVED_QUERIES = { "calcofi_bottle" => "datasets--bottle",
                       "swfsc_ichthyo"  => "datasets--ichthyo" }.freeze
 
-    # ── the URL line, split for display (plan D-6, Decision 18) ──────────────
-    # A URL is rendered as head + tail: the head shrinks and elides, the tail never does, so the
-    # informative end (`data_0.parquet`, `?datasets=calcofi_ctd-cast`) is still visible at 375 px.
-    # The tail is CAPPED: a prefilled SQL statement is a 200-character query string, and an
-    # unshrinkable 200 characters would push the line straight through the container — which is the
-    # wrap this whole design exists to prevent.
-    TAIL_MAX = 46
-    def split_url(u)
-      u = u.to_s
-      i = u.index("?") || u.rindex("/") || 0
-      # a URL that ends in "/" would give a one-character tail, so back up one more segment:
-      # "…/station/" reads better as "…calcofi.io" + "/station/" than as "…/station" + "/"
-      i = (u.rindex("/", i - 1) || i) if i.positive? && i == u.length - 1 && u[i] == "/"
-      tail = u[i..] || ""
-      tail = u[-TAIL_MAX..] if tail.length > TAIL_MAX
-      tail = u if tail.length >= u.length
-      [u[0, u.length - tail.length], tail]
-    end
-
     def query_shell_url(sql)
       "https://calcofi.io/db-query/?sql=#{CGI.escape(sql)}#sql-shell--shell"
     end
 
-    # The STAC collection this dataset has in the release's own static catalog. The record carries
-    # no `stac` distribution yet.
-    # # until the record carries a stac distribution (calcofi4db, plan D-9 / UI-D) — delete then
-    def stac_collection_url(key)
+    # The collection in the STAC browser at calcofi.io/stac/ (its hash route is the document's path
+    # under the catalog root). The record's own JSON address is what the copy button copies.
+    def stac_browser_url(key)
       "https://calcofi.io/stac/#/collections/#{key}/collection.json"
+    end
+
+    # The collection's JSON address when the record predates calcofi4db 4.6.0's `format: stac` row.
+    # # until every served record carries a stac distribution (calcofi4db 4.6.0) — delete then
+    def stac_collection_url(key)
+      "https://storage.googleapis.com/calcofi-db/stac/collections/#{key}/collection.json"
     end
 
     # what an ERDDAP grain means, for a reader who has never met the word.
@@ -1075,9 +1090,7 @@ module CalCOFI
           next if x["status"] == "superseded"
           out << { "@type" => "DataDownload", "name" => "#{x['title'] || x['id']} (CSV)",
                    "contentUrl" => x["url"].sub(/\.html\z/, ".csv"), "encodingFormat" => "text/csv" }
-          out << { "@type" => "DataDownload", "name" => "#{x['title'] || x['id']} (netCDF)",
-                   "contentUrl" => x["url"].sub(/\.html\z/, ".nc"), "encodingFormat" => "application/x-netcdf" }
-        when "iso19115"
+        when "iso19115", "stac"
           out << { "@type" => "DataDownload", "name" => x["title"], "contentUrl" => x["url"],
                    "encodingFormat" => "application/xml" }.compact
         end
@@ -1210,6 +1223,9 @@ module CalCOFI
         when "iso19115"
           out << { "@type" => "dcat:Distribution", "title" => x["title"] || "ISO 19115-3 metadata",
                    "accessURL" => x["url"], "mediaType" => "application/xml", "format" => "ISO-19115" }
+        when "stac"
+          out << { "@type" => "dcat:Distribution", "title" => x["title"] || "STAC collection",
+                   "accessURL" => x["url"], "mediaType" => "application/json", "format" => "STAC" }
         else
           next unless %w[mirror archive source page].include?(x["kind"])
           out << { "@type" => "dcat:Distribution", "title" => x["title"] || x["portal"],

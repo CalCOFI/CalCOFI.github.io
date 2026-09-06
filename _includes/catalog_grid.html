@@ -10,7 +10,7 @@
              italic lead, a hollow dot in its colour, the variables collapsed behind "n variables"
              (a <details>, so the names stay in the DOM and the search box still matches them)
     rung 3 · a holding, not in the database — --muted at 400, one line, quiet chips (no border,
-             no colour), at most four before "and n more" (the rest are in the <details>)
+             no colour), all of them collapsed behind "not yet in the database · n" (a <details>)
   Yellow is reserved: a pipeline stage is information, not a warning, so no chip here is --warn.
 
   Everything is `site.data.catalog`, built by _plugins/datasets.rb from the release record.
@@ -65,22 +65,19 @@
       {%- endfor -%}
 
       {%- if c.holdings.size > 0 -%}
-      <li class="ds-rows-sep" aria-hidden="true"><span>not yet in the database · {{ c.holdings.size | escape }}</span></li>
-      {%- for h in c.holdings_shown -%}
-      {% include catalog_holding_row.html h=h cat=c.name %}
-      {%- endfor -%}
-      {%- if c.holdings_more.size > 0 -%}
-      <li class="ds-rows-more">
-        <details class="ds-holdings-det">
-          <summary>and {{ c.holdings_more.size | escape }} more</summary>
+      {%- comment -%} rung 3, COLLAPSED: every holding of the category inside one <details>, the way a
+        row's note collapses on a dataset page. The rows stay in the DOM, so the search box still
+        matches them and a filter that hits one opens the block (assets/catalog.js). {%- endcomment -%}
+      <li class="ds-rows-holdings">
+        <details class="ds-details ds-arow-note ds-holdings-det">
+          <summary>not yet in the database · {{ c.holdings.size | escape }}</summary>
           <ul class="ds-rows">
-            {%- for h in c.holdings_more -%}
+            {%- for h in c.holdings -%}
             {% include catalog_holding_row.html h=h cat=c.name %}
             {%- endfor -%}
           </ul>
         </details>
       </li>
-      {%- endif -%}
       {%- endif -%}
     </ul>
   </section>

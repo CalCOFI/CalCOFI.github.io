@@ -13,7 +13,9 @@ layout: default
     2 sub-nav     the sticky uppercase tab row, now brand v2's .cc-tabs
     3 Overview    ONE COLUMN. Nothing below the head is two columns.
     4 Coverage    the variables, taxa, life stages and what this dataset contributes elsewhere
-    5 Access      full-width rows, the URL on its own line (see _includes/access_row.html)
+    5 Access      compact one-line rows, no URL line (the copy button carries it); the release
+                  tables as a table; Metadata records beside Archives & portals. Inner grids only —
+                  the .cc-container stays one column (check_layout.py's assertion is on it)
     6 Cite · Provenance · Related   Cite and Provenance keep two columns: both are short and
                   bounded (a citation block beside a definition list), with align-items: start
 
@@ -204,27 +206,42 @@ layout: default
 </section>
 {%- endif -%}
 
-{%- comment -%} ── Access: rows that span the page ── {%- endcomment -%}
+{%- comment -%} ── Access: compact rows; the tables as a table; short groups paired ── {%- endcomment -%}
 {%- if page.access.size > 0 -%}
 <section class="cc-band ds-section ds-one" id="access">
   <div class="cc-container">
     <h2 class="cc-h2">Access</h2>
     <p class="cc-lede cc-prose">{% if page.is_holding %}This dataset is not in the integrated
       database, so nothing below comes from a CalCOFI release. Here is where it lives today.{% else %}Every
-      endpoint this dataset can be reached through, grouped by how you would use it. Every URL is in
-      the release record and answered when the release was cut.{% endif %}</p>
+      endpoint this dataset can be reached through, grouped by how you would use it. Each name is
+      the link; the copy button beside it copies the address. Everything is in the release record and
+      was answered when the release was cut.{% endif %}</p>
 
+    {%- comment -%}
+      A group marked pair: "left" opens a two-up region that the next group (pair: "right") closes,
+      so Metadata records and Archives & portals sit side by side — two short lists that used to
+      stack into a page of their own. The region is an inner grid, never the .cc-container.
+    {%- endcomment -%}
     {%- for g in page.access -%}
+    {%- if g.pair == "left" %}<div class="ds-access-pair">{% endif -%}
     <div class="ds-access-group" id="access-{{ g.id | escape }}">
       <h3 class="cc-h3 ds-access-h">{{ g.title | escape }}</h3>
       {%- if g.lede %}<p class="ds-access-lede cc-muted cc-prose">{{ g.lede | markdownify | remove: "<p>" | remove: "</p>" }}</p>{% endif -%}
       {%- for b in g.blocks -%}
       {%- if b.title %}<h4 class="ds-access-sub">{{ b.title | escape }}</h4>{% endif -%}
       {%- if b.lede %}<p class="ds-access-lede cc-muted cc-prose">{{ b.lede | markdownify | remove: "<p>" | remove: "</p>" }}</p>{% endif -%}
+      {%- if b.layout == "table" -%}
+      {% include access_table.html block=b %}
+      {%- elsif b.layout == "pair" -%}
+      <div class="ds-arows-pair">{% for row in b.rows %}{% include access_row.html row=row %}{% endfor %}</div>
+      {%- else -%}
       {%- for row in b.rows %}{% include access_row.html row=row %}{% endfor -%}
+      {%- endif -%}
       {%- if b.matrix %}{% include access_matrix.html block=b %}{% endif -%}
       {%- endfor -%}
     </div>
+    {%- if g.pair == "right" %}</div>{% endif -%}
+    {%- if g.pair == "left" and forloop.last %}</div>{% endif -%}
     {%- endfor -%}
 
     <p class="ds-access-foot cc-prose">
