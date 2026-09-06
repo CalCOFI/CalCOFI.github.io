@@ -63,15 +63,12 @@
     <nav class="cc-links">
       {%- comment -%}
         The section list drives the header, so it can never drift from the page. Every link is
-        absolute to the landing page's anchor, so it works from a dataset page too; Datasets goes to
-        the catalog's own page rather than the landing section.
+        absolute to the landing page's anchor, so it works from a dataset page too — Datasets
+        included (the whole catalog is on the landing page; /datasets/ is reached from its
+        "All datasets" link, 2026-09-06).
       {%- endcomment -%}
       {%- for s in site.data.products.sections -%}
-      {%- if s.id == "datasets" -%}
-      <a href="{{ '/datasets/' | relative_url }}">{{ s.title }}</a>
-      {%- else -%}
       <a href="{{ '/' | relative_url }}#{{ s.id }}">{{ s.title | split: " — " | first }}</a>
-      {%- endif -%}
       {%- endfor -%}
       <a href="https://calcofi.org">calcofi.org ↗</a>
     </nav>
