@@ -9,8 +9,9 @@
 #   _data/coverage_stations.json  which grid cells each dataset actually sampled, and how much
 #                                 (~470 KB; read at BUILD time to draw the map's filled marks —
 #                                 never shipped to the browser)
+#   _data/release_catalog.json    the release's own catalog.json (the taxa count on the front door)
 #
-# All four are git-ignored: the site is a rendering of the promoted release, never a copy of it.
+# All five are git-ignored: the site is a rendering of the promoted release, never a copy of it.
 # `_data/land.geojson` is NOT here: the coastline is cartography, not a dataset fact, so it is a
 # committed asset built once by scripts/build_land.py.
 #
@@ -71,6 +72,15 @@ get "$record_dir/grid.geojson" "$DATA/grid.geojson" ||
 # which cells each dataset sampled: the map's filled marks, and the frame rule's second half
 get "$record_dir/coverage_stations.json" "$DATA/coverage_stations.json" ||
   echo "WARN: no coverage_stations.json beside the record — the maps will draw the grid but not the sampled stations" >&2
+
+# the release's own catalog (calcofi4db freeze_plan(): every table with its rows, bytes and objects) —
+# the landing page's `taxa` number is tables[name == taxon].rows, which the record does not carry.
+# Optional: an older promoted release may have none, and the page then draws no taxa tile (plan
+# 2026-09-07 § D-2: a number the build cannot read is not rendered, never typed). Named
+# release_catalog.json, not catalog.json, because Jekyll would load _data/catalog.json as
+# site.data.catalog — the very key _plugins/datasets.rb builds.
+get "$record_dir/catalog.json" "$DATA/release_catalog.json" ||
+  echo "NOTE: no catalog.json beside the record — the front door draws no taxa count" >&2
 
 # versions.json is release-history, kept at the prefix root, never inside a version folder
 get "$RELEASE_BASE/versions.json" "$DATA/versions.json" ||

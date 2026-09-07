@@ -330,6 +330,7 @@ module CalCOFI
           "stations" => ref.("grid"),
           "grid"     => { "standard" => byp["standard"], "extended" => byp["extended"], "historical" => byp["historical"] },
           "taxa"     => taxa,
+          "taxa_fmt" => Fmt.num(taxa),
           "rows"     => release["total_rows"],
           "rows_m"   => release["total_rows"] ? (release["total_rows"] / 1_000_000.0).round : nil,
           "tables"   => release["n_tables"],

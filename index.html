@@ -43,6 +43,23 @@ layout: default
 <script defer src="{{ '/assets/section.js' | relative_url }}"></script>
 
 {%- comment -%}
+  The numbers band (plan § D-2): six numbers on the Sand band, every one read at build by
+  _plugins/datasets.rb (site.data.catalog.numbers) — the release year minus the earliest measured
+  year, reference[].rows for cruise · ship · grid, the release's own catalog for taxa, release.total_rows.
+  A number the build cannot read is not rendered: its tile collapses.
+{%- endcomment -%}
+<section class="numsband cc-band cc-band-alt" aria-label="CalCOFI by the numbers">
+  <dl class="cc-container nums">
+    {%- if nums.years %}<div><dd>{{ nums.years }}</dd><dt>years · since {{ nums.since }}</dt></div>{% endif -%}
+    {%- if nums.cruises %}<div><dd>{{ nums.cruises }}</dd><dt>cruises</dt></div>{% endif -%}
+    {%- if nums.ships %}<div><dd>{{ nums.ships }}</dd><dt>ships</dt></div>{% endif -%}
+    {%- if nums.stations %}<div title="{{ nums.stations }} grid cells · {{ nums.grid.standard }} standard · {{ nums.grid.extended }} extended · {{ nums.grid.historical }} historical"><dd>{{ nums.stations }}</dd><dt>stations</dt></div>{% endif -%}
+    {%- if nums.taxa %}<div><dd>{{ nums.taxa_fmt }}</dd><dt>taxa</dt></div>{% endif -%}
+    {%- if nums.rows_m %}<div><dd>{{ nums.rows_m }} M</dd><dt>rows · {{ nums.version }}</dt></div>{% endif -%}
+  </dl>
+</section>
+
+{%- comment -%}
   The bento (plan § D-4): a 6-column grid of ways in, between the hero and the catalog. Where and
   When (§ D-3) are the record's own reach — the grid map with a cruise sweep and a year odometer,
   and the years strip — drawn by assets/reach.js from #reach. No tile ends in a button: the one CTA
@@ -68,6 +85,106 @@ layout: default
       <div class="fill" id="strip-host"></div>
       <a class="cc-text-link tile-more" href="https://calcofi.io/explore/">Explore by dataset →</a>
     </div>
+
+    {%- comment -%} Latest release: version · date · tables · rows · DOI, the release strip's links {%- endcomment -%}
+    {%- assign rel = site.data.catalog.release -%}
+    {%- assign relv = site.data.catalog.versions | where: "version", rel.version | first -%}
+    <div class="tile t-rel">
+      <div class="cc-eyebrow">Latest release{% if rel.release_date %} · {{ rel.release_date }}{% endif %}</div>
+      <a class="tile-v" href="{{ '/datasets/release/' | relative_url }}">{{ rel.version | escape }}</a>
+      <dl class="tile-dl">
+        {%- if rel.n_tables %}<div><dt>tables</dt><dd>{{ rel.n_tables }}</dd></div>{% endif -%}
+        {%- if rel.total_rows %}<div><dt>rows</dt><dd>{{ rel.total_rows | divided_by: 1000000 }} M</dd></div>{% endif -%}
+        {%- assign doi = rel.doi | default: relv.doi -%}
+        {%- if doi %}<div><dt>doi</dt><dd><a href="https://doi.org/{{ doi | escape }}">{{ doi | escape }}</a></dd></div>{% endif -%}
+      </dl>
+      <p class="tile-links">
+        <a class="cc-text-link" href="https://calcofi.io/db-schema/?v={{ rel.version | escape }}">schema ↗</a>
+        <a class="cc-text-link" href="https://calcofi.io/db-query/">query ↗</a>
+        <a class="cc-text-link" href="https://storage.calcofi.io/calcofi-db/ducklake/releases/RELEASES.html">notes ↗</a>
+        <a class="cc-text-link" href="{{ '/datasets/release/' | relative_url }}">cite</a>
+      </p>
+    </div>
+
+    {%- comment -%} Explore: the app's own screenshots (the same pair its card shows) + the lens glyphs {%- endcomment -%}
+    {%- assign xp = data.products | where: "key", "explore" | first -%}
+    {%- assign xs = data.sections | where: "id", "explore" | first -%}
+    {%- if xp -%}
+    <div class="tile t-exp">
+      <a class="tile-shot" href="{{ xp.live_url }}" aria-label="Open {{ xp.title | escape }}">
+        <img class="cc-light-only" loading="lazy" src="{{ 'images/' | append: xp.key | append: '_light.png' | relative_url }}" alt="{{ xp.title | escape }}, light theme">
+        <img class="cc-dark-only"  loading="lazy" src="{{ 'images/' | append: xp.key | append: '_dark.png'  | relative_url }}" alt="{{ xp.title | escape }}, dark theme">
+      </a>
+      <div class="tile-body">
+        <div class="cc-eyebrow">Explore · in the browser</div>
+        <h3 class="tile-h">One app, {{ xp.lenses | size }} lenses</h3>
+        <p class="tile-lenses" aria-label="Lenses">
+          {%- for l in xp.lenses -%}
+          {%- assign ld = xs.lenses | where: "id", l | first -%}
+          <i class="cc-i cc-i-lens-{{ l | escape }}" title="{{ ld.title | default: l | escape }} — {{ ld.blurb | escape }}" role="img" aria-label="{{ ld.title | default: l | escape }}"></i>
+          {%- endfor -%}
+        </p>
+        <a class="cc-text-link tile-more" href="{{ xp.live_url }}">Open the Explorer →</a>
+      </div>
+    </div>
+    {%- endif -%}
+
+    {%- comment -%}
+      Get the data: five tabs — R · Python · SQL · ERDDAP · Parquet — one snippet each, switched by
+      radio inputs (no JS; the labels are the tabs). Every address is the release's own.
+    {%- endcomment -%}
+    <div class="tile t-get">
+      <div class="cc-eyebrow">Get the data</div>
+      <div class="tile-tabs">
+        <input type="radio" name="get" id="get-r" checked><label for="get-r">R</label>
+        <input type="radio" name="get" id="get-py"><label for="get-py">Python</label>
+        <input type="radio" name="get" id="get-sql"><label for="get-sql">SQL</label>
+        <input type="radio" name="get" id="get-erddap"><label for="get-erddap">ERDDAP</label>
+        <input type="radio" name="get" id="get-parquet"><label for="get-parquet">Parquet</label>
+        <pre class="tile-code" data-tab="get-r">library(calcofi4r)
+con &lt;- cc_get_db()     # the latest release
+tbl(con, "obs_env") |&gt;
+  filter(measurement_type == "temperature",
+         depth_m &lt;= 10)</pre>
+        <pre class="tile-code" data-tab="get-py">import calcofi4py as cc
+con = cc.cc_get_db()    # the latest release
+con.sql("""SELECT * FROM obs_env
+  WHERE measurement_type = 'temperature'
+    AND depth_m &lt;= 10""").df()</pre>
+        <pre class="tile-code" data-tab="get-sql">-- db-query: DuckDB in your browser, no server
+SELECT cruise_key, avg(value) AS temperature
+FROM obs_env
+WHERE measurement_type = 'temperature'
+GROUP BY cruise_key</pre>
+        <pre class="tile-code" data-tab="get-erddap"># any dataset as CSV, JSON, netCDF …
+https://erddap.calcofi.io/erddap/tabledap/</pre>
+        <pre class="tile-code" data-tab="get-parquet">-- DuckDB, anywhere: the release's catalog
+-- lists every parquet object it holds
+SELECT * FROM read_json('{{ rel.catalog_url }}')</pre>
+      </div>
+      <p class="tile-links">
+        <a class="cc-text-link" href="https://calcofi.io/calcofi4r/">calcofi4r</a>
+        <a class="cc-text-link" href="https://calcofi.io/calcofi4py/">calcofi4py</a>
+        <a class="cc-text-link" href="https://calcofi.io/db-query/">db-query</a>
+      </p>
+    </div>
+
+    {%- comment -%} Life: the taxa count from the release's own catalog; six organism glyphs, small to large {%- endcomment -%}
+    {%- if nums.taxa -%}
+    <div class="tile t-life">
+      <div class="cc-eyebrow">Life · WoRMS-keyed</div>
+      <div class="tile-row">
+        <span class="tile-big">{{ nums.taxa_fmt }} taxa</span>
+        <span class="tile-glyphs" aria-hidden="true">
+          {%- assign life_glyphs = "cat-phytoplankton,cat-zooplankton,cat-krill,cat-ichthyo,cat-fish,cat-whale" | split: "," -%}
+          {%- for g in life_glyphs -%}
+          <i class="cc-i cc-i-{{ g }}"></i>
+          {%- endfor -%}
+        </span>
+      </div>
+      <a class="cc-text-link tile-more" href="https://calcofi.io/explore/">From diatoms to whales →</a>
+    </div>
+    {%- endif -%}
   </div>
 </section>
 <script defer src="{{ '/assets/reach.js' | relative_url }}"></script>
