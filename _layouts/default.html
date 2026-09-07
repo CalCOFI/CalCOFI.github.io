@@ -70,6 +70,9 @@
       {%- for s in site.data.products.sections -%}
       <a href="{{ '/' | relative_url }}#{{ s.id }}">{{ s.title | split: " — " | first }}</a>
       {%- endfor -%}
+      {%- comment -%} News is a page, not a section (plan 2026-09-07, Decision 2): a literal link; the dot
+        says an entry landed in the last 30 days (_plugins/news.rb) {%- endcomment -%}
+      <a href="{{ '/news/' | relative_url }}"{% if page.url == '/news/' %} aria-current="page"{% endif %}>News{% if site.data.log_new %}<span class="newdot" title="new in the last 30 days"></span>{% endif %}</a>
       <a href="https://calcofi.org">calcofi.org ↗</a>
     </nav>
 

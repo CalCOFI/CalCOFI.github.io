@@ -106,6 +106,16 @@ layout: default
       </p>
     </div>
 
+    {%- comment -%} Ship's log: the four newest entries (_includes/log.html, _plugins/news.rb) {%- endcomment -%}
+    <div class="tile t-log">
+      <div class="cc-eyebrow">Ship's log · what's new</div>
+      {% include log.html n=4 %}
+      <p class="tile-links">
+        <a class="cc-text-link" href="{{ '/news/' | relative_url }}">All entries →</a>
+        <a class="cc-text-link" href="{{ '/feed.xml' | relative_url }}">feed</a>
+      </p>
+    </div>
+
     {%- comment -%} Explore: the app's own screenshots (the same pair its card shows) + the lens glyphs {%- endcomment -%}
     {%- assign xp = data.products | where: "key", "explore" | first -%}
     {%- assign xs = data.sections | where: "id", "explore" | first -%}
@@ -142,12 +152,12 @@ layout: default
         <input type="radio" name="get" id="get-erddap"><label for="get-erddap">ERDDAP</label>
         <input type="radio" name="get" id="get-parquet"><label for="get-parquet">Parquet</label>
         <pre class="tile-code" data-tab="get-r">library(calcofi4r)
-con &lt;- cc_get_db()     # the latest release
+con &lt;- cc_get_db()     # latest release
 tbl(con, "obs_env") |&gt;
   filter(measurement_type == "temperature",
          depth_m &lt;= 10)</pre>
         <pre class="tile-code" data-tab="get-py">import calcofi4py as cc
-con = cc.cc_get_db()    # the latest release
+con = cc.cc_get_db()    # latest release
 con.sql("""SELECT * FROM obs_env
   WHERE measurement_type = 'temperature'
     AND depth_m &lt;= 10""").df()</pre>

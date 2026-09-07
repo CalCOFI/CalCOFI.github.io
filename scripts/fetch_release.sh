@@ -86,6 +86,28 @@ get "$record_dir/catalog.json" "$DATA/release_catalog.json" ||
 get "$RELEASE_BASE/versions.json" "$DATA/versions.json" ||
   echo "WARN: no versions.json at $RELEASE_BASE — the release strip will show this release only" >&2
 
+# each promoted version's RELEASE_NOTES.md first `##` heading, for the ship's log's release entries
+# (plan 2026-09-07 § D-5) — optional, one small GET per version, a version with no notes gets none
+python3 - "$DATA/versions.json" "$RELEASE_BASE" "$DATA/release_headings.json" <<'PY2' || echo "NOTE: release headings not fetched — the log names releases by version alone" >&2
+import json, re, sys, urllib.request
+vpath, base, out = sys.argv[1:4]
+try:
+    versions = [v["version"] for v in json.load(open(vpath)).get("versions", []) if v.get("version")]
+except Exception:
+    versions = []
+heads = {}
+for v in versions[:40]:
+    try:
+        with urllib.request.urlopen(f"{base}/{v}/RELEASE_NOTES.md", timeout=10) as r:
+            for line in r.read().decode("utf-8", "replace").splitlines():
+                if line.startswith("## "):
+                    heads[v] = re.sub(r"[`*]", "", line[3:]).strip(); break
+    except Exception:
+        pass
+json.dump(heads, open(out, "w"), indent=1, ensure_ascii=False)
+print(f"release headings: {len(heads)} of {len(versions)} versions")
+PY2
+
 python3 - "$DATA/datasets.json" "$source_kind" "$record_url" <<'PY'
 import json, sys
 path, kind, url = sys.argv[1], sys.argv[2], sys.argv[3]

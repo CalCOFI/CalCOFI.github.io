@@ -162,6 +162,40 @@ main#panel { width: 100%; }
 .tile-tabs .tile-code { display: none; flex-basis: 100%; margin: 8px 0 0; font: 12.5px/1.5 var(--mono); background: var(--panel); border-radius: var(--radius); padding: 10px 12px; overflow: auto; white-space: pre; color: var(--fg); }
 #get-r:checked ~ [data-tab="get-r"], #get-py:checked ~ [data-tab="get-py"], #get-sql:checked ~ [data-tab="get-sql"],
 #get-erddap:checked ~ [data-tab="get-erddap"], #get-parquet:checked ~ [data-tab="get-parquet"] { display: block; }
+/* the ship's log (§ D-5): date · type · entry, on the tile and on /news/. The type chip is the accent
+   tint — never --warn (yellow marks a state that needs attention, not a kind of thing). */
+.log { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: max-content max-content minmax(0, 1fr); gap: 10px 12px; align-items: baseline; }
+.log-e { display: contents; }
+.log-d { font: 13px var(--mono); color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.log-t { font-size: 10.5px; }
+.log-b { min-width: 0; }
+.log-b b { display: block; font-size: 16px; line-height: 1.3; }
+.log-b b a { color: var(--fg); }
+.log-b b a:hover { color: var(--accent); }
+.log-b span { display: block; font-size: 14px; color: var(--muted); line-height: 1.35; }
+.log-tile { gap: 5px 10px; overflow: hidden; min-height: 0; flex: 1; align-content: start; }
+.log-tile .log-b b { font-size: 13.5px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.log-tile .log-b span { font-size: 12px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; }
+.log-tile .log-d { font-size: 11.5px; }
+.log-tile .log-t { font-size: 9.5px; }
+/* the "new" dot: a 6 px accent disc on the header's News link while any log entry is under 30 days old */
+.newdot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); vertical-align: super; margin-left: 3px; }
+.cc-header .cc-links a .newdot { vertical-align: top; margin-top: -2px; }
+/* /news/: the filter chips are buttons */
+.log-filter { display: flex; flex-wrap: wrap; gap: 6px; margin: calc(var(--space) * 2) 0 calc(var(--space) * 3); }
+.log-filter .cc-chip { font-family: var(--sans); font-weight: 700; font-size: 12.5px; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer; border: 1px solid transparent; padding: 0.15em 0.8em; }
+.log-filter .cc-chip.cc-chip-quiet:hover { color: var(--accent); }
+.log-filter .cc-chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.log-filter .cc-chip .n { font-weight: 400; margin-left: 0.3em; opacity: 0.8; }
+.news-page .blurb { max-width: 75ch; margin: 0 0 calc(var(--space) * 2); }
+.news-page .blurb .cc-text-link { margin-left: 0.5em; }
+.news-page .log { max-width: 88ch; }
+@media (max-width: 640px) {
+  .log { grid-template-columns: max-content minmax(0, 1fr); }
+  .log-e .log-t { grid-column: 2; justify-self: start; margin-top: -4px; }
+  .log-e .log-b { grid-column: 1 / -1; }
+}
+
 /* the Life tile */
 .tile .tile-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
 .tile .tile-big { font-family: var(--display); font-size: 40px; line-height: 0.9; font-weight: 500; }
