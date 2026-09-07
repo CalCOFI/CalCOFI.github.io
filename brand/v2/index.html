@@ -270,6 +270,41 @@
     <p class="note">A static SVG the page draws itself — no map library, no tile server, no external asset. The
       class is on the token, so the theme toggle repaints the map. The element has no background: the drawing
       carries its own <code>&lt;rect class="water"&gt;</code>, so a cell taller than the drawing stays page-coloured.</p>
+
+    <!-- ── added 2026-09-07 (the landing page's section drawing): the --cc-sec-* tokens ── -->
+    <h3 class="cc-h3" style="margin-top: calc(var(--space) * 3)">The section tokens</h3>
+    <div class="row">
+      <svg style="width: 240px; display: block; border-radius: var(--radius)" viewBox="0 0 240 120" role="img" aria-label="A sample of the section parts: sky, the surface, the water ramp, the sea floor, a ship with a wire, a pin with a label">
+        <defs>
+          <linearGradient id="sp-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color: var(--cc-sec-sky0)"/><stop offset="1" style="stop-color: var(--cc-sec-sky1)"/></linearGradient>
+          <linearGradient id="sp-water" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color: var(--cc-sec-w0)"/><stop offset=".18" style="stop-color: var(--cc-sec-w1)"/><stop offset=".45" style="stop-color: var(--cc-sec-w2)"/><stop offset=".7" style="stop-color: var(--cc-sec-w3)"/><stop offset="1" style="stop-color: var(--cc-sec-w4)"/></linearGradient>
+        </defs>
+        <rect width="240" height="36" fill="url(#sp-sky)"/><rect y="36" width="240" height="84" fill="url(#sp-water)"/>
+        <circle cx="222" cy="14" r="6" style="fill: var(--cc-sec-sun)"/>
+        <path d="M0,120 L0,112 C60,110 120,96 170,70 C200,56 214,42 224,36 L240,34 L240,120 Z" style="fill: var(--cc-sec-floor); stroke: var(--cc-sec-floor-line); stroke-width: 1"/>
+        <line x1="0" x2="224" y1="36" y2="36" style="stroke: var(--cc-sec-surf); stroke-width: 1.5"/>
+        <g style="fill: var(--cc-sec-ship)"><path d="M92,32 L94,40 L128,40 L134,32 Z"/><rect x="110" y="24" width="14" height="8"/></g>
+        <line x1="130" x2="130" y1="32" y2="80" style="stroke: var(--cc-sec-wire); stroke-width: 1"/>
+        <circle cx="130" cy="80" r="6" style="fill: var(--cc-sec-pin-bg); stroke: var(--cc-sec-pin-fg); stroke-width: 1.5"/>
+        <text x="140" y="83" style="font: 8px var(--sans); fill: var(--cc-sec-lab-d); paint-order: stroke; stroke: var(--cc-sec-halo-d); stroke-width: 2.5px; stroke-linejoin: round">CTD · 515 m</text>
+        <text x="40" y="50" style="font: 8px var(--sans); fill: var(--cc-sec-lab); paint-order: stroke; stroke: var(--cc-sec-halo); stroke-width: 2.5px; stroke-linejoin: round">phytoplankton · 0–50 m</text>
+      </svg>
+      <span class="sw" style="display: flex; flex-wrap: wrap; gap: 10px">
+        <span style="display: flex; align-items: center; gap: 8px; font-size: var(--fs-sm)"><i style="width: 22px; height: 22px; border-radius: 6px; border: 1px solid var(--border); background: linear-gradient(var(--cc-sec-sky0), var(--cc-sec-sky1))"></i>--cc-sec-sky0 → -sky1</span>
+        <span style="display: flex; align-items: center; gap: 8px; font-size: var(--fs-sm)"><i style="width: 22px; height: 22px; border-radius: 6px; border: 1px solid var(--border); background: var(--cc-sec-surf)"></i>--cc-sec-surf</span>
+        <span style="display: flex; align-items: center; gap: 8px; font-size: var(--fs-sm)"><i style="width: 22px; height: 22px; border-radius: 6px; border: 1px solid var(--border); background: linear-gradient(var(--cc-sec-w0), var(--cc-sec-w1) 18%, var(--cc-sec-w2) 45%, var(--cc-sec-w3) 70%, var(--cc-sec-w4))"></i>--cc-sec-w0 … w4</span>
+        <span style="display: flex; align-items: center; gap: 8px; font-size: var(--fs-sm)"><i style="width: 22px; height: 22px; border-radius: 6px; border: 1px solid var(--cc-sec-floor-line); background: var(--cc-sec-floor)"></i>--cc-sec-floor · -floor-line</span>
+        <span style="display: flex; align-items: center; gap: 8px; font-size: var(--fs-sm)"><i style="width: 22px; height: 22px; border-radius: 6px; border: 1px solid var(--border); background: var(--cc-sec-ship)"></i>--cc-sec-ship · -wire</span>
+        <span style="display: flex; align-items: center; gap: 8px; font-size: var(--fs-sm)"><i style="width: 22px; height: 22px; border-radius: 6px; border: 1px solid var(--border); background: var(--cc-sec-sun)"></i>--cc-sec-sun</span>
+        <span style="display: flex; align-items: center; gap: 8px; font-size: var(--fs-sm)"><i style="width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--cc-sec-pin-fg); background: var(--cc-sec-pin-bg)"></i>--cc-sec-pin-bg · -pin-fg</span>
+        <span style="display: flex; align-items: center; gap: 8px; font-size: var(--fs-sm)"><i style="width: 22px; height: 22px; border-radius: 6px; border: 1px solid var(--border); background: var(--cc-sec-w0); display: grid; place-items: center; color: var(--cc-sec-lab); font: 700 11px var(--sans)">a</i>--cc-sec-lab on -halo</span>
+        <span style="display: flex; align-items: center; gap: 8px; font-size: var(--fs-sm)"><i style="width: 22px; height: 22px; border-radius: 6px; border: 1px solid var(--border); background: var(--cc-sec-w3); display: grid; place-items: center; color: var(--cc-sec-lab-d); font: 700 11px var(--sans)">a</i>--cc-sec-lab-d on -halo-d</span>
+      </span>
+    </div>
+    <p class="note">The landing page's front door — an inline SVG section of Line 90 (<code>assets/section.js</code>) — is
+      painted with these eighteen tokens and nothing else, so the toggle repaints the drawing and no script listens for
+      <code>cc:theme</code>. A label sits on a <code>paint-order: stroke</code> halo, which is what carries it across the
+      water ramp; the four label pairs are in the table above.</p>
   </div>
 </section>
 
@@ -436,6 +471,13 @@
     [["--cc-map-mark on --cc-map-water", "cc-map-mark", "cc-map-water", "the sampled stations over the ocean"],
      ["--cc-map-coast on --cc-map-water", "cc-map-coast", "cc-map-water", "the coastline stroke — what makes land readable at 1.03:1"],
      ["--muted (.tk) on --cc-map-water", "muted", "cc-map-water", "the map's graticule labels"]
+    ].forEach(function (m) { extra.push([m[0], cr(L[m[1]], L[m[2]]), cr(D[m[1]], D[m[2]]), m[3]]); });
+    // added 2026-09-07 (the section drawing): the pin's glyph on its disc, and the two label tones on the
+    // water they sit over (the halo carries a label across the ramp; these are the grounds it starts on)
+    [["--cc-sec-pin-fg on --cc-sec-pin-bg", "cc-sec-pin-fg", "cc-sec-pin-bg", "a category pin's ring and glyph on its disc"],
+     ["--cc-sec-lab on --cc-sec-w0", "cc-sec-lab", "cc-sec-w0", "a label in the shallows, before its halo"],
+     ["--cc-sec-lab-d on --cc-sec-w3", "cc-sec-lab-d", "cc-sec-w3", "a label in the deep, before its halo"],
+     ["--cc-sec-lab-d on --cc-sec-w4", "cc-sec-lab-d", "cc-sec-w4", "a label on the deepest water"]
     ].forEach(function (m) { extra.push([m[0], cr(L[m[1]], L[m[2]]), cr(D[m[1]], D[m[2]]), m[3]]); });
     extra.forEach(function (e) { var tr = document.createElement("tr"); tr.innerHTML = '<td class="tok">' + e[0] + '</td><td></td><td class="cr ' + (e[1] >= 4.5 ? "ok" : "fail") + '">' + e[1].toFixed(1) + '</td><td></td><td></td><td></td><td class="cr ' + (e[2] >= 4.5 ? "ok" : "fail") + '">' + e[2].toFixed(1) + '</td><td></td><td></td><td class="note">' + e[3] + "</td>"; tb.appendChild(tr); n += 2; if (e[1] < 4.5) fails++; if (e[2] < 4.5) fails++; min = Math.min(min, e[1], e[2]); });
     ["bg", "panel", "panel-2", "border", "band", "header-bg"].forEach(function (g) { var tr = document.createElement("tr"); tr.innerHTML = '<td class="tok">--' + g + '</td><td><span class="sw" style="background:' + L[g] + '"></span><span class="tok">' + L[g] + '</span></td><td></td><td></td><td></td><td><span class="sw" style="background:' + D[g] + '"></span><span class="tok">' + D[g] + '</span></td><td></td><td></td><td></td><td class="note">a ground</td>'; tb.appendChild(tr); });

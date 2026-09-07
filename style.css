@@ -33,17 +33,228 @@ code, .mono { font-family: var(--mono); font-size: 0.9em; }
 #layout { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr auto auto; min-height: 100vh; }
 main#panel { width: 100%; }
 
-/* ── hero: the Sand band, the display heading, one yellow CTA ───────────── */
+/* ── hero: the section (plan 2026-09-07 § D-1) ─────────────────────────────────
+   Line 90 as an oceanographic section, drawn at page load by assets/section.js into #sec-host as
+   one <svg viewBox="0 0 1400 660"> that is `width: 100%; height: auto`, so it scales as one unit and
+   the mockup's positions hold at any width. The copy — eyebrow, the Teko h1, the one-line lede, the
+   one yellow CTA and two text links — is HTML, absolutely positioned over the SKY (the top 30 % of
+   the drawing) at ≥ 980 px so it wraps, sizes with the drawing (cqw) and stays selectable; below
+   that it stacks above the drawing. The drawing is tokens only (--cc-sec-*), so the toggle repaints
+   it with no JS. The old Sand hero and its dead `.hero.has-photo` hook went with the re-cut. */
+.hero-sec { position: relative; container-type: inline-size; max-width: var(--container); margin: 0 auto; padding: 0 calc(var(--space) * 3); }
+.hero-drawing { position: relative; }
+.hero-drawing svg.sec { display: block; width: 100%; height: auto; font-family: var(--sans); border-radius: var(--radius-card) var(--radius-card) 0 0; }
+/* the copy: over the sky, left edge at the drawing's x = 90 (6.4 % of the container, past the section's own padding); everything sized from the
+   container so it keeps its place in the sky as the drawing scales (measured at 1170 px: the copy
+   ends 9 px above the surface line; see check_layout.py's hero assertion) */
+.hero-copy { position: absolute; z-index: 2; left: calc(var(--space) * 3 + 6.4cqw); top: 1.2cqw; width: 64cqw; max-width: 760px; }
+.hero-copy .cc-eyebrow { font-size: max(11.5px, 0.95cqw); margin-bottom: 0.15em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hero-copy .cc-h1 { font-size: 4.6cqw; line-height: 0.92; margin: 0 0 0.06em; letter-spacing: 0.01em; }
+.hero-copy .hero-lede { margin: 0 0 0.4em; font-size: max(13px, 1.2cqw); line-height: 1.3; white-space: nowrap; }
+.hero-copy .hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6em 1.3em; margin: 0; }
+.hero-copy .cc-btn { min-height: max(30px, 3cqw); min-width: 0; padding: 0.3em 1em; font-size: max(12px, 1.1cqw); }
+.hero-copy .cc-text-link { font-size: max(11.5px, 1cqw); }
 
-.hero { padding-top: calc(var(--band-pad) * 1.5); padding-bottom: calc(var(--band-pad) * 1.5); }
-.hero .cc-eyebrow { margin-bottom: calc(var(--space) * 2); }
-.hero .cc-h1 { font-size: clamp(48px, 7vw, 80px); margin-bottom: 0.25em; }
-.hero .hero-lede { margin: 0 0 calc(var(--space) * 2); }
-.hero .hero-pipeline { margin: 0 0 calc(var(--space) * 3); font-family: var(--mono); font-size: var(--fs-sm); color: var(--muted); }
-.hero .hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--space) * 3); margin: 0; }
-/* designed to take calcofi.org's imagery once the SIO team shares it (Decision 8): */
-.hero.has-photo { background: var(--band) url() center / cover no-repeat; }
-.hero.has-photo, .hero.has-photo .cc-eyebrow, .hero.has-photo .cc-h1, .hero.has-photo .hero-pipeline { color: #ffffff; }
+/* the drawing's parts — every colour a --cc-sec-* token (brand/v2/theme.css, additions 2026-09-07) */
+.sec .axis-ground { fill: var(--bg); }
+.sec .lab { font-size: 13px; fill: var(--cc-sec-lab); paint-order: stroke; stroke: var(--cc-sec-halo); stroke-width: 3.5px; stroke-linejoin: round; }
+.sec .lab-d { fill: var(--cc-sec-lab-d); stroke: var(--cc-sec-halo-d); }
+.sec .ax { font-family: var(--mono); font-size: 11px; fill: var(--muted); }
+.sec .axt { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; fill: var(--muted); font-weight: 600; }
+.sec .axl { stroke: var(--muted); stroke-width: 1; fill: none; }
+.sec .grid { stroke: var(--fg); opacity: 0.12; stroke-dasharray: 2 6; }
+.sec .ship { fill: var(--cc-sec-ship); }
+.sec .win { stroke: var(--cc-sec-pin-bg); stroke-width: 1.6; }
+.sec .wire { stroke: var(--cc-sec-wire); stroke-width: 1.5; fill: none; }
+.sec .thin { stroke: var(--cc-sec-wire); stroke-width: 1; fill: none; opacity: 0.55; stroke-dasharray: 3 4; }
+.sec .net { fill: none; stroke: var(--cc-sec-wire); stroke-width: 1.2; }
+.sec .btl { fill: var(--cc-sec-pin-fg); }
+.sec .ros { fill: var(--cc-sec-pin-bg); stroke: var(--cc-sec-wire); stroke-width: 1.5; }
+.sec .sun { fill: var(--cc-sec-sun); opacity: 0.95; }
+.sec .surf { stroke: var(--cc-sec-surf); stroke-width: 2; }
+.sec .floor { fill: var(--cc-sec-floor); stroke: var(--cc-sec-floor-line); stroke-width: 1.2; stroke-linejoin: round; }
+.sec .lead { stroke: var(--cc-sec-pin-fg); stroke-width: 1; opacity: 0.6; fill: none; }
+.sec .cufes { stroke: var(--cc-sec-wire); stroke-width: 1.4; stroke-dasharray: 2 6; fill: none; }
+/* a pin is a real link: a disc in the pin tokens with the category's sprite glyph, hover inverts,
+   focus rings in the accent; a category with nothing in the release yet is drawn dashed */
+.sec .pin { cursor: pointer; }
+.sec .pin circle { fill: var(--cc-sec-pin-bg); stroke: var(--cc-sec-pin-fg); stroke-width: 2; transition: fill 0.15s; }
+.sec .pin use { fill: var(--cc-sec-pin-fg); color: var(--cc-sec-pin-fg); transition: fill 0.15s; }
+.sec .pin.held circle { stroke-dasharray: 3 3; }
+.sec .pin.held use { fill: var(--muted); color: var(--muted); }
+.sec .pin:hover circle, .sec .pin:focus-visible circle { fill: var(--cc-sec-pin-fg); }
+.sec .pin:hover use, .sec .pin:focus-visible use { fill: var(--cc-sec-pin-bg); color: var(--cc-sec-pin-bg); }
+.sec .pin:focus-visible { outline: none; }
+.sec .pin:focus-visible circle { stroke: var(--accent); stroke-width: 3; }
+/* motion (Decision 9): the rosette casts down the wire and back on a 26 s loop, the CUFES dots
+   flow — nothing else; both off under prefers-reduced-motion */
+.sec .rosette { animation: cc-cast 26s ease-in-out infinite; }
+@keyframes cc-cast { 0% { transform: translateY(-268px); } 42% { transform: translateY(0); } 56% { transform: translateY(0); } 96% { transform: translateY(-268px); } 100% { transform: translateY(-268px); } }
+.sec .cufes { animation: cc-flow 2.4s linear infinite; }
+@keyframes cc-flow { to { stroke-dashoffset: -16; } }
+@media (prefers-reduced-motion: reduce) {
+  .sec .rosette, .sec .cufes { animation: none; }
+  html { scroll-behavior: auto; }
+}
+/* below 980 px the sky is too short for the copy: it stacks above the drawing on the page ground */
+@media (max-width: 979px) {
+  .hero-copy { position: static; width: auto; max-width: none; padding: calc(var(--band-pad) * 0.8) 0 calc(var(--space) * 3); }
+  .hero-copy .cc-h1 { font-size: clamp(44px, 9vw, 72px); }
+  .hero-copy .hero-lede { font-size: 1.05em; max-width: 60ch; white-space: normal; }
+  .hero-copy .cc-btn { min-height: 42px; font-size: 15px; padding: 0.4em 1.5em; }
+  .hero-copy .cc-text-link { font-size: 0.8em; }
+  .hero-copy .cc-eyebrow { font-size: var(--fs-sm); white-space: normal; }
+}
+/* below 700 px the labels and gear captions hide (the pins and their <title>s stay); below 500 px
+   the axes' tick labels go too — the drawing scales as one unit, so the text would be unreadable */
+@media (max-width: 699px) { .sec .lab { display: none; } }
+@media (max-width: 499px) { .sec .ax, .sec .axt { display: none; } }
+
+/* ── the bento: ways in (plan § D-4), and the reach's two drawings (§ D-3) ──────────
+   A 6-column grid on 150 px rows between the hero and the catalog; a tile is a bordered panel
+   whose content sets its height, and no tile ends in a button — the one CTA is the hero's. Where
+   (2 × 3) is the grid map with the cruise sweep and the year odometer; When (4 × 2) is the years
+   strip. Two columns at ≤ 860 px, one at ≤ 640 px, and the rows go auto so nothing is clipped. */
+.bento-wrap { max-width: var(--container); margin: 0 auto; padding: calc(var(--space) * 3) calc(var(--space) * 3) calc(var(--space) * 4); }
+.bento { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); grid-auto-rows: 150px; gap: calc(var(--space) * 2); }
+.tile {
+  position: relative; display: flex; flex-direction: column; gap: 6px; min-width: 0; overflow: hidden;
+  padding: 14px 16px; border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--panel-2);
+}
+.tile .cc-eyebrow { font-size: 11.5px; }
+.tile .fill { flex: 1; min-height: 0; position: relative; }
+.tile .tile-cap { margin: 0; font-size: 12.5px; line-height: 1.3; color: var(--muted); }
+.tile .tile-more { margin-top: auto; font-size: 12.5px; align-self: flex-start; }
+.tile.t-map { grid-column: 1 / span 2; grid-row: 1 / span 3; }
+.tile.t-years { grid-column: 3 / span 4; grid-row: 1 / span 2; }
+.tile.t-rel { grid-column: 3 / span 2; grid-row: 3 / span 1; }
+.tile.t-log { grid-column: 5 / span 2; grid-row: 3 / span 2; }
+.tile.t-exp { grid-column: 1 / span 2; grid-row: 4 / span 2; padding: 0; }
+.tile.t-get { grid-column: 3 / span 2; grid-row: 4 / span 2; }
+.tile.t-life { grid-column: 5 / span 2; grid-row: 5 / span 1; }
+/* the numbers band (§ D-2): Teko numerals with uppercase labels on the Sand band */
+.numsband { padding: calc(var(--space) * 2.5) 0; }
+.nums { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: calc(var(--space) * 1.5); margin: 0 auto; }
+.nums > div { border-left: 2px solid var(--border); padding-left: 12px; min-width: 0; }
+.nums dd { margin: 0; font-family: var(--display); font-size: clamp(34px, 3.4vw, 50px); line-height: 0.95; font-weight: 500; color: var(--fg); font-variant-numeric: tabular-nums; }
+.nums dt { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* the release tile */
+.tile .tile-v { font: 700 22px var(--mono); color: var(--accent); }
+.tile .tile-dl { display: flex; flex-wrap: wrap; gap: 4px 18px; margin: 0; }
+.tile .tile-dl div { min-width: 0; }
+.tile .tile-dl dt { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.tile .tile-dl dd { margin: 0; font-family: var(--mono); font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tile .tile-links { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: auto 0 0; }
+.tile .tile-links .cc-text-link { font-size: 12.5px; }
+/* the Explore tile: the app's shot on top, as a card */
+.tile.t-exp .tile-shot { display: block; flex: none; height: 176px; overflow: hidden; border-bottom: 1px solid var(--border); background: var(--panel); }
+.tile.t-exp .tile-shot img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top; }
+.tile.t-exp .tile-body { display: flex; flex-direction: column; gap: 4px; flex: 1; padding: 12px 16px 14px; min-height: 0; }
+.tile .tile-h { margin: 0; font-size: 18px; font-weight: 700; line-height: 1.2; }
+.tile .tile-lenses { display: flex; gap: 8px; margin: 0; color: var(--muted); font-size: 18px; }
+/* the Get-the-data tile: radio tabs, no JS — the checked input's sibling <pre> shows */
+.tile-tabs { display: flex; flex-wrap: wrap; align-content: flex-start; align-items: flex-end; gap: 0 14px; position: relative; min-height: 0; flex: 1; }
+.tile-tabs input { position: absolute; width: 1px; height: 1px; margin: -1px; opacity: 0; }
+.tile-tabs label { padding: 2px 0 4px; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 700; color: var(--muted); border-bottom: 2px solid transparent; cursor: pointer; }
+.tile-tabs label:hover { color: var(--accent); }
+.tile-tabs input:checked + label { color: var(--accent); border-bottom-color: var(--accent); }
+.tile-tabs input:focus-visible + label { outline: 2px solid var(--accent); outline-offset: 2px; }
+.tile-tabs .tile-code { display: none; flex-basis: 100%; margin: 8px 0 0; font: 12.5px/1.5 var(--mono); background: var(--panel); border-radius: var(--radius); padding: 10px 12px; overflow: auto; white-space: pre; color: var(--fg); }
+#get-r:checked ~ [data-tab="get-r"], #get-py:checked ~ [data-tab="get-py"], #get-sql:checked ~ [data-tab="get-sql"],
+#get-erddap:checked ~ [data-tab="get-erddap"], #get-parquet:checked ~ [data-tab="get-parquet"] { display: block; }
+/* the ship's log (§ D-5): date · type · entry, on the tile and on /news/. The type chip is the accent
+   tint — never --warn (yellow marks a state that needs attention, not a kind of thing). */
+.log { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: max-content max-content minmax(0, 1fr); gap: 10px 12px; align-items: baseline; }
+.log-e { display: contents; }
+.log-d { font: 13px var(--mono); color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.log-t { font-size: 10.5px; }
+.log-b { min-width: 0; }
+.log-b b, .log-b .log-h { display: block; margin: 0; font-size: 16px; font-weight: 700; line-height: 1.3; font-family: var(--sans); text-transform: none; letter-spacing: 0; }
+.log-b b a, .log-b .log-h a { color: var(--fg); }
+.log-b b a:hover, .log-b .log-h a:hover { color: var(--accent); }
+.log-b span { display: block; font-size: 14px; color: var(--muted); line-height: 1.35; }
+.log-tile { gap: 5px 10px; overflow: hidden; min-height: 0; flex: 1; align-content: start; }
+.log-tile .log-b b { font-size: 13.5px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.log-tile .log-b span { font-size: 12px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; }
+.log-tile .log-d { font-size: 11.5px; }
+.log-tile .log-t { font-size: 9.5px; }
+/* the "new" dot: a 6 px accent disc on the header's News link while any log entry is under 30 days old */
+.newdot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); vertical-align: super; margin-left: 3px; }
+.cc-header .cc-links a .newdot { vertical-align: top; margin-top: -2px; }
+/* /news/: the filter chips are buttons */
+.log-filter { display: flex; flex-wrap: wrap; gap: 6px; margin: calc(var(--space) * 2) 0 calc(var(--space) * 3); }
+.log-filter .cc-chip { font-family: var(--sans); font-weight: 700; font-size: 12.5px; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer; border: 1px solid transparent; padding: 0.15em 0.8em; }
+.log-filter .cc-chip.cc-chip-quiet:hover { color: var(--accent); }
+.log-filter .cc-chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.log-filter .cc-chip .n { font-weight: 400; margin-left: 0.3em; }
+.news-page .blurb { max-width: 75ch; margin: 0 0 calc(var(--space) * 2); }
+.news-page .blurb .cc-text-link { margin-left: 0.5em; }
+.news-page .log { max-width: 88ch; }
+@media (max-width: 640px) {
+  .log { grid-template-columns: max-content minmax(0, 1fr); }
+  .log-e .log-t { grid-column: 2; justify-self: start; margin-top: -4px; }
+  .log-e .log-b { grid-column: 1 / -1; }
+}
+
+/* the Life tile */
+.tile .tile-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+.tile .tile-big { font-family: var(--display); font-size: 40px; line-height: 0.9; font-weight: 500; }
+.tile .tile-glyphs { display: inline-flex; gap: 8px; color: var(--accent); font-size: 24px; }
+.tile.t-map .fill svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+/* the odometer: Teko in the map's corner, aria-hidden; the caption carries the years as text */
+.odo { position: absolute; right: 14px; top: 34px; font-family: var(--display); font-size: 44px; line-height: 1; font-weight: 500; color: var(--fg); letter-spacing: 0.02em; font-variant-numeric: tabular-nums; pointer-events: none; }
+
+/* the map: the brand's --cc-map-* tokens, the stations by pattern, the sweep and its ripple */
+svg.map { display: block; width: 100%; height: auto; border-radius: var(--radius); }
+.map .water { fill: var(--cc-map-water); }
+.map .land { fill: var(--cc-map-land); stroke: var(--cc-map-coast); stroke-width: 0.6; stroke-linejoin: round; }
+.map .trk { fill: none; stroke: var(--cc-map-mark); stroke-width: 0.8; opacity: 0.55; }
+.map .trk.e { stroke-dasharray: 2 2; opacity: 0.4; }
+.map .st { cursor: pointer; }
+.map .st.h { fill: var(--cc-stone); opacity: 0.85; }
+.map .st.e { fill: none; stroke: var(--cc-map-mark); stroke-width: 1; }
+.map .st.s { fill: var(--cc-map-mark); transform-box: fill-box; transform-origin: center; animation: cc-sweep 12s linear infinite; animation-delay: var(--d); }
+.map .ring { fill: none; stroke: var(--cc-cyan); stroke-width: 1.4; opacity: 0; transform-box: fill-box; transform-origin: center; animation: cc-ripple 12s linear infinite; animation-delay: var(--d); }
+@keyframes cc-sweep { 0%, 9% { transform: scale(1); } 2% { transform: scale(1.9); } }
+@keyframes cc-ripple { 0% { opacity: 0.9; transform: scale(1); } 7% { opacity: 0; transform: scale(6); } 100% { opacity: 0; transform: scale(6); } }
+.map .plc { font: 10px var(--sans); fill: var(--muted); }
+.map .plcd { fill: var(--muted); }
+.map .ln { font: 9px var(--mono); fill: var(--cc-map-mark); }
+.map .key { font: 10px var(--sans); fill: var(--muted); }
+
+/* the years strip */
+svg.strip { display: block; width: 100%; height: auto; }
+.strip .rl { font: 11px var(--mono); fill: var(--fg); }
+.strip .rowlink:hover .rl, .strip .rowlink:focus-visible .rl { fill: var(--accent); text-decoration: underline; }
+.strip .rowlink:focus-visible { outline: none; }
+.strip .dl { font: 10px var(--mono); fill: var(--muted); }
+.strip .dt { stroke: var(--fg); opacity: 0.1; }
+.strip .bar { fill: var(--accent); opacity: 0.55; }
+.strip .ass { fill-opacity: 0.22; stroke-dasharray: 3 2; stroke-width: 1; }
+.strip .sum { font: 10px var(--sans); fill: var(--muted); }
+.strip .now { stroke: var(--accent); stroke-width: 1; }
+@media (prefers-reduced-motion: reduce) {
+  .map .st.s, .map .ring { animation: none; }
+  .map .ring { opacity: 0; }
+}
+@media (max-width: 860px) {
+  .nums { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .bento { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: auto; }
+  .tile { grid-column: auto / span 2 !important; grid-row: auto !important; }
+  .tile.t-map .fill { min-height: 420px; }
+  .tile.t-years .fill { min-height: 0; }
+}
+@media (max-width: 640px) {
+  .nums { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .bento { grid-template-columns: minmax(0, 1fr); }
+  .tile { grid-column: auto / span 1 !important; }
+  .tile.t-map .fill { min-height: 360px; }
+  .odo { font-size: 34px; top: 30px; right: 10px; }
+  /* the strip is 1000 units wide: on a phone it scrolls inside its tile at a readable size rather
+     than shrinking to 3 px type (the page body never scrolls sideways) */
+  .tile.t-years .fill { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .tile.t-years svg.strip { min-width: 680px; }
+}
 
 /* ── section nav: the SIO uppercase tab row under the hero ────────────────
    Moved into the brand contract as `.cc-tabs` (theme.css, additions 2026-09-05) so the dataset
@@ -133,8 +344,7 @@ main#panel { width: 100%; }
 
 @media (max-width: 640px) {
   :root { --band-pad: 28px; }
-  .hero { padding-top: 32px; padding-bottom: 32px; }
-  .hero .cc-h1 { font-size: clamp(40px, 12vw, 56px); }
+  .hero-copy .cc-h1 { font-size: clamp(40px, 12vw, 56px); }
   .section-tabs .cc-container { gap: 0 calc(var(--space) * 2); }
   .section-tabs a { font-size: 13px; padding: 10px 0; }
   .card-grid, .card-grid.featured-grid { grid-template-columns: 1fr; }

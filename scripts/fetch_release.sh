@@ -9,8 +9,9 @@
 #   _data/coverage_stations.json  which grid cells each dataset actually sampled, and how much
 #                                 (~470 KB; read at BUILD time to draw the map's filled marks —
 #                                 never shipped to the browser)
+#   _data/release_catalog.json    the release's own catalog.json (the taxa count on the front door)
 #
-# All four are git-ignored: the site is a rendering of the promoted release, never a copy of it.
+# All five are git-ignored: the site is a rendering of the promoted release, never a copy of it.
 # `_data/land.geojson` is NOT here: the coastline is cartography, not a dataset fact, so it is a
 # committed asset built once by scripts/build_land.py.
 #
@@ -72,9 +73,40 @@ get "$record_dir/grid.geojson" "$DATA/grid.geojson" ||
 get "$record_dir/coverage_stations.json" "$DATA/coverage_stations.json" ||
   echo "WARN: no coverage_stations.json beside the record — the maps will draw the grid but not the sampled stations" >&2
 
+# the release's own catalog (calcofi4db freeze_plan(): every table with its rows, bytes and objects) —
+# the landing page's `taxa` number is tables[name == taxon].rows, which the record does not carry.
+# Optional: an older promoted release may have none, and the page then draws no taxa tile (plan
+# 2026-09-07 § D-2: a number the build cannot read is not rendered, never typed). Named
+# release_catalog.json, not catalog.json, because Jekyll would load _data/catalog.json as
+# site.data.catalog — the very key _plugins/datasets.rb builds.
+get "$record_dir/catalog.json" "$DATA/release_catalog.json" ||
+  echo "NOTE: no catalog.json beside the record — the front door draws no taxa count" >&2
+
 # versions.json is release-history, kept at the prefix root, never inside a version folder
 get "$RELEASE_BASE/versions.json" "$DATA/versions.json" ||
   echo "WARN: no versions.json at $RELEASE_BASE — the release strip will show this release only" >&2
+
+# each promoted version's RELEASE_NOTES.md first `##` heading, for the ship's log's release entries
+# (plan 2026-09-07 § D-5) — optional, one small GET per version, a version with no notes gets none
+python3 - "$DATA/versions.json" "$RELEASE_BASE" "$DATA/release_headings.json" <<'PY2' || echo "NOTE: release headings not fetched — the log names releases by version alone" >&2
+import json, re, sys, urllib.request
+vpath, base, out = sys.argv[1:4]
+try:
+    versions = [v["version"] for v in json.load(open(vpath)).get("versions", []) if v.get("version")]
+except Exception:
+    versions = []
+heads = {}
+for v in versions[:40]:
+    try:
+        with urllib.request.urlopen(f"{base}/{v}/RELEASE_NOTES.md", timeout=10) as r:
+            for line in r.read().decode("utf-8", "replace").splitlines():
+                if line.startswith("## "):
+                    heads[v] = re.sub(r"[`*]", "", line[3:]).strip(); break
+    except Exception:
+        pass
+json.dump(heads, open(out, "w"), indent=1, ensure_ascii=False)
+print(f"release headings: {len(heads)} of {len(versions)} versions")
+PY2
 
 python3 - "$DATA/datasets.json" "$source_kind" "$record_url" <<'PY'
 import json, sys

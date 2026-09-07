@@ -367,3 +367,53 @@
 .cc-map .st-on { fill: var(--cc-map-mark); stroke: var(--bg); stroke-width: 0.6; opacity: 0.9; }
 .cc-map .bbox  { fill: none; stroke: var(--cc-map-mark); stroke-width: 1; stroke-dasharray: 3 2; }
 .cc-map .tk    { font: 9.5px var(--sans); fill: var(--muted); }
+
+/* ── additions, 2026-09-07 (the landing page's section drawing) ──────────────────
+   Additive only: the tokens an inline SVG oceanographic section is painted with — the sky, the
+   surface, a five-stop water ramp, the sea floor, the ship and its wires, the pins and their labels
+   — so a theme toggle repaints the whole drawing with no JS, and the Explorer's Sections lens and
+   ctd-transects can share the same water ramp later. Nothing above this line changed. Plan:
+   workflows/.claude/plans/2026-09-07 CalCOFI.io landing re-cut … § D-7, Decision 5.
+   Named --cc-sec-* like the --cc-map-* set, so nothing a product already defines can collide. */
+:root {
+  --cc-sec-sky0:       #ffffff;   /* the sky, top (= --bg) */
+  --cc-sec-sky1:       #e6eef4;   /* the sky at the horizon (= --cc-map-water) */
+  --cc-sec-surf:       #00c6d7;   /* the sea surface line (= --cc-cyan) */
+  --cc-sec-w0:         #dcedf5;   /* water, 0 m — the ramp runs pale cyan to navy at offsets 0 · .18 · .45 · .7 · 1 */
+  --cc-sec-w1:         #a9d4e6;
+  --cc-sec-w2:         #4d8fb8;
+  --cc-sec-w3:         #1f5f8f;
+  --cc-sec-w4:         #182b49;   /* the deep (= --cc-navy) */
+  --cc-sec-floor:      #f5f0e6;   /* the sea floor and the headland (= --cc-sand) */
+  --cc-sec-floor-line: #b6b1a9;   /* its stroke (= --cc-stone) */
+  --cc-sec-ship:       #182b49;   /* the ship's silhouette (= --cc-navy) */
+  --cc-sec-wire:       #182b49;   /* wires, nets, the mast, the axes' rosette */
+  --cc-sec-sun:        #c69214;   /* the sun (= --cc-gold); the moon in dark */
+  --cc-sec-pin-bg:     #ffffff;   /* a category pin's disc … */
+  --cc-sec-pin-fg:     #00629b;   /* … and its ring and glyph (= --accent): 6.5:1 on the disc */
+  --cc-sec-lab:        #182b49;   /* a label in the shallows (0–420 drawing units) … */
+  --cc-sec-halo:       rgba(255, 255, 255, 0.85);   /* … on a paint-order halo: 11.9:1 on --cc-sec-w0, and the halo carries it over --cc-sec-w2 */
+  --cc-sec-lab-d:      #ffffff;   /* a label in the deep … */
+  --cc-sec-halo-d:     rgba(24, 43, 73, 0.55);      /* … 6.4:1 on --cc-sec-w3, 14.2:1 on --cc-sec-w4 */
+}
+:root[data-theme="dark"] {
+  --cc-sec-sky0:       #0f1a2e;   /* = --bg */
+  --cc-sec-sky1:       #182b49;   /* = --panel */
+  --cc-sec-surf:       #4fb6e6;   /* = --accent: the cyan does not read on navy */
+  --cc-sec-w0:         #2a5a82;
+  --cc-sec-w1:         #1e4666;
+  --cc-sec-w2:         #16324c;
+  --cc-sec-w3:         #10223a;
+  --cc-sec-w4:         #0b1524;
+  --cc-sec-floor:      #21375c;   /* = --panel-2 */
+  --cc-sec-floor-line: #34486b;   /* = --border */
+  --cc-sec-ship:       #e9edf3;   /* = --fg */
+  --cc-sec-wire:       #e9edf3;
+  --cc-sec-sun:        #e9edf3;   /* the moon */
+  --cc-sec-pin-bg:     #182b49;
+  --cc-sec-pin-fg:     #4fb6e6;   /* 5.9:1 on the disc */
+  --cc-sec-lab:        #e9edf3;   /* 6.6:1 on --cc-sec-w0 */
+  --cc-sec-halo:       rgba(15, 26, 46, 0.65);
+  --cc-sec-lab-d:      #e9edf3;   /* 14.5:1 on --cc-sec-w3 */
+  --cc-sec-halo-d:     rgba(15, 26, 46, 0.65);
+}

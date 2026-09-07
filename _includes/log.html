@@ -1,0 +1,38 @@
+{%- comment -%}
+  The ship's log — one include for the bento tile and /news/ (plan 2026-09-07 § D-5).
+  include params:
+    n       how many entries (the tile shows 4; omit for all)
+    filter  true — render the type chips above the list (assets/news.js hides and shows rows with
+            el.hidden, so the [hidden] rule at the top of style.css is what makes it work)
+  Entries are site.data.log, merged and sorted by _plugins/news.rb. A type is a quiet chip in the
+  accent tint — never --warn: yellow marks a state that needs attention, not a kind of thing.
+{%- endcomment -%}
+{%- assign log = site.data.log -%}
+{%- if include.n -%}{%- assign log = log | slice: 0, include.n -%}{%- endif -%}
+{%- if include.filter -%}
+<div class="log-filter" id="log-filter" role="group" aria-label="Filter the log by kind">
+  <button type="button" class="cc-chip cc-chip-accent on" data-f="all" aria-pressed="true">all</button>
+  {%- assign types = "release,dataset,app,data,site,paper" | split: "," -%}
+  {%- for t in types -%}
+  {%- assign n = site.data.log | where: "type", t | size -%}
+  {%- if n > 0 -%}
+  <button type="button" class="cc-chip cc-chip-quiet" data-f="{{ t }}" aria-pressed="false">{{ t }} <span class="n">{{ n }}</span></button>
+  {%- endif -%}
+  {%- endfor -%}
+</div>
+{%- endif -%}
+<ol class="log{% if include.n %} log-tile{% endif %}" id="{% if include.filter %}log-all{% else %}log-latest{% endif %}">
+  {%- for e in log -%}
+  <li class="log-e" data-t="{{ e.type | escape }}">
+    <time class="log-d" datetime="{{ e.date | escape }}">{% if include.n %}{{ e.date | slice: 5, 5 }}{% else %}{{ e.date | escape }}{% endif %}</time>
+    <span class="log-t cc-chip cc-chip-accent">{{ e.type | escape }}</span>
+    <div class="log-b">
+      {%- comment -%} on /news/ the title is an h3 under the page's h2; on the tile a plain bold line {%- endcomment -%}
+      {%- if include.filter %}<h3 class="log-h">{% else %}<b>{% endif -%}
+      {%- if e.url %}<a href="{{ e.url }}">{{ e.title | escape }}</a>{% else %}{{ e.title | escape }}{% endif -%}
+      {%- if include.filter %}</h3>{% else %}</b>{% endif %}
+      {%- if e.body and e.body != "" %}<span>{{ e.body | escape }}</span>{% endif -%}
+    </div>
+  </li>
+  {%- endfor -%}
+</ol>

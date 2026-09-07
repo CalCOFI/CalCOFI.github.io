@@ -78,6 +78,20 @@ erddap:
 
 # ── calcofi.io's own pages (not products; see the note at the top) ────────────
 pages:
+  home:
+    url: https://calcofi.io/
+    height: 750           # the front door: the section drawing and the copy over its sky
+    wait: 6000            # the drawing is built at load; six seconds lets the fonts and the sweep settle
+    # the two animations and the sweep are stopped and the odometer is set to its static range, so the
+    # card is deterministic — the same frame every capture (plan 2026-09-07 § Risks)
+    javascript: |-
+      (async () => {
+        document.querySelectorAll('.sec .rosette, .sec .cufes, .map .st.s, .map .ring').forEach(e => { e.style.animation = 'none'; });
+        document.querySelectorAll('.map .ring').forEach(e => { e.style.opacity = '0'; });
+        const r = JSON.parse(document.getElementById('reach').textContent);
+        document.querySelectorAll('.odo-n').forEach(o => { o.textContent = r.numbers.since + ' – ' + String(r.release.date).slice(0, 4); });
+        await new Promise(res => setTimeout(res, 500));
+      })()
   datasets:
     url: https://calcofi.io/datasets/
     height: 1400          # the grid packs to ~2,100 px; 1,400 shows the release strip and four tiles

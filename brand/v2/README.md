@@ -70,6 +70,12 @@ sizes (the specimen computes every pair; this table is 2026-08-30's run).
 | `--cc-navy --cc-blue --cc-yellow --cc-gold --cc-cyan --cc-sand --cc-gray --cc-stone` | constants | constants | the palette by name, for a product's own use |
 | `--ok-bg` / `--warn-bg` / `--na-bg` / `--nogo-bg` / `--accent-bg` | `#eef5e9` `#fff6dc` `#ececec` `#fbe9e7` `#e3eef6` | `#1e3a22` `#3a2d0a` `#25344f` `#4a1f1f` `#12314a` | **added 2026-09** — the status chip's tint; the text stays `--cc-green` / `--warn` / `--muted` / `--cc-red` / `--accent`, ≥ 4.66:1 in both themes |
 | `--cc-map-water` / `--cc-map-land` / `--cc-map-coast` / `--cc-map-grid` / `--cc-map-mark` | `#e6eef4` `#f5f0e6` `#66686a` `#66686a` `#00629b` | `#0f1a2e` `#21375c` `#9fb0c8` `#9fb0c8` `#4fb6e6` | **added 2026-09** — a static SVG map's parts (`.cc-map`); marks on water 5.6:1 light / 7.6:1 dark |
+| `--cc-sec-sky0` / `--cc-sec-sky1` / `--cc-sec-surf` | `#ffffff` `#e6eef4` `#00c6d7` | `#0f1a2e` `#182b49` `#4fb6e6` | **added 2026-09-07** — a section drawing's sky (top → horizon) and the sea-surface line |
+| `--cc-sec-w0` … `--cc-sec-w4` | `#dcedf5` `#a9d4e6` `#4d8fb8` `#1f5f8f` `#182b49` | `#2a5a82` `#1e4666` `#16324c` `#10223a` `#0b1524` | **added 2026-09-07** — the water ramp, pale cyan to navy, at gradient offsets 0 · .18 · .45 · .7 · 1 |
+| `--cc-sec-floor` / `--cc-sec-floor-line` | `#f5f0e6` `#b6b1a9` | `#21375c` `#34486b` | **added 2026-09-07** — the sea floor (Sand / the dark panel) and its stroke |
+| `--cc-sec-ship` / `--cc-sec-wire` / `--cc-sec-sun` | `#182b49` `#182b49` `#c69214` | `#e9edf3` `#e9edf3` `#e9edf3` | **added 2026-09-07** — the ship's silhouette, its wires and nets, the sun (a moon in dark) |
+| `--cc-sec-pin-bg` / `--cc-sec-pin-fg` | `#ffffff` `#00629b` | `#182b49` `#4fb6e6` | **added 2026-09-07** — a category pin's disc and its ring + glyph; 6.5:1 light, 5.9:1 dark |
+| `--cc-sec-lab` / `--cc-sec-halo` · `--cc-sec-lab-d` / `--cc-sec-halo-d` | `#182b49` / `rgba(255,255,255,.85)` · `#ffffff` / `rgba(24,43,73,.55)` | `#e9edf3` / `rgba(15,26,46,.65)` · same | **added 2026-09-07** — a label in the shallows and in the deep, each on a `paint-order: stroke` halo so it reads across the ramp (lab 11.9:1 on w0, lab-d 6.4:1 on w3 light; 6.6:1 and 14.5:1 dark) |
 | `--sans` / `--display` / `--mono` | Source Sans 3 stack / Teko stack / as v1 | | |
 | scale: `--fs --lh --fs-sm --nav-fs --space --band-pad --header-h --lockup-h --container --radius --radius-card` | 18px 1.44 14px 15px 8px 40px 72px 36px 1170px 8px 12px | | `[data-cc-scale="app"]`: 13px 1.35 11.5px 13px 4px 0 44px 28px 100% 4px 6px |
 
@@ -229,8 +235,23 @@ default in a fresh context, the fonts loaded (`document.fonts.check('16px "Sourc
 `<img>` and `data-cc-scale` on `app.calcofi.io/*`. The specimen prints its own contrast table and its
 font-load result (`window.__contrast`, `window.__fonts`).
 
+## Additions, 2026-09-07
+
+The landing page's front door is an inline SVG oceanographic section of Line 90 — the ship, its gear
+drawn to depth, the life it samples, thirteen category pins — and it is painted with tokens alone,
+so the toggle repaints it and no script listens for `cc:theme`. v2 grew **additively** again: eighteen
+`--cc-sec-*` tokens (named like the `--cc-map-*` set so nothing a product already defines can
+collide), both themes, listed in the table above and drawn in the specimen. No existing token, class
+or rule changed. The plan is `workflows/.claude/plans/2026-09-07 CalCOFI.io landing re-cut …` (§ D-7,
+Decision 5); the drawing itself is `CalCOFI.github.io/assets/section.js`, and the Explorer's Sections
+lens and ctd-transects may take the water ramp from here when they next touch their colour scales.
+
 ## Changes within v2
 
+- **2026-09-07 — additive.** The section-drawing tokens `--cc-sec-sky0/-sky1/-surf`,
+  `--cc-sec-w0…w4`, `--cc-sec-floor/-floor-line`, `--cc-sec-ship/-wire/-sun`, `--cc-sec-pin-bg/-pin-fg`,
+  `--cc-sec-lab/-halo/-lab-d/-halo-d` — see **Additions, 2026-09-07**. Zero lines deleted from
+  `theme.css`; the specimen's contrast table grew by four pairs.
 - **2026-09-05 — additive.** Status chips (`.cc-chip-ok/-warn/-na/-nogo/-accent` over `--ok-bg` …
   `--accent-bg`), `.cc-chip-quiet`, `.cc-tabs`, `.cc-copy`, `.cc-map` + `--cc-map-*`, and the `ui-copy` /
   `ui-external` glyphs — see **Additions, 2026-09-05** above. Zero lines deleted from `theme.css`; the
