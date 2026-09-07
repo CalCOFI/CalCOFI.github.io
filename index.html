@@ -42,6 +42,36 @@ layout: default
 </section>
 <script defer src="{{ '/assets/section.js' | relative_url }}"></script>
 
+{%- comment -%}
+  The bento (plan § D-4): a 6-column grid of ways in, between the hero and the catalog. Where and
+  When (§ D-3) are the record's own reach — the grid map with a cruise sweep and a year odometer,
+  and the years strip — drawn by assets/reach.js from #reach. No tile ends in a button: the one CTA
+  is in the hero; every tile ends in an uppercase text link.
+{%- endcomment -%}
+<section class="bento-wrap" aria-label="Ways in">
+  <div class="bento">
+    <div class="tile t-map">
+      <div class="cc-eyebrow">Where{% if nums.stations %} · {{ nums.stations }} stations{% endif %}</div>
+      <div class="fill" id="map-host" data-href="https://app.calcofi.io/station/"></div>
+      <div class="odo" aria-hidden="true"><span class="odo-n">{{ nums.since }}</span></div>
+      <p class="tile-cap">
+        {%- if nums.stations %}{{ nums.stations }} grid cells{% endif -%}
+        {%- if nums.grid.standard %} · {{ nums.grid.standard }} standard{% endif -%}
+        {%- if nums.grid.extended %} · {{ nums.grid.extended }} extended{% endif -%}
+        {%- if nums.grid.historical %} · {{ nums.grid.historical }} historical{% endif -%}
+        {%- if nums.since %} · occupied {{ nums.since }} – {{ nums.date | slice: 0, 4 }}{% endif -%}
+      </p>
+      <a class="cc-text-link tile-more" href="https://app.calcofi.io/station/">Open the Station Explorer →</a>
+    </div>
+    <div class="tile t-years">
+      <div class="cc-eyebrow">When · {{ site.data.catalog.counts.datasets }} datasets · {{ nums.since }} → {{ nums.date | slice: 0, 4 }}</div>
+      <div class="fill" id="strip-host"></div>
+      <a class="cc-text-link tile-more" href="https://calcofi.io/explore/">Explore by dataset →</a>
+    </div>
+  </div>
+</section>
+<script defer src="{{ '/assets/reach.js' | relative_url }}"></script>
+
 <nav class="cc-tabs section-tabs" aria-label="Sections">
   <div class="cc-container">
     {%- for s in data.sections -%}
