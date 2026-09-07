@@ -260,6 +260,86 @@ module CalCOFI
       end
     end
 
+    # ── the front door's reach (plan 2026-09-07 § D-2, D-3) ─────────────────────
+    # One inline JSON for the section drawing, the map and the years strip (index.html writes it
+    # once as <script type="application/json" id="reach">), so the browser fetches nothing — not
+    # grid.geojson (407 KB) — and the record stays the only source. Everything here is the record,
+    # the release's own catalog, or committed cartography; a number the build cannot read is nil
+    # and the page draws no tile for it, never a typed value.
+    def reach
+      @reach ||= begin
+        pat = { "standard" => "s", "extended" => "e", "historical" => "h" }
+        {
+          "release"    => { "version" => release["version"], "date" => release["release_date"] },
+          "numbers"    => numbers,
+          # the 218 cells: k key · l line · s station · p pattern · x lon · y lat (2 decimals: 1 km)
+          "stations"   => @grid.map do |g|
+            { "k" => g["key"], "l" => g["line"], "s" => g["station"], "p" => pat[g["pattern"]] || "h",
+              "x" => g["lon"].round(2), "y" => g["lat"].round(2) }
+          end,
+          # the coastline rings (_data/land.geojson, committed cartography), 2 decimals
+          "land"       => @land.map { |ring| ring.map { |lon, lat| [lon.round(2), lat.round(2)] } },
+          # one row per dataset in the release: its measured years (observed_coverage()), or the
+          # asserted `temporal` string where the data cannot be measured by year (region-pooled
+          # phytoplankton; samples-only PIC tows) — the strip hatches those and says so
+          "datasets"   => datasets.map do |d|
+            cov = d["coverage"] || {}
+            { "key"      => d["dataset_key"],
+              "name"     => d["dataset_name_short"] || d["dataset_name"] || d["dataset_key"],
+              "url"      => page_url(d),
+              "color"    => dot_color(d),
+              "temporal" => Fmt.present(cov["temporal"]),
+              "ymin"     => cov["year_min"], "ymax" => cov["year_max"],
+              "years"    => (cov["years"] || []).map { |y| [y["year"], y["n_roots"], y["n_obs"]] } }
+          end,
+          # the categories in category.order with the release's counts — the drawing's pins read
+          # their name, realm and counts from here (the calcofi.org method URLs are constants in
+          # assets/section.js, one per glyph)
+          "categories" => categories.map do |c|
+            { "icon" => c["icon"], "name" => c["name"], "realm" => c["realm"], "order" => c["order"],
+              "n" => c["n"], "held" => c["holdings"].size, "contrib" => c["contributions"].size }
+          end,
+          # the sea floor under Line 90 — _data/line90_floor.json, committed cartography built by
+          # scripts/build_line90_floor.R from GEBCO 2025 at 500 m; nil if absent, and the drawing
+          # then falls back to its drawn profile and marks it so
+          "floor"      => @site.data["line90_floor"]
+        }
+      end
+    end
+
+    # The six numbers of the band under the hero (plan § D-2), every one read here:
+    #   years     the release year minus the earliest measured year_min over datasets[]
+    #   cruises · ships · stations   reference[].rows for cruise · ship · grid
+    #   taxa      the release's own catalog.json (tables[name == taxon].rows), fetched by
+    #             fetch_release.sh into _data/release_catalog.json when the release carries one
+    #   rows      release.total_rows, with release.version
+    # A value the build cannot read is nil: the tile collapses rather than rendering a typed number.
+    def numbers
+      @numbers ||= begin
+        ref   = ->(k) { reference.find { |r| r["key"] == k }&.dig("rows") }
+        ymins = datasets.filter_map { |d| d.dig("coverage", "year_min") }
+        ryear = release["release_date"].to_s[0, 4].to_i
+        cat   = @site.data["release_catalog"]
+        taxa  = cat.is_a?(Hash) ? (cat["tables"] || []).find { |t| t["name"] == "taxon" }&.dig("rows") : nil
+        byp   = @grid.group_by { |g| g["pattern"] }.transform_values(&:size)
+        {
+          "years"    => (ryear.positive? && ymins.any?) ? ryear - ymins.min : nil,
+          "since"    => ymins.min,
+          "cruises"  => ref.("cruise"),
+          "ships"    => ref.("ship"),
+          "stations" => ref.("grid"),
+          "grid"     => { "standard" => byp["standard"], "extended" => byp["extended"], "historical" => byp["historical"] },
+          "taxa"     => taxa,
+          "rows"     => release["total_rows"],
+          "rows_m"   => release["total_rows"] ? (release["total_rows"] / 1_000_000.0).round : nil,
+          "tables"   => release["n_tables"],
+          "version"  => release["version"],
+          "date"     => release["release_date"],
+          "doi"      => Fmt.present(release["doi"])
+        }
+      end
+    end
+
     # ── the filter row's options: only values that actually occur ────────────
     def facets
       @facets ||= {
@@ -1513,8 +1593,12 @@ module CalCOFI
              "url"  => cat.page_url(r) }]
         end,
         "versions"   => (site.data.dig("versions", "versions") || []),
-        "contact"    => cat.contact
+        "contact"    => cat.contact,
+        # the front door's numbers band (plan 2026-09-07 § D-2); every value read, none typed
+        "numbers"    => cat.numbers
       }
+      # the inline JSON the front door's drawing, map and years strip read (§ D-3)
+      site.data["reach"] = cat.reach
 
       pages = []
       cat.records.each do |r|
@@ -1552,7 +1636,10 @@ module CalCOFI
         p = f["properties"]
         next unless p["lon_ctr"] && p["lat_ctr"]
         { "key" => p["grid_key"], "lon" => p["lon_ctr"], "lat" => p["lat_ctr"],
-          "pattern" => p["pattern"] }
+          "pattern" => p["pattern"],
+          # line and station: the front door's section drawing takes its station axis from the
+          # line-90 standard cells, and the map draws each line as a polyline (plan 2026-09-07)
+          "line" => p["line"], "station" => p["station"] }
       end
     rescue StandardError => e
       Jekyll.logger.warn "datasets:", "could not read _data/grid.geojson (#{e.message})"

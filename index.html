@@ -4,34 +4,43 @@ layout: default
 {%- assign data = site.data.products -%}
 
 {%- comment -%}
-  The landing page, re-cut around Datasets (plan D-3, Decision 3). The SIO page rhythm is unchanged —
-  a Sand hero with the display heading and one yellow CTA, the section nav as an uppercase tab row,
-  sections on alternating white / Sand bands, .cc-card cards — but the FIRST section is now the
-  dataset catalog: the release strip, then the category tiles built from the release record by
-  _plugins/datasets.rb. The products follow as Explore / Access / Build / Students, each card
-  carrying the datasets it covers.
+  The landing page (plan 2026-09-07, the landing re-cut). The first screen SHOWS what CalCOFI does
+  and how far the data reach — Line 90 as an oceanographic section drawn by assets/section.js from
+  the brand sprite and the release record (the ship, its gear to depth, one pin per category), with
+  the copy and the one yellow CTA as HTML over the sky. Then the catalog as before — the release
+  strip and the category tiles built from the release record by _plugins/datasets.rb — and the
+  products as Explore / Access / Build / Students, each card carrying the datasets it covers.
+  Every number on the first screen is read at build (site.data.catalog.numbers, site.data.reach);
+  none is typed.
 {%- endcomment -%}
+{%- assign nums = site.data.catalog.numbers -%}
 
-<section class="hero cc-band cc-band-alt">
-  <div class="cc-container">
-    <div class="cc-eyebrow">Since 1949 · the California Current · one of the longest-running ocean observing programs anywhere</div>
+{%- comment -%}
+  The reach: one inline JSON (≈ 40 KB) the drawing, the map and the years strip read — the 218 grid
+  cells, the coastline rings, every dataset's measured years, the categories with their counts, the
+  Line 90 sea floor and the six numbers. Built by _plugins/datasets.rb; no HTTP request, no
+  grid.geojson in the browser.
+{%- endcomment -%}
+<script type="application/json" id="reach">{{ site.data.reach | jsonify }}</script>
+
+<section class="hero-sec" aria-label="CalCOFI, from ship to screen">
+  <div class="hero-copy">
+    <div class="cc-eyebrow">Since {{ nums.since }} · the California Current
+      {%- if nums.cruises %} · {{ nums.cruises }} cruises{% endif -%}
+      {%- if nums.ships %} · {{ nums.ships }} ships{% endif -%}
+      {%- if nums.stations %} · one grid{% endif -%}
+    </div>
     <h1 class="cc-h1">From ship to screen</h1>
-    <p class="hero-lede cc-lede cc-prose">
-      <a href="https://calcofi.org">CalCOFI</a> cruises have sampled the California Current for
-      seventy-five years. CalCOFI.io turns those observations into an open data ecosystem:
-      reproducible workflows load each dataset into a versioned integrated database, which powers
-      interactive apps, a browser SQL playground, standards-based services and scientific
-      programming packages in R and Python — for scientists, resource managers, students and the
-      curious.
-    </p>
-    <p class="hero-pipeline">ship → workflows → database → datasets → apps · services · R · Python · portals</p>
+    <p class="hero-lede">Temperature to whales, surface to the deep, since {{ nums.since }} — open and integrated.</p>
     <p class="hero-actions">
-      <a class="cc-btn cc-btn-cta" href="#datasets">Browse the datasets</a>
-      <a class="cc-text-link" href="https://calcofi.io/explore/">Explore the data</a>
+      <a class="cc-btn cc-btn-cta" href="https://calcofi.io/explore/">Explore the data</a>
+      <a class="cc-text-link" href="#datasets">Browse the datasets</a>
       <a class="cc-text-link" href="#build">Build on it</a>
     </p>
   </div>
+  <div class="hero-drawing" id="sec-host" data-sprite="{{ '/brand/v2/icons/calcofi-icons.svg' | relative_url }}"></div>
 </section>
+<script defer src="{{ '/assets/section.js' | relative_url }}"></script>
 
 <nav class="cc-tabs section-tabs" aria-label="Sections">
   <div class="cc-container">

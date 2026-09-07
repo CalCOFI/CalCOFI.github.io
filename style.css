@@ -33,17 +33,82 @@ code, .mono { font-family: var(--mono); font-size: 0.9em; }
 #layout { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr auto auto; min-height: 100vh; }
 main#panel { width: 100%; }
 
-/* ── hero: the Sand band, the display heading, one yellow CTA ───────────── */
+/* ── hero: the section (plan 2026-09-07 § D-1) ─────────────────────────────────
+   Line 90 as an oceanographic section, drawn at page load by assets/section.js into #sec-host as
+   one <svg viewBox="0 0 1400 660"> that is `width: 100%; height: auto`, so it scales as one unit and
+   the mockup's positions hold at any width. The copy — eyebrow, the Teko h1, the one-line lede, the
+   one yellow CTA and two text links — is HTML, absolutely positioned over the SKY (the top 30 % of
+   the drawing) at ≥ 980 px so it wraps, sizes with the drawing (cqw) and stays selectable; below
+   that it stacks above the drawing. The drawing is tokens only (--cc-sec-*), so the toggle repaints
+   it with no JS. The old Sand hero and its dead `.hero.has-photo` hook went with the re-cut. */
+.hero-sec { position: relative; container-type: inline-size; max-width: var(--container); margin: 0 auto; padding: 0 calc(var(--space) * 3); }
+.hero-drawing { position: relative; }
+.hero-drawing svg.sec { display: block; width: 100%; height: auto; font-family: var(--sans); border-radius: var(--radius-card) var(--radius-card) 0 0; }
+/* the copy: over the sky, left edge at the drawing's x = 90 (6.4 % of the container, past the section's own padding); everything sized from the
+   container so it keeps its place in the sky as the drawing scales (measured at 1170 px: the copy
+   ends 9 px above the surface line; see check_layout.py's hero assertion) */
+.hero-copy { position: absolute; z-index: 2; left: calc(var(--space) * 3 + 6.4cqw); top: 1.2cqw; width: 64cqw; max-width: 760px; }
+.hero-copy .cc-eyebrow { font-size: max(11.5px, 0.95cqw); margin-bottom: 0.15em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hero-copy .cc-h1 { font-size: 4.6cqw; line-height: 0.92; margin: 0 0 0.06em; letter-spacing: 0.01em; }
+.hero-copy .hero-lede { margin: 0 0 0.4em; font-size: max(13px, 1.2cqw); line-height: 1.3; white-space: nowrap; }
+.hero-copy .hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6em 1.3em; margin: 0; }
+.hero-copy .cc-btn { min-height: max(30px, 3cqw); min-width: 0; padding: 0.3em 1em; font-size: max(12px, 1.1cqw); }
+.hero-copy .cc-text-link { font-size: max(11.5px, 1cqw); }
 
-.hero { padding-top: calc(var(--band-pad) * 1.5); padding-bottom: calc(var(--band-pad) * 1.5); }
-.hero .cc-eyebrow { margin-bottom: calc(var(--space) * 2); }
-.hero .cc-h1 { font-size: clamp(48px, 7vw, 80px); margin-bottom: 0.25em; }
-.hero .hero-lede { margin: 0 0 calc(var(--space) * 2); }
-.hero .hero-pipeline { margin: 0 0 calc(var(--space) * 3); font-family: var(--mono); font-size: var(--fs-sm); color: var(--muted); }
-.hero .hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--space) * 3); margin: 0; }
-/* designed to take calcofi.org's imagery once the SIO team shares it (Decision 8): */
-.hero.has-photo { background: var(--band) url() center / cover no-repeat; }
-.hero.has-photo, .hero.has-photo .cc-eyebrow, .hero.has-photo .cc-h1, .hero.has-photo .hero-pipeline { color: #ffffff; }
+/* the drawing's parts — every colour a --cc-sec-* token (brand/v2/theme.css, additions 2026-09-07) */
+.sec .axis-ground { fill: var(--bg); }
+.sec .lab { font-size: 13px; fill: var(--cc-sec-lab); paint-order: stroke; stroke: var(--cc-sec-halo); stroke-width: 3.5px; stroke-linejoin: round; }
+.sec .lab-d { fill: var(--cc-sec-lab-d); stroke: var(--cc-sec-halo-d); }
+.sec .ax { font-family: var(--mono); font-size: 11px; fill: var(--muted); }
+.sec .axt { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; fill: var(--muted); font-weight: 600; }
+.sec .axl { stroke: var(--muted); stroke-width: 1; fill: none; }
+.sec .grid { stroke: var(--fg); opacity: 0.12; stroke-dasharray: 2 6; }
+.sec .ship { fill: var(--cc-sec-ship); }
+.sec .win { stroke: var(--cc-sec-pin-bg); stroke-width: 1.6; }
+.sec .wire { stroke: var(--cc-sec-wire); stroke-width: 1.5; fill: none; }
+.sec .thin { stroke: var(--cc-sec-wire); stroke-width: 1; fill: none; opacity: 0.55; stroke-dasharray: 3 4; }
+.sec .net { fill: none; stroke: var(--cc-sec-wire); stroke-width: 1.2; }
+.sec .btl { fill: var(--cc-sec-pin-fg); }
+.sec .ros { fill: var(--cc-sec-pin-bg); stroke: var(--cc-sec-wire); stroke-width: 1.5; }
+.sec .sun { fill: var(--cc-sec-sun); opacity: 0.95; }
+.sec .surf { stroke: var(--cc-sec-surf); stroke-width: 2; }
+.sec .floor { fill: var(--cc-sec-floor); stroke: var(--cc-sec-floor-line); stroke-width: 1.2; stroke-linejoin: round; }
+.sec .lead { stroke: var(--cc-sec-pin-fg); stroke-width: 1; opacity: 0.6; fill: none; }
+.sec .cufes { stroke: var(--cc-sec-wire); stroke-width: 1.4; stroke-dasharray: 2 6; fill: none; }
+/* a pin is a real link: a disc in the pin tokens with the category's sprite glyph, hover inverts,
+   focus rings in the accent; a category with nothing in the release yet is drawn dashed */
+.sec .pin { cursor: pointer; }
+.sec .pin circle { fill: var(--cc-sec-pin-bg); stroke: var(--cc-sec-pin-fg); stroke-width: 2; transition: fill 0.15s; }
+.sec .pin use { fill: var(--cc-sec-pin-fg); color: var(--cc-sec-pin-fg); transition: fill 0.15s; }
+.sec .pin.held circle { stroke-dasharray: 3 3; }
+.sec .pin.held use { fill: var(--muted); color: var(--muted); }
+.sec .pin:hover circle, .sec .pin:focus-visible circle { fill: var(--cc-sec-pin-fg); }
+.sec .pin:hover use, .sec .pin:focus-visible use { fill: var(--cc-sec-pin-bg); color: var(--cc-sec-pin-bg); }
+.sec .pin:focus-visible { outline: none; }
+.sec .pin:focus-visible circle { stroke: var(--accent); stroke-width: 3; }
+/* motion (Decision 9): the rosette casts down the wire and back on a 26 s loop, the CUFES dots
+   flow — nothing else; both off under prefers-reduced-motion */
+.sec .rosette { animation: cc-cast 26s ease-in-out infinite; }
+@keyframes cc-cast { 0% { transform: translateY(-268px); } 42% { transform: translateY(0); } 56% { transform: translateY(0); } 96% { transform: translateY(-268px); } 100% { transform: translateY(-268px); } }
+.sec .cufes { animation: cc-flow 2.4s linear infinite; }
+@keyframes cc-flow { to { stroke-dashoffset: -16; } }
+@media (prefers-reduced-motion: reduce) {
+  .sec .rosette, .sec .cufes { animation: none; }
+  html { scroll-behavior: auto; }
+}
+/* below 980 px the sky is too short for the copy: it stacks above the drawing on the page ground */
+@media (max-width: 979px) {
+  .hero-copy { position: static; width: auto; max-width: none; padding: calc(var(--band-pad) * 0.8) 0 calc(var(--space) * 3); }
+  .hero-copy .cc-h1 { font-size: clamp(44px, 9vw, 72px); }
+  .hero-copy .hero-lede { font-size: 1.05em; max-width: 60ch; white-space: normal; }
+  .hero-copy .cc-btn { min-height: 42px; font-size: 15px; padding: 0.4em 1.5em; }
+  .hero-copy .cc-text-link { font-size: 0.8em; }
+  .hero-copy .cc-eyebrow { font-size: var(--fs-sm); white-space: normal; }
+}
+/* below 700 px the labels and gear captions hide (the pins and their <title>s stay); below 500 px
+   the axes' tick labels go too — the drawing scales as one unit, so the text would be unreadable */
+@media (max-width: 699px) { .sec .lab { display: none; } }
+@media (max-width: 499px) { .sec .ax, .sec .axt { display: none; } }
 
 /* ── section nav: the SIO uppercase tab row under the hero ────────────────
    Moved into the brand contract as `.cc-tabs` (theme.css, additions 2026-09-05) so the dataset
@@ -133,8 +198,7 @@ main#panel { width: 100%; }
 
 @media (max-width: 640px) {
   :root { --band-pad: 28px; }
-  .hero { padding-top: 32px; padding-bottom: 32px; }
-  .hero .cc-h1 { font-size: clamp(40px, 12vw, 56px); }
+  .hero-copy .cc-h1 { font-size: clamp(40px, 12vw, 56px); }
   .section-tabs .cc-container { gap: 0 calc(var(--space) * 2); }
   .section-tabs a { font-size: 13px; padding: 10px 0; }
   .card-grid, .card-grid.featured-grid { grid-template-columns: 1fr; }
