@@ -19,6 +19,9 @@
 #               icons after the card's title and on a dataset page's Access > Explore row
 # dataset_url_realm: bio | env — the deep link only selects a dataset of this realm; a dataset of
 #               the other realm gets the plain app link (db-viz-hex's ?datasets= is taxa-only)
+# dataset_url_env: a second template for the env realm where the app opens on an environmental
+#               dataset by a different parameter (db-viz-hex's ?env= selects the dataset's leading
+#               variable and turns Compare on); with it set, dataset_url_realm governs dataset_url only
 # datasets:     the dataset_keys this product covers — a list, or `all` (every dataset in the
 #               release record). Validated at build against _data/datasets.json's datasets[] and
 #               holdings[]: an unknown key FAILS the build (plan D-2). It is also the reverse index
@@ -138,9 +141,11 @@ products:
     live_url: https://app.calcofi.io/hex/
     dataset_url: https://app.calcofi.io/hex/?datasets={key}
     # ?datasets= drives the TAXA-dataset group only (the environmental variable is chosen
-    # separately), so the deep link opens on a biological dataset and merely opens for an
-    # environmental one — the dataset page says "opens on this dataset" only where it does
+    # separately), so it deep-links a biological dataset; an environmental one deep-links
+    # through ?env=, which opens with Compare on and the dataset's leading variable selected
+    # (db-viz-hex since 2026-09-07) — so every dataset page now says "opens on this dataset"
     dataset_url_realm: bio
+    dataset_url_env: https://app.calcofi.io/hex/?env={key}
     source_url: https://github.com/CalCOFI/db-viz-hex
     img: images/db-viz-hex_dark.png   # fallback; the card shows the _dark/_light pair
     shots: themed
