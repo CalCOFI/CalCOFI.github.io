@@ -93,7 +93,7 @@ products:
     usage: explore
     section: explore
     group: across
-    lenses: [stations, hexagons, cruises, regions, sections]
+    lenses: [stations, hexagons, contours, cruises, regions, sections]
     datasets: all
     live_url: https://calcofi.io/explore/
     # dataset_url: the deep link a dataset page builds for this product — {key} is the dataset_key.
@@ -190,9 +190,9 @@ products:
     group: across
     lenses: [contours]
     datasets: [calcofi_bottle]
-    status: superseded
-    superseded_by: db-viz-hex
-    live_url: https://app.calcofi.io/contour/
+    status: superseded   # retired 2026-09-07: app.calcofi.io/contour/ redirects to the Explorer's Contours lens
+    superseded_by: explore
+    live_url: https://calcofi.io/explore/?lens=contour&var=temperature
     source_url: https://github.com/CalCOFI/apps/tree/main/oceano
     img: images/oceano.png
     description: >-
