@@ -92,7 +92,7 @@ layout: default
       <a class="tile-v" href="{{ '/datasets/release/' | relative_url }}">{{ rel.version | escape }}</a>
       <dl class="tile-dl">
         {%- if rel.n_tables %}<div><dt>tables</dt><dd>{{ rel.n_tables }}</dd></div>{% endif -%}
-        {%- if rel.total_rows %}<div><dt>rows</dt><dd>{{ rel.total_rows | divided_by: 1000000 }} M</dd></div>{% endif -%}
+        {%- if nums.rows_m %}<div><dt>rows</dt><dd>{{ nums.rows_m }} M</dd></div>{% endif -%}
         {%- assign doi = rel.doi | default: relv.doi -%}
         {%- if doi %}<div><dt>doi</dt><dd><a href="https://doi.org/{{ doi | escape }}">{{ doi | escape }}</a></dd></div>{% endif -%}
       </dl>

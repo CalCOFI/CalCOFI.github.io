@@ -332,6 +332,8 @@ module CalCOFI
           "taxa"     => taxa,
           "taxa_fmt" => Fmt.num(taxa),
           "rows"     => release["total_rows"],
+          # ROUNDED, and the one rule: the band, the release strip, the release tile and the log all read
+          # this (Liquid's divided_by truncates — 348,657,010 read 349 M here and 348 M on the strip)
           "rows_m"   => release["total_rows"] ? (release["total_rows"] / 1_000_000.0).round : nil,
           "tables"   => release["n_tables"],
           "version"  => release["version"],

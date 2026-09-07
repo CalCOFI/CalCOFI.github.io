@@ -13,7 +13,9 @@
   <dl class="ds-release-stats">
     <div><dt>datasets</dt><dd>{{ site.data.catalog.counts.datasets | escape }}</dd></div>
     <div><dt>tables</dt><dd>{{ rel.n_tables | escape }}</dd></div>
-    <div><dt>rows</dt><dd>{{ rel.total_rows | divided_by: 1000000 | escape }} M</dd></div>
+    {%- comment -%} rounded in _plugins/datasets.rb (numbers.rows_m) — the ONE rule for a row count in millions, so the
+      numbers band, this strip and the release tile never disagree (349 M vs a truncated 348 M, 2026-09-07) {%- endcomment -%}
+    <div><dt>rows</dt><dd>{{ site.data.catalog.numbers.rows_m | escape }} M</dd></div>
     {%- if site.data.catalog.counts.holdings > 0 -%}
     <div><dt>holdings</dt><dd>{{ site.data.catalog.counts.holdings | escape }}</dd></div>
     {%- endif -%}
