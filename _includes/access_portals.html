@@ -1,0 +1,38 @@
+{%- comment -%}
+  Archives & portals as a TABLE (2026-09-07): one row per portal the record names — role · portal
+  (the link, with its purpose as the title) · status · the identifier it knows the dataset by ·
+  what is staged for it. The archive-of-record policy is stated above it by the layout.
+  include params: block (rows[] from _plugins/datasets.rb)
+{%- endcomment -%}
+{%- assign b = include.block -%}
+<div class="ds-portals">
+  <span class="ds-tbl-hd">role</span>
+  <span class="ds-tbl-hd">portal</span>
+  <span class="ds-tbl-hd">purpose</span>
+  <span class="ds-tbl-hd">status</span>
+  <span class="ds-tbl-hd">known there as · staged</span>
+  {%- for r in b.rows -%}
+  <span class="ds-portal-role">{{ r.role | default: "—" | escape }}</span>
+  <span class="ds-portal-k">
+    {%- if r.url %}<a class="ds-arow-k" href="{{ r.url }}" title="{{ r.about | default: r.url | escape }}">{{ r.label | escape }}</a>
+    {%- else %}<span class="ds-arow-k" title="{{ r.about | escape }}">{{ r.label | escape }}</span>{% endif -%}
+  </span>
+  <span class="ds-portal-about">{{ r.about | default: "—" | escape }}</span>
+  <span class="ds-portal-s">
+    {%- for c in r.chips %}<span class="cc-chip {{ c.class }}"{% if c.title %} title="{{ c.title | escape }}"{% endif %}>{{ c.text | escape }}</span>{% endfor -%}
+    {%- if r.issue %}<a class="cc-text-link ds-arow-issue" href="{{ r.issue }}">issue ↗</a>{% endif -%}
+  </span>
+  <span class="ds-portal-id">
+    {%- if r.ident %}<span class="ds-arow-id" title="the identifier this portal knows the dataset by">{{ r.ident | escape }}</span>{% endif -%}
+    {%- if r.title_text %}<span class="ds-arow-t">{{ r.title_text | escape }}</span>{% endif -%}
+    {%- if r.url %}<button class="cc-copy ds-copy-sm" type="button" data-copy="{{ r.url | escape }}" aria-label="Copy the URL at {{ r.label | escape }}" title="copy the URL"><i class="cc-i cc-i-ui-copy" aria-hidden="true"></i></button>{% endif -%}
+    {%- for it in r.items -%}
+    <span class="ds-portal-item">
+      <a href="{{ it.url }}"{% if it.title_text %} title="{{ it.title_text | escape }}"{% endif %}>{{ it.label | escape }}</a>
+      {%- if it.chip %}<span class="cc-chip cc-chip-na">{{ it.chip | escape }}</span>{% endif -%}
+      <button class="cc-copy ds-copy-sm" type="button" data-copy="{{ it.url | escape }}" aria-label="Copy the URL of {{ it.label | escape }}" title="copy the URL"><i class="cc-i cc-i-ui-copy" aria-hidden="true"></i></button>
+    </span>
+    {%- endfor -%}
+  </span>
+  {%- endfor -%}
+</div>

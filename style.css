@@ -349,7 +349,14 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 .ds-glance div { min-width: 0; }
 .ds-glance dt { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
 .ds-glance dd { margin: 0; font-family: var(--mono); font-size: 1.05em; font-weight: 600; font-variant-numeric: tabular-nums; }
-.ds-spark-fig { margin: var(--space) 0 0; }
+.ds-spark-fig { margin: var(--space) 0 0; position: relative; }
+/* the hover / tap card over the years bars and the map's stations (assets/coverage.js) */
+.ds-figure .ds-spark rect, .ds-mapbox .st-on { cursor: pointer; }
+.ds-figure .ds-spark rect:hover, .ds-figure .ds-spark rect.is-on { fill: var(--cc-yellow, #FFCD00); }
+.ds-mapbox .st-on:hover, .ds-mapbox .st-on.is-on, .ds-mapbox .st-on:focus-visible { stroke: var(--cc-yellow, #FFCD00); stroke-width: 2px; outline: none; }
+.ds-tip { position: absolute; z-index: 5; pointer-events: none; background: var(--fg); color: var(--bg); font-size: 12.5px; line-height: 1.35; padding: 5px 8px; border-radius: var(--radius); white-space: nowrap; box-shadow: 0 2px 8px rgba(0,0,0,.25); }
+.ds-tip b { font-family: var(--mono); font-weight: 600; }
+.ds-mapwrap { position: relative; }
 
 .ds-tabs { z-index: 1010; }
 .ds-section { scroll-margin-top: calc(var(--header-h) + 56px); }
@@ -433,6 +440,18 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 .ds-tbl-obj { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
 .ds-tbl-dl { font-size: var(--fs-sm); }
 
+/* the portals table: role · portal (+ its one-line purpose) · status · identifier & staged items.
+   The policy sentence sits above it in the group's lede style, with a small label. */
+.ds-policy { margin: 0 0 var(--space); padding: 8px 12px; background: var(--panel); border-left: 3px solid var(--accent); font-size: 15px; max-width: 88ch; }
+.cc-band-alt .ds-policy { background: var(--panel-2); }
+.ds-policy-k { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); margin-right: 8px; }
+.ds-portals { display: grid; grid-template-columns: max-content minmax(12ch, 18ch) minmax(0, 1.3fr) max-content minmax(0, 1fr); gap: 6px 14px; align-items: baseline; margin-top: var(--space); font-size: 14.5px; }
+.ds-portal-role { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.ds-portal-k { min-width: 0; }
+.ds-portal-about { font-size: 13px; color: var(--muted); line-height: 1.35; min-width: 0; }
+.ds-portal-s { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }
+.ds-portal-id { display: flex; flex-wrap: wrap; align-items: center; gap: 3px 8px; min-width: 0; }
+.ds-portal-item { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 3px 6px; flex-basis: 100%; font-size: 13.5px; }
 /* the ONE ERDDAP listing: a CSS grid, folding to one id per row on a phone */
 .ds-matrix { display: grid; grid-template-columns: max-content max-content minmax(0, 1fr); gap: 5px 16px; align-items: baseline; margin-top: var(--space); font-size: 15px; }
 .ds-matrix-hd { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); padding-bottom: 4px; border-bottom: 1px solid var(--border); }
@@ -491,6 +510,9 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
   .ds-tbl-hd { display: none; }
   .ds-tbl-k { margin-top: 10px; }
   .ds-tbl-scope, .ds-tbl-obj { white-space: normal; }
+  .ds-portals { grid-template-columns: 1fr; gap: 2px 0; }
+  .ds-portals .ds-tbl-hd { display: none; }
+  .ds-portal-role { margin-top: 10px; }
   .ds-matrix { grid-template-columns: 1fr; gap: 2px 0; }
   .ds-matrix-hd { display: none; }
   .ds-matrix-id { margin-top: 10px; font-weight: 600; }

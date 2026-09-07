@@ -206,7 +206,8 @@ module CalCOFI
                 "lede" => "the water itself — its physics, chemistry and the air above it" }].freeze
     def realms
       @realms ||= REALMS.map do |r|
-        r.merge("categories" => categories.select { |c| (c["realm"] || "env") == r["id"] })
+        r.merge("categories" => categories.select { |c| (c["realm"] || "env") == r["id"] }
+                                           .sort_by { |c| c["name"].to_s.downcase })
       end
     end
 
@@ -367,8 +368,8 @@ module CalCOFI
       bars = span.each_with_index.map do |yr, i|
         v = by[yr] || 0.0
         bh = v.zero? ? 0.8 : [1.0, (v / max) * h].max
-        format('<rect x="%.1f" y="%.2f" width="%.1f" height="%.2f"%s/>',
-               i * (w + gap), h - bh, w, bh, v.zero? ? ' opacity=".25"' : "")
+        format('<rect x="%.1f" y="%.2f" width="%.1f" height="%.2f"%s data-year="%d" data-n="%d"><title>%d · %s obs</title></rect>',
+               i * (w + gap), h - bh, w, bh, v.zero? ? ' opacity=".25"' : "", yr, v.to_i, yr, Fmt.num(v.to_i))
       end
       vw = span.size * (w + gap)
       %(<svg class="ds-spark" viewBox="0 0 #{format('%.1f', vw)} #{h.to_i}" preserveAspectRatio="none" ) +
@@ -425,16 +426,19 @@ module CalCOFI
       # every cell in frame hollow; the ones this dataset sampled filled, radius proportional to
       # the square root of its observations, and only those carry a <title> — the hovers on 218
       # unsampled cells were two thirds of the file
-      max = sampled.values.max || 1
+      max = sampled.values.map { |v| v["n"] }.max || 1
       dots = +""
       cells.each do |c|
         next unless c["lon"].between?(x0, x1) && c["lat"].between?(y0, y1)
         cx = format("%.1f", px.(c["lon"]))
         cy = format("%.1f", py.(c["lat"]))
-        if (n = sampled[c["key"]])
+        if (v = sampled[c["key"]])
+          n = v["n"]
           rr = 1.6 + 4.4 * Math.sqrt(n.to_f / max)
-          dots << format('<circle class="st st-on" cx="%s" cy="%s" r="%.1f"><title>%s · %s obs</title></circle>',
-                         cx, cy, rr, c["key"], Fmt.num(n))
+          # the data-* is what assets/coverage.js reads for the tap/hover card; <title> stays as the
+          # no-JS hover and the accessible name
+          dots << format('<circle class="st st-on" cx="%s" cy="%s" r="%.1f" tabindex="0" data-key="%s" data-n="%d" data-ymin="%s" data-ymax="%s" data-nyr="%d"><title>%s · %s obs · %s–%s</title></circle>',
+                         cx, cy, rr, c["key"], n, v["ymin"], v["ymax"], v["nyr"], c["key"], Fmt.num(n), v["ymin"], v["ymax"])
         else
           dots << %(<circle class="st" cx="#{cx}" cy="#{cy}" r="1.3"/>)
         end
@@ -532,7 +536,8 @@ module CalCOFI
     #     the landing page's group — "Across datasets" / "One dataset" / "Student contribution". The
     #     deep link is used where the product declares a `dataset_url:`; a plain "opens on this
     #     dataset" is the meta, not a chip, so an app that merely opens is never mis-sold.
-    #   · Metadata records and Archives & portals sit side by side (`pair`): both are short lists.
+    #   · Metadata records is a two-up list; Archives & portals is a full-width TABLE — role ·
+    #     portal · purpose · status · identifier — with the archive-of-record policy stated above it.
     #   · ERDDAP: CSV · JSON · page · info · graph. The netCDF column is gone — the CF netCDF above it
     #     is the netCDF to take, and two different netCDFs of one table confused.
     #
@@ -731,52 +736,63 @@ module CalCOFI
                      "meta" => "one Collection per dataset, an Item per release" } if stac_json
       groups << { "id" => "metadata", "title" => "Metadata records",
                   "lede" => "Records about the data, in the standards each portal harvests.",
-                  "pair" => "left",
-                  "blocks" => [{ "rows" => meta_rows }] }
+                  "blocks" => [{ "layout" => "pair", "rows" => meta_rows }] }
 
-      # ── Archives & portals ───────────────────────────────────────────────────
-      ar = (d["registrations"] || []).map do |g|
-        ident = Fmt.present(g["id"]) || DeriveId.call(g["url"])
-        issue = Fmt.present(g["issue"]) || (g["issues"] || []).first
-        { "label" => portal_name(g["portal"]), "label_url" => Fmt.present(g["url"]),
-          "label_title" => PORTAL_ABOUT[g["portal"]],
-          "ident" => ident, "title_text" => Fmt.present(g["title"]),
-          "chips" => [status_chip(g["status"])].compact,
-          "meta"  => Fmt.present(g["note"]), "issue" => issue,
-          "url"   => Fmt.present(g["url"]) }
+      # ── Archives & portals: a table, with the policy stated above it ─────────
+      # One row per portal the record names for this dataset (registrations[] — every portal,
+      # whatever its status — plus the curated mirror/archive rows), with the portal's ROLE
+      # (archive · aggregator · service · catalog · portal · publisher, from portal.csv through
+      # portals[]), its PURPOSE (the registry's one-liner), the STATUS chip, the identifier the
+      # portal knows the dataset by, and what is staged for it (a bundle built, not deposited).
+      # Above the table: `status.publish_policy` — which portal is the archive of record and why
+      # the rest are planned or n/a — so a reader never infers policy from an "n/a".
+      # calcofi.io/docs/portals.html carries the same policy, rendered from the same record.
+      by_portal = {}
+      add_row = lambda do |portal, h|
+        key_p = portal.to_s
+        by_portal[key_p] ||= { "portal" => key_p, "label" => portal_name(key_p),
+                               "role" => portal_kind(key_p), "about" => PORTAL_ABOUT[key_p] || portal_about(key_p),
+                               "items" => [] }
+        by_portal[key_p].merge!(h.reject { |_, v| v.nil? }.select { |k, _| %w[status status_title ident title_text url issue].include?(k) }) unless h["item"]
+        by_portal[key_p]["items"] << h["item"] if h["item"]
       end
-      dist.select { |x| %w[mirror archive].include?(x["kind"]) ||
-                        (x["kind"] == "source" && x["portal"] == "edi") }.each do |x|
-        ar << { "label" => portal_name(x["portal"]), "label_url" => x["url"],
-                "label_title" => PORTAL_ABOUT[x["portal"]],
-                "ident" => Fmt.present(x["id"]) || DeriveId.call(x["url"]),
-                "title_text" => Fmt.present(x["title"]),
-                "chips" => [status_chip(x["status"])].compact,
-                "meta" => Fmt.present(x["notes"]), "url" => x["url"] }
+      (d["registrations"] || []).each do |g|
+        add_row.call(g["portal"], { "status" => g["status"],
+                                    "ident" => Fmt.present(g["id"]) || DeriveId.call(g["url"]),
+                                    "title_text" => Fmt.present(g["title"]) || Fmt.present(g["note"]),
+                                    "url" => Fmt.present(g["url"]),
+                                    "issue" => Fmt.present(g["issue"]) || (g["issues"] || []).first })
       end
-      # the portal bundles the publishers stage before a deposit (publish_to-obis.qmd /
-      # publish_to-edi.qmd `stage` chunks, 2026-09-06): listed when they answer, marked as built,
-      # not deposited — a reviewer sees the archive that WOULD be uploaded.
+      dist.select { |x| %w[mirror archive].include?(x["kind"]) || (x["kind"] == "source" && x["portal"] == "edi") }.each do |x|
+        ident = Fmt.present(x["id"]) || DeriveId.call(x["url"])
+        if by_portal.key?(x["portal"].to_s) && by_portal[x["portal"].to_s]["url"] && by_portal[x["portal"].to_s]["url"] != x["url"]
+          # a second endpoint on a portal already listed (CoastWatch's several mirrors): an item
+          add_row.call(x["portal"], { "item" => { "label" => ident || x["kind"], "url" => x["url"],
+                                                   "title_text" => Fmt.present(x["title"]), "chip" => x["kind"] } })
+        else
+          add_row.call(x["portal"], { "status" => by_portal.dig(x["portal"].to_s, "status") || x["status"],
+                                      "ident" => ident, "title_text" => Fmt.present(x["title"]), "url" => x["url"] })
+        end
+      end
+      # the bundles the publishers stage before a deposit: an item on the portal's own row
       # # until the record carries them (a `bundle` kind on distributions[]) — delete the probes then
       v = release["version"]
       dwca = "https://storage.googleapis.com/calcofi-db/publish/dwca/#{key}/#{key}_#{v}.zip"
-      ar << { "label" => "Darwin Core Archive", "label_url" => dwca, "url" => dwca,
-              "label_title" => "Event core + Occurrence + eMoF + meta.xml + eml.xml, zipped, as it would go to the OBIS-USA IPT",
-              "chips" => [{ "text" => "built, not deposited", "class" => "cc-chip-na",
-                            "title" => "staged by publish_to-obis.qmd for review; the IPT upload is a deliberate manual step" }],
-              "meta" => "for OBIS, release #{v}" } if url_ok?(dwca)
-      edi_dir = "https://storage.googleapis.com/calcofi-db/publish/edi/#{key}/#{key}_#{v}/"
-      edi_man = "#{edi_dir}manifest.json"
-      ar << { "label" => "EDI data package", "label_url" => edi_man, "url" => edi_dir,
-              "label_title" => "the package manifest; the CSV entities and the EML sit beside it",
-              "chips" => [{ "text" => "built, not deposited", "class" => "cc-chip-na",
-                            "title" => "staged by publish_to-edi.qmd for review; evaluate/create at EDI is gated on CALCOFI_PUBLISH_EDI" }],
-              "meta" => "for the Environmental Data Initiative, release #{v}" } if url_ok?(edi_man)
+      add_row.call("obis", { "item" => { "label" => "Darwin Core Archive #{v}", "url" => dwca, "chip" => "built, not deposited",
+                                        "title_text" => "Event core + Occurrence + eMoF + meta.xml + eml.xml, as it would go to the OBIS-USA IPT" } }) if url_ok?(dwca)
+      edi_man = "https://storage.googleapis.com/calcofi-db/publish/edi/#{key}/#{key}_#{v}/manifest.json"
+      add_row.call("edi", { "item" => { "label" => "EDI data package #{v}", "url" => edi_man, "chip" => "built, not deposited",
+                                       "title_text" => "the package manifest; the CSV entities and the EML sit beside it" } }) if url_ok?(edi_man)
+      order = %w[archive aggregator publisher service portal catalog]
+      rows = by_portal.values.sort_by { |r| [order.index(r["role"]) || 9, r["label"].to_s] }
+      rows.each { |r| r["chips"] = [status_chip(r["status"])].compact }
       groups << { "id" => "archives", "title" => "Archives & portals",
-                  "lede" => "Where this dataset is registered outside calcofi.io, by the " \
-                            "identifier each portal knows it as.",
-                  "pair" => "right",
-                  "blocks" => [{ "rows" => ar }] } unless ar.empty?
+                  "lede" => "Where this dataset is registered outside calcofi.io: each portal’s role, " \
+                            "what it is for, the dataset’s status there and the identifier it is known by. " \
+                            "The policy — which portal is the archive of record and why — is in " \
+                            "[Portals](https://calcofi.io/docs/portals.html).",
+                  "policy" => Fmt.present(r_policy(d)),
+                  "blocks" => [{ "layout" => "portals", "rows" => rows }] } unless rows.empty?
       groups
     end
 
@@ -831,7 +847,10 @@ module CalCOFI
       shown = []
       groups.each do |g|
         (g["blocks"] || []).each do |b|
-          (b["rows"] || []).each { |row| shown << row["url"] << row["label_url"] }
+          (b["rows"] || []).each do |row|
+            shown << row["url"] << row["label_url"]
+            (row["items"] || []).each { |it| shown << it["url"] }
+          end
           (b["matrix"] || []).each do |m|
             shown << m["page"] << m["info"] << m["graph"]
             (m["formats"] || []).each { |f| shown << f["url"] }
@@ -1058,6 +1077,38 @@ module CalCOFI
     }.freeze
     def portal_name(p)
       (rec["portals"] || []).find { |x| x["portal"] == p }&.dig("name") || PORTAL_NAMES[p] || p
+    end
+    def portal_kind(p)
+      (rec["portals"] || []).find { |x| x["portal"] == p }&.dig("kind") || PORTAL_KIND[p]
+    end
+    def portal_about(p)
+      (rec["portals"] || []).find { |x| x["portal"] == p }&.dig("description")
+    end
+    # the portal's role where the record predates portals[] (schema 1.1 carries it)
+    PORTAL_KIND = { "erddap" => "service", "erddap-noaa" => "service", "edi" => "archive", "ncei" => "archive",
+                    "obis" => "aggregator", "ipt" => "publisher", "caloos" => "catalog", "datazoo" => "portal",
+                    "ucsd-library" => "archive", "zenodo" => "archive", "ncbi" => "archive",
+                    "calcofi.org" => "portal", "gcs" => "service" }.freeze
+
+    # the dataset's archive-of-record policy: `status.publish_policy` in the record (calcofi4db
+    # 4.6.3); until a promoted release carries it, the registry it comes from, read at build.
+    # # until the served record carries status.publish_policy — delete the registry read then
+    def r_policy(d)
+      pol = d.dig("status", "publish_policy")
+      return pol if Fmt.present(pol)
+      registry_policy[d["dataset_key"]]
+    end
+    def registry_policy
+      @registry_policy ||= begin
+        return {} if ENV["CALCOFI_SKIP_LINK_CHECK"].to_s != ""
+        uri = URI("https://raw.githubusercontent.com/CalCOFI/workflows/main/metadata/dataset_status.csv")
+        res = Net::HTTP.start(uri.host, uri.port, use_ssl: true, open_timeout: 6, read_timeout: 12) { |h| h.get(uri.request_uri) }
+        return {} unless res.is_a?(Net::HTTPSuccess)
+        require "csv"
+        CSV.parse(res.body.dup.force_encoding("UTF-8"), headers: true).to_h { |row| ["#{row['provider']}_#{row['dataset']}", Fmt.present(row["publish_policy"])] }
+      rescue StandardError
+        {}
+      end
     end
 
     # ── cite: the same wording as calcofi4r::cc_cite() ───────────────────────
@@ -1534,7 +1585,10 @@ module CalCOFI
       end
       out = Hash.new { |h, k| h[k] = {} }
       JSON.parse(File.read(path))["stations"].each do |st|
-        (st["datasets"] || []).each { |d| out[d["dataset_key"]][st["grid_key"]] = d["n_obs"] }
+        (st["datasets"] || []).each do |d|
+          out[d["dataset_key"]][st["grid_key"]] = { "n" => d["n_obs"], "ymin" => d["year_min"], "ymax" => d["year_max"],
+                                                    "nyr" => (d["years"] || []).size }
+        end
       end
       out
     rescue StandardError => e
