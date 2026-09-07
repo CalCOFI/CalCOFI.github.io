@@ -108,8 +108,10 @@ products:
         url: https://calcofi.io/explore/?lens=hex&res=5
       - label: Sections
         url: https://calcofi.io/explore/?lens=section&var=temperature&line=90
+      - label: Contours
+        url: https://calcofi.io/explore/?lens=contour&var=temperature
     description: >-
-      One app, five lenses — stations, hexagons, cruises, regions and sections — for one
+      One app, six lenses — stations, hexagons, contours, cruises, regions and sections — for one
       organism or one ocean variable at a time over the frozen release. The queries run in your
       browser (no server), every view is a URL you can share, every download carries its SQL, and
       feedback comes with an annotated screenshot.
