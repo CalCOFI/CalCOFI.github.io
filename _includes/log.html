@@ -27,7 +27,10 @@
     <time class="log-d" datetime="{{ e.date | escape }}">{% if include.n %}{{ e.date | slice: 5, 5 }}{% else %}{{ e.date | escape }}{% endif %}</time>
     <span class="log-t cc-chip cc-chip-accent">{{ e.type | escape }}</span>
     <div class="log-b">
-      <b>{% if e.url %}<a href="{{ e.url }}">{{ e.title | escape }}</a>{% else %}{{ e.title | escape }}{% endif %}</b>
+      {%- comment -%} on /news/ the title is an h3 under the page's h2; on the tile a plain bold line {%- endcomment -%}
+      {%- if include.filter %}<h3 class="log-h">{% else %}<b>{% endif -%}
+      {%- if e.url %}<a href="{{ e.url }}">{{ e.title | escape }}</a>{% else %}{{ e.title | escape }}{% endif -%}
+      {%- if include.filter %}</h3>{% else %}</b>{% endif %}
       {%- if e.body and e.body != "" %}<span>{{ e.body | escape }}</span>{% endif -%}
     </div>
   </li>

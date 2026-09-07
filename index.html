@@ -127,7 +127,7 @@ layout: default
       </a>
       <div class="tile-body">
         <div class="cc-eyebrow">Explore · in the browser</div>
-        <h3 class="tile-h">One app, {{ xp.lenses | size }} lenses</h3>
+        <h2 class="tile-h">One app, {{ xp.lenses | size }} lenses</h2>
         <p class="tile-lenses" aria-label="Lenses">
           {%- for l in xp.lenses -%}
           {%- assign ld = xs.lenses | where: "id", l | first -%}
@@ -145,6 +145,7 @@ layout: default
     {%- endcomment -%}
     <div class="tile t-get">
       <div class="cc-eyebrow">Get the data</div>
+      <p class="tile-cap">Read the frozen release directly — from R, Python, a browser, ERDDAP or any DuckDB. No server, no credentials.</p>
       <div class="tile-tabs">
         <input type="radio" name="get" id="get-r" checked><label for="get-r">R</label>
         <input type="radio" name="get" id="get-py"><label for="get-py">Python</label>
@@ -192,6 +193,7 @@ SELECT * FROM read_json('{{ rel.catalog_url }}')</pre>
           {%- endfor -%}
         </span>
       </div>
+      <p class="tile-cap">Every organism in the release resolved to one accepted WoRMS id (ITIS for birds), so a name means the same thing in every dataset.</p>
       <a class="cc-text-link tile-more" href="https://calcofi.io/explore/">From diatoms to whales →</a>
     </div>
     {%- endif -%}

@@ -15,6 +15,7 @@ permalink: /news/
       <a class="cc-text-link" href="https://calcofi.org/about/news-updates/">calcofi.org ↗</a>.
       <a class="cc-text-link" href="{{ '/feed.xml' | relative_url }}">Atom feed</a>
     </p>
+    <h2 class="sr-only">All entries</h2>
     {% include log.html filter=true %}
   </div>
 </section>

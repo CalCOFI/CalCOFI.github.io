@@ -29,6 +29,68 @@ Edit the YAML, push to main, and GitHub Actions
 deploys the site. The old Google Sheet + `index.Rmd` + `bs4cards` pipeline is
 retired.
 
+## The front door (`/`)
+
+The first screen *shows* what CalCOFI does and how far the data reach (plan
+`workflows/.claude/plans/2026-09-07 CalCOFI.io landing re-cut …`), before the catalog, which is
+unchanged below it. Its parts, and where every fact on them comes from:
+
+```
+assets/section.js        the hero: Line 90 as an oceanographic section, one inline <svg viewBox="0 0 1400 660">
+                         built at load — sky, surface, a five-stop water ramp, the sea floor, the ship with its gear
+                         drawn to the depth the sampling protocol takes it (each depth a constant with a `source:`
+                         comment naming the calcofi.org page), 14 pins for the 13 data categories at the depth that
+                         kind of measurement lives, each a link to its method page on calcofi.org. The copy and the
+                         one yellow CTA are HTML over the sky (≥ 980 px; stacked above it below that).
+_data/line90_floor.json  the sea floor under Line 90 — GEBCO 2025 sampled every 500 m by
+                         calcofi4r::cc_transect_bathy() (scripts/build_line90_floor.R; the same call ctd-transects
+                         draws with). COMMITTED, like land.geojson: cartography, not a dataset fact. Land is 0 m in
+                         the raster, so the headland above the surface is drawn, and the caption says the floor is
+                         GEBCO. Without the file the drawing falls back to a drawn profile and says so.
+assets/reach.js          the reach: the grid map (218 cells by pattern, the lines, a 12 s cruise sweep with a cyan
+                         ripple, a year odometer 1949 → the release year) and the years strip (one row per dataset
+                         in the release, one cell per year, opacity by √n_roots; a hatched bar where the record
+                         carries only an asserted span — region-pooled phytoplankton, samples-only PIC tows)
+#reach                   ONE inline JSON (~60 KB) the three drawings read — the cells, the coastline rings, every
+                         dataset's measured years, the categories with the release's counts, the floor and the six
+                         numbers — built by _plugins/datasets.rb (`site.data.reach`). No request; grid.geojson never
+                         reaches the browser.
+the numbers band         77 years · 842 cruises · 49 ships · 218 stations · 2,614 taxa · 349 M rows, every one read
+                         at build (`site.data.catalog.numbers`): the release year minus the earliest measured
+                         year_min, reference[].rows, the release's own catalog.json (fetched by fetch_release.sh as
+                         _data/release_catalog.json — NOT catalog.json, which Jekyll would load over the
+                         generator's site.data.catalog) and release.total_rows. A value the build cannot read is not
+                         rendered — the tile collapses; nothing is typed.
+the bento                a 6-column grid on 150 px rows: Where (the map), When (the strip), Latest release, the
+                         ship's log, Explore (the app's own card shots and lens glyphs), Get the data (five snippets
+                         behind radio-input tabs, no script) and Life (the taxa count). No tile ends in a button: the
+                         one CTA is the hero's; every tile ends in an uppercase text link.
+brand/v2 --cc-sec-*      the 18 tokens the section is painted with (both themes, additive, in the specimen); the map
+                         and strip use --cc-map-*, --cc-stone, --cc-cyan and the record's own dataset colours. The
+                         toggle repaints everything; nothing listens for cc:theme.
+```
+
+**The ship's log** (`/news/`, the tile, `/feed.xml`) is news that mostly writes itself:
+`_plugins/news.rb` merges the release history (`versions.json`, each version titled by the first `##`
+heading of its `RELEASE_NOTES.md`, fetched by `fetch_release.sh` into the git-ignored
+`_data/release_headings.json`), every dataset's first release (`since_version`), every product's
+`added:` date in `products.yml` (back-filled from git) and the hand-written rows of
+[`_data/news.yml`](_data/news.yml) (a feature, a change to the site, a paper) into `site.data.log`,
+newest first. The header's **News** link wears a dot while an entry is under 30 days old. Type chips
+are the accent tint — **never `--warn`**: yellow marks a state that needs attention, not a kind of
+thing. `feed.xml` is Atom written by the plugin (the entries are neither posts nor a collection).
+
+**Motion** (Decision 9): the rosette casts down the CTD wire and back on a 26 s loop, the CUFES dots
+flow, the map's standard stations pulse in cruise order and the odometer counts — all off under
+`prefers-reduced-motion`. The site's own `home` capture (`_data/shots.yml pages:`) freezes them so
+the card is the same frame every time.
+
+**Checked** by `scripts/check_layout.py` on `/` (plan § D-8): the drawing ≤ 62 vh at 1470 with the
+copy clear of the ship's bounding box and above the surface; no tile drawn > 1.25 × its content; the
+six numbers on the band equal the inline record's; the strip has one row per dataset and the map one
+mark per cell; nothing on the first screen computes to `--warn` but the CTA; every pin's calcofi.org
+page answers a ranged GET. Lighthouse accessibility is 100 on `/` and `/news/` in both themes.
+
 ## The dataset catalog (`/datasets/`, `/data.json`)
 
 calcofi.io opens on the **dataset grid**, and every dataset has a page at
@@ -163,7 +225,7 @@ scripts/check_jsonld.py _site                    # JSON-LD + sitemap + data.json
 scripts/check_brand.py --url http://localhost:4000/datasets/
 scripts/check_brand.py --url http://localhost:4000/datasets/swfsc_ichthyo/
 
-scripts/check_layout.py                          # the four catalog pages at 1470 and 375 px,
+scripts/check_layout.py                          # the front door + four catalog pages at 1470 and 375 px,
                                                  # both themes: tile stretch, the ladder's colours,
                                                  # no horizontal scroll, the dataset page's columns
 scripts/check_layout.py --url http://localhost:4000/datasets/ --widths 1470 --themes light
@@ -184,7 +246,7 @@ before you commit.
 | workflow | when | what it runs |
 |---|---|---|
 | `pages.yml` | push to main | fetch → build → `check_jsonld.py` → deploy |
-| `pr.yml` | pull request | `_test/derive_id_test.rb` → fetch → build → `check_jsonld.py` → **`check_layout.py`** → `check_brand.py --url` on two built pages. No deploy. |
+| `pr.yml` | pull request | `_test/derive_id_test.rb` → fetch → build → `check_jsonld.py` → **`check_layout.py`** (the front door and the four catalog pages) → `check_brand.py --url` on three built pages. No deploy. |
 | `check-brand.yml` | Mondays 06:17 UTC | `check_brand.py --required-only` against every live product, and a second job that builds the site and runs **`check_layout.py`** against it |
 | `refresh.yml` | release dispatch · weekly · by hand | the same three steps as `pages.yml` |
 

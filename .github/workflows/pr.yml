@@ -60,11 +60,13 @@ jobs:
           python3 -m http.server 4000 --directory _site >/dev/null 2>&1 &
           for i in $(seq 1 30); do curl -sf -o /dev/null http://localhost:4000/datasets/ && break; sleep 1; done
 
-      # /datasets/, the two biggest dataset pages and a holding, at 1470 and 375 px, both themes
+      # the front door, /datasets/, the two biggest dataset pages and a holding, at 1470 and 375 px,
+      # both themes (the front door's assertions: plan 2026-09-07 § D-8)
       - name: Check the layout
         run: python3 scripts/check_layout.py --base http://localhost:4000
 
       - name: Check the brand contract on the built pages
         run: |
+          python3 scripts/check_brand.py --url http://localhost:4000/
           python3 scripts/check_brand.py --url http://localhost:4000/datasets/
           python3 scripts/check_brand.py --url http://localhost:4000/datasets/calcofi_ctd-cast/
