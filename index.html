@@ -61,8 +61,7 @@ layout: default
 
 {%- comment -%}
   The bento (plan § D-4): a 6-column grid of ways in, between the hero and the catalog. Where and
-  When (§ D-3) are the record's own reach — the grid map with a cruise sweep and a year odometer,
-  and the years strip — drawn by assets/reach.js from #reach. No tile ends in a button: the one CTA
+  When (§ D-3) are the record's own reach — the static grid map and the years strip — drawn by assets/reach.js from #reach. No tile ends in a button: the one CTA
   is in the hero; every tile ends in an uppercase text link.
 {%- endcomment -%}
 <section class="bento-wrap" aria-label="Ways in">
@@ -70,7 +69,6 @@ layout: default
     <div class="tile t-map">
       <div class="cc-eyebrow">Where{% if nums.stations %} · {{ nums.stations }} stations{% endif %}</div>
       <div class="fill" id="map-host" data-href="https://app.calcofi.io/station/"></div>
-      <div class="odo" aria-hidden="true"><span class="odo-n">{{ nums.since }}</span></div>
       <p class="tile-cap">
         {%- if nums.stations %}{{ nums.stations }} grid cells{% endif -%}
         {%- if nums.grid.standard %} · {{ nums.grid.standard }} standard{% endif -%}

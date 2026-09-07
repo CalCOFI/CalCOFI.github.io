@@ -47,8 +47,7 @@ _data/line90_floor.json  the sea floor under Line 90 — GEBCO 2025 sampled ever
                          draws with). COMMITTED, like land.geojson: cartography, not a dataset fact. Land is 0 m in
                          the raster, so the headland above the surface is drawn, and the caption says the floor is
                          GEBCO. Without the file the drawing falls back to a drawn profile and says so.
-assets/reach.js          the reach: the grid map (218 cells by pattern, the lines, a 12 s cruise sweep with a cyan
-                         ripple, a year odometer 1949 → the release year) and the years strip (one row per dataset
+assets/reach.js          the reach: the static grid map (218 cells by pattern, the lines) and the years strip (one row per dataset
                          in the release, one cell per year, opacity by √n_roots; a hatched bar where the record
                          carries only an asserted span — region-pooled phytoplankton, samples-only PIC tows)
 #reach                   ONE inline JSON (~60 KB) the three drawings read — the cells, the coastline rings, every
@@ -61,7 +60,7 @@ the numbers band         77 years · 842 cruises · 49 ships · 218 stations · 
                          _data/release_catalog.json — NOT catalog.json, which Jekyll would load over the
                          generator's site.data.catalog) and release.total_rows. A value the build cannot read is not
                          rendered — the tile collapses; nothing is typed.
-the bento                a 6-column grid on 150 px rows: Where (the map), When (the strip), Latest release, the
+the bento                a 6-column grid on 150 px rows: Where (the static map), When (the strip), Latest release, the
                          ship's log, Explore (the app's own card shots and lens glyphs), Get the data (five snippets
                          behind radio-input tabs, no script) and Life (the taxa count). No tile ends in a button: the
                          one CTA is the hero's; every tile ends in an uppercase text link.
@@ -80,9 +79,9 @@ newest first. The header's **News** link wears a dot while an entry is under 30 
 are the accent tint — **never `--warn`**: yellow marks a state that needs attention, not a kind of
 thing. `feed.xml` is Atom written by the plugin (the entries are neither posts nor a collection).
 
-**Motion** (Decision 9): the rosette casts down the CTD wire and back on a 26 s loop, the CUFES dots
-flow, the map's standard stations pulse in cruise order and the odometer counts — all off under
-`prefers-reduced-motion`. The site's own `home` capture (`_data/shots.yml pages:`) freezes them so
+**Motion** (Decision 9, narrowed 2026-09-07): the rosette casts down the CTD wire and back on a 26 s
+loop and the CUFES dots flow — both off under `prefers-reduced-motion`. The map is static: a cruise
+sweep with a year odometer read as one station visited a year, so it went. The site's own `home` capture (`_data/shots.yml pages:`) freezes them so
 the card is the same frame every time.
 
 **Checked** by `scripts/check_layout.py` on `/` (plan § D-8): the drawing ≤ 62 vh at 1470 with the

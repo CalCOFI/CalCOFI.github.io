@@ -113,8 +113,7 @@ main#panel { width: 100%; }
 /* ── the bento: ways in (plan § D-4), and the reach's two drawings (§ D-3) ──────────
    A 6-column grid on 150 px rows between the hero and the catalog; a tile is a bordered panel
    whose content sets its height, and no tile ends in a button — the one CTA is the hero's. Where
-   (2 × 3) is the grid map with the cruise sweep and the year odometer; When (4 × 2) is the years
-   strip. Two columns at ≤ 860 px, one at ≤ 640 px, and the rows go auto so nothing is clipped. */
+   (2 × 3) is the static grid map; When (4 × 2) is the years strip. Two columns at ≤ 860 px, one at ≤ 640 px, and the rows go auto so nothing is clipped. */
 .bento-wrap { max-width: var(--container); margin: 0 auto; padding: calc(var(--space) * 3) calc(var(--space) * 3) calc(var(--space) * 4); }
 .bento { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); grid-auto-rows: 150px; gap: calc(var(--space) * 2); }
 .tile {
@@ -201,10 +200,9 @@ main#panel { width: 100%; }
 .tile .tile-big { font-family: var(--display); font-size: 40px; line-height: 0.9; font-weight: 500; }
 .tile .tile-glyphs { display: inline-flex; gap: 8px; color: var(--accent); font-size: 24px; }
 .tile.t-map .fill svg { position: absolute; inset: 0; width: 100%; height: 100%; }
-/* the odometer: Teko in the map's corner, aria-hidden; the caption carries the years as text */
-.odo { position: absolute; right: 14px; top: 34px; font-family: var(--display); font-size: 44px; line-height: 1; font-weight: 500; color: var(--fg); letter-spacing: 0.02em; font-variant-numeric: tabular-nums; pointer-events: none; }
 
-/* the map: the brand's --cc-map-* tokens, the stations by pattern, the sweep and its ripple */
+/* the map: the brand's --cc-map-* tokens, the stations by pattern — static (Ben, 2026-09-07: a sweep
+   read as one station visited a year) */
 svg.map { display: block; width: 100%; height: auto; border-radius: var(--radius); }
 .map .water { fill: var(--cc-map-water); }
 .map .land { fill: var(--cc-map-land); stroke: var(--cc-map-coast); stroke-width: 0.6; stroke-linejoin: round; }
@@ -213,10 +211,7 @@ svg.map { display: block; width: 100%; height: auto; border-radius: var(--radius
 .map .st { cursor: pointer; }
 .map .st.h { fill: var(--cc-stone); opacity: 0.85; }
 .map .st.e { fill: none; stroke: var(--cc-map-mark); stroke-width: 1; }
-.map .st.s { fill: var(--cc-map-mark); transform-box: fill-box; transform-origin: center; animation: cc-sweep 12s linear infinite; animation-delay: var(--d); }
-.map .ring { fill: none; stroke: var(--cc-cyan); stroke-width: 1.4; opacity: 0; transform-box: fill-box; transform-origin: center; animation: cc-ripple 12s linear infinite; animation-delay: var(--d); }
-@keyframes cc-sweep { 0%, 9% { transform: scale(1); } 2% { transform: scale(1.9); } }
-@keyframes cc-ripple { 0% { opacity: 0.9; transform: scale(1); } 7% { opacity: 0; transform: scale(6); } 100% { opacity: 0; transform: scale(6); } }
+.map .st.s { fill: var(--cc-map-mark); }
 .map .plc { font: 10px var(--sans); fill: var(--muted); }
 .map .plcd { fill: var(--muted); }
 .map .ln { font: 9px var(--mono); fill: var(--cc-map-mark); }
@@ -233,10 +228,6 @@ svg.strip { display: block; width: 100%; height: auto; }
 .strip .ass { fill-opacity: 0.22; stroke-dasharray: 3 2; stroke-width: 1; }
 .strip .sum { font: 10px var(--sans); fill: var(--muted); }
 .strip .now { stroke: var(--accent); stroke-width: 1; }
-@media (prefers-reduced-motion: reduce) {
-  .map .st.s, .map .ring { animation: none; }
-  .map .ring { opacity: 0; }
-}
 @media (max-width: 860px) {
   .nums { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .bento { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: auto; }
@@ -249,7 +240,6 @@ svg.strip { display: block; width: 100%; height: auto; }
   .bento { grid-template-columns: minmax(0, 1fr); }
   .tile { grid-column: auto / span 1 !important; }
   .tile.t-map .fill { min-height: 360px; }
-  .odo { font-size: 34px; top: 30px; right: 10px; }
   /* the strip is 1000 units wide: on a phone it scrolls inside its tile at a readable size rather
      than shrinking to 3 px type (the page body never scrolls sideways) */
   .tile.t-years .fill { overflow-x: auto; -webkit-overflow-scrolling: touch; }
