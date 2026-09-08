@@ -30,12 +30,9 @@
   function icon(name) { return '<svg class="fb-i" viewBox="0 0 24 24" aria-hidden="true"><path d="' + PATHS[name] + '"/></svg>'; }
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
 
-  var btn = document.querySelector('.cc-feedback');
-  if (!btn) return;
-  var cfg = { endpoint: (btn.getAttribute('data-endpoint') || '').trim(), repo: btn.getAttribute('data-repo') || 'CalCOFI/CalCOFI.github.io',
-              release: btn.getAttribute('data-release') || '', app: btn.getAttribute('data-app') || 'calcofi-io', label: 'feedback' };
-  if (!/^https?:\/\//.test(cfg.endpoint)) cfg.endpoint = '';
+  // the assets sit beside this script wherever it is served from (calcofi.io for every product)
   var base = (function () { var s = document.currentScript && document.currentScript.src; return s ? s.replace(/assets\/feedback\.js.*$/, '') : '/'; })();
+  var cfg = { endpoint: '', repo: 'CalCOFI/CalCOFI.github.io', release: '', app: 'calcofi-io', label: 'feedback' };
   var VENDOR = base + 'assets/lib/html-to-image-1.11.13.min.js', FONTS = base + 'brand/v2/fonts.css', SPRITE = base + 'brand/v2/icons/calcofi-icons.svg';
 
   /* ── capture ────────────────────────────────────────────────────────────────────────────── */
@@ -247,7 +244,20 @@
     dlg.showModal();
     take();
   }
-  btn.addEventListener('click', open);
-  Array.prototype.forEach.call(document.querySelectorAll('[data-feedback]'), function (a) { a.addEventListener('click', function (e) { e.preventDefault(); open(); }); });
-  window.ccFeedback = { open: open, capture: capture };
+  /* ── mount: the product's own trigger(s) — a .cc-feedback carrying data-endpoint / data-repo /
+     data-release / data-app, plus any [data-feedback] link; bound once the DOM is ready, so a page
+     that inserts its button on DOMContentLoaded (the docs book, beside Quarto's toggle) is seen too */
+  function mount() {
+    var btn = document.querySelector('.cc-feedback');
+    if (btn) {
+      cfg.endpoint = (btn.getAttribute('data-endpoint') || '').trim();
+      cfg.repo = btn.getAttribute('data-repo') || cfg.repo; cfg.release = btn.getAttribute('data-release') || ''; cfg.app = btn.getAttribute('data-app') || cfg.app;
+      if (!/^https?:\/\//.test(cfg.endpoint)) cfg.endpoint = '';
+      if (!btn.dataset.fbBound) { btn.dataset.fbBound = '1'; btn.addEventListener('click', function (e) { e.preventDefault(); open(); }); }
+    }
+    Array.prototype.forEach.call(document.querySelectorAll('[data-feedback]'), function (a) { if (!a.dataset.fbBound) { a.dataset.fbBound = '1'; a.addEventListener('click', function (e) { e.preventDefault(); open(); }); } });
+    return !!btn;
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mount); else mount();
+  window.ccFeedback = { open: open, capture: capture, mount: mount };
 })();

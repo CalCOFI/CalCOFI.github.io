@@ -93,7 +93,9 @@ page answers a ranged GET. Lighthouse accessibility is 100 on `/` and `/news/` i
 ## Feedback (the Explorer's dialog, on every page)
 
 The speech-bubble button beside the theme toggle and the footer's **Send feedback** open the Explorer's
-feedback dialog, ported to plain JS (`assets/feedback.js`, 2026-09-08): the current view is captured,
+feedback dialog, ported to plain JS (`assets/feedback.js` + `assets/feedback.css`, 2026-09-08 — **fleet
+assets**: the docs book loads both from calcofi.io and mounts its own button beside Quarto's toggle, with
+`app: docs`; any product on brand v2 can do the same): the current view is captured,
 shown as a thumbnail with **edit** (the annotator — arrow · circle · rectangle · pen · text, three
 colours, undo, clear) and **retake**, and sent with the note, the page's URL, the release, the viewport
 and the theme. It posts to the same Apps Script endpoint the Explorer uses (`_config.yml
