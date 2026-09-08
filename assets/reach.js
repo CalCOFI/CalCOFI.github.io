@@ -93,27 +93,51 @@
     return svg;
   }
 
-  /* ── the years strip: one row per dataset in the release × one cell per year ── */
-  function buildStrip(host, reach) {
+  /* ── the years strip: one row per dataset in the release × one cell per year ──
+     The rows are grouped by the dataset's HOME realm — Biology first, then Environment (2026-09-08) —
+     and inside a group they run by start year, earliest at the top, so the strip reads as two
+     staircases. Each row carries its category's brand glyph, right-aligned against the year field,
+     the same icon the catalog's category tile wears. */
+  var STRIP_REALMS = [{ id: 'bio', title: 'Biology', icon: 'realm-bio' },
+                      { id: 'env', title: 'Environment', icon: 'realm-env' }];
+  function buildStrip(host, reach, opts) {
+    opts = opts || {};
+    var sprite = opts.sprite || '/brand/v2/icons/calcofi-icons.svg';
     var n = reach.numbers || {};
     var Y0 = n.since || 1949, Y1 = +String((reach.release || {}).date || '').slice(0, 4) || new Date().getFullYear();
-    var N = Y1 - Y0 + 1, X0 = 250, X1 = 992, cw = (X1 - X0) / N, RH = 13, TOP = 66;   // the label column runs to X0 − 8: the longest short name in the record is 30 mono characters
+    var N = Y1 - Y0 + 1, X0 = 250, X1 = 992, cw = (X1 - X0) / N, RH = 13, TOP = 66;   // the label column runs to X0 − 26: the longest short name in the record is 30 mono characters
+    var IW = 11, IX = X0 - 8 - IW, LX = IX - 6, GH = 16;   // the glyph column, the label's right edge, a group heading's height
     var rows = (reach.datasets || []).map(function (d) {
       var ymin = d.ymin, ymax = d.ymax, asserted = false;
       if ((!ymin || !ymax || !(d.years && d.years.length)) && d.temporal) {
         var m = /(\d{4}).*?(\d{4})/.exec(d.temporal);
         if (m) { ymin = +m[1]; ymax = +m[2]; asserted = true; }
       }
-      return { key: d.key, name: d.name, url: d.url, color: d.color, temporal: d.temporal, years: d.years || [], ymin: ymin, ymax: ymax, asserted: asserted };
-    }).filter(function (r) { return r.ymin; })
+      return { key: d.key, name: d.name, url: d.url, color: d.color, temporal: d.temporal, years: d.years || [],
+               ymin: ymin, ymax: ymax, asserted: asserted,
+               cat: d.cat || 'cat-other', cat_name: d.cat_name, realm: d.realm || 'env' };
+    }).filter(function (r) { return r.ymin; });
+    // Biology then Environment; inside each, earliest start year first (ties by name)
+    var groups = [];
+    STRIP_REALMS.forEach(function (g) {
+      var gr = rows.filter(function (r) { return r.realm === g.id; })
+        .sort(function (a, b) { return (a.ymin - b.ymin) || a.name.localeCompare(b.name); });
+      if (gr.length) groups.push({ g: g, rows: gr });
+    });
+    // a realm the record does not name still draws, under no heading, rather than vanishing
+    var known = STRIP_REALMS.map(function (g) { return g.id; });
+    var rest = rows.filter(function (r) { return known.indexOf(r.realm) < 0; })
       .sort(function (a, b) { return (a.ymin - b.ymin) || a.name.localeCompare(b.name); });
-    var H = TOP + rows.length * RH + 22;
+    if (rest.length) groups.push({ g: null, rows: rest });
+    var BOT = TOP + rows.length * RH + groups.filter(function (q) { return q.g; }).length * GH;
+    var H = BOT + 22;
     var svg = el('svg', { viewBox: '0 0 1000 ' + H, cls: 'strip', role: 'group',
-      'aria-label': 'Which years each of the ' + rows.length + ' datasets covers, ' + Y0 + ' to ' + Y1 + '; a hatched bar is an asserted span, not a measured one' });
+      'aria-label': 'Which years each of the ' + rows.length + ' datasets covers, ' + Y0 + ' to ' + Y1 +
+                    ', grouped as biology then environment; a hatched bar is an asserted span, not a measured one' });
     var deco = el('g', { 'aria-hidden': 'true' }, svg);
     for (var y = Math.ceil(Y0 / 10) * 10; y <= Y1; y += 10) {
       var x = X0 + (y - Y0) * cw;
-      el('line', { x1: x, x2: x, y1: TOP - 6, y2: TOP + rows.length * RH, cls: 'dt' }, deco);
+      el('line', { x1: x, x2: x, y1: TOP - 6, y2: BOT, cls: 'dt' }, deco);
       el('text', { x: x, y: TOP - 10, cls: 'dl', 'text-anchor': 'middle', text: String(y) }, deco);
     }
     // datasets with data, per year
@@ -124,13 +148,33 @@
     });
     var mx = Math.max.apply(null, count) || 1;
     count.forEach(function (c, i) { if (c) el('rect', { x: X0 + i * cw + 0.5, y: 44 - c / mx * 36, width: cw - 1, height: c / mx * 36, cls: 'bar' }, deco); });
-    el('text', { x: X0 - 8, y: 24, cls: 'sum', 'text-anchor': 'end', text: 'datasets with data' }, deco);
-    el('text', { x: X0 - 8, y: 36, cls: 'sum', 'text-anchor': 'end', text: 'that year (max ' + mx + ')' }, deco);
-    rows.forEach(function (r, i) {
-      var y = TOP + i * RH;
+    el('text', { x: LX, y: 24, cls: 'sum', 'text-anchor': 'end', text: 'datasets with data' }, deco);
+    el('text', { x: LX, y: 36, cls: 'sum', 'text-anchor': 'end', text: 'that year (max ' + mx + ')' }, deco);
+    // a glyph from the brand sprite, drawn 11 units square in the column left of the year field
+    function glyph(id, x, y, parent, cls) {
+      var g = el('svg', { x: x, y: y, width: IW, height: IW, viewBox: '0 0 24 24', cls: cls || 'gi',
+        'aria-hidden': 'true', overflow: 'visible' }, parent);
+      var use = el('use', {}, g);
+      use.setAttribute('href', sprite + '#' + id);
+      use.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', sprite + '#' + id);
+      return g;
+    }
+    var cy = TOP;
+    groups.forEach(function (grp) {
+      if (grp.g) {
+        var gh = el('g', { cls: 'gh' }, svg);
+        el('text', { x: LX, y: cy + 10, cls: 'gl', 'text-anchor': 'end', text: grp.g.title.toUpperCase() }, gh);
+        glyph(grp.g.icon, IX, cy + 1, gh, 'gi gr');
+        el('line', { x1: X0, x2: X1, y1: cy + GH - 4, y2: cy + GH - 4, cls: 'gsep' }, gh);
+        cy += GH;
+      }
+      grp.rows.forEach(function (r) { drawRow(r, cy); cy += RH; });
+    });
+    function drawRow(r, y) {
       var a = el('a', { href: r.url, cls: 'rowlink' }, svg);                          // the row's name is a link to the dataset's page
-      el('text', { x: X0 - 8, y: y + 10, cls: 'rl', 'text-anchor': 'end', text: r.name }, a);
-      el('title', { text: r.name + ' · ' + (r.temporal || (r.ymin + ' to ' + r.ymax)) + (r.asserted ? ' · asserted, not measured' : ' · measured') }, a);
+      el('text', { x: LX, y: y + 10, cls: 'rl', 'text-anchor': 'end', text: r.name }, a);
+      glyph(r.cat, IX, y + 1, a, 'gi');
+      el('title', { text: r.name + ' · ' + (r.cat_name ? r.cat_name + ' · ' : '') + (r.temporal || (r.ymin + ' to ' + r.ymax)) + (r.asserted ? ' · asserted, not measured' : ' · measured') }, a);
       var cells = el('g', { 'aria-hidden': 'true' }, svg);
       if (r.asserted) {
         var bar = el('rect', { x: X0 + (Math.max(r.ymin, Y0) - Y0) * cw + 0.5, y: y + 1, width: (Math.min(r.ymax, Y1) - Math.max(r.ymin, Y0) + 1) * cw - 1, height: RH - 2, fill: r.color, stroke: r.color, cls: 'ass' }, cells);
@@ -144,10 +188,10 @@
           el('title', { text: r.name + ' · ' + q[0] + ' · ' + fmt(q[1] || 0) + ' casts or tows · ' + fmt(q[2] || 0) + ' observations' }, c);
         });
       }
-    });
+    }
     var now = X0 + (Y1 - Y0) * cw + cw;
-    el('line', { x1: now, x2: now, y1: TOP - 6, y2: TOP + rows.length * RH, cls: 'now' }, deco);
-    el('text', { x: now, y: TOP + rows.length * RH + 14, cls: 'dl', 'text-anchor': 'end', text: (reach.release || {}).version || '' }, deco);
+    el('line', { x1: now, x2: now, y1: TOP - 6, y2: BOT, cls: 'now' }, deco);
+    el('text', { x: now, y: BOT + 14, cls: 'dl', 'text-anchor': 'end', text: (reach.release || {}).version || '' }, deco);
     host.appendChild(svg);
     return svg;
   }
@@ -160,6 +204,6 @@
   var mapHost = document.getElementById('map-host');
   if (mapHost) buildMap(mapHost, reach, { href: mapHost.getAttribute('data-href') });
   var stripHost = document.getElementById('strip-host');
-  if (stripHost) buildStrip(stripHost, reach);
+  if (stripHost) buildStrip(stripHost, reach, { sprite: stripHost.getAttribute('data-sprite') });
   window.ccReach = { buildMap: buildMap, buildStrip: buildStrip };
 })();

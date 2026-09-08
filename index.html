@@ -80,7 +80,7 @@ layout: default
     </div>
     <div class="tile t-years">
       <div class="cc-eyebrow">When · {{ site.data.catalog.counts.datasets }} datasets · {{ nums.since }} → {{ nums.date | slice: 0, 4 }}</div>
-      <div class="fill" id="strip-host"></div>
+      <div class="fill" id="strip-host" data-sprite="{{ '/brand/v2/icons/calcofi-icons.svg' | relative_url }}"></div>
       <a class="cc-text-link tile-more" href="https://calcofi.io/explore/">Explore by dataset →</a>
     </div>
 
@@ -100,40 +100,35 @@ layout: default
         <a class="cc-text-link" href="https://calcofi.io/db-schema/?v={{ rel.version | escape }}">schema ↗</a>
         <a class="cc-text-link" href="https://calcofi.io/db-query/">query ↗</a>
         <a class="cc-text-link" href="https://storage.calcofi.io/calcofi-db/ducklake/releases/RELEASES.html">notes ↗</a>
-        <a class="cc-text-link" href="{{ '/datasets/release/' | relative_url }}">cite</a>
+        {%- comment -%} how to cite is the docs book's own chapter (calcofi.io/docs/cite.html), not a
+          copy of it here: /datasets/release/ carries THIS release's citation string, the chapter says
+          what to cite and how — the release, a dataset, a portal record {%- endcomment -%}
+        <a class="cc-text-link" href="https://calcofi.io/docs/cite.html">cite ↗</a>
       </p>
     </div>
 
     {%- comment -%} Ship's log: the four newest entries (_includes/log.html, _plugins/news.rb) {%- endcomment -%}
     <div class="tile t-log">
       <div class="cc-eyebrow">Ship's log · what's new</div>
-      {% include log.html n=4 %}
+      {% include log.html n=3 %}
       <p class="tile-links">
         <a class="cc-text-link" href="{{ '/news/' | relative_url }}">All entries →</a>
         <a class="cc-text-link" href="{{ '/feed.xml' | relative_url }}">feed</a>
       </p>
     </div>
 
-    {%- comment -%} Explore: the app's own screenshots (the same pair its card shows) + the lens glyphs {%- endcomment -%}
+    {%- comment -%}
+      Explore: the Explorer's OWN card — the same _includes/product_card.html the catalog section
+      below renders for it (2026-09-08), so the tile and the card can never drift: one shot pair,
+      one title, one description, one set of lens glyphs, all from products.yml. The bento only
+      fits it to the tile (.t-exp-cell in style.css): the shot is cropped shorter and the
+      description clamped, because a 6-column tile is not a card grid.
+    {%- endcomment -%}
     {%- assign xp = data.products | where: "key", "explore" | first -%}
     {%- assign xs = data.sections | where: "id", "explore" | first -%}
     {%- if xp -%}
-    <div class="tile t-exp">
-      <a class="tile-shot" href="{{ xp.live_url }}" aria-label="Open {{ xp.title | escape }}">
-        <img class="cc-light-only" loading="lazy" src="{{ 'images/' | append: xp.key | append: '_light.png' | relative_url }}" alt="{{ xp.title | escape }}, light theme">
-        <img class="cc-dark-only"  loading="lazy" src="{{ 'images/' | append: xp.key | append: '_dark.png'  | relative_url }}" alt="{{ xp.title | escape }}, dark theme">
-      </a>
-      <div class="tile-body">
-        <div class="cc-eyebrow">Explore · in the browser</div>
-        <h2 class="tile-h">One app, {{ xp.lenses | size }} lenses</h2>
-        <p class="tile-lenses" aria-label="Lenses">
-          {%- for l in xp.lenses -%}
-          {%- assign ld = xs.lenses | where: "id", l | first -%}
-          <i class="cc-i cc-i-lens-{{ l | escape }}" title="{{ ld.title | default: l | escape }} — {{ ld.blurb | escape }}" role="img" aria-label="{{ ld.title | default: l | escape }}"></i>
-          {%- endfor -%}
-        </p>
-        <a class="cc-text-link tile-more" href="{{ xp.live_url }}">Open the Explorer →</a>
-      </div>
+    <div class="t-exp-cell">
+      {% include product_card.html p=xp section=xs.title %}
     </div>
     {%- endif -%}
 

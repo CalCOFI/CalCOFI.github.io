@@ -111,11 +111,12 @@ main#panel { width: 100%; }
 @media (max-width: 499px) { .sec .ax, .sec .axt { display: none; } }
 
 /* ── the bento: ways in (plan § D-4), and the reach's two drawings (§ D-3) ──────────
-   A 6-column grid on 150 px rows between the hero and the catalog; a tile is a bordered panel
-   whose content sets its height, and no tile ends in a button — the one CTA is the hero's. Where
-   (2 × 3) is the static grid map; When (4 × 2) is the years strip. Two columns at ≤ 860 px, one at ≤ 640 px, and the rows go auto so nothing is clipped. */
+   A 6-column grid between the hero and the catalog; a tile is a bordered panel whose content sets
+   its height, and no tile ends in a button — the one CTA is the hero's. Where (2 columns) is the
+   static grid map; When (4 columns) is the years strip. Two columns at ≤ 860 px, one at ≤ 640 px,
+   and the rows go auto so nothing is clipped. */
 .bento-wrap { max-width: var(--container); margin: 0 auto; padding: calc(var(--space) * 3) calc(var(--space) * 3) calc(var(--space) * 4); }
-.bento { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); grid-auto-rows: 150px; gap: calc(var(--space) * 2); }
+.bento { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); grid-auto-rows: 25px; gap: calc(var(--space) * 2); }
 .tile {
   position: relative; display: flex; flex-direction: column; gap: 6px; min-width: 0; overflow: hidden;
   padding: 14px 16px; border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--panel-2);
@@ -124,13 +125,26 @@ main#panel { width: 100%; }
 .tile .fill { flex: 1; min-height: 0; position: relative; }
 .tile .tile-cap { margin: 0; font-size: 12.5px; line-height: 1.3; color: var(--muted); }
 .tile .tile-more { margin-top: auto; font-size: 12.5px; align-self: flex-start; }
-.tile.t-map { grid-column: 1 / span 2; grid-row: 1 / span 3; }
-.tile.t-years { grid-column: 3 / span 4; grid-row: 1 / span 2; }
-.tile.t-rel { grid-column: 3 / span 2; grid-row: 3 / span 1; }
-.tile.t-log { grid-column: 5 / span 2; grid-row: 3 / span 2; }
-.tile.t-exp { grid-column: 1 / span 2; grid-row: 4 / span 2; padding: 0; }
-.tile.t-get { grid-column: 3 / span 2; grid-row: 4 / span 2; }
-.tile.t-life { grid-column: 5 / span 2; grid-row: 5 / span 1; }
+/* The row unit is 25 px, not the original 150 (2026-09-08). Every tile is drawn within a quarter
+   of its own content's height (check_layout.py's 1.25x stretch rule), and on a 150 px unit only
+   two of the seven could be: the ship's log had to give a step back and the Life tile take one,
+   and neither is a whole 150 px. A tile of n rows is 41n − 16 px (25 px rows, a 16 px gap), and
+   all three columns end on row line 22 — so read these spans as a sum, never edit one alone:
+     1–2  map 10 + Explorer card 11                              (a gap between = 21 rows)
+     3–4  years 9 + release 4 + get 8                            = 21
+     5–6  years 9 + ship's log 6 + life 6                        = 21
+   The Explorer's cell is a real product card, not tile markup, so it carries no .tile rules. */
+.tile.t-map { grid-column: 1 / span 2; grid-row: 1 / span 10; }
+.t-exp-cell { grid-column: 1 / span 2; grid-row: 11 / span 11; }
+.tile.t-years { grid-column: 3 / span 4; grid-row: 1 / span 9; }
+.tile.t-rel { grid-column: 3 / span 2; grid-row: 10 / span 4; }
+.tile.t-get { grid-column: 3 / span 2; grid-row: 14 / span 8; }
+.tile.t-log { grid-column: 5 / span 2; grid-row: 10 / span 6; }
+/* the Life tile keeps a deeper foot: the six organism glyphs and "From diatoms to whales →" were
+   reading as if they had fallen off the tile's bottom edge. The room is PADDING, not grid rows, so
+   the tile's natural height grows with it and the stretch rule still holds. */
+.tile.t-life { grid-column: 5 / span 2; grid-row: 16 / span 6; padding-bottom: 34px; }
+.tile.t-life .tile-row { margin-bottom: 4px; }
 /* the numbers band (§ D-2): Teko numerals with uppercase labels on the Sand band */
 .numsband { padding: calc(var(--space) * 2.5) 0; }
 .nums { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: calc(var(--space) * 1.5); margin: 0 auto; }
@@ -145,12 +159,20 @@ main#panel { width: 100%; }
 .tile .tile-dl dd { margin: 0; font-family: var(--mono); font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tile .tile-links { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: auto 0 0; }
 .tile .tile-links .cc-text-link { font-size: 12.5px; }
-/* the Explore tile: the app's shot on top, as a card */
-.tile.t-exp .tile-shot { display: block; flex: none; height: 176px; overflow: hidden; border-bottom: 1px solid var(--border); background: var(--panel); }
-.tile.t-exp .tile-shot img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top; }
-.tile.t-exp .tile-body { display: flex; flex-direction: column; gap: 4px; flex: 1; padding: 12px 16px 14px; min-height: 0; }
-.tile .tile-h { margin: 0; font-size: 18px; font-weight: 700; line-height: 1.2; }
-.tile .tile-lenses { display: flex; gap: 8px; margin: 0; color: var(--muted); font-size: 18px; }
+/* the Explore tile IS the Explorer's product card (_includes/product_card.html, the same include
+   the catalog renders below), so the two can never drift. The bento only fits it to a tile: the
+   tile's border and ground, a shorter crop of the shot, a clamped description, and no dataset chip
+   row — a 6-column tile is not a card grid. Everything it SAYS comes from products.yml. */
+.t-exp-cell { display: flex; min-width: 0; }
+.t-exp-cell .prod-card {
+  flex: 1; min-width: 0; font-size: 15px; overflow: hidden;
+  border: 1px solid var(--border); background: var(--panel-2);
+}
+.t-exp-cell .cc-card-shot { border-bottom: 1px solid var(--border); }
+.t-exp-cell .cc-card-shot img { aspect-ratio: auto; height: 176px; }
+.t-exp-cell .cc-card-body { padding: 12px 16px 14px; }
+.t-exp-cell .prod-card .desc { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 0.6em; }
+.t-exp-cell .prod-card .card-datasets { display: none; }
 /* the Get-the-data tile: radio tabs, no JS — the checked input's sibling <pre> shows */
 .tile-tabs { display: flex; flex-wrap: wrap; align-content: flex-start; align-items: flex-end; gap: 0 14px; position: relative; min-height: 0; flex: 1; }
 .tile-tabs input { position: absolute; width: 1px; height: 1px; margin: -1px; opacity: 0; }
@@ -228,17 +250,46 @@ svg.strip { display: block; width: 100%; height: auto; }
 .strip .ass { fill-opacity: 0.22; stroke-dasharray: 3 2; stroke-width: 1; }
 .strip .sum { font: 10px var(--sans); fill: var(--muted); }
 .strip .now { stroke: var(--accent); stroke-width: 1; }
+/* the rows are grouped Biology then Environment (2026-09-08): a realm heading, and every row's own
+   category glyph from the brand sprite, right-aligned against the year field. The glyph is --muted
+   so the dataset's colour stays the only hue in the strip; the row's link turns it accent on hover. */
+.strip .gi { fill: var(--muted); }
+.strip .rowlink:hover .gi, .strip .rowlink:focus-visible .gi { fill: var(--accent); }
+.strip .gl { font: 700 9px var(--sans); letter-spacing: 0.09em; fill: var(--muted); }
+.strip .gh .gr { fill: var(--fg); opacity: 0.55; }
+.strip .gsep { stroke: var(--fg); opacity: 0.14; stroke-width: 1; }
+/* Below --container (1170 px) the tiles start losing width, and a tile that loses width gains
+   height: by 1060 px the release tile's list needs 181 px where 141 px sufficed, so the desktop
+   spans above would CLIP it. One second sum, tuned to the widest content measured anywhere in
+   861–1099 px (release 203, log 239, get 324, life 238, years 284, card 479 — measured, not
+   guessed; 1100–1169 still fits the desktop sum, which is why the query stops at 1099):
+     1–2  map 10 + Explorer card 13                                         = 23 rows
+     3–4  years 8 + release 6 + get 9                                       = 23
+     5–6  years 8 + ship's log 7 + life 8                                   = 23
+   Same rule as above — the three columns are a sum, so never edit one span alone. */
+@media (max-width: 1099px) {
+  .tile.t-map { grid-row: 1 / span 10; }
+  .t-exp-cell { grid-row: 11 / span 13; }
+  .tile.t-years { grid-row: 1 / span 8; }
+  .tile.t-rel { grid-row: 9 / span 6; }
+  .tile.t-get { grid-row: 15 / span 9; }
+  .tile.t-log { grid-row: 9 / span 7; }
+  .tile.t-life { grid-row: 16 / span 8; }
+}
 @media (max-width: 860px) {
   .nums { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .bento { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: auto; }
-  .tile { grid-column: auto / span 2 !important; grid-row: auto !important; }
+  .tile, .t-exp-cell { grid-column: auto / span 2 !important; grid-row: auto !important; }
+  /* off the fixed grid the card is a card again: its own crop, its whole description */
+  .t-exp-cell .cc-card-shot img { aspect-ratio: 16 / 10; height: auto; }
+  .t-exp-cell .prod-card .desc { display: block; overflow: visible; }
   .tile.t-map .fill { min-height: 420px; }
   .tile.t-years .fill { min-height: 0; }
 }
 @media (max-width: 640px) {
   .nums { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .bento { grid-template-columns: minmax(0, 1fr); }
-  .tile { grid-column: auto / span 1 !important; }
+  .tile, .t-exp-cell { grid-column: auto / span 1 !important; }
   .tile.t-map .fill { min-height: 360px; }
   /* the strip is 1000 units wide: on a phone it scrolls inside its tile at a readable size rather
      than shrinking to 3 px type (the page body never scrolls sideways) */

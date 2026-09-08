@@ -50,7 +50,9 @@ sections:
       - { id: hexagons, title: Hexagons, blurb: H3 hexagons, aggregated at a chosen resolution }
       - { id: cruises, title: Cruises, blurb: one cruise at a time, along its track }
       - { id: regions, title: Regions, blurb: pooled over a boundary or a region }
-      - { id: sections, title: Sections, blurb: a vertical section along a CalCOFI line }
+      # a depth section where there is depth (Environment) and a years section where there is not
+      # (Biology: one value per tow, no profile) — the lens is the same line either way
+      - { id: sections, title: Sections, blurb: "stations along a CalCOFI line × depth for one cruise (Environment), or × years where the data have no depth (Biology)" }
       - { id: contours, title: Contours, blurb: interpolated maps of one variable }
     groups:
       - id: across
@@ -408,10 +410,18 @@ products:
     source_url: https://github.com/CalCOFI/docs
     img: images/docs_dark.png   # fallback; the card shows the _dark/_light pair
     shots: themed
+    tagline: One book, five audiences
+    # revamped 2026-09-08: the five audience parts, the "Start here" orientation on the index, the
+    # PDF and DOCX builds and the feedback button on every page
+    extra_links:
+      - { label: pdf, url: "https://github.com/CalCOFI/docs/releases/download/documents/CalCOFI.io-docs.pdf" }
+      - { label: docx, url: "https://github.com/CalCOFI/docs/releases/download/documents/CalCOFI.io-docs.docx" }
     description: >-
-      The book on the CalCOFI.io data system — how to explore, access and cite the
-      data; the database, its keys and its releases; how to contribute a dataset;
-      the team's tools; and the data management plan.
+      One book on the CalCOFI.io data system, in five parts by who is reading: use the data,
+      understand the database, contribute data, work with the team, and the plan and the record.
+      Start here picks your path from the index; every page takes feedback, and the whole book
+      downloads as PDF or Word.
+    tech: [Quarto, R, Mermaid]
 
   # ── students (sorted by year desc, then title) ───────────────────────────
   - key: ucla-monitoring-map

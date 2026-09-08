@@ -267,6 +267,8 @@ layout: default
   <div class="cc-container ds-cols">
     <div class="ds-main">
       <h2 class="cc-h2">Cite</h2>
+      <p class="cc-prose cc-muted">This dataset's own citation. What to cite, and how, is
+        <a href="https://calcofi.io/docs/cite.html">a chapter of the docs book</a>.</p>
       {%- unless a.citation_main -%}
       <p class="cc-prose cc-muted">The provider has not confirmed a citation for this dataset yet
         {%- if r.status.questions_open %} ({{ r.status.questions_open | escape }} open question{% if r.status.questions_open != 1 %}s{% endif %} with the provider){% endif -%}.

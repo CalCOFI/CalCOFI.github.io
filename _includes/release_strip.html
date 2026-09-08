@@ -24,6 +24,8 @@
     <a class="cc-text-link" href="https://calcofi.io/db-schema/?v={{ rel.version | escape }}">schema ↗</a>
     <a class="cc-text-link" href="https://calcofi.io/db-query/">query ↗</a>
     <a class="cc-text-link" href="https://storage.calcofi.io/calcofi-db/ducklake/releases/RELEASES.html">changelog ↗</a>
-    <a class="cc-text-link" href="{{ '/datasets/release/' | relative_url }}">cite</a>
+    {%- comment -%} the release's own citation string, at the block that holds it; the docs book's
+      chapter (calcofi.io/docs/cite.html) is linked from there {%- endcomment -%}
+    <a class="cc-text-link" href="{{ '/datasets/release/#cite' | relative_url }}">cite</a>
   </div>
 </div>

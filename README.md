@@ -49,7 +49,12 @@ _data/line90_floor.json  the sea floor under Line 90 — GEBCO 2025 sampled ever
                          GEBCO. Without the file the drawing falls back to a drawn profile and says so.
 assets/reach.js          the reach: the static grid map (218 cells by pattern, the lines) and the years strip (one row per dataset
                          in the release, one cell per year, opacity by √n_roots; a hatched bar where the record
-                         carries only an asserted span — region-pooled phytoplankton, samples-only PIC tows)
+                         carries only an asserted span — region-pooled phytoplankton, samples-only PIC tows). The
+                         rows are grouped Biology then Environment by the dataset's HOME category realm, earliest
+                         start year first inside each, and every row carries that category's brand glyph right-
+                         aligned against the year field — the same icon its catalog tile wears. The glyph ids,
+                         names and realms come from the record through _plugins/datasets.rb (`cat`, `cat_name`,
+                         `realm` on each reach dataset); nothing about a category is typed in the script.
 #reach                   ONE inline JSON (~60 KB) the three drawings read — the cells, the coastline rings, every
                          dataset's measured years, the categories with the release's counts, the floor and the six
                          numbers — built by _plugins/datasets.rb (`site.data.reach`). No request; grid.geojson never
@@ -60,10 +65,16 @@ the numbers band         77 years · 842 cruises · 49 ships · 218 stations · 
                          _data/release_catalog.json — NOT catalog.json, which Jekyll would load over the
                          generator's site.data.catalog) and release.total_rows. A value the build cannot read is not
                          rendered — the tile collapses; nothing is typed.
-the bento                a 6-column grid on 150 px rows: Where (the static map), When (the strip), Latest release, the
-                         ship's log, Explore (the app's own card shots and lens glyphs), Get the data (five snippets
-                         behind radio-input tabs, no script) and Life (the taxa count). No tile ends in a button: the
-                         one CTA is the hero's; every tile ends in an uppercase text link.
+the bento                a 6-column grid on 25 px rows: Where (the static map), When (the strip), Latest release, the
+                         ship's log, Explore, Get the data (five snippets behind radio-input tabs, no script) and
+                         Life (the taxa count). No tile ends in a button: the one CTA is the hero's; every tile ends
+                         in an uppercase text link. The Explore cell is not tile markup — it is the SAME
+                         _includes/product_card.html the Explore section below renders for the `explore` product, so
+                         the tile and the card cannot drift; .t-exp-cell only fits it to the tile. The row unit is
+                         25 px because check_layout.py holds every tile to 1.25x its own content's height and a
+                         150 px unit could not land inside that for more than two of the seven; a tile of n rows is
+                         41n − 16 px and all three columns end on row line 22, so the spans in style.css are a sum —
+                         never edit one alone.
 brand/v2 --cc-sec-*      the 18 tokens the section is painted with (both themes, additive, in the specimen); the map
                          and strip use --cc-map-*, --cc-stone, --cc-cyan and the record's own dataset colours. The
                          toggle repaints everything; nothing listens for cc:theme.

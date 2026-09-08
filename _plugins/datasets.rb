@@ -288,6 +288,11 @@ module CalCOFI
               "name"     => d["dataset_name_short"] || d["dataset_name"] || d["dataset_key"],
               "url"      => page_url(d),
               "color"    => dot_color(d),
+              # the dataset's HOME category — its glyph and its realm, so the strip can group the
+              # rows Biology then Environment and mark each with the same icon the catalog tile wears
+              "cat"      => icon_for(d.dig("category", "icon")),
+              "cat_name" => Fmt.present(d.dig("category", "name")),
+              "realm"    => d.dig("category", "realm") || "env",
               "temporal" => Fmt.present(cov["temporal"]),
               "ymin"     => cov["year_min"], "ymax" => cov["year_max"],
               "years"    => (cov["years"] || []).map { |y| [y["year"], y["n_roots"], y["n_obs"]] } }
