@@ -161,8 +161,11 @@ products:
     description: >-
       Explore decades of fish larvae and oceanographic bottle data together —
       filter by taxa, depth and season over dynamic hexagon maps, time series
-      and depth profiles.
+      and depth profiles. Superseded by the Explorer's hexagons lens (Ben, 2026-09-08);
+      kept serving.
     tech: [R, Shiny, DuckDB, H3, MapLibre]
+    status: superseded
+    superseded_by: explore
 
   - key: db-viz-cruise
     added: 2026-06-10
@@ -180,8 +183,11 @@ products:
     shots: themed
     description: >-
       Cross-dataset observation explorer — compare coverage across cruises,
-      datasets and depths, with shareable deep-link URLs.
+      datasets and depths, with shareable deep-link URLs. Superseded by the Explorer's
+      cruises lens (Ben, 2026-09-08); kept serving.
     tech: [R, Shiny, DuckDB]
+    status: superseded
+    superseded_by: explore
 
   - key: oceano
     added: 2026-06-10
