@@ -403,8 +403,9 @@ products:
     img: images/docs_dark.png   # fallback; the card shows the _dark/_light pair
     shots: themed
     description: >-
-      Technical documentation of the data ecosystem — data access, database,
-      API, apps, maps and reports.
+      The book on the CalCOFI.io data system — how to explore, access and cite the
+      data; the database, its keys and its releases; how to contribute a dataset;
+      the team's tools; and the data management plan.
 
   # ── students (sorted by year desc, then title) ───────────────────────────
   - key: ucla-monitoring-map
