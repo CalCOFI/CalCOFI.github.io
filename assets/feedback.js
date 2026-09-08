@@ -1,6 +1,6 @@
 /* assets/feedback.js — the Explorer's feedback dialog, ported to plain JS for calcofi.io (2026-09-08).
    The header's speech-bubble button (beside the theme toggle) and the footer's "Send feedback" open one
-   dialog: the current view is captured (html-to-image, vendored in assets/vendor/, loaded on first use),
+   dialog: the current view is captured (html-to-image, vendored in assets/lib/, loaded on first use),
    shown as a thumbnail with edit (the annotator: arrow · circle · rectangle · pen · text, three colours,
    undo, clear) and retake, and posted with the note, this page's URL, the release, the viewport and the
    theme to the Apps Script endpoint calcofi4r::cc_feedback_script() generates (_config.yml feedback_url —
@@ -36,7 +36,7 @@
               release: btn.getAttribute('data-release') || '', app: btn.getAttribute('data-app') || 'calcofi-io', label: 'feedback' };
   if (!/^https?:\/\//.test(cfg.endpoint)) cfg.endpoint = '';
   var base = (function () { var s = document.currentScript && document.currentScript.src; return s ? s.replace(/assets\/feedback\.js.*$/, '') : '/'; })();
-  var VENDOR = base + 'assets/vendor/html-to-image-1.11.13.min.js', FONTS = base + 'brand/v2/fonts.css', SPRITE = base + 'brand/v2/icons/calcofi-icons.svg';
+  var VENDOR = base + 'assets/lib/html-to-image-1.11.13.min.js', FONTS = base + 'brand/v2/fonts.css', SPRITE = base + 'brand/v2/icons/calcofi-icons.svg';
 
   /* ── capture ────────────────────────────────────────────────────────────────────────────── */
   var libP = null, fontP = null, spriteDone = false;

@@ -103,7 +103,7 @@ path (a prefilled issue in this repo, the screenshot copied to the clipboard). W
 out in the dialog; an email is optional and never public.
 
 - **The capture** is the viewport slice of the page, by [html-to-image](https://github.com/bubkoo/html-to-image)
-  (MIT; vendored in `assets/vendor/`, loaded on first use — no CDN), set in the page's own fonts
+  (MIT; vendored in `assets/lib/`, loaded on first use — no CDN), set in the page's own fonts
   (`brand/v2/fonts.css` is fetched and its woff2 inlined). Two things a serialized SVG cannot do are
   done first: the brand sprite is inlined so the drawing's `<use>` glyphs resolve locally, and every
   SVG element's computed paint is stamped as inline style for the instant of the capture (the library
