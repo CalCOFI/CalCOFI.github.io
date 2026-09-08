@@ -76,6 +76,13 @@
       <a href="https://calcofi.org">calcofi.org ↗</a>
     </nav>
 
+    {%- comment -%}
+      Feedback (the Explorer's dialog, ported to plain JS — assets/feedback.js): captures this view, lets
+      the reader mark it up, and sends it with the note, the URL, release, viewport and theme to the team.
+      An icon button beside the toggle; the footer spells it out.
+    {%- endcomment -%}
+    <button class="cc-icon-button cc-feedback" type="button" aria-label="Send feedback" title="Send feedback — with a screenshot of this view"
+      data-endpoint="{{ site.feedback_url }}" data-repo="{{ site.feedback_repo }}" data-release="{{ site.data.catalog.release.version }}" data-app="calcofi-io"><i class="cc-i cc-i-ui-feedback" aria-hidden="true"></i></button>
     <button class="cc-theme-toggle" type="button" aria-label="Toggle dark / light theme">🌓</button>
   </header>
 
@@ -111,7 +118,8 @@
             <a href="https://calcofi.org">CalCOFI.org</a><br>
             <a href="https://github.com/CalCOFI">github.com/CalCOFI</a><br>
             <a href="https://status.calcofi.io">status</a> · <a href="{{ '/analytics/' | relative_url }}">usage</a><br>
-            <a href="{{ '/brand/v2/' | relative_url }}">brand</a>
+            <a href="{{ '/brand/v2/' | relative_url }}">brand</a><br>
+            <a href="#" class="cc-feedback-link" data-feedback><i class="cc-i cc-i-ui-feedback" aria-hidden="true"></i> Send feedback</a>
           </p>
         </div>
       </div>
@@ -120,5 +128,6 @@
   <div class="cc-footer-bar"><div class="cc-container">© {{ site.time | date: "%Y" }} CalCOFI · calcofi.io</div></div>
 
 </div>
+<script defer src="{{ '/assets/feedback.js' | relative_url }}"></script>
 </body>
 </html>

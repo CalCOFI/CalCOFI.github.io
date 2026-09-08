@@ -90,6 +90,30 @@ six numbers on the band equal the inline record's; the strip has one row per dat
 mark per cell; nothing on the first screen computes to `--warn` but the CTA; every pin's calcofi.org
 page answers a ranged GET. Lighthouse accessibility is 100 on `/` and `/news/` in both themes.
 
+## Feedback (the Explorer's dialog, on every page)
+
+The speech-bubble button beside the theme toggle and the footer's **Send feedback** open the Explorer's
+feedback dialog, ported to plain JS (`assets/feedback.js`, 2026-09-08): the current view is captured,
+shown as a thumbnail with **edit** (the annotator — arrow · circle · rectangle · pen · text, three
+colours, undo, clear) and **retake**, and sent with the note, the page's URL, the release, the viewport
+and the theme. It posts to the same Apps Script endpoint the Explorer uses (`_config.yml
+feedback_url`; `calcofi4r::cc_feedback_script()` — the "CalCOFI app feedback" Sheet, its `recipients`
+tab, the Drive folder), with `app: calcofi-io`; **Open as GitHub issue myself** is the zero-backend
+path (a prefilled issue in this repo, the screenshot copied to the clipboard). What is sent is spelled
+out in the dialog; an email is optional and never public.
+
+- **The capture** is the viewport slice of the page, by [html-to-image](https://github.com/bubkoo/html-to-image)
+  (MIT; vendored in `assets/vendor/`, loaded on first use — no CDN), set in the page's own fonts
+  (`brand/v2/fonts.css` is fetched and its woff2 inlined). Two things a serialized SVG cannot do are
+  done first: the brand sprite is inlined so the drawing's `<use>` glyphs resolve locally, and every
+  SVG element's computed paint is stamped as inline style for the instant of the capture (the library
+  copies computed styles, but the section's class-driven token fills came through black without it).
+- **The public issue** is filed by the Apps Script in the repo it maps the payload's `app` to. The
+  script deployed for the Explorer maps only `explore`; regenerate it with
+  `cc_feedback_script(repos = c(explore = "CalCOFI/explore", "calcofi-io" = "CalCOFI/CalCOFI.github.io"))`
+  and re-paste it (its `GITHUB_TOKEN` needs issues on this repo too) — until then a report from this
+  site still reaches the Sheet and the mail, and the issue step is skipped with a note in the row.
+
 ## The dataset catalog (`/datasets/`, `/data.json`)
 
 calcofi.io opens on the **dataset grid**, and every dataset has a page at
