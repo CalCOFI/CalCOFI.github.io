@@ -355,6 +355,17 @@ observations nor children is not drawn (ITIS's Bilateria and Deuterostomia, whos
 away — both keep their pages); and the 14 local classes hang under one *Dataset-local classes*
 node. 2,403 nodes drawn, and their direct observations still sum to the record's `obs_bio_rows`.
 
+**Two switches on the tree** (Ben, 2026-09-09: a species sat twelve indents deep and could not be
+clicked). By default the tree shows the **major ranks** — kingdom → phylum → class → order →
+family → genus → species — and any taxon observed at another rank (a suborder or subfamily
+identification is a real taxon with data); the unobserved minor ranks of the WoRMS lineage
+(subphylum, infraphylum, parvphylum, gigaclass, superclass, subclass, superorder, subfamily …) are
+folded out of the display and their shown descendants attach to the nearest shown ancestor.
+Counts never change — every rollup is over the full tree. **all ranks** (`?ranks=all`) shows
+everything. And either pane — the tree or the matrix — can be **expanded to the full width**
+with the ⤢ button in its header (`?panes=tree|matrix`; the choice is remembered per viewer), the
+⤡ button restores both. With both shown the tree pane is still exactly the matrix pane's height.
+
 **The inline JSON.** `/species/` inlines **one** payload (284 KB, 56 KB gzipped): every node with
 its key, name, common name, rank, parent, direct observations and per-dataset observations
 (datasets referenced by their index in `ds[]`), plus the class × dataset matrix and the icicle

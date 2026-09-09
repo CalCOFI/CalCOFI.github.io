@@ -919,10 +919,18 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 .sp-pane { background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius-card); overflow: hidden; min-width: 0; }
 .sp-pane-h { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 11px 16px 8px; border-bottom: 1px solid var(--border); }
 .sp-pane-h .cc-eyebrow { font-size: 11.5px; margin: 0; }
+.sp-pane-h .sp-hint { margin-left: auto; }
+/* expand one pane to the full width, or show both (species.js setPanes; ?panes=tree|matrix) */
+.sp-pane-max { flex: none; width: 26px; height: 22px; padding: 0; border: 1px solid var(--border); border-radius: 6px; background: transparent; color: var(--muted); font-size: 13px; line-height: 1; cursor: pointer; }
+.sp-pane-max:hover { color: var(--accent); border-color: var(--accent); }
+.sp-two[data-panes="tree"], .sp-two[data-panes="matrix"] { grid-template-columns: minmax(0, 1fr); }
+.sp-two[data-panes="tree"] .sp-pane-matrix, .sp-two[data-panes="matrix"] .sp-pane-tree { display: none; }
+.sp-two[data-panes="tree"] .sp-tree { height: min(82vh, 960px); }
+.sp-ranks-all { margin-left: 10px; }
 .sp-hint { font-size: 12.5px; color: var(--muted); }
 
 .sp-tree { height: 600px; overflow: auto; padding: 8px 10px 14px; font-size: 14px; }
-.sp-tree ul { list-style: none; margin: 0; padding: 0 0 0 18px; }
+.sp-tree ul { list-style: none; margin: 0; padding: 0 0 0 14px; }
 .sp-tree > ul { padding-left: 0; }
 .sp-tree li { margin: 0; }
 .sp-tr { display: grid; grid-template-columns: 20px 26px minmax(0, 1fr) auto auto; gap: 6px; align-items: center; padding: 3px 4px; border-radius: 6px; }

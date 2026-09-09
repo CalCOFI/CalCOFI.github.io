@@ -157,6 +157,28 @@
   };
   var ITALIC = { Genus: 1, Species: 1, Subspecies: 1, Variety: 1, Forma: 1 };
 
+  /* ── which ranks the tree shows: the major ranks by default, every rank on request ──────────
+     A WoRMS lineage carries Subphylum · Infraphylum · Parvphylum · Gigaclass · Superclass ·
+     Subclass … between the ranks people name, so a species sat twelve indents deep with no room
+     for its name (Ben, 2026-09-09). A node of a minor rank is folded out of the DISPLAY unless
+     something was observed at it (a suborder or subfamily identification is a real taxon with
+     data); its shown descendants attach to the nearest shown ancestor. Counts are untouched —
+     every rollup is over the full tree. `?ranks=all` (and the "all ranks" button) shows everything. */
+  var MAJOR = { Kingdom: 1, Phylum: 1, 'Phylum (Division)': 1, Class: 1, Order: 1, Family: 1, Genus: 1,
+                Species: 1, Subspecies: 1, Variety: 1, Forma: 1 };
+  var allRanks = new URLSearchParams(location.search).get('ranks') === 'all';
+  function shown(k) { var n = N[k]; return allRanks || !n.r || MAJOR[n.r] === 1 || (n.o || 0) > 0; }
+  var CD = {};
+  function kidsOf(k) {
+    if (allRanks) return C[k] || [];
+    if (CD[k]) return CD[k];
+    var out = [];
+    (C[k] || []).forEach(function (c) { if (shown(c)) out.push(c); else out = out.concat(kidsOf(c)); });
+    out.sort(function (x, y) { return R[y].o - R[x].o || String(N[x].n || N[x].l || '').localeCompare(String(N[y].n || N[y].l || '')); });
+    CD[k] = out;
+    return out;
+  }
+
   /* ── the tooltip ─────────────────────────────────────────────────────────────────────────── */
   function place(e) {
     var host = tt.parentElement.getBoundingClientRect();
@@ -188,7 +210,7 @@
   }
 
   function rowEl(k) {
-    var n = N[k], r = R[k], kids = C[k] || [], it = ITALIC[n.r];
+    var n = N[k], r = R[k], kids = kidsOf(k), it = ITALIC[n.r];
     var li = document.createElement('li');
     li.dataset.k = k;
     li.setAttribute('role', 'treeitem');
@@ -220,7 +242,7 @@
     else {
       ul = document.createElement('ul');
       ul.setAttribute('role', 'group');
-      (C[li.dataset.k] || []).forEach(function (c) { ul.appendChild(rowEl(c)); });
+      kidsOf(li.dataset.k).forEach(function (c) { ul.appendChild(rowEl(c)); });
       li.appendChild(ul);
     }
     li.setAttribute('aria-expanded', 'true');
@@ -248,7 +270,7 @@
     var lvl = rankLevel(rank);
     var walk = function (li) {
       var k = li.dataset.k, myLvl = rankLevel(N[k].r);
-      if (myLvl < lvl && (C[k] || []).length) {
+      if (myLvl < lvl && kidsOf(k).length) {
         expand(li);
         li.querySelectorAll(':scope > ul > li').forEach(walk);
       } else collapse(li);
@@ -257,9 +279,9 @@
   }
   foldTo('Phylum');
 
-  document.querySelectorAll('.sp-rankf button').forEach(function (b) {
+  document.querySelectorAll('.sp-rankf button[data-fold]').forEach(function (b) {
     b.addEventListener('click', function () {
-      document.querySelectorAll('.sp-rankf button').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+      document.querySelectorAll('.sp-rankf button[data-fold]').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
       q.value = '';
       writeQ('');
       clearHits();
@@ -287,7 +309,8 @@
     tree.querySelectorAll('.sp-tr.sp-hit').forEach(function (el) { el.classList.remove('sp-hit'); });
     qn.textContent = fmt(D.counts.tree) + ' in the tree';
   }
-  function ancestorsOf(k) { var a = [], p = N[k].p; while (p) { a.unshift(p); p = N[p].p; } return a; }
+  /* the ancestors the tree SHOWS — a folded minor rank is not a row to open */
+  function ancestorsOf(k) { var a = [], p = N[k].p; while (p) { if (shown(p)) a.unshift(p); p = N[p].p; } return a; }
   function reveal(k) {
     var ul = rootUl, chain = ancestorsOf(k).concat([k]), i, li;
     for (i = 0; i < chain.length; i++) {
@@ -303,10 +326,9 @@
     clearHits();
     s = (s || '').trim().toLowerCase();
     if (s.length < 2) return;
-    var hits = IDX.filter(function (x) { return x.s.indexOf(s) >= 0; })
-                  .map(function (x) { return x.k; })
-                  .sort(function (a, b) { return R[b].o - R[a].o; })
-                  .slice(0, 250);
+    var found = IDX.filter(function (x) { return x.s.indexOf(s) >= 0; }).map(function (x) { return x.k; });
+    var hits = found.filter(shown).sort(function (a, b) { return R[b].o - R[a].o; }).slice(0, 250);
+    var folded = found.length - found.filter(shown).length;
     tree.querySelectorAll(':scope > ul > li').forEach(collapse);
     var first = null;
     hits.forEach(function (k) {
@@ -315,7 +337,8 @@
       li.querySelector(':scope > .sp-tr').classList.add('sp-hit');
       if (!first) first = li;
     });
-    qn.textContent = fmt(hits.length) + (hits.length === 250 ? '+ matches' : ' match' + (hits.length === 1 ? '' : 'es'));
+    qn.textContent = fmt(hits.length) + (hits.length === 250 ? '+ matches' : ' match' + (hits.length === 1 ? '' : 'es')) +
+                     (folded ? ' · ' + fmt(folded) + ' at intermediate ranks (all ranks)' : '');
     if (first && scroll !== false) first.scrollIntoView({ block: 'center', behavior: 'instant' });
   }
   function writeQ(s) {
@@ -326,6 +349,30 @@
   }
   clearHits();
   q.addEventListener('input', function () { runSearch(q.value); writeQ(q.value.trim()); });
+
+  /* the "all ranks" switch rebuilds the tree in the other display, keeping the fold and the search */
+  function rebuildTree() {
+    CD = {};
+    rootUl.innerHTML = '';
+    roots.forEach(function (k) { rootUl.appendChild(rowEl(k)); });
+    var f = document.querySelector('.sp-rankf button[data-fold][aria-pressed="true"]');
+    foldTo(f ? f.dataset.fold : 'Phylum');
+    if (q.value.trim()) runSearch(q.value, false); else clearHits();
+  }
+  var rankAll = document.querySelector('.sp-rankf button[data-ranks="all"]');
+  if (rankAll) {
+    rankAll.setAttribute('aria-pressed', String(allRanks));
+    rankAll.addEventListener('click', function () {
+      allRanks = !allRanks;
+      rankAll.setAttribute('aria-pressed', String(allRanks));
+      if (history.replaceState) {
+        var u = new URL(location.href);
+        if (allRanks) u.searchParams.set('ranks', 'all'); else u.searchParams.delete('ranks');
+        history.replaceState(null, '', u.toString());
+      }
+      rebuildTree();
+    });
+  }
   var q0 = new URLSearchParams(location.search).get('q');
   if (q0) { q.value = q0; runSearch(q0); }
 
@@ -425,8 +472,9 @@
 
   /* the tree pane is exactly as tall as the matrix pane beside it — no unbounded text beside a
      fixed-height figure (the mockup's syncTree) */
+  var two = document.querySelector('.sp-two');
   function syncTree() {
-    if (innerWidth > 1000) {
+    if ((two.getAttribute('data-panes') || 'both') === 'both' && innerWidth > 1000) {
       var mp = mwrap.parentElement, ph = tree.parentElement.querySelector('.sp-pane-h');
       tree.style.height = Math.max(420, mp.offsetHeight - ph.offsetHeight - 2) + 'px';
     } else tree.style.height = '';
@@ -437,6 +485,35 @@
   requestAnimationFrame(function () { requestAnimationFrame(syncTree); });
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(syncTree);
   setTimeout(syncTree, 400);
+
+  /* ── the panes: expand the tree or the matrix to the full width, or show both (Ben, 2026-09-09:
+     "trouble clicking into a species because of crowding") — `?panes=tree|matrix` in the URL,
+     the last choice remembered per viewer ────────────────────────────────────────────────────── */
+  function setPanes(mode, write) {
+    mode = (mode === 'tree' || mode === 'matrix') ? mode : 'both';
+    two.setAttribute('data-panes', mode);
+    document.querySelectorAll('.sp-pane-max').forEach(function (b) {
+      var own = b.dataset.pane, alone = mode === own, label = alone ? 'Show both panes' : 'Expand the ' + own + ' to the full width';
+      b.textContent = alone ? '⤡' : '⤢';
+      b.setAttribute('aria-label', label);
+      b.title = label;
+    });
+    try { localStorage.setItem('cc_species_panes', mode); } catch (e) {}
+    if (write !== false && history.replaceState) {
+      var u = new URL(location.href);
+      if (mode === 'both') u.searchParams.delete('panes'); else u.searchParams.set('panes', mode);
+      history.replaceState(null, '', u.toString());
+    }
+    syncTree();
+  }
+  document.querySelectorAll('.sp-pane-max').forEach(function (b) {
+    b.addEventListener('click', function () {
+      setPanes(two.getAttribute('data-panes') === b.dataset.pane ? 'both' : b.dataset.pane);
+    });
+  });
+  var panes0 = new URLSearchParams(location.search).get('panes'), panesStored = null;
+  try { panesStored = localStorage.getItem('cc_species_panes'); } catch (e) {}
+  setPanes(panes0 || panesStored || 'both', !!panes0);
 
   /* ── the icicle ──────────────────────────────────────────────────────────────────────────── */
   var LEV = ['Kingdom', 'Phylum', 'Class', 'Order', 'Family'];

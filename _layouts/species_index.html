@@ -51,21 +51,24 @@ layout: default
         <button type="button" data-fold="Class" aria-pressed="false">classes</button>
         <button type="button" data-fold="Family" aria-pressed="false">families</button>
         <button type="button" data-fold="Species" aria-pressed="false">everything</button>
+        <button type="button" class="sp-ranks-all" data-ranks="all" aria-pressed="false" title="Show every rank of the lineage (subphylum, superclass, subfamily …); by default the tree shows kingdom → phylum → class → order → family → genus → species and any taxon observed at another rank">all ranks</button>
       </div>
     </div>
 
-    <div class="sp-two">
-      <div class="sp-pane">
+    <div class="sp-two" data-panes="both">
+      <div class="sp-pane sp-pane-tree">
         <div class="sp-pane-h">
           <h2 class="cc-eyebrow">The tree · {{ c.pages }} taxa with an observation at or below</h2>
           <span class="sp-hint">species · observations · datasets</span>
+          <button type="button" class="sp-pane-max" data-pane="tree" aria-label="Expand the tree to the full width">⤢</button>
         </div>
         <div class="sp-tree" id="sp-tree" role="tree" aria-label="Taxonomic tree"></div>
       </div>
-      <div class="sp-pane">
+      <div class="sp-pane sp-pane-matrix">
         <div class="sp-pane-h">
           <h2 class="cc-eyebrow">Which species, in which datasets</h2>
           <span class="sp-hint">taxa observed · class × dataset</span>
+          <button type="button" class="sp-pane-max" data-pane="matrix" aria-label="Expand the matrix to the full width">⤢</button>
         </div>
         <div class="sp-matrix" id="sp-matrix"></div>
       </div>
