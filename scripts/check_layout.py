@@ -27,9 +27,19 @@ can only pass by the layout actually being fixed:
              table column wrapped to five lines on a phone.
   erddap     (dataset pages) each ERDDAP dataset id's tabledap page appears exactly once. It was
              listed twice: once under Download for its formats, once under Services for its page.
+  species    (/species/ and one taxon page, plan 2026-09-09 § S3) the index's five counts equal the
+             inline record's; the matrix has exactly (rows x datasets) cells and its pane is not
+             drawn taller than its own content; the tree pane is EXACTLY the matrix pane's height
+             (the tree scrolls inside it, so no unbounded text sits beside a fixed-height figure);
+             every .sp-url is one line and elided from the middle rather than wrapped; on a taxon
+             page the "Observed in" rows are the record's datasets[] with its counts, the lineage
+             is a chain of links ending in the taxon's parent, and the Explorer link opens
+             prefilled on the taxon key.
   front door (/, plan 2026-09-07 § D-8) the hero's SVG is drawn <= 62 vh at 1470 and the copy's
              text does not overlap the ship's bounding box; no .tile is drawn > 1.25 x its natural
-             height; the numbers on the band equal the inline #reach record's; the years strip has
+             height; the six numbers on the band (years · cruises · stations · species · organism
+             obs. · measurements) equal the inline #reach record's, and measurements + organism
+             observations never exceed the release's own row count; the years strip has
              exactly datasets.length rows; the map has exactly stations.length marks; nothing on the
              first screen computes to --warn except the one CTA; every pin href answers 200/206 to
              a ranged GET (the way build_workflows_index.R probes; checked once, not per theme).
@@ -47,6 +57,8 @@ DEFAULT_PATHS = [
     "/datasets/calcofi_ctd-cast/",   # the big one: 3 ERDDAP ids, 33 variables, a long abstract
     "/datasets/swfsc_ichthyo/",      # 29 distributions, 6 registrations, a bbox beyond the frame
     "/datasets/calcofi_prodo/",      # a holding: no map, no Access-from-the-release, a long name
+    "/species/",                     # the species catalog: search + tree, the matrix, the icicle
+    "/species/worms-217452/",        # the sardine: two datasets, twelve lineage ranks, five ways in
 ]
 
 # ── the probe ─────────────────────────────────────────────────────────────────
@@ -228,6 +240,82 @@ PROBE = r"""
     };
   }
 
+  // ── the species catalog (plan 2026-09-09 § S3) ─────────────────────────────
+  // The index: the counts, the matrix's shape and the two panes, all read back from the page's own
+  // inline record so the check compares the drawing with the data it was drawn from.
+  const spData = d.getElementById("sp-data");
+  if (spData) {
+    let rec = null; try { rec = JSON.parse(spData.textContent); } catch (e) {}
+    const num = s2 => +String(s2 || "").replace(/[^0-9]/g, "");
+    const counts = [...d.querySelectorAll(".sp-counts > div")].map(el => ({
+      label: el.querySelector("dt").textContent.trim(), value: num(el.querySelector("dd").textContent)
+    }));
+    const tree = d.getElementById("sp-tree"), mwrap = d.getElementById("sp-matrix");
+    const pane = el => el && el.closest(".sp-pane");
+    // a pane's natural height: the same pane with its scroll box let be its content's height
+    const natural = el => {
+      if (!el) return 0;
+      const p2 = pane(el), was = tree.style.height;
+      tree.style.height = "auto";
+      void p2.offsetHeight;
+      const h = p2.getBoundingClientRect().height;
+      tree.style.height = was;
+      return h;
+    };
+    out.species = {
+      counts,
+      rec: rec && rec.counts,
+      rows: rec && rec.mx ? rec.mx.rows.length : null,
+      cols: rec && rec.mx ? rec.mx.cols.length : null,
+      cells: d.querySelectorAll(".sp-mx .sp-c").length,
+      treePane: pane(tree) ? px(pane(tree).getBoundingClientRect().height) : 0,
+      matrixPane: pane(mwrap) ? px(pane(mwrap).getBoundingClientRect().height) : 0,
+      matrixNatural: pane(mwrap) ? px(pane(mwrap).scrollHeight) : 0,
+      iceRects: d.querySelectorAll("#sp-ice rect").length,
+      treeRoots: d.querySelectorAll('#sp-tree > ul > li[role="treeitem"]').length,
+      warnEls: [...d.querySelectorAll(".sp-body *, .sp-head *")].filter(el => {
+        const st = cs(el), w = out.warn;
+        return st.color.replace(/\s/g, "") === w || st.backgroundColor.replace(/\s/g, "") === w;
+      }).map(el => String(el.className || el.tagName)).slice(0, 6)
+    };
+    void natural;   // the tree pane is bounded by the matrix pane, which is checked directly
+  }
+
+  // one taxon page: the rows, the lineage and the Explorer link against the page's own record
+  const spStrip = d.getElementById("sp-strip-data");
+  if (spStrip) {
+    let S = null; try { S = JSON.parse(spStrip.textContent); } catch (e) {}
+    const numc = s2 => +String(s2 || "").replace(/,/g, "").match(/\d+/);
+    out.speciesPage = {
+      key: S && S.key,
+      recRows: S ? S.rows.map(r => ({ name: r.s, n: r.n })) : [],
+      rows: [...d.querySelectorAll(".sp-dsrow")].map(li => ({
+        name: (li.querySelector(".sp-l1 a") || {}).textContent || "",
+        n: numc((li.querySelector(".sp-meta") || {}).textContent)
+      })),
+      lineage: [...d.querySelectorAll(".sp-lineage a")].map(a => ({ name: a.textContent.trim(), href: a.getAttribute("href") })),
+      here: (d.querySelector(".sp-lineage .sp-here") || {}).textContent || null,
+      explore: [...d.querySelectorAll('a[href*="/explore/"]')].map(a => a.getAttribute("href")),
+      stripRows: d.querySelectorAll("#sp-strip rect").length ? new Set([...d.querySelectorAll("#sp-strip rect")].map(r => r.getAttribute("y"))).size : 0,
+      // DRAWN, not merely populated: `.sp-strip:not([viewBox])` lowercases to `[viewbox]` in an
+      // HTML document and never matches SVG's camelCase attribute, so the strip was display:none
+      // with 93 rects in it and every count still agreed (measured 2026-09-09)
+      stripH: d.querySelector("#sp-strip") ? px(d.querySelector("#sp-strip").getBoundingClientRect().height) : 0,
+      stats: [...d.querySelectorAll(".sp-stat > div")].map(el => el.querySelector("dt").textContent.trim())
+    };
+  }
+
+  // every .sp-url is ONE line, and elided from the middle rather than wrapped or cut
+  out.spUrls = [...d.querySelectorAll(".sp-url")].map(a => ({
+    h: px(a.getBoundingClientRect().height),
+    lh: px(parseFloat(cs(a).lineHeight) || 0),
+    full: (a.getAttribute("data-full") || "").length,
+    shown: (a.textContent || "").length,
+    elided: (a.textContent || "").indexOf("\u2026") >= 0,
+    overflow: a.scrollWidth > a.clientWidth + 1,
+    t: (a.textContent || "").trim().slice(0, 48)
+  }));
+
   // one ERDDAP listing: count each tabledap page link
   const tabledap = {};
   [...d.querySelectorAll('a[href*="tabledap/"]')].forEach(a => {
@@ -349,6 +437,98 @@ def check(path, r, width, theme, fails, notes):
         if n != 1:
             fails.append(f"{where}: ERDDAP id {ds_id} listed {n} times, expected once")
 
+    # ── the species catalog's index (plan 2026-09-09 § S3) ────────────────────
+    sp = r.get("species")
+    if sp:
+        rec = sp.get("rec") or {}
+        # the five counts on the page are the record's, read back from the page's own inline JSON
+        want = {"species": rec.get("species_observed"), "taxa observed": rec.get("taxa_observed"),
+                "datasets": rec.get("datasets"), "observations": rec.get("obs_bio_rows"),
+                "pages": rec.get("pages")}
+        seen = {c["label"]: c["value"] for c in sp["counts"]}
+        for k, v in want.items():
+            if v is None:
+                continue
+            if k not in seen:
+                fails.append(f"{where}: the species index has no {k!r} count though the record carries {v}")
+            elif seen[k] != v:
+                fails.append(f"{where}: the index says {k} = {seen[k]}, the record says {v}")
+        # the matrix is exactly (classes + the two rows the record makes necessary) x datasets
+        if sp["rows"] and sp["cols"]:
+            wantc = sp["rows"] * sp["cols"]
+            if sp["cells"] != wantc:
+                fails.append(f"{where}: the matrix has {sp['cells']} cells for "
+                             f"{sp['rows']} rows x {sp['cols']} datasets ({wantc})")
+        if sp["iceRects"] < 10:
+            fails.append(f"{where}: the icicle drew {sp['iceRects']} bands")
+        if sp["treeRoots"] < 2:
+            fails.append(f"{where}: the tree drew {sp['treeRoots']} roots")
+        if sp["warnEls"]:
+            fails.append(f"{where}: --warn on the species index: {', '.join(sorted(set(sp['warnEls']))[:4])}")
+        # No unbounded text beside a fixed-height figure: the tree scrolls INSIDE a pane that is
+        # exactly the matrix pane's height, and the matrix pane is bounded by its own content — so
+        # neither pane can be drawn taller than something real (the tree's own content is 2,403
+        # nodes, taller than any pane).
+        if width >= 1100:
+            gap = abs(sp["treePane"] - sp["matrixPane"])
+            notes.append(f"{where}: panes tree {sp['treePane']}px / matrix {sp['matrixPane']}px, "
+                         f"matrix {sp['cells']} cells, icicle {sp['iceRects']} bands")
+            if gap > 4:
+                fails.append(f"{where}: the tree pane is {sp['treePane']}px and the matrix pane "
+                             f"{sp['matrixPane']}px ({gap}px apart) — they must match")
+            if sp["matrixNatural"] and sp["matrixPane"] > sp["matrixNatural"] * MAX_STRETCH:
+                fails.append(f"{where}: the matrix pane is drawn {sp['matrixPane']}px for "
+                             f"{sp['matrixNatural']}px of content")
+
+    # ── one taxon page ────────────────────────────────────────────────────────
+    spp = r.get("speciesPage")
+    if spp:
+        rec_rows = spp["recRows"]
+        rows = spp["rows"]
+        if len(rows) != len(rec_rows):
+            fails.append(f"{where}: {len(rows)} \"Observed in\" rows for {len(rec_rows)} datasets in the record")
+        else:
+            for got, wantr in zip(rows, rec_rows):
+                if got["name"].strip() != wantr["name"]:
+                    fails.append(f"{where}: row {got['name']!r}, the record says {wantr['name']!r}")
+                if got["n"] != wantr["n"]:
+                    fails.append(f"{where}: {wantr['name']} shows {got['n']} observations, "
+                                 f"the record says {wantr['n']}")
+        if not spp["lineage"]:
+            fails.append(f"{where}: the taxon page has no lineage")
+        for a in spp["lineage"]:
+            if not str(a["href"]).startswith("/species/"):
+                fails.append(f"{where}: lineage link {a['name']!r} does not point at a species page: {a['href']!r}")
+        if spp["key"] and str(spp["key"]).startswith(("worms:", "itis:")):
+            wanted = f"https://calcofi.io/explore/?taxon={spp['key']}"
+            if wanted not in spp["explore"]:
+                fails.append(f"{where}: the Explorer link is {spp['explore']!r}, expected {wanted}")
+        if spp["stripRows"] and len(rec_rows) and spp["stripRows"] != len(rec_rows):
+            fails.append(f"{where}: the years strip has {spp['stripRows']} rows for {len(rec_rows)} datasets")
+        if rec_rows and spp["stripH"] < 20:
+            fails.append(f"{where}: the years strip is {spp['stripH']}px tall though the record has "
+                         f"{len(rec_rows)} dataset(s) — it is drawn but not displayed")
+        notes.append(f"{where}: {len(rows)} dataset row(s), {len(spp['lineage'])} lineage links, "
+                     f"strip {spp['stripRows']} rows / {spp['stripH']}px, stats {' · '.join(spp['stats'])}")
+        # the sardine is the named regression case: its lineage, its two datasets and their counts
+        if spp["key"] == "worms:217452":
+            chain = [a["name"] for a in spp["lineage"]]
+            wantchain = ["Biota", "Animalia", "Chordata", "Vertebrata", "Gnathostomata", "Osteichthyes",
+                         "Actinopterygii", "Actinopteri", "Teleostei", "Clupeiformes", "Alosidae", "Sardinops"]
+            if chain != wantchain:
+                fails.append(f"{where}: the sardine's lineage reads {' › '.join(chain)}")
+            if spp["here"] != "Sardinops sagax":
+                fails.append(f"{where}: the lineage ends at {spp['here']!r}, expected 'Sardinops sagax'")
+
+    # every URL row is one line, and elided from the middle rather than wrapped or simply cut off
+    for u in r.get("spUrls", []):
+        if u["lh"] and u["h"] > u["lh"] * 1.6:
+            fails.append(f"{where}: a species URL wraps ({u['h']}px over a {u['lh']}px line): {u['t']}…")
+        if u["overflow"]:
+            fails.append(f"{where}: a species URL overflows its line rather than being elided: {u['t']}…")
+        if u["full"] and u["shown"] < u["full"] and not u["elided"]:
+            fails.append(f"{where}: a species URL is cut short without an ellipsis: {u['t']}…")
+
     # ── the front door (plan 2026-09-07 § D-8) ────────────────────────────────
     fr = r.get("front")
     if fr:
@@ -366,8 +546,14 @@ def check(path, r, width, theme, fails, notes):
             if t["ratio"] > MAX_TILE_STRETCH:
                 fails.append(f"{where}: tile {t['name'].strip()!r} drawn {t['drawn']}px for {t['natural']}px of content ({t['ratio']}x)")
         n = fr.get("reachNumbers") or {}
-        want = {"years": n.get("years"), "cruises": n.get("cruises"), "ships": n.get("ships"), "stations": n.get("stations"),
-                "taxa": n.get("taxa"), "rows": n.get("rows_m")}
+        # the band (plan 2026-09-09 § D9): years · cruises · stations · species · organism obs. ·
+        # measurements. `ships` left the band for the hero's eyebrow and `rows` for the release strip
+        # and the release tile — a "row" is 78 % one full-resolution CTD table and counts the `obs`
+        # compatibility copy twice, so it says nothing about what CalCOFI holds. The keys are the
+        # dt's leading words; the value is the dd, parsed.
+        want = {"years": n.get("years"), "cruises": n.get("cruises"), "stations": n.get("stations"),
+                "species": n.get("species"), "organism obs": n.get("organism_obs_m"),
+                "measurements": n.get("measurements_m")}
         seen = {}
         for b in fr["band"]:
             key = next((k for k in want if b["label"].startswith(k)), None)
@@ -383,6 +569,12 @@ def check(path, r, width, theme, fails, notes):
         for k in seen:
             if want.get(k) is None:
                 fails.append(f"{where}: the band shows {k!r} = {seen[k]:g} but the record carries no value")
+        # both are sums over the same catalog tables[] the release's total_rows is summed from, so
+        # neither the band nor a future re-cut of `numbers` can claim more rows than the release has
+        mm, om, rm = n.get("measurements_m"), n.get("organism_obs_m"), n.get("rows_m")
+        if None not in (mm, om, rm) and mm + om > rm:
+            fails.append(f"{where}: measurements {mm} M + organism observations {om} M "
+                         f"exceed the release's {rm} M rows")
         if fr["datasets"] is not None and fr["stripRows"] != fr["datasets"]:
             fails.append(f"{where}: the years strip has {fr['stripRows']} rows for {fr['datasets']} datasets")
         if fr["stations"] is not None and fr["mapMarks"] != fr["stations"]:

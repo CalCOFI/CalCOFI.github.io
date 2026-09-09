@@ -13,6 +13,11 @@
 #
 # Types are quiet chips, none is yellow: --warn marks a state that needs attention, never a kind of
 # thing. Dates below are from RELEASES.md and the repos' merge dates.
+#
+# A row that links the changelog links a HEADING in it, not the top of the page: the rendered
+# RELEASES.html stamps a slug id on every `##` (`#one-climatology-for-every-anomaly`) and the version
+# string itself on each version heading (`#v2026.09.06`). scripts/check_news.py GETs that page once
+# after a build and fails on a fragment it cannot find, so an anchor cannot rot unnoticed.
 
 - date: 2026-09-07
   type: site
@@ -37,10 +42,10 @@
   type: data
   title: "One climatology for every anomaly"
   body: "A 1993–2013, month-matched, 10 m-binned baseline ships in the release; ctd-transects, the Explorer's Sections lens and calcofi4r::cc_climatology() now subtract the same table."
-  url: https://storage.calcofi.io/calcofi-db/ducklake/releases/RELEASES.html
+  url: https://storage.calcofi.io/calcofi-db/ducklake/releases/RELEASES.html#one-climatology-for-every-anomaly
 
 - date: 2026-08-25
   type: data
   title: "Quality flags reach the plots"
   body: "A 1955 oxygen spike flagged suspect since 1955 had been drawn for years; every consumer now applies each dataset's own quality flags. Cruise keys resolve by date span, so casts stop drifting onto the neighbouring month's cruise."
-  url: https://storage.calcofi.io/calcofi-db/ducklake/releases/RELEASES.html
+  url: https://storage.calcofi.io/calcofi-db/ducklake/releases/RELEASES.html#a-quality-flag-now-reaches-every-consumer-not-just-the-database

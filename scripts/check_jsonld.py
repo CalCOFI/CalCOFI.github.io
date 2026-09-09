@@ -17,6 +17,16 @@ What it asserts, and why each rule is here:
     · the sidecar /datasets/{key}.jsonld is byte-identical in meaning to the in-page block
     · /datasets/ itself is a DataCatalog whose `dataset` list matches the pages that exist
 
+  JSON-LD (schema.org/Taxon) on the species catalog, when the release carries taxa.json
+    · every /species/*/ page carries exactly one JSON-LD block, and it parses
+    · @type Taxon with `name`, `identifier` (the WoRMS LSID, or ITIS's TSN page) and an absolute
+      `url` that is the page's own; `taxonRank` on every taxon an authority ranks — the 14
+      dataset-local classes have no rank in the record and none is invented here
+    · `parentTaxon` exactly where the record gives the entry a parent (read back from the sidecar
+      /species/{slug}.json, so the page cannot claim a lineage the record does not have)
+    · /species/ is one CollectionPage
+    · /species/sitemap.xml lists the species pages that exist, and nothing else
+
   sitemap.xml — well-formed, every <loc> absolute, one entry per public page, none for an
     `internal` record
 
@@ -264,6 +274,104 @@ def check_data_json(site):
         notes.append("data.json: valid against the DCAT-US 1.1 schema")
 
 
+# ── the species catalog (plan 2026-09-09 § S2) ────────────────────────────────
+# A release without taxa.json draws no species pages at all (the D-2 rule), so an empty /species/
+# is not a failure — it is noted and skipped. Every rule below mirrors a dataset rule above.
+def check_species(site, base):
+    root = site / "species"
+    if not root.is_dir():
+        notes.append("species: no /species/ — the release carries no taxa.json")
+        return
+    pages = sorted(p for p in root.glob("*/index.html"))
+    if not pages:
+        return fail("species/", "the /species/ directory exists but holds no taxon pages")
+    slugs = []
+    for p in pages:
+        slug = p.parent.name
+        where = f"species/{slug}/"
+        bs = blocks(p)
+        if len(bs) != 1:
+            fail(where, f"{len(bs)} JSON-LD blocks, expected exactly 1")
+            continue
+        try:
+            node = json.loads(bs[0])
+        except json.JSONDecodeError as e:
+            fail(where, f"JSON-LD does not parse: {e}")
+            continue
+        slugs.append(slug)
+        if node.get("@type") != "Taxon":
+            fail(where, f'@type is {node.get("@type")!r}, expected "Taxon"')
+        for req in ("name", "identifier", "url"):
+            if not node.get(req):
+                fail(where, f"missing {req}")
+        page_url = f"{base}/species/{slug}/"
+        if node.get("url") and node["url"] != page_url:
+            fail(where, f'url {node["url"]} is not the page URL {page_url}')
+        if node.get("@id") and node["@id"] != page_url:
+            fail(where, f'@id {node["@id"]} is not the page URL {page_url}')
+        # the record beside the page is the authority on rank and parent
+        rec_path = root / f"{slug}.json"
+        if not rec_path.exists():
+            fail(where, f"no record species/{slug}.json")
+            continue
+        try:
+            rec = json.loads(rec_path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as e:
+            fail(where, f"record species/{slug}.json does not parse: {e}")
+            continue
+        if rec.get("rank") and node.get("taxonRank") != rec["rank"]:
+            fail(where, f'taxonRank {node.get("taxonRank")!r}, the record says {rec["rank"]!r}')
+        if not rec.get("rank") and node.get("taxonRank"):
+            fail(where, f'taxonRank {node.get("taxonRank")!r} on a taxon the record gives no rank')
+        want_parent = bool(rec.get("parent_taxon_key"))
+        has_parent = bool(node.get("parentTaxon"))
+        if want_parent != has_parent:
+            fail(where, f"parentTaxon {'missing' if want_parent else 'invented'} "
+                        f"(the record's parent_taxon_key is {rec.get('parent_taxon_key')!r})")
+        if has_parent:
+            pu = node["parentTaxon"].get("url", "")
+            if not str(pu).startswith(f"{base}/species/"):
+                fail(where, f"parentTaxon.url is not a species page: {pu!r}")
+        if rec.get("slug") and rec["slug"] != slug:
+            fail(where, f'the record\'s slug is {rec["slug"]!r} but the page directory is {slug!r}')
+
+    idx = root / "index.html"
+    if not idx.exists():
+        fail("species/", "no /species/ index page")
+    else:
+        bs = blocks(idx)
+        if len(bs) != 1:
+            fail("species/", f"{len(bs)} JSON-LD blocks, expected 1")
+        else:
+            node = json.loads(bs[0])
+            if node.get("@type") != "CollectionPage":
+                fail("species/", f'@type {node.get("@type")!r}, expected "CollectionPage"')
+            if node.get("url") != f"{base}/species/":
+                fail("species/", f'url {node.get("url")!r} is not {base}/species/')
+
+    sm = root / "sitemap.xml"
+    if not sm.exists():
+        fail("species/sitemap.xml", "missing")
+    else:
+        try:
+            xroot = ET.fromstring(sm.read_text(encoding="utf-8"))
+        except ET.ParseError as e:
+            return fail("species/sitemap.xml", f"not well-formed: {e}")
+        ns = "{http://www.sitemaps.org/schemas/sitemap/0.9}"
+        locs = [u.findtext(ns + "loc") for u in xroot.findall(ns + "url")]
+        for loc in locs:
+            if not str(loc).startswith("http"):
+                fail("species/sitemap.xml", f"relative <loc>: {loc!r}")
+        want = {f"{base}/species/{s}/" for s in slugs} | {f"{base}/species/"}
+        if set(locs) != want:
+            fail("species/sitemap.xml",
+                 f"listed {len(locs)} URLs, the pages are {len(want)}; "
+                 f"only in sitemap: {sorted(set(locs) - want)[:5]}; "
+                 f"only as pages: {sorted(want - set(locs))[:5]}")
+        notes.append(f"species/sitemap.xml: {len(locs)} URLs")
+    notes.append(f"species: {len(slugs)} taxon pages, each one Taxon node with its record beside it")
+
+
 def main():
     site = Path(sys.argv[1] if len(sys.argv) > 1 else "_site").resolve()
     if not site.is_dir():
@@ -273,6 +381,7 @@ def main():
     check_catalog_page(site, base, keys)
     check_sitemap(site, base, keys)
     check_data_json(site)
+    check_species(site, base)
     print(f"checked {len(keys)} dataset pages + the release page in {site}")
     for n in notes:
         print(f"  {n}")

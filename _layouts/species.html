@@ -1,0 +1,141 @@
+---
+layout: default
+---
+{%- comment -%}
+  /species/{slug}/ — one page per taxon_key (plan 2026-09-09 § D6, D8.4).
+
+  The integrated database integrates: a species has ONE page however many datasets carry it, headed
+  by the accepted name once, with the names the datasets use listed under it and flagged where the
+  authority says otherwise. Every value on the page comes from _plugins/species.rb, which reads the
+  release's taxa.json and nothing else.
+{%- endcomment -%}
+{%- assign t = page.taxon -%}
+
+<section class="cc-band cc-band-alt sp-page-head">
+  <div class="cc-container">
+    {%- if page.lineage.size > 0 -%}
+    <nav class="sp-lineage" aria-label="Lineage">
+      {%- for a in page.lineage -%}
+      {%- unless forloop.first %}<span class="sp-sep" aria-hidden="true">›</span>{% endunless -%}
+      <span><span class="sp-r" title="{{ a.rank | escape }}">{{ a.abbr | escape }}</span><a href="{{ a.url | relative_url }}"{% if a.italic %} class="sp-it"{% endif %}>{{ a.name | escape }}</a></span>
+      {%- endfor -%}
+      <span class="sp-sep" aria-hidden="true">›</span>
+      <span><span class="sp-r" title="{{ page.rank | default: 'dataset-local class' | escape }}">{{ page.rank_abbr | escape }}</span><span class="sp-here{% if page.italic %} sp-it{% endif %}">{{ page.h1 | escape }}</span></span>
+    </nav>
+    {%- endif -%}
+
+    <div class="sp-h">
+      <div class="sp-h-main">
+        <div class="cc-eyebrow">
+          {%- if page.rank %}{{ page.rank | escape }}{% else %}Dataset-local class{% endif -%}
+          {%- if page.status %} · {{ page.status | escape }}{% endif -%}
+          {%- if page.checked %} · checked {{ page.checked | escape }}{% endif -%}
+        </div>
+        <h1 class="cc-h1{% if page.italic %} sp-it{% endif %}">{{ page.h1 | escape }}</h1>
+        {%- comment -%} the common name is its OWN line, not a <small> inside the h1: a display h1
+          at 54 px wrapping around a 28 px tail leaves a 50 px hole on any page whose name is long,
+          and 2,410 names run from "Aves" to "Nannobrachium ritteri" {%- endcomment -%}
+        {%- if t.common_name %}<p class="sp-common">{{ t.common_name | escape }}</p>{% endif -%}
+        {%- if page.status_odd -%}
+        <p class="sp-status"><span class="cc-chip cc-chip-na" title="the authority's own status for this name, from the release's taxon table">{{ page.status | escape }}</span>
+          <span class="cc-muted">the authority does not list this name as accepted; the datasets below still key their observations to it.</span></p>
+        {%- endif -%}
+        {%- if page.is_local -%}
+        <p class="sp-local">A class of <a href="{{ page.local_url | relative_url }}">{{ page.local_ds | escape }}</a>'s own vocabulary — not a WoRMS or ITIS taxon,
+          so it has no lineage and no authority id. It is on this page because the dataset counts organisms under it.
+          {%- if t.local.code %} Its code in that dataset is <code>{{ t.local.code | escape }}</code>.{% endif -%}</p>
+        {%- endif -%}
+      </div>
+      <div class="sp-ids">
+        {%- for i in page.ids -%}
+        <span><span class="cc-muted">{{ i.label }}</span> <a href="{{ i.url }}" rel="external">{{ i.id }}</a></span>
+        {%- endfor -%}
+        <span><span class="cc-muted">key</span> <span class="mono">{{ page.taxon_key | escape }}</span></span>
+      </div>
+    </div>
+
+    {%- if page.stats.size > 0 -%}
+    <dl class="sp-stat">
+      {%- for s in page.stats -%}
+      <div{% if s.title %} title="{{ s.title | escape }}"{% endif %}><dd class="tab{% if s.small %} sp-stat-sm{% endif %}">{{ s.dd | escape }}</dd><dt>{{ s.dt }}</dt></div>
+      {%- endfor -%}
+    </dl>
+    {%- endif -%}
+  </div>
+</section>
+
+<section class="cc-band sp-page-body">
+  <div class="cc-container">
+    <div class="sp-cols2">
+      <div class="sp-col-obs">
+        {%- if page.ds_rows.size > 0 -%}
+        <h2 class="cc-h3">Observed in</h2>
+        {% include species_rows.html rows=page.ds_rows %}
+        <svg class="sp-strip" id="sp-strip" role="img" aria-label="Observations per year in each dataset"></svg>
+        <p class="sp-note">One row per dataset, one cell per year, darker with more observations — the same strip the front
+          door draws per dataset. Each row ends with the name that dataset uses (<span class="mono">dataset_taxon</span>);
+          the accepted name is written once, in the title above. A quiet pill marks a name the authority does not accept.</p>
+        {%- else -%}
+        <h2 class="cc-h3">Observed in</h2>
+        <p class="sp-note">Nothing is keyed to this taxon directly — every observation under it belongs to one of the
+          taxa below.</p>
+        {%- endif -%}
+
+        {%- if page.children.size > 0 -%}
+        <h2 class="cc-h3">Under it · {{ page.children.size }} {% if page.children.size == 1 %}taxon{% else %}taxa{% endif %}</h2>
+        <ul class="sp-kids">
+          {%- for k in page.children limit: 30 -%}
+          <li><span class="sp-r" title="{{ k.rank | default: 'dataset-local class' | escape }}">{{ k.abbr | escape }}</span>
+            <a href="{{ k.url | relative_url }}"{% if k.italic %} class="sp-it"{% endif %}>{{ k.name | escape }}</a>
+            {%- if k.common %} <span class="cc-muted">{{ k.common | escape }}</span>{% endif -%}
+            <span class="sp-kn tab">{{ k.obs }}</span></li>
+          {%- endfor -%}
+        </ul>
+        {%- if page.children.size > 30 -%}
+        <details class="sp-more">
+          <summary>{{ page.children.size | minus: 30 }} more, fewer observations each</summary>
+          <ul class="sp-kids">
+            {%- for k in page.children offset: 30 -%}
+            <li><span class="sp-r" title="{{ k.rank | default: 'dataset-local class' | escape }}">{{ k.abbr | escape }}</span>
+              <a href="{{ k.url | relative_url }}"{% if k.italic %} class="sp-it"{% endif %}>{{ k.name | escape }}</a>
+              {%- if k.common %} <span class="cc-muted">{{ k.common | escape }}</span>{% endif -%}
+              <span class="sp-kn tab">{{ k.obs }}</span></li>
+            {%- endfor -%}
+          </ul>
+        </details>
+        {%- endif -%}
+        {%- endif -%}
+
+        {%- if page.groups.size > 0 -%}
+        <h2 class="cc-h3">Groups</h2>
+        <p class="sp-chips">{% for g in page.groups %}<span class="cc-chip cc-chip-na mono" title="a taxon_group of the release's taxon_group table">{{ g | escape }}</span>{% endfor %}</p>
+        {%- endif -%}
+
+        {%- if t.notes -%}
+        <h2 class="cc-h3">Note from the crosswalk</h2>
+        <p class="sp-note">{{ t.notes | escape }}</p>
+        {%- endif -%}
+      </div>
+
+      <div class="sp-col-ways">
+        <h2 class="cc-h3">Ways in</h2>
+        {% include species_ways.html ways=page.ways %}
+        <h2 class="cc-h3">This page as data</h2>
+        <ul class="sp-ways">
+          <li class="sp-way">
+            <div class="sp-l1"><b>JSON</b><span>this taxon's entry of the release record, verbatim</span></div>
+            <a class="sp-url" href="{{ '/species/' | append: t.slug | append: '.json' | relative_url }}">https://calcofi.io/species/{{ t.slug }}.json</a>
+          </li>
+        </ul>
+        <p class="sp-note">Read from <span class="mono">taxa.json</span> of release
+          <a href="{{ '/datasets/release/' | relative_url }}">{{ site.data.species.release.version }}</a>, written at release
+          by <span class="mono">calcofi4db::build_taxa_catalog()</span>. The catalog's index is
+          <a href="{{ '/species/' | relative_url }}">/species/</a>.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script id="sp-strip-data" type="application/json">{{ page.strip }}</script>
+<script defer src="{{ '/assets/species.js' | relative_url }}"></script>
+<script type="application/ld+json">{{ page.jsonld }}</script>

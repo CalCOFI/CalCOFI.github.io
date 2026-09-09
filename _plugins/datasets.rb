@@ -51,6 +51,16 @@ module CalCOFI
       end
     end
 
+    # 349 M · 316 M · 1.3 M — the ONE rule for a count in millions, so the numbers band, the release
+    # strip, the release tile and the log never disagree (Liquid's `divided_by` truncates: 348,657,010
+    # read 349 M on the band and 348 M on the strip until this became one rule, 2026-09-07). Rounded,
+    # and under 10 M kept to one decimal: 1,258,665 organism observations are 1.3 M, not 1 M.
+    def millions(n)
+      return nil if n.nil?
+      m = n.to_f / 1_000_000.0
+      m < 10 ? m.round(1) : m.round
+    end
+
     def blank?(v)
       v.nil? || (v.respond_to?(:empty?) && v.empty?)
     end
@@ -312,20 +322,115 @@ module CalCOFI
       end
     end
 
-    # The six numbers of the band under the hero (plan § D-2), every one read here:
+    # ── the release's OBSERVED taxa (coverage.json → _data/release_coverage.json) ──────────
+    # The taxon TABLE's 2,614 rows are not a count of organisms: 1,108 of them are lineage ancestors
+    # and dataset vocabulary entries never observed. `taxa[]` is one row per taxon actually observed,
+    # with its rank and the datasets it was seen in — the honest count the band and the dataset pages
+    # show (plan 2026-09-09 § F4, D3, D4). An older release carries no coverage.json and every number
+    # below is nil: the tile collapses, the dataset page keeps saying "taxa", nothing is typed.
+    SPECIES_RANK = "Species"
+
+    def coverage_taxa
+      @coverage_taxa ||= begin
+        cov = @site.data["release_coverage"]
+        cov.is_a?(Hash) ? (cov["taxa"] || []) : []
+      end
+    end
+
+    # species and taxa observed, per dataset_key — the dataset page's glance
+    def taxa_by_dataset
+      @taxa_by_dataset ||= begin
+        out = {}
+        coverage_taxa.each do |t|
+          sp = t["rank"] == SPECIES_RANK
+          (t["datasets"] || []).each do |d|
+            k = d["dataset_key"] or next
+            row = (out[k] ||= { "species" => 0, "taxa" => 0 })
+            row["taxa"] += 1
+            row["species"] += 1 if sp
+          end
+        end
+        out
+      end
+    end
+
+    # A rank's plural by RULE, not a typed list, so a rank the next release introduces still reads:
+    # genus → genera, class → classes, species → species, family → families, phylum → phyla,
+    # forma → formae, order → orders.
+    def rank_plural(rank)
+      r = rank.to_s.downcase
+      case r
+      when /us\z/ then r.sub(/us\z/, "era")
+      when /ss\z/ then "#{r}es"
+      when /s\z/  then r
+      when /y\z/  then r.sub(/y\z/, "ies")
+      when /um\z/ then r.sub(/um\z/, "a")
+      when /a\z/  then "#{r}e"
+      else "#{r}s"
+      end
+    end
+
+    # "279 genera, 136 families, 19 orders, 14 dataset-local classes, 13 classes, 37 more at other
+    # ranks" — the identifications that stopped above species, commonest first. A band tooltip is one
+    # line, so the five commonest are named and the rest counted in one phrase; every number is
+    # counted from taxa[], none typed. A taxon with no rank is a dataset's own class (the zooscan
+    # "eggs", the phytoplankton "other").
+    def rank_breakdown(limit = 5)
+      counts = coverage_taxa.reject { |t| t["rank"] == SPECIES_RANK }
+                            .group_by { |t| Fmt.present(t["rank"]) }
+                            .transform_values(&:size)
+                            .sort_by { |_, n| -n }
+      shown = counts.first(limit).map do |rank, n|
+        "#{Fmt.num(n)} #{rank ? rank_plural(rank) : 'dataset-local classes'}"
+      end
+      rest = counts.drop(limit).sum { |_, n| n }
+      shown << "#{Fmt.num(rest)} more at other ranks" if rest.positive?
+      shown.join(", ")
+    end
+
+    # What a measurement row is, summed for the band's `measurements` (plan 2026-09-09 § D9): the
+    # release grain plus the two full-resolution supplementals. The sum is over the tables a release
+    # actually carries, so one without the supplementals still renders a number.
+    MEASUREMENT_TABLES = %w[obs_env obs_ctd_full obs_mets_full].freeze
+
+    # The six numbers of the band under the hero (plan § D-2, re-cut by 2026-09-09 § D9), every one
+    # read here:
     #   years     the release year minus the earliest measured year_min over datasets[]
-    #   cruises · ships · stations   reference[].rows for cruise · ship · grid
-    #   taxa      the release's own catalog.json (tables[name == taxon].rows), fetched by
-    #             fetch_release.sh into _data/release_catalog.json when the release carries one
-    #   rows      release.total_rows, with release.version
-    # A value the build cannot read is nil: the tile collapses rather than rendering a typed number.
+    #   cruises · ships · stations   reference[].rows for cruise · ship · grid (ships is the hero's
+    #             eyebrow now, not a tile)
+    #   species   the release's own coverage.json, taxa[] at rank Species — the organisms identified
+    #             to species; `taxa` is every taxon observed (1,506 on v2026.09.06, of which 1,008
+    #             are species), and `taxon_rows` the taxon table's size, which is neither
+    #   organism_obs   the release's own catalog.json, tables[obs_bio].rows — one taxon × one life
+    #             stage × one sampling event, with its effort
+    #   measurements   tables[obs_env] + [obs_ctd_full] + [obs_mets_full] .rows
+    #   obs_dup   the rows of a table catalog.json lists under `views` (obs = obs_bio ∪ obs_env,
+    #             still shipped as parquet for compatibility) — counted a SECOND time in total_rows,
+    #             which is why the strip's rows cell says so
+    #   rows      release.total_rows, with release.version — the release tile and the release strip
+    #             keep it: they describe the release object, and total_rows is what the catalog says
+    #   taxon_rows   tables[taxon].rows, the size of the taxon table (its 2,614 rows include the
+    #             ancestors and the vocabulary entries never observed — NOT a count of organisms)
+    # catalog.json reaches the build as _data/release_catalog.json (scripts/fetch_release.sh), and an
+    # older release may carry none. A value the build cannot read is nil: the tile collapses rather
+    # than rendering a typed number.
     def numbers
       @numbers ||= begin
         ref   = ->(k) { reference.find { |r| r["key"] == k }&.dig("rows") }
         ymins = datasets.filter_map { |d| d.dig("coverage", "year_min") }
         ryear = release["release_date"].to_s[0, 4].to_i
         cat   = @site.data["release_catalog"]
-        taxa  = cat.is_a?(Hash) ? (cat["tables"] || []).find { |t| t["name"] == "taxon" }&.dig("rows") : nil
+        tbls  = cat.is_a?(Hash) ? (cat["tables"] || []) : []
+        views = cat.is_a?(Hash) ? (cat["views"] || {}) : {}
+        trows = ->(name) { tbls.find { |t| t["name"] == name }&.dig("rows") }
+        taxon_rows = trows.("taxon")
+        obs_taxa = coverage_taxa.empty? ? nil : coverage_taxa.size
+        species  = coverage_taxa.empty? ? nil : coverage_taxa.count { |t| t["rank"] == SPECIES_RANK }
+        org   = trows.("obs_bio")
+        parts = MEASUREMENT_TABLES.filter_map { |t| (r = trows.(t)) && [t, r] }
+        meas  = parts.empty? ? nil : parts.sum { |_, r| r }
+        dups  = tbls.select { |t| views.key?(t["name"]) }
+        dup   = dups.empty? ? nil : dups.sum { |t| t["rows"].to_i }
         byp   = @grid.group_by { |g| g["pattern"] }.transform_values(&:size)
         {
           "years"    => (ryear.positive? && ymins.any?) ? ryear - ymins.min : nil,
@@ -334,17 +439,67 @@ module CalCOFI
           "ships"    => ref.("ship"),
           "stations" => ref.("grid"),
           "grid"     => { "standard" => byp["standard"], "extended" => byp["extended"], "historical" => byp["historical"] },
-          "taxa"     => taxa,
-          "taxa_fmt" => Fmt.num(taxa),
+          "species"     => species,
+          "species_fmt" => Fmt.num(species),
+          "taxa"        => obs_taxa,
+          "taxa_fmt"    => Fmt.num(obs_taxa),
+          # the taxa observed that are NOT at species rank — the Life tile's "and 498 more"
+          "taxa_more_fmt"  => (obs_taxa && species) ? Fmt.num(obs_taxa - species) : nil,
+          "taxon_rows"     => taxon_rows,
+          "taxon_rows_fmt" => Fmt.num(taxon_rows),
+          # the band's species tile carries the whole qualifier as its title: what "species" counts,
+          # what it does not, and where the taxon table's bigger number belongs
+          "species_title"  => species && [
+            "#{Fmt.num(species)} identified to species",
+            "#{Fmt.num(obs_taxa)} taxa observed in all (#{rank_breakdown})",
+            taxon_rows && "#{Fmt.num(taxon_rows)} rows in the taxon table with their ancestors"
+          ].compact.join(" · "),
+          "organism_obs"     => org,
+          "organism_obs_m"   => Fmt.millions(org),
+          "organism_obs_fmt" => Fmt.num(org),
+          "measurements"     => meas,
+          "measurements_m"   => Fmt.millions(meas),
+          "measurements_fmt" => Fmt.num(meas),
+          "obs_dup"      => dup,
+          "obs_dup_m"    => Fmt.millions(dup),
+          "obs_dup_fmt"  => Fmt.num(dup),
+          "obs_dup_name" => dups.map { |t| t["name"] }.join(" · "),
+          # the band's dt is one 12 px line in a 170 px tile, so the qualifier lives in the tile's
+          # title — the tables that were summed, exactly as the catalog counted them
+          "organism_obs_title" => org && "obs_bio #{Fmt.num(org)} rows — one taxon × one life stage × " \
+                                         "one sampling event, with its effort",
+          "measurements_title" => parts.empty? ? nil :
+            parts.map { |t, r| "#{t} #{Fmt.num(r)}#{' at the release grain' if t == 'obs_env'}" }.join(" + "),
           "rows"     => release["total_rows"],
-          # ROUNDED, and the one rule: the band, the release strip, the release tile and the log all read
-          # this (Liquid's divided_by truncates — 348,657,010 read 349 M here and 348 M on the strip)
-          "rows_m"   => release["total_rows"] ? (release["total_rows"] / 1_000_000.0).round : nil,
+          "rows_m"   => Fmt.millions(release["total_rows"]),
           "tables"   => release["n_tables"],
           "version"  => release["version"],
           "date"     => release["release_date"],
           "doi"      => Fmt.present(release["doi"])
         }
+      end
+    end
+
+    # The release's own tables, for /datasets/release/ — name · rows · bytes · what it holds, biggest
+    # first, straight off catalog.json (fetch_release.sh → _data/release_catalog.json; an older
+    # release carries none and the section is not drawn). A table the catalog also lists under
+    # `views` is SQL over other tables that the release still ships as parquet for compatibility, so
+    # its rows are counted a SECOND time in total_rows — the page says so rather than leaving a
+    # reader to add 23 numbers and find 26 M too many (plan 2026-09-09 § D9, F6).
+    def release_tables
+      @release_tables ||= begin
+        cat = @site.data["release_catalog"]
+        if cat.is_a?(Hash)
+          views = cat["views"] || {}
+          (cat["tables"] || []).map do |t|
+            { "name" => t["name"], "rows" => t["rows"], "rows_fmt" => Fmt.num(t["rows"]),
+              "size" => Fmt.bytes(t["bytes"]), "view" => views.key?(t["name"]),
+              "supplemental" => t["supplemental"] == true,
+              "about" => TABLE_ABOUT[t["name"]] }
+          end.sort_by { |t| -t["rows"].to_i }
+        else
+          []
+        end
       end
     end
 
@@ -1749,6 +1904,11 @@ module CalCOFI
         "variables"   => cat.normalize_variables(cov),
         "n_obs_fmt"   => Fmt.num(cov["n_obs"]),
         "n_roots_fmt" => Fmt.num(cov["n_roots"]),
+        # this dataset's own species count, from the release's coverage.json (plan 2026-09-09 § D3):
+        # the taxa it observed that are at species rank, with the full count beside it in the title.
+        # nil where the release carries no coverage.json, and the page then says "taxa" as before.
+        "n_species"   => cat.taxa_by_dataset.dig(key, "species"),
+        "n_cov_taxa"  => cat.taxa_by_dataset.dig(key, "taxa"),
         "objects"     => (r["objects"] || []).map { |o| o.merge("bytes_fmt" => Fmt.bytes(o["bytes"])) },
         "sources"     => is_holding ? nil : cat.source_files(r)
       )
@@ -1787,6 +1947,8 @@ module CalCOFI
         "release_bibtex" => cat.release_bibtex,
         "rows_fmt" => Fmt.num(cat.release["total_rows"]),
         "size_fmt" => Fmt.bytes(cat.release["total_size"]),
+        "tables"   => cat.release_tables,
+        "numbers"  => cat.numbers,
         "parts"    => cat.datasets.map { |d| cat.tile_row(d) }
       )
       page

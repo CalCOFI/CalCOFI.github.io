@@ -47,6 +47,7 @@ jobs:
         run: scripts/fetch_release.sh
         env:
           DATASETS_RELEASE_URL: ${{ vars.DATASETS_RELEASE_URL }}
+          TAXA_RELEASE_URL: ${{ vars.TAXA_RELEASE_URL }}
       - name: Build with Jekyll
         run: bundle exec jekyll build
       - name: Serve _site

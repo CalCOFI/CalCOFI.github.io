@@ -1,0 +1,17 @@
+{%- comment -%}
+  The ways in: ONE row per endpoint, its URL on its own full-width mono line (assets/species.js
+  elides it from the middle when it does not fit, so the tail — the taxon the tool opens on —
+  survives a phone). Every tool opens PREFILLED: the Explorer on this taxon, db-query with the
+  query already in the shell, ERDDAP constrained where the server carries a taxon_key column.
+
+  include species_ways.html ways=page.ways
+{%- endcomment -%}
+<ul class="sp-ways">
+  {%- for w in include.ways -%}
+  <li class="sp-way">
+    <div class="sp-l1"><b>{{ w.name }}</b>{% if w.about %}<span>{{ w.about | escape }}</span>{% endif %}</div>
+    {%- if w.url %}<a class="sp-url" href="{{ w.url }}" rel="external">{{ w.url }}</a>{% endif -%}
+    {%- if w.code %}<pre>{{ w.code | escape }}</pre>{% endif -%}
+  </li>
+  {%- endfor -%}
+</ul>

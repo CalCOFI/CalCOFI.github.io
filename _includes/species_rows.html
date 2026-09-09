@@ -1,0 +1,36 @@
+{%- comment -%}
+  One row per dataset that observed this taxon, most observations first (the record's own order):
+  the dataset · its observations · its sampling events · its years · its life stages, then the name
+  THAT dataset uses with a quiet pill for every flag the crosswalk raised.
+
+  The dot carries the dataset's colour from the record, and the dataset's NAME is always beside it —
+  the record's ten biology colours fail the colour-blind check on two pairs, so colour is a second
+  cue here and never the only one.
+
+  include species_rows.html rows=page.ds_rows
+{%- endcomment -%}
+<ul class="sp-dsrows">
+  {%- for d in include.rows -%}
+  <li class="sp-dsrow">
+    <i class="sp-dot" style="background:{{ d.color | default: 'var(--muted)' }}" aria-hidden="true"></i>
+    <div>
+      <div class="sp-l1">
+        <a href="{{ d.url | relative_url }}">{{ d.name | escape }}</a>
+        <span class="sp-meta tab">{{ d.n_obs }} obs{% if d.n_samples %} · {{ d.n_samples }} events{% endif %}{% if d.years %} · {{ d.years }}{% endif %}{% if d.stages != "" %} · {{ d.stages | escape }}{% endif %}</span>
+      </div>
+      {%- for s in d.sources -%}
+      <div class="sp-l2">
+        {%- if s.name -%}
+        name used: {% if s.italic %}<i>{{ s.name | escape }}</i>{% else %}{{ s.name | escape }}{% endif %}
+        {%- if s.common %} <span class="cc-muted">{{ s.common | escape }}</span>{% endif -%}
+        {%- else -%}
+        no name in this dataset
+        {%- endif -%}
+        {%- if s.code %} · code <code>{{ s.code | escape }}</code>{% endif -%}
+        {%- for c in s.chips %} <span class="cc-chip cc-chip-na" title="{{ c.title | escape }}">{{ c.label | escape }}</span>{% endfor -%}
+      </div>
+      {%- endfor -%}
+    </div>
+  </li>
+  {%- endfor -%}
+</ul>

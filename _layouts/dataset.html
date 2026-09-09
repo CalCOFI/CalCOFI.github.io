@@ -12,7 +12,7 @@ layout: default
                   the text beside it and never taller.
     2 sub-nav     the sticky uppercase tab row, now brand v2's .cc-tabs
     3 Overview    ONE COLUMN. Nothing below the head is two columns.
-    4 Coverage    the variables, taxa, life stages and what this dataset contributes elsewhere
+    4 Coverage    the variables, species and taxa, life stages and what this dataset contributes elsewhere
     5 Access      compact one-line rows, no URL line (the copy button carries it); the release
                   tables as a table; Metadata records beside Archives & portals. Inner grids only —
                   the .cc-container stays one column (check_layout.py's assertion is on it)
@@ -68,7 +68,11 @@ layout: default
         {%- if page.n_obs_fmt %}<div><dt>observations</dt><dd>{{ page.n_obs_fmt | escape }}</dd></div>{% endif -%}
         {%- if page.n_roots_fmt %}<div><dt>sampling events</dt><dd>{{ page.n_roots_fmt | escape }}</dd></div>{% endif -%}
         {%- if cov.n_stations > 0 %}<div><dt>stations</dt><dd>{{ cov.n_stations | escape }}</dd></div>{% endif -%}
-        {%- if cov.n_taxa > 0 %}<div><dt>taxa</dt><dd>{{ cov.n_taxa | escape }}</dd></div>
+        {%- comment -%} species, not taxa (plan 2026-09-09 § D3): page.n_species counts the release's
+          coverage.json taxa[] at rank Species that name THIS dataset, with every taxon it observed in
+          the title. A release with no coverage.json says "taxa" from the record, as before. {%- endcomment -%}
+        {%- if page.n_species %}<div title="{{ page.n_cov_taxa | escape }} taxa in all"><dt>species</dt><dd>{{ page.n_species | escape }}</dd></div>
+        {%- elsif cov.n_taxa > 0 %}<div><dt>taxa</dt><dd>{{ cov.n_taxa | escape }}</dd></div>
         {%- elsif cov.n_variables > 0 %}<div><dt>variables</dt><dd>{{ cov.n_variables | escape }}</dd></div>{% endif -%}
         {%- if cov.depth_max_m %}<div><dt>depth</dt><dd>{{ cov.depth_min_m | default: 0 | escape }}–{{ cov.depth_max_m | escape }} m</dd></div>{% endif -%}
       </dl>
@@ -182,14 +186,35 @@ layout: default
     </p>
     {%- endif -%}
     {%- if cov.taxa.size > 0 -%}
-    <h3 class="cc-h3 ds-cov-h">Taxa</h3>
+    {%- comment -%} each taxon links to its page in the species catalog when the release's taxa.json
+      carries one — site.data.species.slugs is taxon_key => slug, so a vocabulary-only name (which has
+      no page) stays plain text and the slug rule is never guessed here (plan 2026-09-09 § S2)
+    {%- endcomment -%}
+    <h3 class="cc-h3 ds-cov-h">Species and taxa</h3>
     <ul class="ds-taxa">
       {%- for t in cov.taxa limit: 50 -%}
-      <li><i>{{ t.scientific_name | default: t.name | escape }}</i>
+      {%- assign tslug = site.data.species.slugs[t.taxon_key] -%}
+      <li>{% if tslug %}<a href="{{ '/species/' | append: tslug | append: '/' | relative_url }}"><i>{{ t.scientific_name | default: t.name | escape }}</i></a>{% else %}<i>{{ t.scientific_name | default: t.name | escape }}</i>{% endif %}
         {%- if t.common_name %} <span class="cc-muted">{{ t.common_name | escape }}</span>{% endif -%}
         {%- if t.n_obs %} <span class="ds-n">{{ t.n_obs }}</span>{% endif -%}</li>
       {%- endfor -%}
     </ul>
+    {%- assign vocab = site.data.species.vocab[page.dataset_key] -%}
+    {%- if vocab.size > 0 -%}
+    {%- comment -%} the names this dataset declares that nothing in the release observes: no page, but
+      a provider wants to know they are in the vocabulary (plan § D6) {%- endcomment -%}
+    <details class="ds-details ds-vocab">
+      <summary>In the vocabulary, not yet observed ({{ vocab.size }})</summary>
+      <p class="ds-gloss">Names this dataset declares in <span class="mono">dataset_taxon</span> that carry no
+        observation anywhere in the release, so the species catalog draws no page for them.</p>
+      <ul class="ds-taxa">
+        {%- for v in vocab -%}
+        <li><i>{{ v.name | default: v.taxon_key | escape }}</i>
+          {%- if v.code %} <span class="cc-muted mono">{{ v.code | escape }}</span>{% endif -%}</li>
+        {%- endfor -%}
+      </ul>
+    </details>
+    {%- endif -%}
     {%- endif -%}
     {%- if cov.life_stages.size > 0 -%}
     <h3 class="cc-h3 ds-cov-h">Life stages</h3>

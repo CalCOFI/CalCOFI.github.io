@@ -98,3 +98,10 @@ pages:
   dataset-ichthyo:
     url: https://calcofi.io/datasets/swfsc_ichthyo/
     height: 900           # the map whose bbox continues beyond the frame, and says so
+  species:
+    url: https://calcofi.io/species/
+    height: 1400          # the head band is 570 px; 1,400 reaches the tree, the matrix and the icicle
+    wait: 6000            # the tree, the matrix and the icicle are all built at load
+  species_page:
+    url: https://calcofi.io/species/worms-217452/
+    height: 950           # one taxon: the sardine — the lineage, its two datasets and the ways in

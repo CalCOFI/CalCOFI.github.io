@@ -6,7 +6,14 @@
 #
 #   release   _data/versions.json — one entry per promoted release; the title is the first `##`
 #             heading of that version's RELEASE_NOTES.md (fetched into _data/release_headings.json
-#             by scripts/fetch_release.sh), or the version alone when the notes carry none
+#             by scripts/fetch_release.sh), or the version alone when the notes carry none. It links
+#             the RENDERED changelog — never the raw .md — anchored on the version where the page
+#             has a heading for it: RELEASES.html#v2026.09.06, the version string verbatim (its own
+#             "v" included), which workflows' scripts/render_md_on_storage.R stamps as the heading's
+#             id. Which ids the page really carries is READ, not assumed: fetch_release.sh writes
+#             them to _data/release_anchors.json, and a version the changelog collapsed into a range
+#             section links the page unanchored. scripts/check_news.py holds every fragment the log
+#             uses to an id on that page.
 #   dataset   datasets[].since_version — "<name> enters the release", dated by that version's
 #             release_date; only for versions that exist in versions.json, so a `since_version`
 #             that predates the catalog never invents a date
@@ -32,6 +39,9 @@ module CalCOFI
   module News
     TYPES    = %w[release dataset app data site paper].freeze
     NEW_DAYS = 30
+    # the rendered changelog every release entry opens (storage.calcofi.io, not the raw .md on
+    # googleapis); the two hand-written `data` rows of news.yml link their own `##` section of it
+    RELEASES = "https://storage.calcofi.io/calcofi-db/ducklake/releases/RELEASES.html"
 
     module_function
 
@@ -42,6 +52,9 @@ module CalCOFI
       rec      = site.data["datasets"] || {}
       cat_idx  = site.data.dig("catalog", "index") || {}
       hand     = (site.data["news"] || []).select { |r| r.is_a?(Hash) && r["date"] && r["title"] }
+      # the version headings RELEASES.html really carries (fetch_release.sh reads them off the page);
+      # absent or unreadable, every release entry links the changelog unanchored
+      anchors  = site.data["release_anchors"].is_a?(Array) ? site.data["release_anchors"] : []
       over_ds  = hand.filter_map { |r| r["dataset_key"] }
       over_v   = hand.filter_map { |r| r["version"] }
       entries  = []
@@ -54,7 +67,7 @@ module CalCOFI
           "title" => h ? "#{v['version']} — #{h}" : v["version"],
           "body"  => [v["tables"] && "#{v['tables']} tables", v["total_rows"] && "#{(v['total_rows'] / 1_000_000.0).round} M rows",
                       v["doi"] && "DOI #{v['doi']}"].compact.join(" · "),
-          "url"   => "https://storage.googleapis.com/calcofi-db/ducklake/releases/#{v['version']}/RELEASE_NOTES.md"
+          "url"   => anchors.include?(v["version"]) ? "#{RELEASES}##{v['version']}" : RELEASES
         }
       end
 

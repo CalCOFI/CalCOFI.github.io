@@ -53,6 +53,8 @@ jobs:
           # blank falls through to the script's own default (the staging bridge until the next
           # data release writes datasets.json to the production prefix)
           DATASETS_RELEASE_URL: ${{ inputs.datasets_release_url || vars.DATASETS_RELEASE_URL }}
+          # the species catalog's record, the same bridge one release behind (plan 2026-09-09 § D7)
+          TAXA_RELEASE_URL: ${{ vars.TAXA_RELEASE_URL }}
 
       - name: Build with Jekyll
         run: bundle exec jekyll build
@@ -61,6 +63,11 @@ jobs:
 
       - name: Validate the JSON-LD, the sitemap and data.json
         run: scripts/check_jsonld.py _site
+
+      # the ship's log's changelog anchors: one GET of the rendered RELEASES.html, every
+      # `RELEASES.html#fragment` the built log links must be an id on it (plan 2026-09-09 § N2)
+      - name: Check the changelog anchors
+        run: python3 scripts/check_news.py _site
 
       - uses: actions/upload-pages-artifact@v3
         with:

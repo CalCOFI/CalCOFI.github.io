@@ -13,9 +13,13 @@
   <dl class="ds-release-stats">
     <div><dt>datasets</dt><dd>{{ site.data.catalog.counts.datasets | escape }}</dd></div>
     <div><dt>tables</dt><dd>{{ rel.n_tables | escape }}</dd></div>
-    {%- comment -%} rounded in _plugins/datasets.rb (numbers.rows_m) — the ONE rule for a row count in millions, so the
-      numbers band, this strip and the release tile never disagree (349 M vs a truncated 348 M, 2026-09-07) {%- endcomment -%}
-    <div><dt>rows</dt><dd>{{ site.data.catalog.numbers.rows_m | escape }} M</dd></div>
+    {%- comment -%} rounded in _plugins/datasets.rb (Fmt.millions) — the ONE rule for a row count in millions, so the
+      numbers band, this strip and the release tile never disagree (349 M vs a truncated 348 M, 2026-09-07).
+      The strip keeps `rows` because it describes the release OBJECT; what a row is — organism
+      observations, measurements — is the band's job now (plan 2026-09-09 § D9). The title says what
+      the number double-counts. {%- endcomment -%}
+    {%- assign nums = site.data.catalog.numbers -%}
+    <div{% if nums.obs_dup_m %} title="{{ nums.rows_m }} M parquet rows across {{ rel.n_tables }} tables, of which {{ nums.obs_dup_m }} M is the {{ nums.obs_dup_name }} compatibility copy"{% endif %}><dt>rows</dt><dd>{{ nums.rows_m | escape }} M</dd></div>
     {%- if site.data.catalog.counts.holdings > 0 -%}
     <div><dt>holdings</dt><dd>{{ site.data.catalog.counts.holdings | escape }}</dd></div>
     {%- endif -%}

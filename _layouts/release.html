@@ -52,6 +52,32 @@ layout: default
         </tbody>
       </table>
 
+      {%- comment -%}
+        The table of tables (plan 2026-09-09 § D9): every table in the release, biggest first, read
+        from its own catalog.json by _plugins/datasets.rb (release_tables). The `obs` row is marked
+        as a view — SQL over obs_bio and obs_env that the release still ships as parquet — because
+        its rows are counted a second time in total_rows above.
+      {%- endcomment -%}
+      {%- if page.tables.size > 0 -%}
+      <h2 class="cc-h2" id="tables">Tables</h2>
+      <p class="cc-prose cc-muted">Every table in this release, biggest first, from
+        <a href="{{ rel.catalog_url }}">catalog.json</a>. A <em>view</em> is a table the catalog
+        defines as SQL over others and still ships as Parquet so an older reader keeps working: its
+        rows are counted a second time in the {{ page.rows_fmt | escape }} above.</p>
+      <table class="ds-table">
+        <tbody>
+          {%- for t in page.tables -%}
+          <tr>
+            <th scope="row"><a href="https://calcofi.io/db-schema/?v={{ rel.version | escape }}#{{ t.name | escape }}">{{ t.name | escape }}</a></th>
+            <td><span class="ds-cell-meta">{{ t.rows_fmt | escape }} rows{% if t.size %} · {{ t.size | escape }}{% endif %}
+              {%- if t.view %} · <strong>view (compatibility copy)</strong>{% elsif t.supplemental %} · supplemental{% endif -%}
+              {%- if t.about %} — {{ t.about | escape }}{% endif -%}</span></td>
+          </tr>
+          {%- endfor -%}
+        </tbody>
+      </table>
+      {%- endif -%}
+
       <h2 class="cc-h2" id="cite">Cite</h2>
       <p class="cc-prose cc-muted">What to cite, and how — the release, one dataset, or a portal
         record — is <a href="https://calcofi.io/docs/cite.html">a chapter of the docs book</a>.</p>
