@@ -29,7 +29,9 @@ can only pass by the layout actually being fixed:
              listed twice: once under Download for its formats, once under Services for its page.
   front door (/, plan 2026-09-07 § D-8) the hero's SVG is drawn <= 62 vh at 1470 and the copy's
              text does not overlap the ship's bounding box; no .tile is drawn > 1.25 x its natural
-             height; the numbers on the band equal the inline #reach record's; the years strip has
+             height; the six numbers on the band (years · cruises · stations · species · organism
+             obs. · measurements) equal the inline #reach record's, and measurements + organism
+             observations never exceed the release's own row count; the years strip has
              exactly datasets.length rows; the map has exactly stations.length marks; nothing on the
              first screen computes to --warn except the one CTA; every pin href answers 200/206 to
              a ranged GET (the way build_workflows_index.R probes; checked once, not per theme).
@@ -366,8 +368,14 @@ def check(path, r, width, theme, fails, notes):
             if t["ratio"] > MAX_TILE_STRETCH:
                 fails.append(f"{where}: tile {t['name'].strip()!r} drawn {t['drawn']}px for {t['natural']}px of content ({t['ratio']}x)")
         n = fr.get("reachNumbers") or {}
-        want = {"years": n.get("years"), "cruises": n.get("cruises"), "ships": n.get("ships"), "stations": n.get("stations"),
-                "taxa": n.get("taxa"), "rows": n.get("rows_m")}
+        # the band (plan 2026-09-09 § D9): years · cruises · stations · species · organism obs. ·
+        # measurements. `ships` left the band for the hero's eyebrow and `rows` for the release strip
+        # and the release tile — a "row" is 78 % one full-resolution CTD table and counts the `obs`
+        # compatibility copy twice, so it says nothing about what CalCOFI holds. The keys are the
+        # dt's leading words; the value is the dd, parsed.
+        want = {"years": n.get("years"), "cruises": n.get("cruises"), "stations": n.get("stations"),
+                "species": n.get("species"), "organism obs": n.get("organism_obs_m"),
+                "measurements": n.get("measurements_m")}
         seen = {}
         for b in fr["band"]:
             key = next((k for k in want if b["label"].startswith(k)), None)
@@ -383,6 +391,12 @@ def check(path, r, width, theme, fails, notes):
         for k in seen:
             if want.get(k) is None:
                 fails.append(f"{where}: the band shows {k!r} = {seen[k]:g} but the record carries no value")
+        # both are sums over the same catalog tables[] the release's total_rows is summed from, so
+        # neither the band nor a future re-cut of `numbers` can claim more rows than the release has
+        mm, om, rm = n.get("measurements_m"), n.get("organism_obs_m"), n.get("rows_m")
+        if None not in (mm, om, rm) and mm + om > rm:
+            fails.append(f"{where}: measurements {mm} M + organism observations {om} M "
+                         f"exceed the release's {rm} M rows")
         if fr["datasets"] is not None and fr["stripRows"] != fr["datasets"]:
             fails.append(f"{where}: the years strip has {fr['stripRows']} rows for {fr['datasets']} datasets")
         if fr["stations"] is not None and fr["mapMarks"] != fr["stations"]:

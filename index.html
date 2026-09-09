@@ -43,19 +43,26 @@ layout: default
 <script defer src="{{ '/assets/section.js' | relative_url }}"></script>
 
 {%- comment -%}
-  The numbers band (plan § D-2): six numbers on the Sand band, every one read at build by
-  _plugins/datasets.rb (site.data.catalog.numbers) — the release year minus the earliest measured
-  year, reference[].rows for cruise · ship · grid, the release's own catalog for taxa, release.total_rows.
-  A number the build cannot read is not rendered: its tile collapses.
+  The numbers band (plan § D-2, re-cut by 2026-09-09 § D9): six numbers on the Sand band, every one
+  read at build by _plugins/datasets.rb (site.data.catalog.numbers) — the release year minus the
+  earliest measured year, reference[].rows for cruise and grid, the release's coverage for species,
+  the release's own catalog for the two row counts that say what a row IS: organism observations
+  (obs_bio) and measurements (obs_env + the two full-resolution supplementals). "rows" was 78 % one
+  CTD table and counted the obs view twice, so it stays where it describes the release object — the
+  release tile and the release strip. ships leaves the band for the hero's eyebrow, which still says
+  "842 cruises · 49 ships · one grid".
+  A dt is one 12 px uppercase line in a ~170 px tile, so each new tile's qualifier is its `title`,
+  computed in datasets.rb from the same tables. A number the build cannot read is not rendered: its
+  tile collapses.
 {%- endcomment -%}
 <section class="numsband cc-band cc-band-alt" aria-label="CalCOFI by the numbers">
   <dl class="cc-container nums">
     {%- if nums.years %}<div><dd>{{ nums.years }}</dd><dt>years · since {{ nums.since }}</dt></div>{% endif -%}
     {%- if nums.cruises %}<div><dd>{{ nums.cruises }}</dd><dt>cruises</dt></div>{% endif -%}
-    {%- if nums.ships %}<div><dd>{{ nums.ships }}</dd><dt>ships</dt></div>{% endif -%}
     {%- if nums.stations %}<div title="{{ nums.stations }} grid cells · {{ nums.grid.standard }} standard · {{ nums.grid.extended }} extended · {{ nums.grid.historical }} historical"><dd>{{ nums.stations }}</dd><dt>stations</dt></div>{% endif -%}
-    {%- if nums.taxa %}<div><dd>{{ nums.taxa_fmt }}</dd><dt>taxa</dt></div>{% endif -%}
-    {%- if nums.rows_m %}<div><dd>{{ nums.rows_m }} M</dd><dt>rows · {{ nums.version }}</dt></div>{% endif -%}
+    {%- if nums.species %}<div title="{{ nums.species_title | escape }}"><dd>{{ nums.species_fmt }}</dd><dt>species</dt></div>{% endif -%}
+    {%- if nums.organism_obs %}<div title="{{ nums.organism_obs_title | escape }}"><dd>{{ nums.organism_obs_m }} M</dd><dt>organism obs.</dt></div>{% endif -%}
+    {%- if nums.measurements %}<div title="{{ nums.measurements_title | escape }}"><dd>{{ nums.measurements_m }} M</dd><dt>measurements</dt></div>{% endif -%}
   </dl>
 </section>
 
