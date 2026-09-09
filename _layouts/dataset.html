@@ -186,14 +186,35 @@ layout: default
     </p>
     {%- endif -%}
     {%- if cov.taxa.size > 0 -%}
+    {%- comment -%} each taxon links to its page in the species catalog when the release's taxa.json
+      carries one — site.data.species.slugs is taxon_key => slug, so a vocabulary-only name (which has
+      no page) stays plain text and the slug rule is never guessed here (plan 2026-09-09 § S2)
+    {%- endcomment -%}
     <h3 class="cc-h3 ds-cov-h">Species and taxa</h3>
     <ul class="ds-taxa">
       {%- for t in cov.taxa limit: 50 -%}
-      <li><i>{{ t.scientific_name | default: t.name | escape }}</i>
+      {%- assign tslug = site.data.species.slugs[t.taxon_key] -%}
+      <li>{% if tslug %}<a href="{{ '/species/' | append: tslug | append: '/' | relative_url }}"><i>{{ t.scientific_name | default: t.name | escape }}</i></a>{% else %}<i>{{ t.scientific_name | default: t.name | escape }}</i>{% endif %}
         {%- if t.common_name %} <span class="cc-muted">{{ t.common_name | escape }}</span>{% endif -%}
         {%- if t.n_obs %} <span class="ds-n">{{ t.n_obs }}</span>{% endif -%}</li>
       {%- endfor -%}
     </ul>
+    {%- assign vocab = site.data.species.vocab[page.dataset_key] -%}
+    {%- if vocab.size > 0 -%}
+    {%- comment -%} the names this dataset declares that nothing in the release observes: no page, but
+      a provider wants to know they are in the vocabulary (plan § D6) {%- endcomment -%}
+    <details class="ds-details ds-vocab">
+      <summary>In the vocabulary, not yet observed ({{ vocab.size }})</summary>
+      <p class="ds-gloss">Names this dataset declares in <span class="mono">dataset_taxon</span> that carry no
+        observation anywhere in the release, so the species catalog draws no page for them.</p>
+      <ul class="ds-taxa">
+        {%- for v in vocab -%}
+        <li><i>{{ v.name | default: v.taxon_key | escape }}</i>
+          {%- if v.code %} <span class="cc-muted mono">{{ v.code | escape }}</span>{% endif -%}</li>
+        {%- endfor -%}
+      </ul>
+    </details>
+    {%- endif -%}
     {%- endif -%}
     {%- if cov.life_stages.size > 0 -%}
     <h3 class="cc-h3 ds-cov-h">Life stages</h3>

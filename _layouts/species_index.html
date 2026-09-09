@@ -1,0 +1,96 @@
+---
+layout: default
+---
+{%- comment -%}
+  /species/ — the species catalog's index (plan 2026-09-09 § D5, D8).
+
+  Nothing here is authored: the counts, the tree, the class × dataset matrix and the icicle are all
+  drawn by assets/species.js from the ONE inline JSON _plugins/species.rb builds out of the
+  release's taxa.json. A release without that record generates no page at all, so this layout never
+  has to say "no data".
+{%- endcomment -%}
+{%- assign sp = site.data.species -%}
+{%- assign c = sp.counts_fmt -%}
+
+<section class="cc-band cc-band-alt sp-head">
+  <div class="cc-container">
+    <div class="sp-idx-head">
+      <div>
+        <div class="cc-eyebrow">Species · {{ sp.release.version | escape }} · WoRMS-keyed (ITIS for birds)</div>
+        <h1 class="cc-h1">{{ c.species_observed }} species. {{ c.taxa_observed }} taxa. {{ c.datasets }} datasets, one tree.</h1>
+        <p class="cc-lede cc-prose">Every organism CalCOFI has counted, from the diatoms of the phytoplankton slides
+          to the whales of the Farallon census, keyed to one accepted name so the same species means the same thing in
+          every dataset. Search it, walk the tree, or start from a dataset — every taxon has its own page, and the
+          {{ c.taxa_observed }} observed carry {{ c.ancestors }} ancestors that roll them up.
+          The machine-readable form is one JSON per taxon (<span class="mono">/species/{slug}.json</span>) and
+          <a href="{{ '/species/sitemap.xml' | relative_url }}">sitemap.xml</a>.</p>
+      </div>
+      <dl class="sp-counts">
+        <div><dd class="tab">{{ c.species_observed }}</dd><dt>species</dt></div>
+        <div><dd class="tab">{{ c.taxa_observed }}</dd><dt>taxa observed</dt></div>
+        <div><dd class="tab">{{ c.datasets }}</dd><dt>datasets</dt></div>
+        <div><dd class="tab" id="sp-obs">{{ c.obs_bio_rows }}</dd><dt>observations</dt></div>
+        <div><dd class="tab">{{ c.pages }}</dd><dt>pages</dt></div>
+      </dl>
+    </div>
+  </div>
+</section>
+
+<section class="cc-band sp-body">
+  <div class="cc-container">
+    <div class="sp-searchrow">
+      <label class="sp-search">
+        <span class="cc-muted" aria-hidden="true">⌕</span>
+        <input id="sp-q" type="search" autocomplete="off" spellcheck="false"
+               placeholder="sardine · Sardinops · Alosidae · Aves · cufes …"
+               aria-label="Search species, genera, families and datasets">
+        <span class="sp-n" id="sp-qn" role="status"></span>
+      </label>
+      <div class="sp-rankf" role="group" aria-label="Fold the tree to a rank">
+        <button type="button" data-fold="Phylum" aria-pressed="true">phyla</button>
+        <button type="button" data-fold="Class" aria-pressed="false">classes</button>
+        <button type="button" data-fold="Family" aria-pressed="false">families</button>
+        <button type="button" data-fold="Species" aria-pressed="false">everything</button>
+      </div>
+    </div>
+
+    <div class="sp-two">
+      <div class="sp-pane">
+        <div class="sp-pane-h">
+          <h2 class="cc-eyebrow">The tree · {{ c.pages }} taxa with an observation at or below</h2>
+          <span class="sp-hint">species · observations · datasets</span>
+        </div>
+        <div class="sp-tree" id="sp-tree" role="tree" aria-label="Taxonomic tree"></div>
+      </div>
+      <div class="sp-pane">
+        <div class="sp-pane-h">
+          <h2 class="cc-eyebrow">Which species, in which datasets</h2>
+          <span class="sp-hint">taxa observed · class × dataset</span>
+        </div>
+        <div class="sp-matrix" id="sp-matrix"></div>
+      </div>
+    </div>
+
+    <div class="sp-ice-wrap">
+      <div class="sp-ice-bar">
+        <h2 class="cc-eyebrow">The hierarchy · kingdom → phylum → class → order → family</h2>
+        <div class="sp-seg" role="group" aria-label="Size the icicle by">
+          <button type="button" data-by="o" aria-pressed="true">observations</button>
+          <button type="button" data-by="sp" aria-pressed="false">species</button>
+        </div>
+        <div class="sp-crumb" id="sp-crumb"></div>
+      </div>
+      <svg class="sp-ice" id="sp-ice" role="img" aria-label="Icicle of the taxonomic hierarchy, sized by observations"></svg>
+      <p class="sp-note">Click a band to zoom into that clade; the breadcrumb climbs back out.
+        The two authorities are merged where they name the same rank twice — the taxon table keys birds
+        through ITIS and everything else through WoRMS, so Animalia, Chordata, Vertebrata and Gnathostomata each
+        appear once here and link to their WoRMS page. Dataset colour is never the only cue: a dot always has its
+        dataset's name beside it, and the matrix is one sequential ramp.</p>
+    </div>
+  </div>
+  <div class="sp-ttip" id="sp-ttip" role="tooltip" aria-hidden="true"></div>
+</section>
+
+<script id="sp-data" type="application/json">{{ sp.inline }}</script>
+<script defer src="{{ '/assets/species.js' | relative_url }}"></script>
+<script type="application/ld+json">{{ sp.jsonld }}</script>

@@ -199,7 +199,13 @@ SELECT * FROM read_json('{{ rel.catalog_url }}')</pre>
         </span>
       </div>
       <p class="tile-cap">And {{ nums.taxa_more_fmt }} more taxa identified to genus, family or class — every one keyed to one accepted WoRMS id (ITIS for birds), so a name means the same thing in every dataset.</p>
+      {%- comment -%} /species/ exists only where the release carries taxa.json (_plugins/species.rb);
+        without it the tile still leads somewhere true — the Explorer's own organism picker {%- endcomment -%}
+      {%- if site.data.species -%}
       <a class="cc-text-link tile-more" href="{{ '/species/' | relative_url }}">Browse the species →</a>
+      {%- else -%}
+      <a class="cc-text-link tile-more" href="https://calcofi.io/explore/">Browse them in the Explorer →</a>
+      {%- endif -%}
     </div>
     {%- endif -%}
   </div>
