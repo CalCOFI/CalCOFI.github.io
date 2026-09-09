@@ -9,7 +9,12 @@
 #   _data/coverage_stations.json  which grid cells each dataset actually sampled, and how much
 #                                 (~470 KB; read at BUILD time to draw the map's filled marks —
 #                                 never shipped to the browser)
-#   _data/release_catalog.json    the release's own catalog.json (the taxa count on the front door)
+#   _data/release_catalog.json    the release's own catalog.json (what a row is on the front door:
+#                                 organism observations, measurements, the taxon table's size)
+#   _data/release_coverage.json   the release's own coverage.json (~660 KB) — `taxa[]`, one row per
+#                                 taxon OBSERVED, with its rank and the datasets it was seen in: the
+#                                 front door's species count and each dataset page's (plan
+#                                 2026-09-09 § D4). Read at BUILD time, never shipped to the browser
 #   _data/release_anchors.json    the version ids the rendered RELEASES.html really carries, so the
 #                                 ship's log anchors a release entry only where the page has a
 #                                 heading for it (plan 2026-09-09 § N2)
@@ -84,7 +89,14 @@ get "$record_dir/coverage_stations.json" "$DATA/coverage_stations.json" ||
 # release_catalog.json, not catalog.json, because Jekyll would load _data/catalog.json as
 # site.data.catalog — the very key _plugins/datasets.rb builds.
 get "$record_dir/catalog.json" "$DATA/release_catalog.json" ||
-  echo "NOTE: no catalog.json beside the record — the front door draws no taxa count" >&2
+  echo "NOTE: no catalog.json beside the record — the front door draws no row counts" >&2
+
+# the release's measured coverage: taxa[] is every taxon actually observed, with its rank — the
+# honest species count the band shows (the taxon TABLE's 2,614 rows include ancestors and vocabulary
+# entries never observed). Optional, exactly like catalog.json: without it the species tile collapses
+# and the dataset pages keep saying "taxa" (plan 2026-09-07 § D-2: never a typed number).
+get "$record_dir/coverage.json" "$DATA/release_coverage.json" ||
+  echo "NOTE: no coverage.json beside the record — the front door draws no species count" >&2
 
 # versions.json is release-history, kept at the prefix root, never inside a version folder
 get "$RELEASE_BASE/versions.json" "$DATA/versions.json" ||

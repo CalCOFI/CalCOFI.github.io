@@ -322,6 +322,72 @@ module CalCOFI
       end
     end
 
+    # ── the release's OBSERVED taxa (coverage.json → _data/release_coverage.json) ──────────
+    # The taxon TABLE's 2,614 rows are not a count of organisms: 1,108 of them are lineage ancestors
+    # and dataset vocabulary entries never observed. `taxa[]` is one row per taxon actually observed,
+    # with its rank and the datasets it was seen in — the honest count the band and the dataset pages
+    # show (plan 2026-09-09 § F4, D3, D4). An older release carries no coverage.json and every number
+    # below is nil: the tile collapses, the dataset page keeps saying "taxa", nothing is typed.
+    SPECIES_RANK = "Species"
+
+    def coverage_taxa
+      @coverage_taxa ||= begin
+        cov = @site.data["release_coverage"]
+        cov.is_a?(Hash) ? (cov["taxa"] || []) : []
+      end
+    end
+
+    # species and taxa observed, per dataset_key — the dataset page's glance
+    def taxa_by_dataset
+      @taxa_by_dataset ||= begin
+        out = {}
+        coverage_taxa.each do |t|
+          sp = t["rank"] == SPECIES_RANK
+          (t["datasets"] || []).each do |d|
+            k = d["dataset_key"] or next
+            row = (out[k] ||= { "species" => 0, "taxa" => 0 })
+            row["taxa"] += 1
+            row["species"] += 1 if sp
+          end
+        end
+        out
+      end
+    end
+
+    # A rank's plural by RULE, not a typed list, so a rank the next release introduces still reads:
+    # genus → genera, class → classes, species → species, family → families, phylum → phyla,
+    # forma → formae, order → orders.
+    def rank_plural(rank)
+      r = rank.to_s.downcase
+      case r
+      when /us\z/ then r.sub(/us\z/, "era")
+      when /ss\z/ then "#{r}es"
+      when /s\z/  then r
+      when /y\z/  then r.sub(/y\z/, "ies")
+      when /um\z/ then r.sub(/um\z/, "a")
+      when /a\z/  then "#{r}e"
+      else "#{r}s"
+      end
+    end
+
+    # "279 genera, 136 families, 19 orders, 14 dataset-local classes, 13 classes, 37 more at other
+    # ranks" — the identifications that stopped above species, commonest first. A band tooltip is one
+    # line, so the five commonest are named and the rest counted in one phrase; every number is
+    # counted from taxa[], none typed. A taxon with no rank is a dataset's own class (the zooscan
+    # "eggs", the phytoplankton "other").
+    def rank_breakdown(limit = 5)
+      counts = coverage_taxa.reject { |t| t["rank"] == SPECIES_RANK }
+                            .group_by { |t| Fmt.present(t["rank"]) }
+                            .transform_values(&:size)
+                            .sort_by { |_, n| -n }
+      shown = counts.first(limit).map do |rank, n|
+        "#{Fmt.num(n)} #{rank ? rank_plural(rank) : 'dataset-local classes'}"
+      end
+      rest = counts.drop(limit).sum { |_, n| n }
+      shown << "#{Fmt.num(rest)} more at other ranks" if rest.positive?
+      shown.join(", ")
+    end
+
     # What a measurement row is, summed for the band's `measurements` (plan 2026-09-09 § D9): the
     # release grain plus the two full-resolution supplementals. The sum is over the tables a release
     # actually carries, so one without the supplementals still renders a number.
@@ -332,6 +398,9 @@ module CalCOFI
     #   years     the release year minus the earliest measured year_min over datasets[]
     #   cruises · ships · stations   reference[].rows for cruise · ship · grid (ships is the hero's
     #             eyebrow now, not a tile)
+    #   species   the release's own coverage.json, taxa[] at rank Species — the organisms identified
+    #             to species; `taxa` is every taxon observed (1,506 on v2026.09.06, of which 1,008
+    #             are species), and `taxon_rows` the taxon table's size, which is neither
     #   organism_obs   the release's own catalog.json, tables[obs_bio].rows — one taxon × one life
     #             stage × one sampling event, with its effort
     #   measurements   tables[obs_env] + [obs_ctd_full] + [obs_mets_full] .rows
@@ -355,6 +424,8 @@ module CalCOFI
         views = cat.is_a?(Hash) ? (cat["views"] || {}) : {}
         trows = ->(name) { tbls.find { |t| t["name"] == name }&.dig("rows") }
         taxon_rows = trows.("taxon")
+        obs_taxa = coverage_taxa.empty? ? nil : coverage_taxa.size
+        species  = coverage_taxa.empty? ? nil : coverage_taxa.count { |t| t["rank"] == SPECIES_RANK }
         org   = trows.("obs_bio")
         parts = MEASUREMENT_TABLES.filter_map { |t| (r = trows.(t)) && [t, r] }
         meas  = parts.empty? ? nil : parts.sum { |_, r| r }
@@ -368,8 +439,21 @@ module CalCOFI
           "ships"    => ref.("ship"),
           "stations" => ref.("grid"),
           "grid"     => { "standard" => byp["standard"], "extended" => byp["extended"], "historical" => byp["historical"] },
+          "species"     => species,
+          "species_fmt" => Fmt.num(species),
+          "taxa"        => obs_taxa,
+          "taxa_fmt"    => Fmt.num(obs_taxa),
+          # the taxa observed that are NOT at species rank — the Life tile's "and 498 more"
+          "taxa_more_fmt"  => (obs_taxa && species) ? Fmt.num(obs_taxa - species) : nil,
           "taxon_rows"     => taxon_rows,
           "taxon_rows_fmt" => Fmt.num(taxon_rows),
+          # the band's species tile carries the whole qualifier as its title: what "species" counts,
+          # what it does not, and where the taxon table's bigger number belongs
+          "species_title"  => species && [
+            "#{Fmt.num(species)} identified to species",
+            "#{Fmt.num(obs_taxa)} taxa observed in all (#{rank_breakdown})",
+            taxon_rows && "#{Fmt.num(taxon_rows)} rows in the taxon table with their ancestors"
+          ].compact.join(" · "),
           "organism_obs"     => org,
           "organism_obs_m"   => Fmt.millions(org),
           "organism_obs_fmt" => Fmt.num(org),
@@ -1820,6 +1904,11 @@ module CalCOFI
         "variables"   => cat.normalize_variables(cov),
         "n_obs_fmt"   => Fmt.num(cov["n_obs"]),
         "n_roots_fmt" => Fmt.num(cov["n_roots"]),
+        # this dataset's own species count, from the release's coverage.json (plan 2026-09-09 § D3):
+        # the taxa it observed that are at species rank, with the full count beside it in the title.
+        # nil where the release carries no coverage.json, and the page then says "taxa" as before.
+        "n_species"   => cat.taxa_by_dataset.dig(key, "species"),
+        "n_cov_taxa"  => cat.taxa_by_dataset.dig(key, "taxa"),
         "objects"     => (r["objects"] || []).map { |o| o.merge("bytes_fmt" => Fmt.bytes(o["bytes"])) },
         "sources"     => is_holding ? nil : cat.source_files(r)
       )

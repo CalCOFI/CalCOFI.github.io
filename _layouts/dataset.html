@@ -12,7 +12,7 @@ layout: default
                   the text beside it and never taller.
     2 sub-nav     the sticky uppercase tab row, now brand v2's .cc-tabs
     3 Overview    ONE COLUMN. Nothing below the head is two columns.
-    4 Coverage    the variables, taxa, life stages and what this dataset contributes elsewhere
+    4 Coverage    the variables, species and taxa, life stages and what this dataset contributes elsewhere
     5 Access      compact one-line rows, no URL line (the copy button carries it); the release
                   tables as a table; Metadata records beside Archives & portals. Inner grids only —
                   the .cc-container stays one column (check_layout.py's assertion is on it)
@@ -68,7 +68,11 @@ layout: default
         {%- if page.n_obs_fmt %}<div><dt>observations</dt><dd>{{ page.n_obs_fmt | escape }}</dd></div>{% endif -%}
         {%- if page.n_roots_fmt %}<div><dt>sampling events</dt><dd>{{ page.n_roots_fmt | escape }}</dd></div>{% endif -%}
         {%- if cov.n_stations > 0 %}<div><dt>stations</dt><dd>{{ cov.n_stations | escape }}</dd></div>{% endif -%}
-        {%- if cov.n_taxa > 0 %}<div><dt>taxa</dt><dd>{{ cov.n_taxa | escape }}</dd></div>
+        {%- comment -%} species, not taxa (plan 2026-09-09 § D3): page.n_species counts the release's
+          coverage.json taxa[] at rank Species that name THIS dataset, with every taxon it observed in
+          the title. A release with no coverage.json says "taxa" from the record, as before. {%- endcomment -%}
+        {%- if page.n_species %}<div title="{{ page.n_cov_taxa | escape }} taxa in all"><dt>species</dt><dd>{{ page.n_species | escape }}</dd></div>
+        {%- elsif cov.n_taxa > 0 %}<div><dt>taxa</dt><dd>{{ cov.n_taxa | escape }}</dd></div>
         {%- elsif cov.n_variables > 0 %}<div><dt>variables</dt><dd>{{ cov.n_variables | escape }}</dd></div>{% endif -%}
         {%- if cov.depth_max_m %}<div><dt>depth</dt><dd>{{ cov.depth_min_m | default: 0 | escape }}–{{ cov.depth_max_m | escape }} m</dd></div>{% endif -%}
       </dl>
@@ -182,7 +186,7 @@ layout: default
     </p>
     {%- endif -%}
     {%- if cov.taxa.size > 0 -%}
-    <h3 class="cc-h3 ds-cov-h">Taxa</h3>
+    <h3 class="cc-h3 ds-cov-h">Species and taxa</h3>
     <ul class="ds-taxa">
       {%- for t in cov.taxa limit: 50 -%}
       <li><i>{{ t.scientific_name | default: t.name | escape }}</i>

@@ -59,15 +59,28 @@ assets/reach.js          the reach: the static grid map (218 cells by pattern, t
                          dataset's measured years, the categories with the release's counts, the floor and the six
                          numbers — built by _plugins/datasets.rb (`site.data.reach`). No request; grid.geojson never
                          reaches the browser.
-the numbers band         77 years · 842 cruises · 49 ships · 218 stations · 2,614 taxa · 349 M rows, every one read
-                         at build (`site.data.catalog.numbers`): the release year minus the earliest measured
-                         year_min, reference[].rows, the release's own catalog.json (fetched by fetch_release.sh as
-                         _data/release_catalog.json — NOT catalog.json, which Jekyll would load over the
-                         generator's site.data.catalog) and release.total_rows. A value the build cannot read is not
-                         rendered — the tile collapses; nothing is typed.
+the numbers band         77 years · 842 cruises · 218 stations · 1,008 species · 1.3 M organism obs. · 316 M
+                         measurements, every one read at build (`site.data.catalog.numbers`; plan 2026-09-09 § D9).
+                         Where each comes from: years = the release year minus the earliest measured year_min over
+                         datasets[]; cruises and stations = reference[].rows for `cruise` and `grid`; species =
+                         the release's own coverage.json (fetched by fetch_release.sh as _data/release_coverage.json,
+                         ~660 KB, build-time only) counted as taxa[] at rank Species — 1,008 of the 1,506 taxa
+                         OBSERVED, which is not the taxon table's 2,614 rows (1,108 of those are lineage ancestors
+                         and vocabulary never observed, so "2,614 taxa" said the wrong thing); organism obs. and
+                         measurements = the release's own catalog.json (fetched as _data/release_catalog.json — NOT
+                         catalog.json, which Jekyll would load over the generator's site.data.catalog), as
+                         tables[obs_bio].rows and tables[obs_env] + [obs_ctd_full] + [obs_mets_full] .rows summed
+                         over the tables that release actually carries. `ships` (49) is the hero's eyebrow now, and
+                         `rows` (release.total_rows, 349 M) stays where it describes the release OBJECT — the release
+                         tile and the release strip, whose cell's title says how much of it is the `obs`
+                         compatibility copy counted twice (26 M). Fmt.millions() is the one rule for a count in
+                         millions: rounded, one decimal under 10 M, so obs_bio reads 1.3 M and not 1 M. A band dt is
+                         one 12 px uppercase line in a 177 px tile, so each new tile's qualifier is its `title`,
+                         computed from the same tables. A value the build cannot read is not rendered — the tile
+                         collapses; nothing is typed.
 the bento                a 6-column grid on 25 px rows: Where (the static map), When (the strip), Latest release, the
                          ship's log, Explore, Get the data (five snippets behind radio-input tabs, no script) and
-                         Life (the taxa count). No tile ends in a button: the one CTA is the hero's; every tile ends
+                         Life (the species count, linking `/species/`). No tile ends in a button: the one CTA is the hero's; every tile ends
                          in an uppercase text link. The Explore cell is not tile markup — it is the SAME
                          _includes/product_card.html the Explore section below renders for the `explore` product, so
                          the tile and the card cannot drift; .t-exp-cell only fits it to the tile. The row unit is
@@ -80,15 +93,8 @@ brand/v2 --cc-sec-*      the 18 tokens the section is painted with (both themes,
                          toggle repaints everything; nothing listens for cc:theme.
 ```
 
-**The ship's log** (`/news/`, the tile, `/feed.xml`) is news that mostly writes itself:
-`_plugins/news.rb` merges the release history (`versions.json`, each version titled by the first `##`
-heading of its `RELEASE_NOTES.md`, fetched by `fetch_release.sh` into the git-ignored
-`_data/release_headings.json`), every dataset's first release (`since_version`), every product's
-`added:` date in `products.yml` (back-filled from git) and the hand-written rows of
-[`_data/news.yml`](_data/news.yml) (a feature, a change to the site, a paper) into `site.data.log`,
-newest first. The header's **News** link wears a dot while an entry is under 30 days old. Type chips
-are the accent tint — **never `--warn`**: yellow marks a state that needs attention, not a kind of
-thing. `feed.xml` is Atom written by the plugin (the entries are neither posts nor a collection).
+**The ship's log** (`/news/`, the tile, `/feed.xml`) is news that mostly writes itself — where each
+kind of entry comes from and when it appears is its own section, [News](#news--where-an-entry-comes-from-and-when-it-appears), below.
 
 **Motion** (Decision 9, narrowed 2026-09-07): the rosette casts down the CTD wire and back on a 26 s
 loop and the CUFES dots flow — both off under `prefers-reduced-motion`. The map is static: a cruise
@@ -100,6 +106,41 @@ copy clear of the ship's bounding box and above the surface; no tile drawn > 1.2
 six numbers on the band equal the inline record's; the strip has one row per dataset and the map one
 mark per cell; nothing on the first screen computes to `--warn` but the CTA; every pin's calcofi.org
 page answers a ranged GET. Lighthouse accessibility is 100 on `/` and `/news/` in both themes.
+
+## News — where an entry comes from and when it appears
+
+The ship's log (`/news/`, the front door's tile, `/feed.xml`) is news that mostly writes itself:
+`_plugins/news.rb` merges four sources into `site.data.log`, newest first. Nobody hand-writes a
+release or a dataset entry — the release does.
+
+| type | source | who writes it | when it appears | where it links |
+|---|---|---|---|---|
+| release | `_data/versions.json` + the first `##` heading of that version's `RELEASE_NOTES.md` (fetched by `fetch_release.sh` into the git-ignored `_data/release_headings.json`) | the release runner, in `RELEASES.md` `# Unreleased` before the cut | minutes after `latest.txt` is promoted (`test_release.qmd` dispatches `refresh.yml`), or by the Monday 09:17 UTC cron | `RELEASES.html#v{version}` — the rendered changelog at that version's own heading, **when the page carries that id**; the page unanchored otherwise |
+| dataset | `datasets[].since_version` in the record | nobody — the release that first carries the dataset | with that release | the dataset's page |
+| app | `products.yml` `added:` (back-filled from each product's first commit) | whoever adds the card | on push to `main` (`pages.yml`) | the product |
+| data · site · paper | [`_data/news.yml`](_data/news.yml) | whoever has the story: a feature, a change to the site, a paper | on push to `main` | the row's `url` |
+
+A `news.yml` row carrying `version:` or `dataset_key:` **replaces** the generated entry of that key —
+for a wrong `since_version`, or a notes heading that is not the story. The header's **News** link
+wears a dot while an entry is under 30 days old. Type chips are the accent tint — **never `--warn`**:
+yellow marks a state that needs attention, not a kind of thing. `feed.xml` is Atom written by the
+plugin (the entries are neither posts nor a collection).
+
+**The writing rule that matters most**: the first `##` heading under a version in `RELEASES.md`
+*is* the entry calcofi.io and the feed show. Write it as the story of the release, not as a label.
+
+**The anchor is read, never assumed.** `scripts/render_md_on_storage.R` (in `workflows`) stamps
+`id="v2026.09.06"` — the version string itself — on each version heading of the rendered
+`RELEASES.html`, keeping the old slug id beside it; a release the changelog collapsed into a range
+section (`# v2026.08.04 – v2026.08.06`) has an id only for the versions the heading names. So
+`fetch_release.sh` GETs that page once and writes the ids it finds to the git-ignored
+`_data/release_anchors.json`, and `news.rb` anchors an entry only when the id is in that set.
+
+**Checked** by `scripts/check_news.py` after every build (wired into `pr.yml`, `pages.yml` and
+`refresh.yml`): one GET of `RELEASES.html`, and every `RELEASES.html#fragment` in
+`_site/news/index.html` and `_site/index.html` must be an `id=` on that page — so a renamed section
+or a version whose notes were never re-rendered turns the build red instead of quietly landing a
+reader at the top of a 150 KB changelog.
 
 ## Feedback (the Explorer's dialog, on every page)
 
@@ -136,12 +177,16 @@ source is `datasets.json` — the record `calcofi4db::build_dataset_catalog()` w
 turned into pages by a Jekyll generator.
 
 ```
-scripts/fetch_release.sh   latest.txt → _data/{datasets,versions}.json + _data/grid.geojson
-                           (all three git-ignored: the site renders the release, never copies it)
+scripts/fetch_release.sh   latest.txt → _data/{datasets,versions}.json + _data/grid.geojson, and beside
+                           the record _data/{coverage_stations,release_catalog,release_coverage}.json
+                           + _data/{release_headings,release_anchors}.json (ALL git-ignored: the site
+                           renders the release, never copies it; an optional one that is missing
+                           collapses the thing it feeds rather than being typed)
 _plugins/datasets.rb       the record → /datasets/, /datasets/{key}/, {key}.json, {key}.jsonld,
                            /datasets/release/, /datasets/sitemap.xml, /datasets/search.json,
                            /data.json — and site.data.catalog for index.html
 scripts/check_jsonld.py    every page's JSON-LD, the sitemap, and data.json against DCAT-US 1.1
+scripts/check_news.py      every RELEASES.html#fragment the ship's log links is an id on that page
 ```
 
 **Which release.** `fetch_release.sh` resolves `latest.txt` on the production prefix and uses that
@@ -215,6 +260,10 @@ search index and `page.variables` all read one shape; a build against either ren
      (28 rings, 791 points, 18 KB). Run it only to change the clip or the tolerance.
    - `_data/coverage_stations.json` (~470 KB, from `fetch_release.sh`, git-ignored) says which
      cells each dataset sampled. It is read at build time and **never shipped to the browser**.
+   - `_data/release_coverage.json` (the release's own `coverage.json`, ~660 KB, git-ignored) is read
+     the same way: its `taxa[]` gives the front door its species count and each dataset page its
+     own — the taxa it observed at rank Species, with every taxon it observed in the tooltip
+     (plan 2026-09-09 § D3/D4). Without it a page says "taxa" from the record, as it did before.
 3. **Access is full-width rows, not a table.** Each row is two lines: label · chips · meta · copy,
    and no URL line (2026-09-06): the label is the link, the chips and identifier say which endpoint
    it is, and the copy button beside every row copies the address. *Tables from the release* is a
@@ -258,6 +307,8 @@ Checks:
 ```bash
 scripts/check_jsonld.py _site                    # JSON-LD + sitemap + data.json (pip install jsonschema
                                                  # for full DCAT-US schema validation)
+scripts/check_news.py _site                      # every RELEASES.html#fragment the log links is an id
+                                                 # on that page (one GET; stdlib only)
 scripts/check_brand.py --url http://localhost:4000/datasets/
 scripts/check_brand.py --url http://localhost:4000/datasets/swfsc_ichthyo/
 
@@ -281,10 +332,10 @@ before you commit.
 
 | workflow | when | what it runs |
 |---|---|---|
-| `pages.yml` | push to main | fetch → build → `check_jsonld.py` → deploy |
-| `pr.yml` | pull request | `_test/derive_id_test.rb` → fetch → build → `check_jsonld.py` → **`check_layout.py`** (the front door and the four catalog pages) → `check_brand.py --url` on three built pages. No deploy. |
+| `pages.yml` | push to main | fetch → build → `check_jsonld.py` → **`check_news.py`** → deploy |
+| `pr.yml` | pull request | `_test/derive_id_test.rb` → fetch → build → `check_jsonld.py` → **`check_news.py`** → **`check_layout.py`** (the front door and the four catalog pages) → `check_brand.py --url` on three built pages. No deploy. |
 | `check-brand.yml` | Mondays 06:17 UTC | `check_brand.py --required-only` against every live product, and a second job that builds the site and runs **`check_layout.py`** against it |
-| `refresh.yml` | release dispatch · weekly · by hand | the same three steps as `pages.yml` |
+| `refresh.yml` | release dispatch · weekly · by hand | the same four steps as `pages.yml` |
 
 Both layout jobs serve `_site` with `python3 -m http.server` and point `check_layout.py` at
 `--base http://localhost:4000`, so the checks run against the build in hand rather than against

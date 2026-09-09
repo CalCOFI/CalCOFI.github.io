@@ -180,12 +180,17 @@ SELECT * FROM read_json('{{ rel.catalog_url }}')</pre>
       </p>
     </div>
 
-    {%- comment -%} Life: the taxa count from the release's own catalog; six organism glyphs, small to large {%- endcomment -%}
-    {%- if nums.taxa -%}
+    {%- comment -%} Life (plan 2026-09-09 § D3): the species count from the release's MEASURED
+      coverage — 1,008 of the 1,506 taxa observed are identified to species. The taxon table's 2,614
+      rows are not a count of organisms (1,108 of them are ancestors and unused vocabulary), so they
+      stay on /datasets/release/. Six organism glyphs, small to large. A release with no coverage.json
+      draws no tile, as one with no catalog.json drew none before. {%- endcomment -%}
+    {%- if nums.species -%}
     <div class="tile t-life">
       <div class="cc-eyebrow">Life · WoRMS-keyed</div>
       <div class="tile-row">
-        <span class="tile-big">{{ nums.taxa_fmt }} taxa</span>
+        <span class="tile-big">{{ nums.species_fmt }} species</span>
+        <span class="cc-muted">of {{ nums.taxa_fmt }} taxa</span>
         <span class="tile-glyphs" aria-hidden="true">
           {%- assign life_glyphs = "cat-phytoplankton,cat-zooplankton,cat-krill,cat-ichthyo,cat-fish,cat-whale" | split: "," -%}
           {%- for g in life_glyphs -%}
@@ -193,8 +198,8 @@ SELECT * FROM read_json('{{ rel.catalog_url }}')</pre>
           {%- endfor -%}
         </span>
       </div>
-      <p class="tile-cap">Every organism in the release resolved to one accepted WoRMS id (ITIS for birds), so a name means the same thing in every dataset.</p>
-      <a class="cc-text-link tile-more" href="https://calcofi.io/explore/">From diatoms to whales →</a>
+      <p class="tile-cap">And {{ nums.taxa_more_fmt }} more taxa identified to genus, family or class — every one keyed to one accepted WoRMS id (ITIS for birds), so a name means the same thing in every dataset.</p>
+      <a class="cc-text-link tile-more" href="{{ '/species/' | relative_url }}">Browse the species →</a>
     </div>
     {%- endif -%}
   </div>
