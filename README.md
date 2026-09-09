@@ -290,6 +290,104 @@ one-liner), the EML probe (`url_ok?` on the release's `eml/{key}.xml` — until 
 identifier), and `STAGE_MEANING`, which is site-side text by nature — the stage vocabulary is
 `dataset_status.csv`'s, not any one dataset's.
 
+## The species catalog (`/species/`, `/species/{slug}/`)
+
+The dataset catalog's pattern with the release's `taxon` table in the place of `dataset`: one
+record, one generator, one page per key, and **not one taxon fact written in this repo**. The
+source is `taxa.json` — the record `calcofi4db::build_taxa_catalog()` writes into each release
+beside `datasets.json` (schema 1.0, `calcofi4db/inst/schema/taxa.schema.json`; 2.44 MB on
+v2026.09.06).
+
+```
+scripts/fetch_release.sh   {record_dir}/taxa.json → _data/taxa.json (git-ignored), and beside it
+                           _data/erddap_taxon_key.json — which ERDDAP tables carry a taxon_key column
+_plugins/species.rb        the record → /species/, /species/{slug}/, /species/{slug}.json,
+                           /species/sitemap.xml — and site.data.species for the index and the
+                           dataset pages' taxon links
+assets/species.js          the tree + search, the class × dataset matrix, the icicle, the years strip
+scripts/check_jsonld.py    one schema.org/Taxon node per page, and the species sitemap
+scripts/check_layout.py    /species/ and /species/worms-217452/ at 1470 and 375 px, both themes
+```
+
+**The record.** `counts` (taxa observed · species observed · the taxon table's rows · datasets ·
+pages · the `obs_bio` rows that carry a taxon key), `datasets[]` (each with its colour, category,
+counts and `vocabulary_only[]`), and `taxa[]` — one entry per taxon **with an observation at or
+below it**: 2,410 on v2026.09.06, the 1,506 observed plus the 904 ancestors that roll them up. The
+204 `taxon` rows nothing observes get no page; the 175 of them a dataset declares are the folded
+*In the vocabulary, not yet observed* list on that **dataset**'s page instead (174 for ichthyo, 2
+each for Farallon and mesopelagic). Each entry carries its `slug`, `lineage{}`,
+`ids{}`, `local{}` (a dataset-local class only), `groups[]`, `direct{}`, `rollup{}` and
+`datasets[]` — per dataset the counts, the years, and `sources[]`: **the name that dataset uses**.
+
+**The slug rule.** `slug` is the `taxon_key` with its `:` written `-`, so `worms:217452` is
+`/species/worms-217452/`. The reverse is the split on the **last dash before the trailing digits**
+(`/^(.*)-(\d+)$/` → `$1:$2`), so a dataset key's own hyphens survive: `cce-lter_zooscan-13` is
+`cce-lter_zooscan:13`. `assets/species.js` derives the slug from the key rather than carrying it
+2,403 times.
+
+**What a page carries.** The lineage breadcrumb (every ancestor a link, behind its rank's
+abbreviation), the accepted name **once** as the title — italic for a genus, species or subspecies;
+a dataset-local class is headed by its dataset's own name for it and says so — the common name, a
+status eyebrow (`Species · accepted · checked 2026-08-05`) with a quiet pill where the authority
+does not say `accepted` (87 of the 2,410 pages), the ids linked out (WoRMS · ITIS · GBIF · NCBI · iNat)
+with the key in mono, the stat row, one row per dataset it was observed in, the years strip, the
+taxa under it (folded past 30), its `taxon_group`s, and the **ways in**: the Explorer prefilled
+`?taxon={key}`, db-query prefilled with `SELECT * FROM __TBL:obs_bio__ WHERE taxon_key = …`, ERDDAP,
+and R and Python snippets. Each URL is a full-width single mono line, elided from the **middle** by
+`species.js` so the tail — the taxon the tool opens on — survives a phone; one row per endpoint.
+
+**The flags.** Each `sources[]` row is the vocabulary a dataset declares, and carries a quiet pill
+where the crosswalk had to move: `synonym` (the name is not the accepted one, 70 rows),
+`sp_to_genus` (*"Cyclothone sp."* → the genus, 11), `rekeyed` (the id the dataset supplied was
+deprecated by its authority and re-keyed to the successor, 27 Farallon rows), `id_conflict` (a
+*secondary* authority's id disagrees with the key authority's cross-reference, 23 ichthyo rows) and
+`no_name` (the dataset carries only a code, 120). The labels are a map with a **plain-text
+fallback**, so a flag the next release adds still renders as itself.
+
+**The forest, and the display merge.** The `taxon` table is a forest, not a tree: `worms:1` Biota,
+`worms:3` Plantae, `worms:6` Bacteria, `worms:7` Chromista, `itis:202423` Animalia — the ITIS bird
+lineage, because WoRMS lags on Aves — and the 14 dataset-local classes are all roots. **The pages
+follow the record exactly.** Only the index's tree merges: display nodes of the same **rank AND
+`scientific_name`** across the two authorities become one node (Animalia, Chordata, Vertebrata,
+Gnathostomata), linked to the `worms:` page, showing the summed rollup; a root above kingdom rank
+(Biota) is lifted so the tree opens on the kingdoms; a node the merge leaves with neither
+observations nor children is not drawn (ITIS's Bilateria and Deuterostomia, whose only chain merges
+away — both keep their pages); and the 14 local classes hang under one *Dataset-local classes*
+node. 2,403 nodes drawn, and their direct observations still sum to the record's `obs_bio_rows`.
+
+**The inline JSON.** `/species/` inlines **one** payload (284 KB, 56 KB gzipped): every node with
+its key, name, common name, rank, parent, direct observations and per-dataset observations
+(datasets referenced by their index in `ds[]`), plus the class × dataset matrix and the icicle
+hierarchy — **both counted in Ruby, once, from the record**, so `species.js` only paints them and no
+count can be computed two ways. It doubles as the search index, so the page loads one payload and
+not two; per-taxon detail is `/species/{slug}.json`.
+
+**The checks.** `check_jsonld.py`: exactly one `Taxon` node per page with `name`, `identifier` (the
+WoRMS LSID `urn:lsid:marinespecies.org:taxname:{id}`, or ITIS's TSN page) and the page's own `url`;
+`taxonRank` exactly where the record ranks it and nowhere else (the 14 dataset-local classes have
+none, and none is invented); `parentTaxon` exactly where the record has a parent, read back from the
+sidecar so a page cannot claim a lineage the record lacks; `/species/` one `CollectionPage`; and the
+species sitemap equal to the pages that exist. `check_layout.py`: the index's five counts equal the
+inline record's, the matrix has exactly rows × datasets cells, the tree pane is exactly the matrix
+pane's height (the tree scrolls **inside** it, so no unbounded text sits beside a fixed-height
+figure), every `.sp-url` is one line and actually elided, and on a taxon page the *Observed in* rows
+are the record's `datasets[]` with its counts, the lineage is a chain of species links, and the
+Explorer link opens prefilled.
+
+**The `TAXA_RELEASE_URL` bridge.** `fetch_release.sh` takes the promoted release's own `taxa.json`
+first. Until a promoted release carries one, `TAXA_RELEASE_URL` names a staging record — a full
+`http(s)` URL, a `file://` URL **or a plain local path**, so a record on disk renders:
+
+```bash
+TAXA_RELEASE_URL=/path/to/taxa.json scripts/fetch_release.sh && bundle exec jekyll build
+```
+
+It is set as a repository variable and passed in `pages.yml`, `refresh.yml`, `pr.yml` and
+`check-brand.yml`'s layout job, beside `DATASETS_RELEASE_URL`. **With neither, nothing is
+generated**: no `_data/taxa.json`, one NOTE, no species pages, and the front door's Life tile links
+the Explorer instead — the same D-2 rule the numbers band follows (a fact the build cannot read is
+not rendered, never typed). Unset the variable when the promoted release carries the record.
+
 ## Local preview
 
 ```bash
@@ -392,8 +490,9 @@ scripts/shots.py datasets        # just one of them
 scripts/shots.py check           # luminance-check every themed image
 ```
 
-**calcofi.io's own pages** are captured too — the dataset catalog and two dataset pages — from the
-`pages:` section of [`_data/shots.yml`](_data/shots.yml). They are not products and have no card,
+**calcofi.io's own pages** are captured too — the front door, the dataset catalog, two dataset
+pages, the species catalog and one species page — from the `pages:` section of
+[`_data/shots.yml`](_data/shots.yml). They are not products and have no card,
 so they are a separate list rather than an invented `products.yml` entry; they land in
 `images/<key>_{dark,light}.png` like everything else, so the luminance check covers them.
 

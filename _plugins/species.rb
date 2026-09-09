@@ -305,7 +305,9 @@ module CalCOFI
           cname = Fmt.present(t.dig("lineage", "class"))
           rk = local?(t) ? LOCAL_NODE : (cname ? (cls_key[cname] || cname) : ABOVE_CLASS)
           row = (rows[rk] ||= { "key" => rk, "name" => cname || (local?(t) ? "Dataset-local classes" : "Identified above class"),
-                                "phylum" => local?(t) ? nil : Fmt.present(t.dig("lineage", "phylum")),
+                                # only a real class row has a phylum: "Identified above class" gathers
+                                # taxa from every phylum and a dataset-local class has none
+                                "phylum" => cname ? Fmt.present(t.dig("lineage", "phylum")) : nil,
                                 "url" => cname ? url_for_key(cls_key[cname]) : nil,
                                 "cells" => Hash.new { |h, k| h[k] = { "n" => 0, "obs" => 0, "top" => [] } },
                                 "n" => 0, "obs" => 0 })
@@ -469,13 +471,17 @@ module CalCOFI
       end
     end
 
-    # the years strip's own payload: one row per dataset, one cell per year, 1949 → the release year
+    # the years strip's own payload: one row per dataset, one cell per year, 1949 → the release year.
+    # It carries `n` and `e` as well — the record's own observation and event counts for that
+    # dataset — so scripts/check_layout.py has a RECORD-side number to compare the rendered
+    # "Observed in" rows against, rather than a number typed into the check.
     def strip_json(t)
       { "y0" => 1949, "y1" => release["release_date"].to_s[0, 4].to_i,
+        "key" => t["taxon_key"],
         "rows" => (t["datasets"] || []).map do |x|
           d = ds_by_key[x["dataset_key"]] || {}
           { "k" => x["dataset_key"], "s" => d["dataset_name_short"] || x["dataset_key"],
-            "c" => d["color"], "y" => x["years"] || {} }
+            "c" => d["color"], "n" => x["n_obs"], "e" => x["n_samples"], "y" => x["years"] || {} }
         end }
     end
 

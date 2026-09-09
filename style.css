@@ -832,10 +832,13 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 .sp-local { margin: 6px 0 0; font-size: var(--fs-sm); max-width: 72ch; }
 .sp-local code { font-family: var(--mono); font-size: 0.92em; }
 
-/* the years strip is drawn by assets/species.js; before it has a viewBox an <svg> is 300x150 by
-   the CSS default, which would leave a hole here and on a page read without JS */
-.sp-strip { display: block; width: 100%; height: auto; margin: var(--space) 0 0; }
-.sp-strip:not([viewBox]) { display: none; }
+/* the years strip is drawn by assets/species.js, which adds .sp-drawn when it has: before that an
+   <svg> is 300 x 150 by the CSS default, which would leave a hole here and on a page read without
+   JS. The class, NOT an attribute selector: a CSS attribute name is lowercased in an HTML document,
+   so `:not([viewBox])` is written `[viewbox]`, never matches SVG's camelCase attribute, and hid
+   the strip on every species page (measured 2026-09-09). */
+.sp-strip { display: none; width: 100%; height: auto; margin: var(--space) 0 0; }
+.sp-strip.sp-drawn { display: block; }
 .sp-strip text { font: 11px var(--mono); fill: var(--muted); }
 
 /* the stat row: observations · sampling events · years · datasets · life stages */
@@ -886,4 +889,105 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
   .sp-cols2 { grid-template-columns: minmax(0, 1fr); }
   .sp-h { grid-template-columns: minmax(0, 1fr); align-items: start; }
   .sp-kids { columns: 1; }
+}
+
+/* ── the species catalog's index (/species/): search + tree, the matrix, the icicle ───────────
+   Drawn by assets/species.js from the one inline JSON; the rules below are the mockup's, mapped
+   onto brand v2's tokens. The tint of a matrix cell and of an icicle band is ONE sequential ramp
+   of --accent mixed into --bg, so nothing here needs a second hue and nothing computes to --warn. */
+/* the head is ONE column and the counts are a row beneath it: a display h1 that wraps to two
+   lines would otherwise leave 350 px of empty page beside it in the second column */
+.sp-idx-head .cc-lede { max-width: 78ch; }
+.sp-counts { display: flex; flex-wrap: wrap; gap: 10px 34px; margin: calc(var(--space) * 2) 0 0; padding: calc(var(--space) * 2) 0 0; border-top: 1px solid var(--border); }
+.sp-counts div { min-width: 0; }
+.sp-counts dd { margin: 0; font: 500 30px/1 var(--display); font-variant-numeric: tabular-nums; }
+.sp-counts dt { font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+
+.sp-searchrow { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 0 0 calc(var(--space) * 1.75); }
+.sp-search { flex: 1 1 320px; display: flex; align-items: center; gap: 8px; background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 7px 12px; }
+.sp-search input { flex: 1; border: 0; background: transparent; color: var(--fg); font: 16px var(--sans); min-width: 0; }
+.sp-search input:focus { outline: 0; }
+.sp-search:focus-within { border-color: var(--accent); }
+.sp-n { font: 12.5px var(--mono); color: var(--muted); white-space: nowrap; }
+.sp-rankf { display: flex; gap: 6px; flex-wrap: wrap; }
+.sp-rankf button, .sp-seg button { border: 1px solid var(--border); background: var(--panel-2); color: var(--muted); border-radius: 999px; padding: 5px 11px; font: 600 12px var(--sans); cursor: pointer; }
+.sp-rankf button[aria-pressed="true"] { background: var(--accent-bg); color: var(--accent); border-color: transparent; }
+
+/* the tree beside the matrix: the pane is as tall as the matrix's, and the tree scrolls INSIDE it
+   (species.js syncTree) — no unbounded text beside a fixed-height figure */
+.sp-two { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: calc(var(--space) * 2.5); align-items: start; }
+.sp-pane { background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius-card); overflow: hidden; min-width: 0; }
+.sp-pane-h { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 11px 16px 8px; border-bottom: 1px solid var(--border); }
+.sp-pane-h .cc-eyebrow { font-size: 11.5px; margin: 0; }
+.sp-hint { font-size: 12.5px; color: var(--muted); }
+
+.sp-tree { height: 600px; overflow: auto; padding: 8px 10px 14px; font-size: 14px; }
+.sp-tree ul { list-style: none; margin: 0; padding: 0 0 0 18px; }
+.sp-tree > ul { padding-left: 0; }
+.sp-tree li { margin: 0; }
+.sp-tr { display: grid; grid-template-columns: 20px 26px minmax(0, 1fr) auto auto; gap: 6px; align-items: center; padding: 3px 4px; border-radius: 6px; }
+.sp-tr:hover { background: var(--panel); }
+.sp-tr.sp-hit { background: var(--accent-bg); }
+.sp-tw { width: 20px; height: 20px; border: 0; background: transparent; color: var(--muted); cursor: pointer; font-size: 12px; padding: 0; border-radius: 4px; }
+.sp-tw[disabled] { cursor: default; opacity: 0.5; }
+.sp-tw[aria-expanded="true"] { transform: rotate(90deg); }
+.sp-rk { font: 700 10px var(--mono); letter-spacing: 0.04em; color: var(--muted); background: var(--na-bg); border-radius: 3px; padding: 2px 0; text-align: center; }
+.sp-rk-s { background: var(--accent-bg); color: var(--accent); }
+.sp-nm { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sp-nm-plain { color: var(--fg); }
+.sp-nm small { font-style: normal; color: var(--muted); margin-left: 6px; }
+.sp-ct { font: 12px var(--mono); color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.sp-dots { display: inline-flex; gap: 3px; min-width: 44px; justify-content: flex-end; align-items: center; }
+.sp-dots .sp-dot { width: 9px; height: 9px; margin-top: 0; }
+
+/* the matrix: rows = classes by phylum + the two rows the record makes necessary, columns = the
+   datasets in catalog order, 2 px gaps, the count inside the cell */
+.sp-matrix { padding: 12px 16px 14px; overflow-x: auto; }
+.sp-mx { display: grid; gap: 2px; align-items: stretch; min-width: 560px; }
+.sp-mh { font: 600 11.5px/1 var(--sans); color: var(--muted); display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 6px; height: 122px; padding-bottom: 4px; }
+.sp-mh .sp-vt { writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; }
+.sp-mh i { display: block; width: 10px; height: 10px; border-radius: 50%; }
+.sp-mh-first { align-items: flex-start; justify-content: flex-end; height: auto; }
+.sp-rl { font-size: 12.5px; line-height: 1.15; padding: 0 8px 0 0; display: flex; flex-direction: column; justify-content: center; min-width: 0; }
+.sp-rl small { color: var(--muted); font-size: 10.5px; letter-spacing: 0.04em; text-transform: uppercase; }
+.sp-c { height: 26px; border-radius: 3px; display: flex; align-items: center; justify-content: center; font: 600 12px var(--mono); font-variant-numeric: tabular-nums; color: var(--fg); background: var(--panel); cursor: pointer; }
+.sp-c-on { color: var(--on-accent); }
+.sp-c-z { background: transparent; border: 1px dashed var(--border); color: transparent; cursor: default; }
+.sp-legend { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; margin: 10px 0 0; font-size: 12px; color: var(--muted); }
+.sp-ramp { height: 10px; width: 120px; border-radius: 3px; background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 8%, var(--bg)), var(--accent)); }
+
+/* the icicle: full width under both panes */
+.sp-ice-wrap { margin-top: calc(var(--space) * 2.5); }
+.sp-ice-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin: 0 0 8px; }
+.sp-ice-bar .cc-eyebrow { margin: 0; }
+.sp-seg { display: inline-flex; border: 1px solid var(--border); border-radius: 999px; overflow: hidden; }
+.sp-seg button { border: 0; border-radius: 0; padding: 5px 12px; }
+.sp-seg button[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); }
+.sp-crumb { display: flex; flex-wrap: wrap; gap: 4px 6px; font-size: 13px; align-items: center; }
+.sp-crumb button { border: 0; background: transparent; color: var(--accent); font: inherit; padding: 0; cursor: pointer; }
+.sp-crumb button:hover { text-decoration: underline; }
+.sp-ice { width: 100%; height: 340px; display: block; border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--panel-2); }
+.sp-ice rect { stroke: var(--panel-2); stroke-width: 2; cursor: pointer; }
+.sp-ice text { font: 12.5px var(--sans); pointer-events: none; }
+.sp-ice text.sp-lvl { font: 700 10.5px var(--sans); letter-spacing: 0.08em; text-transform: uppercase; fill: var(--muted); }
+
+/* one tooltip serves the tree, the matrix and the icicle */
+.sp-ttip { position: absolute; z-index: 30; pointer-events: none; background: var(--fg); color: var(--bg); font: 13px/1.35 var(--sans); padding: 8px 10px; border-radius: 6px; max-width: 300px; box-shadow: 0 4px 18px rgb(0 0 0 / 25%); display: none; }
+.sp-ttip b { display: block; }
+.sp-ttip .sp-d { display: block; opacity: 0.85; }
+.sp-ttip .sp-dot { box-shadow: none; margin-top: 0; }
+.sp-body { position: relative; }
+
+/* the twisty is the only thing that moves, and only where motion is welcome */
+@media (prefers-reduced-motion: no-preference) { .sp-tw { transition: transform 0.15s; } }
+
+@media (max-width: 1000px) {
+  .sp-two { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 700px) {
+  .sp-tree { height: 460px; }
+  .sp-tr { grid-template-columns: 20px 26px minmax(0, 1fr) auto; }
+  .sp-dots { display: none; }
+  .sp-counts { gap: 6px 16px; }
+  .sp-counts dd { font-size: 24px; }
 }
