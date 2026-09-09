@@ -1,6 +1,7 @@
 # On a pull request: build the site the way Pages will, and hold it to the same checks — the
-# structured-data contract (`check_jsonld.py`) and the layout contract (`check_layout.py`, plan
-# D-10). Nothing here deploys; `pages.yml` still owns that on a push to main.
+# structured-data contract (`check_jsonld.py`), the changelog anchors the ship's log links
+# (`check_news.py`) and the layout contract (`check_layout.py`, plan D-10). Nothing here deploys;
+# `pages.yml` still owns that on a push to main.
 #
 # The point is that the two problems this refresh fixed cannot come back unnoticed: a tile drawn
 # taller than its content, a holding louder than the datasets above it, a dataset page whose
@@ -54,6 +55,11 @@ jobs:
 
       - name: Validate the JSON-LD, the sitemap and data.json
         run: scripts/check_jsonld.py _site
+
+      # the ship's log's changelog anchors: one GET of the rendered RELEASES.html, every
+      # `RELEASES.html#fragment` the built log links must be an id on it (plan 2026-09-09 § N2)
+      - name: Check the changelog anchors
+        run: python3 scripts/check_news.py _site
 
       - name: Serve _site
         run: |

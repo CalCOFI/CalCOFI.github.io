@@ -10,8 +10,11 @@
 #                                 (~470 KB; read at BUILD time to draw the map's filled marks —
 #                                 never shipped to the browser)
 #   _data/release_catalog.json    the release's own catalog.json (the taxa count on the front door)
+#   _data/release_anchors.json    the version ids the rendered RELEASES.html really carries, so the
+#                                 ship's log anchors a release entry only where the page has a
+#                                 heading for it (plan 2026-09-09 § N2)
 #
-# All five are git-ignored: the site is a rendering of the promoted release, never a copy of it.
+# All of them are git-ignored: the site is a rendering of the promoted release, never a copy of it.
 # `_data/land.geojson` is NOT here: the coastline is cartography, not a dataset fact, so it is a
 # committed asset built once by scripts/build_land.py.
 #
@@ -29,6 +32,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DATA="$ROOT/_data"
 
 RELEASE_BASE="${CALCOFI_RELEASE_BASE:-https://storage.googleapis.com/calcofi-db/ducklake/releases}"
+RELEASES_HTML="${CALCOFI_RELEASES_HTML:-https://storage.calcofi.io/calcofi-db/ducklake/releases/RELEASES.html}"
 FALLBACK_URL="${DATASETS_RELEASE_URL:-}"
 
 mkdir -p "$DATA"
@@ -107,6 +111,27 @@ for v in versions[:40]:
 json.dump(heads, open(out, "w"), indent=1, ensure_ascii=False)
 print(f"release headings: {len(heads)} of {len(versions)} versions")
 PY2
+
+# which version headings the RENDERED changelog actually carries. workflows'
+# scripts/render_md_on_storage.R stamps id="v2026.09.06" — the version string itself — on a version
+# heading, but a release collapsed into a range section ("# v2026.08.04 – v2026.08.06") has an id
+# only for the versions the heading names. _plugins/news.rb anchors a release entry only where the
+# id is in this list and links the unanchored page otherwise, so the set is READ here rather than
+# assumed. Optional: on a failure the list is empty and every release entry links the page's top.
+python3 - "$RELEASES_HTML" "$DATA/release_anchors.json" <<'PY3'
+import json, re, sys, urllib.request
+url, out = sys.argv[1:3]
+ids = []
+try:
+    with urllib.request.urlopen(url, timeout=20) as r:
+        html = r.read().decode("utf-8", "replace")
+    # the dotted form only: id="v2026.09.06", never the slug id="v2026-09-06-2026-09-06"
+    ids = sorted({m for m in re.findall(r'id="(v\d[\d.]*)"', html)}, reverse=True)
+except Exception as e:
+    print(f"NOTE: could not read {url} ({e}) — release entries will link the changelog unanchored")
+json.dump(ids, open(out, "w"), indent=1)
+print(f"changelog anchors: {len(ids)} version headings on RELEASES.html")
+PY3
 
 python3 - "$DATA/datasets.json" "$source_kind" "$record_url" <<'PY'
 import json, sys
