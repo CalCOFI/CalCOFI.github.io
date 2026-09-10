@@ -15,13 +15,23 @@ layout: default
 <section class="cc-band cc-band-alt mm-head">
   <div class="cc-container">
     <div class="mm-idx-head">
-      <div class="cc-eyebrow">Measurements · {{ mm.release.version | escape }} · NERC P01-keyed where a concept says exactly this</div>
-      <h1 class="cc-h1">{{ c.measurements }} measurements. {{ c.datasets }} datasets. {{ c.full_rows_m }} M values, {{ mm.datasets | map: 'y0' | compact | sort | first }} → {{ mm.datasets | map: 'y1' | compact | sort | last }}.</h1>
+      <div class="cc-eyebrow">Measurements · {{ mm.release.version | escape }} · one name per quantity across datasets</div>
+      <h1 class="cc-h1">{{ c.measurements }} measurements. {{ c.series }} series. {{ c.datasets }} datasets. {{ c.full_rows_m }} M values, {{ mm.datasets | map: 'y0' | compact | sort | first }} → {{ mm.datasets | map: 'y1' | compact | sort | last }}.</h1>
       <p class="cc-lede cc-prose">Everything CalCOFI has measured in the water and the air above it — temperature and
         salinity from the bottle casts of 1949 to this year's CTD profiles, nutrients, carbon, pigments and light, the
         underway weather, the picoplankton counted by flow cytometry — keyed to one name, so the same measurement means
-        the same thing in every dataset. Search it, filter by category, or start from a dataset; every measurement has
-        its own page. The machine-readable form is one JSON per measurement
+        the same thing in every dataset. Start from the overview below, search, filter by category, or start from a
+        dataset; every measurement has its own page.</p>
+      {%- comment -%} how the count works, every number read from the record (Ben, 2026-09-10: the total must be
+        plain, and how a shared NERC concept is what folds two datasets' series into one measurement) {%- endcomment -%}
+      <p class="cc-prose mm-how">A <b>measurement</b> is one quantity under one name; a <b>series</b> is one dataset's
+        column for it. Two datasets' series count as one measurement only where they carry the same NERC P01 concept
+        for the same kind of sample — {{ c.n_unified }} do today:
+        {%- for u in mm.unified %} <a href="{{ u.url | relative_url }}">{{ u.label }}</a>{% unless forloop.last %},{% endunless %}{% endfor %} —
+        so {{ c.series }} series make {{ c.measurements }} measurements. {{ c.n_p01 }} of the {{ c.measurements }} carry a
+        NERC P01 concept; {{ c.n_no_p01 }} carry none and keep their own names, because an empty concept means no
+        concept says exactly this, never that nobody looked.</p>
+      <p class="cc-aside">The machine-readable form is one JSON per measurement
         (<span class="mono">/measurements/{key}.json</span>) and
         <a href="{{ '/measurements/sitemap.xml' | relative_url }}">sitemap.xml</a>.</p>
       <dl class="mm-counts">
@@ -30,7 +40,7 @@ layout: default
         <div><dd class="tab">{{ c.datasets }}</dd><dt>datasets</dt></div>
         <div title="rows of obs_env — one measurement × one sample"><dd class="tab">{{ c.obs_env_rows_m }} M</dd><dt>values · release grain</dt></div>
         <div title="with the two full-resolution supplementals, obs_ctd_full and obs_mets_full"><dd class="tab">{{ c.full_rows_m }} M</dd><dt>with full resolution</dt></div>
-        <div><dd class="tab">{{ c.pages }}</dd><dt>pages</dt></div>
+        <div title="the other {{ c.n_no_p01 }} carry no NERC P01 concept and are listed under their own names"><dd class="tab">{{ c.n_p01 }}</dd><dt>with a NERC concept</dt></div>
       </dl>
     </div>
   </div>
@@ -38,34 +48,8 @@ layout: default
 
 <section class="cc-band mm-body">
   <div class="cc-container">
-    <div class="mm-searchrow">
-      <label class="mm-search sp-search">
-        <span class="cc-muted" aria-hidden="true">⌕</span>
-        <input id="mm-q" type="search" autocomplete="off" spellcheck="false"
-               placeholder="temperature · nitrate · chlorophyll · CTD · TEMPPR01 · umol/kg …"
-               aria-label="Search measurements, series, datasets, units and NERC ids">
-        <span class="sp-n" id="mm-qn" role="status"></span>
-      </label>
-      <div class="mm-chips" id="mm-chips" role="group" aria-label="Filter by category"></div>
-    </div>
-
-    {%- comment -%} the timeline: one row per measurement, one bar per dataset that carries it,
-      1949 → the release year — WS-M4 draws it into #mm-tl from the inline record {%- endcomment -%}
-    <div class="mm-pane mm-tl-wrap">
-      <div class="mm-pane-h">
-        <h2 class="cc-eyebrow">Which measurements, in which datasets, in which years</h2>
-        <span class="mm-legend" id="mm-legend"></span>
-      </div>
-      <div class="mm-tl-scroll"><div class="mm-tl" id="mm-tl" role="table" aria-label="Measurements by dataset over time"></div></div>
-    </div>
-    <p class="mm-note">One row per measurement, one bar per dataset that carries it, 1949 on the left and the release
-      year on the right; hover a bar for the dataset, its series, years, values, sampling roots and depths. Two bars in
-      a row are two datasets measuring the same thing — the bottle's <span class="mono">temperature</span> and the CTD's
-      <span class="mono">temperature_ave</span>, comparable across datasets — never a dataset's own bottle samples
-      beside its sensor (the CTD files' <span class="mono">btl_*</span> series stay their own rows, so the bottle
-      dataset is not counted twice). The values column is the release grain
-      (<span class="mono">obs_env</span>); the CTD and METS full-resolution tables carry more behind the same names.</p>
-
+    {%- comment -%} the overview first (Ben, 2026-09-10): the category × dataset matrix and the datasets,
+      then the search and the timeline they summarise — WS-M4 draws all of it from the inline record {%- endcomment -%}
     <div class="mm-two">
       <div class="mm-pane">
         <div class="mm-pane-h">
@@ -87,6 +71,34 @@ layout: default
       measurements — rows of <span class="mono">obs_env</span>, not organisms with a taxon — so they are listed here and
       nowhere in the species catalog. Dataset colour is never the only cue: the name is always beside the dot, and the
       matrix is one sequential ramp.</p>
+
+    <div class="mm-searchrow">
+      <label class="mm-search sp-search">
+        <span class="cc-muted" aria-hidden="true">⌕</span>
+        <input id="mm-q" type="search" autocomplete="off" spellcheck="false"
+               placeholder="temperature · nitrate · chlorophyll · CTD · TEMPPR01 · umol/kg …"
+               aria-label="Search measurements, series, datasets, units and NERC ids">
+        <span class="sp-n" id="mm-qn" role="status"></span>
+      </label>
+      <div class="mm-chips" id="mm-chips" role="group" aria-label="Filter by category"></div>
+    </div>
+
+    {%- comment -%} the timeline: one row per measurement, one bar per dataset that carries it,
+      1949 → the release year — WS-M4 draws it into #mm-tl from the inline record {%- endcomment -%}
+    <div class="mm-pane mm-tl-wrap">
+      <div class="mm-pane-h">
+        <h2 class="cc-eyebrow">Which measurements, in which datasets, in which years</h2>
+        <span class="mm-legend" id="mm-legend"></span>
+      </div>
+      <div class="mm-tl-scroll"><div class="mm-tl" id="mm-tl" role="table" aria-label="Measurements by dataset over time"></div></div>
+    </div>
+    <p class="mm-note">One row per measurement, one bar per dataset that carries it, 1949 on the left and the release
+      year on the right; hover a bar for the dataset, its series, years, values, sampling events and depths. Two bars in
+      a row are two datasets measuring the same thing — the bottle's <span class="mono">temperature</span> and the CTD's
+      <span class="mono">temperature_ave</span>, comparable across datasets — never a dataset's own bottle samples
+      beside its sensor (the CTD files' <span class="mono">btl_*</span> series stay their own rows, so the bottle
+      dataset is not counted twice). The values column is the release grain
+      (<span class="mono">obs_env</span>); the CTD and METS full-resolution tables carry more behind the same names.</p>
   </div>
   <div class="mm-ttip" id="mm-ttip" role="tooltip" aria-hidden="true"></div>
 </section>
