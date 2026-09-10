@@ -1,0 +1,21 @@
+{%- comment -%}
+  One tab's count pill number, formatted, and nothing else — so the header submenu, the sticky
+  section bar and the section's own tab row can never disagree about a number (plan 2026-09-10
+  § D7). Capture it:
+
+      {% capture n %}{% include tab_count.html s=section t=tab %}{% endcapture %}
+
+  A tab with `count:` reads the catalog's own measured numbers (site.data.catalog.numbers, built by
+  _plugins/datasets.rb from the release record and its coverage.json); every other tab counts the
+  products that carry it. The output is EMPTY where the build cannot read the number — the caller
+  then draws no pill rather than typing one (the D-2 rule).
+
+  include params: s (the section), t (the tab)
+{%- endcomment -%}
+{%- assign nums = site.data.catalog.numbers -%}
+{%- case include.t.count -%}
+{%- when "datasets" -%}{{ site.data.catalog.counts.datasets }}
+{%- when "species" -%}{{ nums.species_fmt }}
+{%- when "measurements" -%}{{ nums.measurements_keys_fmt }}
+{%- else -%}{{ site.data.products.products | where: "tab", include.t.id | size }}
+{%- endcase -%}

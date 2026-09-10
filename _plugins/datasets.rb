@@ -388,6 +388,29 @@ module CalCOFI
       shown.join(", ")
     end
 
+    # ── the release's OBSERVED environmental measurements (coverage.json) ──────
+    # THE ONE ACCESSOR WS-M0 ADDED (plan 2026-09-10 § D7, brief WS-M0 step 3): `variables[]` is one
+    # row per dataset × measurement_type the release actually carries — a SERIES. A measurement KEY
+    # is the crosswalk's `variable` where one is set (the five unified pairs the Explorer carries),
+    # else the canonical `measurement_type`; the column reaches this record only once WS-M1's
+    # `variable.csv` fill and WS-M2's `build_coverage()` ride a release, so on v2026.09.06 every
+    # series is its own key and keys == series == 84. Nothing here is typed and nothing is guessed:
+    # a release whose coverage.json carries no variables[] returns [], every count below is nil and
+    # the header submenu, the section bar, the Observed tile, the realm door and the Measurements
+    # tab collapse (the D-2 rule).
+    def env_variables
+      @env_variables ||= begin
+        cov  = @site.data["release_coverage"]
+        rows = cov.is_a?(Hash) ? (cov["variables"] || []) : []
+        rows.select { |v| v["realm"] == "env" }
+      end
+    end
+
+    # the key of one series: `variable` where the crosswalk assigns one, else the measurement_type
+    def measurement_key(v) = Fmt.present(v["variable"]) || Fmt.present(v["measurement_type"])
+
+    def measurement_keys = @measurement_keys ||= env_variables.filter_map { |v| measurement_key(v) }.uniq
+
     # What a measurement row is, summed for the band's `measurements` (plan 2026-09-09 § D9): the
     # release grain plus the two full-resolution supplementals. The sum is over the tables a release
     # actually carries, so one without the supplementals still renders a number.
@@ -427,6 +450,10 @@ module CalCOFI
         obs_taxa = coverage_taxa.empty? ? nil : coverage_taxa.size
         species  = coverage_taxa.empty? ? nil : coverage_taxa.count { |t| t["rank"] == SPECIES_RANK }
         org   = trows.("obs_bio")
+        envv  = env_variables
+        mkeys = measurement_keys
+        env_rows = trows.("obs_env")
+        envy  = envv.flat_map { |v| [v["year_min"], v["year_max"]] }.compact
         parts = MEASUREMENT_TABLES.filter_map { |t| (r = trows.(t)) && [t, r] }
         meas  = parts.empty? ? nil : parts.sum { |_, r| r }
         dups  = tbls.select { |t| views.key?(t["name"]) }
@@ -460,6 +487,20 @@ module CalCOFI
           "measurements"     => meas,
           "measurements_m"   => Fmt.millions(meas),
           "measurements_fmt" => Fmt.num(meas),
+          # the measurements catalog's own counts (plan 2026-09-10 § D7) — the keys the release
+          # carries, the series under them, the datasets they come from, the rows at the release
+          # grain and the years they span. Every one measured from coverage.json's variables[] and
+          # catalog.json's obs_env; a release without them renders nil and the doors collapse.
+          "measurements_keys"      => mkeys.empty? ? nil : mkeys.size,
+          "measurements_keys_fmt"  => mkeys.empty? ? nil : Fmt.num(mkeys.size),
+          "measurements_series"     => envv.empty? ? nil : envv.size,
+          "measurements_series_fmt" => envv.empty? ? nil : Fmt.num(envv.size),
+          "measurements_datasets"   => envv.empty? ? nil : envv.map { |v| v["dataset_key"] }.uniq.size,
+          "measurements_env"        => env_rows,
+          "measurements_env_m"      => Fmt.millions(env_rows),
+          "measurements_env_fmt"    => Fmt.num(env_rows),
+          "measurements_year_min"   => envy.min,
+          "measurements_year_max"   => envy.max,
           "obs_dup"      => dup,
           "obs_dup_m"    => Fmt.millions(dup),
           "obs_dup_fmt"  => Fmt.num(dup),

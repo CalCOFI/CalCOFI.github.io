@@ -1,0 +1,30 @@
+---
+layout: null
+permalink: /species/search.json
+sitemap: false
+---
+{%- comment -%}
+  /species/search.json — the species index in the ONE shape the front door's search reads (plan
+  2026-09-10 § D7 (3)). It is built straight from the release's own taxa.json (`site.data.taxa`,
+  fetched by scripts/fetch_release.sh), never from a second count: the same record _plugins/
+  species.rb draws /species/ from. A release without the record renders `{"rows": []}` and the
+  search simply has no Species group — nothing is typed and no page is invented (the D-2 rule).
+
+  Row shape, the same three keys /datasets/search.json uses plus what a species row shows:
+    n  scientific name (or the source's own label where a dataset-local code has none)
+    c  common name       r  rank        o  observations (rollup)     d  datasets
+    u  the page's URL    t  the haystack, lower-cased, matched with indexOf
+
+  Kept deliberately small (no lineage, no years): it is fetched on the FIRST focus of the box and
+  never before, so it costs the front door's first paint nothing.
+{%- endcomment -%}
+{%- assign rec = site.data.taxa -%}
+{"release": {{ rec.release.version | default: "" | jsonify }}, "rows": [
+{%- if rec.taxa -%}
+{%- for t in rec.taxa -%}
+{%- assign nm = t.scientific_name | default: t.taxon_key -%}
+{%- capture hay -%}{{ nm }} {{ t.common_name }} {{ t.rank }} {{ t.lineage.family }} {{ t.lineage.order }} {{ t.lineage.class }} {{ t.lineage.phylum }} {{ t.taxon_key }}{%- endcapture -%}
+{% unless forloop.first %},{% endunless %}{"n": {{ nm | jsonify }}, "c": {{ t.common_name | jsonify }}, "r": {{ t.rank | jsonify }}, "o": {{ t.rollup.n_obs | default: 0 }}, "d": {{ t.rollup.n_datasets | default: 0 }}, "u": {{ '/species/' | append: t.slug | append: '/' | relative_url | jsonify }}, "t": {{ hay | downcase | strip | jsonify }}}
+{%- endfor -%}
+{%- endif -%}
+]}

@@ -999,3 +999,160 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
   .sp-counts { gap: 6px 16px; }
   .sp-counts dd { font-size: 24px; }
 }
+
+/* ═══ the front door's six words, tabs and one search (plan 2026-09-10 § D7) ═══════════════════
+   Additive: nothing above this block changed. The header is brand territory (brand/v2/theme.css),
+   so the submenu is written HERE, scoped to .cc-links.cc-submenus — remove that ONE class from
+   the <nav class="cc-links"> in _layouts/default.html and the header is flat six words again
+   (open question 8), with no other edit anywhere. */
+
+.cc-header .cc-links .cc-m { position: relative; display: inline-flex; align-items: center; }
+.cc-header .cc-links .cc-m > ul { display: none; }
+.cc-header .cc-links.cc-submenus .cc-m > a::after { content: " ▾"; font-size: 0.72em; opacity: 0.7; }
+.cc-header .cc-links.cc-submenus .cc-m > ul {
+  position: absolute; top: calc(100% + 10px); left: -10px; z-index: 1030;
+  margin: 0; padding: 6px 0; list-style: none; min-width: 232px;
+  background: var(--panel, var(--bg)); border: 1px solid var(--border); border-radius: var(--radius-card, 8px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+}
+.cc-header .cc-links.cc-submenus .cc-m:hover > ul,
+.cc-header .cc-links.cc-submenus .cc-m:focus-within > ul { display: block; }
+/* the trigger keeps the header's uppercase nav type; the items are ordinary sentence-case links */
+.cc-header .cc-links.cc-submenus .cc-m ul a {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 14px;
+  padding: 6px 12px; font-weight: 600; font-size: 13.5px; letter-spacing: 0; text-transform: none;
+  white-space: nowrap;
+}
+.cc-header .cc-links.cc-submenus .cc-m ul a:hover,
+.cc-header .cc-links.cc-submenus .cc-m ul a:focus-visible { background: var(--accent-bg); color: var(--accent); text-decoration: none; }
+/* the brand hides .cc-links entirely below 760 px, so a phone tap on the word goes to the
+   section; this is the belt to that braces, for any framework that keeps the nav */
+@media (max-width: 760px) { .cc-header .cc-links.cc-submenus .cc-m > ul { display: none !important; } }
+
+/* the count pill: a number beside a tab or a submenu item, never the only cue */
+.pill {
+  display: inline-block; padding: 2px 7px; border-radius: 999px;
+  font-family: var(--mono); font-weight: 600; font-size: 11px; line-height: 1.4;
+  font-variant-numeric: tabular-nums; color: var(--muted); background: var(--panel-2, var(--panel));
+  vertical-align: 1px;
+}
+
+/* ── the sticky section bar: DATA carries three counts, so its numbers read as a phrase ─────── */
+.section-tabs a .n b { color: var(--accent); font-weight: 400; }
+
+/* ── one tabset, three sections ──────────────────────────────────────────────────────────────── */
+.tabset { margin: 0; }
+.tabrow {
+  display: flex; flex-wrap: wrap; gap: 0 calc(var(--space) * 3);
+  border-bottom: 1px solid var(--border); margin: 0 0 var(--space);
+}
+.tabrow button {
+  display: inline-flex; align-items: center; gap: 8px;
+  border: 0; background: transparent; cursor: pointer;
+  padding: 6px 0; border-bottom: 3px solid transparent;
+  font-family: var(--sans); font-weight: 700; font-size: 13px;
+  letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted);
+}
+.tabrow button:hover { color: var(--accent); }
+.tabrow button[aria-selected="true"] { color: var(--accent); border-bottom-color: var(--accent); }
+.tabrow button[aria-selected="true"] .pill { background: var(--accent-bg); color: var(--accent); }
+.tabrow button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.tabpanel[hidden] { display: none; }
+.tab-blurb { margin: 0 0 calc(var(--space) * 3); max-width: 75ch; }
+/* the Explorer tab holds one card, and it takes the row */
+.card-grid.card-grid-solo { grid-template-columns: minmax(0, 1fr); }
+
+/* ── one search over the three indexes ───────────────────────────────────────────────────────── */
+/* the blurb now runs straight into the search box, which runs into the tab row: the three read as
+   one block, and the Data section keeps the height budget check_layout.py asserts */
+.ds-section-home > .cc-container > .blurb { margin-bottom: var(--space); }
+.dsearch { position: relative; max-width: 760px; margin: 0 0 var(--space); }
+.dsearch-box {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--panel-2, var(--panel)); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 6px 14px;
+}
+.dsearch-box input { flex: 1; min-width: 0; border: 0; background: transparent; color: var(--fg); font: inherit; font-size: 16px; line-height: 1.45; }
+.dsearch-box input:focus { outline: 0; }
+.dsearch-box:focus-within { border-color: var(--accent); }
+.dsearch-k { font-family: var(--mono); font-size: 12px; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.dres {
+  display: none; position: absolute; left: 0; right: 0; top: calc(100% + 4px); z-index: 15;
+  max-height: 420px; overflow: auto; padding: 6px 0;
+  background: var(--panel-2, var(--panel)); border: 1px solid var(--border);
+  border-radius: var(--radius); box-shadow: 0 8px 28px rgba(0, 0, 0, 0.18);
+}
+.dres.open { display: block; }
+.dres-g {
+  display: flex; justify-content: space-between; padding: 8px 14px 2px;
+  font-family: var(--mono); font-weight: 700; font-size: 11px;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted);
+}
+.dres-r {
+  display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 10px;
+  align-items: baseline; padding: 6px 14px; color: var(--fg); text-decoration: none;
+}
+.dres-r:hover, .dres-r:focus-visible { background: var(--accent-bg); text-decoration: none; outline: 0; }
+.dres-k {
+  font-family: var(--mono); font-weight: 700; font-size: 10px; text-align: center;
+  padding: 2px 0; border-radius: 3px; color: var(--muted); background: var(--panel);
+}
+.dres-n { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dres-n .sci { font-style: italic; }
+.dres-n > i { font-style: normal; color: var(--muted); margin-left: 6px; font-size: 0.9em; }
+.dres-m { font-family: var(--mono); font-size: 12px; color: var(--muted); white-space: nowrap; }
+.dres-none { padding: 8px 14px; color: var(--muted); font-size: 14px; }
+
+/* ── an index's head inside its tab (Species · Measurements) ─────────────────────────────────── */
+.idxtab { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 14px 32px; align-items: end; }
+.idxtab-copy { max-width: 75ch; }
+.idxtab-copy .cc-h2 { margin-top: 0.15em; }
+.idxtab-counts { display: flex; flex-wrap: wrap; gap: 8px 24px; margin: 0; }
+.idxtab-counts div { min-width: 0; }
+.idxtab-counts dd { margin: 0; font-family: var(--display); font-weight: 500; font-size: 26px; line-height: 1; font-variant-numeric: tabular-nums; }
+.idxtab-counts dt { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.idxtab-form { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; }
+.idxtab-form .dsearch-box { flex: 1 1 360px; }
+.idxtab-form .blurb { flex: 1 1 360px; margin: 0; font-size: var(--fs-sm); }
+
+/* ── the realm head as a door (Biology → species, Environment → measurements) ────────────────── */
+/* one line where it fits, two at worst: the door is a line INSIDE the realm head, not a block
+   under it — the Data section may not grow by more than 120 px (scripts/check_layout.py) */
+.ds-realm-door {
+  flex-basis: 100%; display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 12px;
+  margin-top: 5px; padding: 3px 10px; border-radius: var(--radius); background: var(--accent-bg);
+}
+.ds-realm-door b { font-family: var(--display); font-weight: 500; font-size: 19px; line-height: 1.25; color: var(--accent); }
+.ds-realm-door span { font-size: 12.5px; }
+.ds-realm-door .cc-text-link { font-size: 12.5px; }
+
+/* ── the Observed tile: two counted rows in the cell the Life tile had ───────────────────────── */
+/* the Life tile's cell, one row taller: two counted rows and their doors do not fit six 25 px
+   rows (measured: 20 px of overflow at 1470). Column 5–6 is now log 6 + observed 8 — the bento's
+   longest column, so the grid ends one row lower than it did and nothing else moves. */
+.tile.t-obs { grid-column: 5 / span 2; grid-row: 16 / span 8; }
+.tile.t-obs .obsrow { align-items: baseline; gap: 2px 12px; padding: 6px 0; }
+.tile.t-obs .obsrow + .obsrow { border-top: 1px solid var(--border); }
+.tile.t-obs .tile-big { font-size: 32px; white-space: nowrap; }
+.tile.t-obs .tile-glyphs { font-size: 20px; gap: 6px; }
+.tile.t-obs .obs-more { flex-basis: 100%; margin: 2px 0 0; font-size: 12.5px; }
+.tile.t-obs .tile-cap { margin-top: 6px; }
+
+/* the 861–1099 px sum (see the bento block above): the third column is log 7 + observed, so the
+   observed tile's span carries the extra row the second counted line needs */
+@media (max-width: 1099px) {
+  .tile.t-obs { grid-row: 16 / span 9; }
+}
+@media (max-width: 900px) {
+  .idxtab { grid-template-columns: minmax(0, 1fr); align-items: start; }
+}
+@media (max-width: 700px) {
+  .dsearch-k { display: none; }
+  .dres-m { display: none; }
+  .dres-r { grid-template-columns: 22px minmax(0, 1fr); }
+  .tabrow { gap: 0 calc(var(--space) * 2); }
+  .tabrow button { font-size: 12.5px; }
+  .idxtab-counts dd { font-size: 22px; }
+  .ds-realm-door .cc-text-link { margin-left: 0; flex-basis: 100%; }
+  .tile.t-obs .tile-big { font-size: 26px; }
+}
