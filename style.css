@@ -897,7 +897,11 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
    of --accent mixed into --bg, so nothing here needs a second hue and nothing computes to --warn. */
 /* the head is ONE column and the counts are a row beneath it: a display h1 that wraps to two
    lines would otherwise leave 350 px of empty page beside it in the second column */
-.sp-idx-head .cc-lede { max-width: 78ch; }
+/* one prose width for a catalog head: the lede, any explanation and the aside end on the same right
+   edge. 78 characters of the lede's 20.7 px type is 44.6 rem; a 78ch cap on each paragraph gave
+   three different widths (802 / 543 / 485 px) and a stepped right edge (Ben, 2026-09-10) */
+.sp-idx-head, .mm-idx-head { --cc-prose-w: 44.6rem; }
+.sp-idx-head .cc-lede { max-width: var(--cc-prose-w); }
 .sp-counts { display: flex; flex-wrap: wrap; gap: 10px 34px; margin: calc(var(--space) * 2) 0 0; padding: calc(var(--space) * 2) 0 0; border-top: 1px solid var(--border); }
 .sp-counts div { min-width: 0; }
 .sp-counts dd { margin: 0; font: 500 30px/1 var(--display); font-variant-numeric: tabular-nums; }
@@ -1392,13 +1396,15 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 .mm-dslist .mm-m { display: block; font: 12.5px var(--mono); color: var(--muted); }
 
 /* the index */
-.mm-idx-head .cc-lede { max-width: 78ch; }
-.mm-idx-head .mm-how { max-width: 78ch; margin: var(--space) 0 0; font-size: var(--fs-sm); line-height: 1.5; }
+.mm-idx-head .cc-lede { max-width: var(--cc-prose-w); }
+.mm-idx-head .mm-how { max-width: var(--cc-prose-w); margin: var(--space) 0 0; font-size: var(--fs-sm); line-height: 1.5; }
 .mm-idx-head .mm-how b { font-weight: 700; }
+.ds-head { --cc-prose-w: 34.3rem; }
+.ds-head .cc-lede { max-width: var(--cc-prose-w); }
 /* the technical aside on a catalog index — where the machine-readable form lives — is small print
    in the muted colour behind a hairline, on /datasets/, /species/ and /measurements/ alike (Ben,
    2026-09-10), so the reading copy above it is what a first visit reads */
-.cc-aside { max-width: 78ch; margin: calc(var(--space) * 1.5) 0 0; padding: 2px 0 2px 10px; border-left: 2px solid var(--border);
+.cc-aside { max-width: var(--cc-prose-w, 34.3rem); margin: calc(var(--space) * 1.5) 0 0; padding: 2px 0 2px 10px; border-left: 2px solid var(--border);
   font-size: 12.5px; line-height: 1.45; color: var(--muted); }
 .cc-aside .mono, .cc-aside code { font-family: var(--mono); font-size: 0.92em; }
 .cc-aside a { color: var(--muted); text-decoration: underline; text-underline-offset: 2px; }
