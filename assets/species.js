@@ -339,6 +339,8 @@
     });
     qn.textContent = fmt(hits.length) + (hits.length === 250 ? '+ matches' : ' match' + (hits.length === 1 ? '' : 'es')) +
                      (folded ? ' · ' + fmt(folded) + ' at intermediate ranks (all ranks)' : '');
+    /* the tree the hits are in must be showing (the matrix may have been expanded over it) */
+    if (hits.length && two && two.getAttribute('data-panes') === 'matrix') setPanes('both');
     if (first && scroll !== false) first.scrollIntoView({ block: 'center', behavior: 'instant' });
   }
   function writeQ(s) {
@@ -487,8 +489,11 @@
   setTimeout(syncTree, 400);
 
   /* ── the panes: expand the tree or the matrix to the full width, or show both (Ben, 2026-09-09:
-     "trouble clicking into a species because of crowding") — `?panes=tree|matrix` in the URL,
-     the last choice remembered per viewer ────────────────────────────────────────────────────── */
+     "trouble clicking into a species because of crowding") — `?panes=tree|matrix` in the URL and
+     nowhere else: the choice was remembered per viewer until 2026-09-10, when an expanded matrix
+     followed Ben across visits with the tree gone and a search counting matches nobody could see.
+     The collapsed pane is never gone: it folds into a vertical pill beside the expanded one (the
+     Explorer's collapsed-panel idiom), and the pill is the button that shows both again. ─────── */
   function setPanes(mode, write) {
     mode = (mode === 'tree' || mode === 'matrix') ? mode : 'both';
     two.setAttribute('data-panes', mode);
@@ -498,7 +503,9 @@
       b.setAttribute('aria-label', label);
       b.title = label;
     });
-    try { localStorage.setItem('cc_species_panes', mode); } catch (e) {}
+    document.querySelectorAll('.sp-pane-pill').forEach(function (p) {
+      p.hidden = !(mode !== 'both' && mode !== p.dataset.pane);
+    });
     if (write !== false && history.replaceState) {
       var u = new URL(location.href);
       if (mode === 'both') u.searchParams.delete('panes'); else u.searchParams.set('panes', mode);
@@ -511,9 +518,14 @@
       setPanes(two.getAttribute('data-panes') === b.dataset.pane ? 'both' : b.dataset.pane);
     });
   });
-  var panes0 = new URLSearchParams(location.search).get('panes'), panesStored = null;
-  try { panesStored = localStorage.getItem('cc_species_panes'); } catch (e) {}
-  setPanes(panes0 || panesStored || 'both', !!panes0);
+  document.querySelectorAll('.sp-pane-pill').forEach(function (p) {
+    p.addEventListener('click', function () { setPanes('both'); });
+  });
+  try { localStorage.removeItem('cc_species_panes'); } catch (e) {}   /* the pre-2026-09-10 memory */
+  setPanes(new URLSearchParams(location.search).get('panes') || 'both', false);
+  /* a search that found something shows the tree it found it in — `?panes=matrix&q=…` is a
+     contradiction the match resolves */
+  if (tree.querySelector('.sp-hit') && two.getAttribute('data-panes') === 'matrix') setPanes('both');
 
   /* ── the icicle ──────────────────────────────────────────────────────────────────────────── */
   var LEV = ['Kingdom', 'Phylum', 'Class', 'Order', 'Family'];

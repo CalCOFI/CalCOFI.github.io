@@ -444,7 +444,7 @@ identification is a real taxon with data); the unobserved minor ranks of the WoR
 folded out of the display and their shown descendants attach to the nearest shown ancestor.
 Counts never change — every rollup is over the full tree. **all ranks** (`?ranks=all`) shows
 everything. And either pane — the tree or the matrix — can be **expanded to the full width**
-with the ⤢ button in its header (`?panes=tree|matrix`; the choice is remembered per viewer), the
+with the ⤢ button in its header (`?panes=tree|matrix` in the URL — not remembered across visits since 2026-09-10, when a remembered matrix followed Ben around with the tree gone). The collapsed pane folds into a 28 px vertical pill beside the expanded one — the Explorer's collapsed-panel idiom — and the pill, like ⤡, shows both again; a search with matches shows the tree again if it was folded. The
 ⤡ button restores both. With both shown the tree pane is still exactly the matrix pane's height.
 
 **The inline JSON.** `/species/` inlines **one** payload (284 KB, 56 KB gzipped): every node with
