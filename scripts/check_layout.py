@@ -288,7 +288,8 @@ PROBE = r"""
         tabs: [...m.querySelectorAll("ul a")].map(a => ({
           title: a.textContent.replace(/\s+/g, " ").trim(),
           pill: (a.querySelector(".pill") || {}).textContent || null,
-          go: a.getAttribute("data-go")
+          go: a.getAttribute("data-go"),
+          href: a.getAttribute("href")
         })),
         closed: !before, opensOnFocus: !!onFocus, closesOnEscape: !afterEsc, gap, bridge,
         haspopup: trig && trig.getAttribute("aria-haspopup") === "true",
@@ -321,6 +322,12 @@ PROBE = r"""
       closedOnEsc = !header.classList.contains("cc-nav-open");
     }
     out.phoneMenu = { buttonShown, opened, expanded, wordsOpen, subsOpen, scrollW, closedOnEsc };
+  }
+
+  // do the two catalog pages exist on this build? (the DATA submenu must link them when they do)
+  out.pageExists = {};
+  for (const p of ["/species/", "/measurements/"]) {
+    try { const x = new w.XMLHttpRequest(); x.open("HEAD", p, false); x.send(); out.pageExists[p] = x.status >= 200 && x.status < 400; } catch (e) { out.pageExists[p] = false; }
   }
 
   // the sticky section bar and the tabsets
@@ -1006,8 +1013,11 @@ def check(path, r, width, theme, fails, notes):
             if not m["closesOnEscape"]:
                 fails.append(f"{where}: the {m['word']!r} submenu does not close on Escape")
             for t in m["tabs"]:
-                if not t["go"]:
-                    fails.append(f"{where}: the {m['word']!r} submenu's {t['title']!r} does not name a tab (data-go)")
+                # an item either names a homepage tab (data-go) or links the catalog's own page — Species and
+                # Measurements go to /species/ and /measurements/ because the homepage only carries their heads
+                # (Ben, 2026-09-10); a hash href with no data-go would land on the section and select nothing
+                if not t["go"] and (not t.get("href") or "#" in t["href"]):
+                    fails.append(f"{where}: the {m['word']!r} submenu's {t['title']!r} neither names a tab (data-go) nor links a page")
                 if not t["pill"]:
                     fails.append(f"{where}: the {m['word']!r} submenu's {t['title']!r} carries no count")
             # the hover bridge: the list's ::before must span the gap below the trigger (Ben, 2026-09-10 —
@@ -1015,6 +1025,12 @@ def check(path, r, width, theme, fails, notes):
             if m.get("gap") is not None and (m.get("bridge") or 0) < m["gap"]:
                 fails.append(f"{where}: the {m['word']!r} submenu floats {m['gap']:.0f}px below its trigger but its hover "
                              f"bridge is {(m.get('bridge') or 0):.0f}px — the pointer leaves the menu on its way down")
+        for m in nav["menus"]:
+            if m["word"].lower() == "data":
+                for t in m["tabs"]:
+                    want = {"species": "/species/", "measurements": "/measurements/"}.get(t["title"].split()[0].lower())
+                    if want and r.get("pageExists", {}).get(want) and (t.get("href") or "").rstrip("/") + "/" != want:
+                        fails.append(f"{where}: the DATA submenu's {t['title']!r} links {t.get('href')!r}, not {want} (the page exists)")
     elif nav and width < 900:
         notes.append(f"{where}: the header nav is hidden (the brand hides it under 480px); the phone menu carries it")
 

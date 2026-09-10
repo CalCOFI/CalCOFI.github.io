@@ -121,7 +121,7 @@ titles did. `students` is gone as a section: the nine student projects are a tab
 `docs` product keeps its key, its uptime and analytics slugs and its `added:` — the ship's log and
 the three-slug contract are untouched — but its card left the Build grid for the header's word.
 
-**The submenus.** DATA, APPS and ACCESS each list their tabs on hover or focus, with a count pill.
+**The submenus.** DATA, APPS and ACCESS each list their tabs on hover or focus, with a count pill. A tab whose full listing lives on its own page carries `url:` (and the `site.data` key it needs, `data:`) in `products.yml`, and the header links that page instead of the homepage tab — Species → `/species/`, Measurements → `/measurements/`; Datasets stays a homepage tab because the whole grid is there.
 It is CSS, not a library: the section link is the trigger, `:hover` / `:focus-within` opens it, and
 `assets/tabs.js` blurs the focused link on Escape, which is the whole close. The brand hides
 `.cc-links` under 760 px, so on a phone a tap on the word goes to the section. The whole behaviour

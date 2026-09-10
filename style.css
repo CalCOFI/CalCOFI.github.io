@@ -1177,21 +1177,28 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 .ds-realm-door .cc-text-link { font-size: 12.5px; }
 
 /* ── the Observed tile: two counted rows in the cell the Life tile had ───────────────────────── */
-/* the Life tile's cell, one row taller: two counted rows and their doors do not fit six 25 px
-   rows (measured: 20 px of overflow at 1470). Column 5–6 is now log 6 + observed 8 — the bento's
-   longest column, so the grid ends one row lower than it did and nothing else moves. */
-.tile.t-obs { grid-column: 5 / span 2; grid-row: 16 / span 8; }
-.tile.t-obs .obsrow { align-items: baseline; gap: 2px 12px; padding: 6px 0; }
+/* the Observed tile keeps the Life tile's six rows, so column 5–6 (log 6 + observed 6 = 21) ends on
+   row line 22 with the other two and the bento's bottom edge is one line (Ben, 2026-09-10: "What's
+   observed protrudes further down"). Two counted rows fit six rows because each is two lines —
+   the number with its qualifier, then the glyphs left and the door right — not three, and the
+   caption is two lines of copy. The bento comment above still reads as a sum: never edit one span. */
+.tile.t-obs { grid-column: 5 / span 2; grid-row: 16 / span 6; }
+.tile.t-obs .obsrow { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 10px; padding: 4px 0; }
 .tile.t-obs .obsrow + .obsrow { border-top: 1px solid var(--border); }
-.tile.t-obs .tile-big { font-size: 32px; white-space: nowrap; }
-.tile.t-obs .tile-glyphs { font-size: 20px; gap: 6px; }
-.tile.t-obs .obs-more { flex-basis: 100%; margin: 2px 0 0; font-size: 12.5px; }
-.tile.t-obs .tile-cap { margin-top: 6px; }
+.tile.t-obs .tile-big { order: 1; font-size: 28px; line-height: 1.05; white-space: nowrap; }
+.tile.t-obs .obsrow .cc-muted { order: 2; }
+/* the line break: a zero-height item that takes the whole row, between the qualifier and the glyphs */
+.tile.t-obs .obsrow::after { content: ""; order: 3; flex-basis: 100%; height: 0; }
+.tile.t-obs .tile-glyphs { order: 4; flex-basis: auto; font-size: 18px; gap: 4px; line-height: 1.2; }
+.tile.t-obs .obs-more { order: 5; flex-basis: auto; margin: 0 0 0 auto; font-size: 12px; letter-spacing: 0.05em; white-space: nowrap; }
+/* two lines of caption at every width the fixed grid runs (1100–1159 px would take a third): the
+   whole sentence stays in the DOM for a screen reader; the box shows two lines */
+.tile.t-obs .tile-cap { margin-top: 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
-/* the 861–1099 px sum (see the bento block above): the third column is log 7 + observed, so the
-   observed tile's span carries the extra row the second counted line needs */
+/* the 861–1099 px sum (see the bento block above): the third column is log 7 + observed 8 = 24,
+   the second rel 6 + get 9 = 24 — the same line */
 @media (max-width: 1099px) {
-  .tile.t-obs { grid-row: 16 / span 9; }
+  .tile.t-obs { grid-row: 16 / span 8; }
 }
 @media (max-width: 900px) {
   .idxtab { grid-template-columns: minmax(0, 1fr); align-items: start; }
