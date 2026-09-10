@@ -932,9 +932,32 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 /* expand one pane to the full width, or show both (species.js setPanes; ?panes=tree|matrix) */
 .sp-pane-max { flex: none; width: 26px; height: 22px; padding: 0; border: 1px solid var(--border); border-radius: 6px; background: transparent; color: var(--muted); font-size: 13px; line-height: 1; cursor: pointer; }
 .sp-pane-max:hover { color: var(--accent); border-color: var(--accent); }
-.sp-two[data-panes="tree"], .sp-two[data-panes="matrix"] { grid-template-columns: minmax(0, 1fr); }
+/* an expanded pane never removes the other: the collapsed pane folds into a 28 px vertical pill
+   beside it — the Explorer's collapsed-panel idiom (explore/src/style.css .edge-pill): its title in
+   vertical text under a chevron, the whole pill a button that shows both panes again (Ben,
+   2026-09-10: "the pane disappeared completely when I expanded the other — bad UI") */
+.sp-two[data-panes="matrix"] { grid-template-columns: 28px minmax(0, 1fr); }
+.sp-two[data-panes="tree"]   { grid-template-columns: minmax(0, 1fr) 28px; }
 .sp-two[data-panes="tree"] .sp-pane-matrix, .sp-two[data-panes="matrix"] .sp-pane-tree { display: none; }
 .sp-two[data-panes="tree"] .sp-tree { height: min(82vh, 960px); }
+.sp-pane-pill, .sp-pane-pill[hidden] { display: none; }
+.sp-pane-pill:not([hidden]) {
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 6px;
+  align-self: stretch; width: 28px; min-height: 160px; box-sizing: border-box; padding: 8px 0;
+  background: var(--panel-2); border: 1px solid var(--border); border-radius: 6px;
+  box-shadow: 0 3px 12px color-mix(in srgb, var(--fg) 14%, transparent);
+  color: var(--fg); font: inherit; font-size: var(--fs-sm); cursor: pointer; overflow: hidden; white-space: nowrap;
+}
+.sp-pane-pill:hover, .sp-pane-pill:focus-visible { color: var(--accent); border-color: var(--accent); }
+.sp-pane-pill .sp-pill-chev { flex: none; width: 1em; height: 1em; color: var(--muted); }
+.sp-pane-pill:hover .sp-pill-chev { color: var(--accent); }
+.sp-pane-pill .sp-pill-text { writing-mode: vertical-rl; font-weight: 600; letter-spacing: 0.02em; max-height: calc(100% - 24px); overflow: hidden; text-overflow: ellipsis; }
+/* one column: both panes stack and there is nothing to expand */
+@media (max-width: 1000px) {
+  .sp-two[data-panes] { grid-template-columns: minmax(0, 1fr); }
+  .sp-two[data-panes] .sp-pane { display: block; }
+  .sp-pane-max, .sp-pane-pill { display: none !important; }
+}
 .sp-ranks-all { margin-left: 10px; }
 .sp-hint { font-size: 12.5px; color: var(--muted); }
 
