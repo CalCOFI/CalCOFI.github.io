@@ -71,6 +71,8 @@ DEFAULT_PATHS = [
     "/datasets/swfsc_ichthyo/",      # 29 distributions, 6 registrations, a bbox beyond the frame
     "/datasets/calcofi_prodo/",      # a holding: no map, no Access-from-the-release, a long name
     "/species/",                     # the species catalog: search + tree, the matrix, the icicle
+    "/species/?panes=matrix",        # the matrix expanded: the tree folds into a vertical pill, never gone
+    "/species/?panes=matrix&q=sardine",  # …and a search with a hit shows the tree again (Ben, 2026-09-10)
     "/species/worms-217452/",        # the sardine: two datasets, twelve lineage ranks, five ways in
     "/measurements/",                # the measurements catalog: search + timeline, matrix, datasets
     "/measurements/temperature/",    # the unified key: two series, two datasets, eight ways in
@@ -415,6 +417,15 @@ PROBE = r"""
       matrixNatural: pane(mwrap) ? px(pane(mwrap).scrollHeight) : 0,
       iceRects: d.querySelectorAll("#sp-ice rect").length,
       treeRoots: d.querySelectorAll('#sp-tree > ul > li[role="treeitem"]').length,
+      // the panes' mode and the collapsed pane's pill (Ben, 2026-09-10): the pill must stand where
+      // the folded pane was, as tall as the expanded pane, and a search with hits must show the tree
+      panes: (d.querySelector(".sp-two") || {}).getAttribute ? d.querySelector(".sp-two").getAttribute("data-panes") : null,
+      pill: (() => { const pl = [...d.querySelectorAll(".sp-pane-pill")].find(el => !el.hidden && cs(el).display !== "none");
+        if (!pl) return null; const b = pl.getBoundingClientRect();
+        return { pane: pl.dataset.pane, label: pl.getAttribute("aria-label"), w: px(b.width), h: px(b.height), text: pl.textContent.trim() }; })(),
+      treeShown: !!tree && tree.offsetParent !== null,
+      hits: d.querySelectorAll("#sp-tree .sp-hit").length,
+      hitsShown: [...d.querySelectorAll("#sp-tree .sp-hit")].filter(el => el.offsetParent !== null).length,
       warnEls: [...d.querySelectorAll(".sp-body *, .sp-head *")].filter(el => {
         const st = cs(el), w = out.warn;
         return st.color.replace(/\s/g, "") === w || st.backgroundColor.replace(/\s/g, "") === w;
@@ -756,7 +767,9 @@ def check(path, r, width, theme, fails, notes):
         # exactly the matrix pane's height, and the matrix pane is bounded by its own content — so
         # neither pane can be drawn taller than something real (the tree's own content is 2,403
         # nodes, taller than any pane).
-        if width >= 1100:
+        mode = sp.get("panes") or "both"
+        has_q = "q=" in path
+        if width >= 1100 and mode == "both":
             gap = abs(sp["treePane"] - sp["matrixPane"])
             notes.append(f"{where}: panes tree {sp['treePane']}px / matrix {sp['matrixPane']}px, "
                          f"matrix {sp['cells']} cells, icicle {sp['iceRects']} bands")
@@ -766,6 +779,27 @@ def check(path, r, width, theme, fails, notes):
             if sp["matrixNatural"] and sp["matrixPane"] > sp["matrixNatural"] * MAX_STRETCH:
                 fails.append(f"{where}: the matrix pane is drawn {sp['matrixPane']}px for "
                              f"{sp['matrixNatural']}px of content")
+        # an expanded pane folds the other into a vertical pill, never removes it (Ben, 2026-09-10)
+        if width >= 1100 and mode != "both":
+            pl = sp.get("pill")
+            other = "tree" if mode == "matrix" else "matrix"
+            if not pl or pl["pane"] != other:
+                fails.append(f"{where}: panes={mode} but no pill stands in for the {other} pane")
+            else:
+                shown_h = sp["matrixPane"] if mode == "matrix" else sp["treePane"]
+                notes.append(f"{where}: panes={mode}; the {other} pill {pl['w']}×{pl['h']}px reads {pl['label']!r}")
+                if not (24 <= pl["w"] <= 32):
+                    fails.append(f"{where}: the {other} pill is {pl['w']}px wide, expected about 28")
+                if abs(pl["h"] - shown_h) > 4:
+                    fails.append(f"{where}: the {other} pill is {pl['h']}px tall beside a {shown_h}px pane")
+                if not (pl["label"] or "").lower().startswith("show the"):
+                    fails.append(f"{where}: the {other} pill's label reads {pl['label']!r}, not 'Show the …'")
+        # a search with hits must show the tree they are in, whatever ?panes= asked for
+        if has_q and width >= 1100:
+            if sp["hits"] and (not sp["treeShown"] or sp["hitsShown"] == 0):
+                fails.append(f"{where}: the search found {sp['hits']} hit(s) but the tree is folded — nothing to click")
+            elif sp["hits"]:
+                notes.append(f"{where}: search hits {sp['hits']}, shown {sp['hitsShown']}, panes={mode}")
 
     # ── one taxon page ────────────────────────────────────────────────────────
     spp = r.get("speciesPage")

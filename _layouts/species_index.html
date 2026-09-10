@@ -55,7 +55,13 @@ layout: default
       </div>
     </div>
 
+    {%- comment -%} an expanded pane never removes the other: the collapsed pane is a slim vertical
+      pill beside it — the Explorer's collapsed-panel idiom — and the whole pill is the button that
+      shows both again (Ben, 2026-09-10). assets/species.js toggles `hidden` with the mode. {%- endcomment -%}
     <div class="sp-two" data-panes="both">
+      <button type="button" class="sp-pane-pill" data-pane="tree" aria-label="Show the tree" title="Show the tree" hidden>
+        <i class="cc-i cc-i-ui-right sp-pill-chev" aria-hidden="true"></i><span class="sp-pill-text">The tree</span>
+      </button>
       <div class="sp-pane sp-pane-tree">
         <div class="sp-pane-h">
           <h2 class="cc-eyebrow">The tree · {{ c.pages }} taxa with an observation at or below</h2>
@@ -64,6 +70,9 @@ layout: default
         </div>
         <div class="sp-tree" id="sp-tree" role="tree" aria-label="Taxonomic tree"></div>
       </div>
+      <button type="button" class="sp-pane-pill" data-pane="matrix" aria-label="Show the matrix" title="Show the matrix" hidden>
+        <i class="cc-i cc-i-ui-left sp-pill-chev" aria-hidden="true"></i><span class="sp-pill-text">Which species, in which datasets</span>
+      </button>
       <div class="sp-pane sp-pane-matrix">
         <div class="sp-pane-h">
           <h2 class="cc-eyebrow">Which species, in which datasets</h2>
