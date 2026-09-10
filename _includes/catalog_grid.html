@@ -31,6 +31,38 @@
       <i class="cc-i cc-i-{{ rlm.icon | escape }}" aria-hidden="true"></i>
       <h3 class="ds-realm-name">{{ rlm.title | escape }}</h3>
       <span class="ds-realm-lede cc-muted">{{ rlm.lede | escape }}</span>
+      {%- comment -%}
+        The realm head is a DOOR (plan 2026-09-10 § D7, Appendix C): the count of the things that
+        realm's half of the catalog indexes, its qualifiers, and the way in. Biology opens the
+        species catalog, Environment the measurements catalog; each falls back to the Explorer
+        where the release carries no record for it. Every number is read from the release —
+        site.data.species's own counts for Biology, coverage.json's variables[realm == env] and
+        catalog.json's row counts for Environment — so a count the build cannot read draws no door
+        at all rather than an empty one.
+      {%- endcomment -%}
+      {%- assign nums = site.data.catalog.numbers -%}
+      {%- if rlm.id == "bio" and nums.species -%}
+      {%- assign sp = site.data.species -%}
+      <span class="ds-realm-door">
+        <b>{{ nums.species_fmt }} species</b>
+        <span class="cc-muted" title="{{ nums.species_title | escape }}">{{ nums.taxa_fmt }} taxa{% if sp %} · {{ sp.counts_fmt.datasets }} datasets{% endif %}{% if nums.organism_obs_m %} · {{ nums.organism_obs_m }} M observations{% endif %}</span>
+        {%- if sp -%}
+        <a class="cc-text-link" href="{{ '/species/' | relative_url }}">Browse the species →</a>
+        {%- else -%}
+        <a class="cc-text-link" href="https://calcofi.io/explore/">Browse them in the Explorer →</a>
+        {%- endif -%}
+      </span>
+      {%- elsif rlm.id == "env" and nums.measurements_keys -%}
+      <span class="ds-realm-door">
+        <b>{{ nums.measurements_keys_fmt }} measurements</b>
+        <span class="cc-muted" title="{{ nums.measurements_title | escape }}">{{ nums.measurements_series_fmt }} series · {{ nums.measurements_datasets }} datasets{% if nums.measurements_m %} · {{ nums.measurements_m }} M values{% endif %}</span>
+        {%- if site.data.measurements -%}
+        <a class="cc-text-link" href="{{ '/measurements/' | relative_url }}">Browse the measurements →</a>
+        {%- else -%}
+        <a class="cc-text-link" href="https://calcofi.io/explore/?var=temperature">Browse them in the Explorer →</a>
+        {%- endif -%}
+      </span>
+      {%- endif -%}
     </header>
     <div class="ds-realm-tiles">
   {%- for c in rlm.categories -%}

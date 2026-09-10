@@ -22,6 +22,13 @@
        <i class="cc-i cc-i-cat-*"> (brand/v2/icons.css, generated from CalCOFI/explore) -->
   <link rel="stylesheet" href="{{ '/brand/v2/icons.css' | relative_url }}">
   <script defer src="{{ '/brand/v2/theme.js' | relative_url }}"></script>
+  {%- comment -%}
+    The tab switcher and the header submenus' Escape (plan 2026-09-10 § D7). It is in the HEAD, not
+    at the end of the body, because deferred scripts run in DOCUMENT order and assets/catalog.js —
+    deferred inside the Data section — rewrites the URL from the dataset filters on load, dropping
+    every parameter it does not own. `?tab=` has to be read before that happens.
+  {%- endcomment -%}
+  <script defer src="{{ '/assets/tabs.js' | relative_url }}"></script>
   <link rel="stylesheet" href="{{ '/style.css' | relative_url }}">
   <link rel="stylesheet" href="{{ '/assets/feedback.css' | relative_url }}">
 
@@ -61,19 +68,45 @@
 
     <span class="cc-spacer"></span>
 
-    <nav class="cc-links">
+    <nav class="cc-links cc-submenus" aria-label="Sections">
       {%- comment -%}
-        The section list drives the header, so it can never drift from the page. Every link is
-        absolute to the landing page's anchor, so it works from a dataset page too — Datasets
-        included (the whole catalog is on the landing page; /datasets/ is reached from its
-        "All datasets" link, 2026-09-06).
+        Six words and calcofi.org ↗ — DATA · APPS · ACCESS · BUILD · DOCS · NEWS (plan 2026-09-10
+        § D7, Ben's scheme). The section list drives the header, so it can never drift from the
+        page: a `kind: page` section (docs, news) is a link to its `url:`, everything else is the
+        landing page's anchor, absolute so it works from a dataset page too (the whole catalog is
+        on the landing page; /datasets/ is reached from its "All datasets" link, 2026-09-06).
+
+        A section with `tabs:` carries a SUBMENU of them with a count pill — CSS only: the section
+        link itself is the trigger, `:hover` / `:focus-within` opens it, Escape closes it (one line
+        in assets/tabs.js), and it is display:none under 760 px where the brand hides the nav
+        anyway, so a phone tap on the word goes to the section. The whole behaviour hangs off ONE
+        class on this nav — `cc-submenus`: remove it and the header is flat six words again
+        (open question 8), with no other change anywhere.
       {%- endcomment -%}
       {%- for s in site.data.products.sections -%}
-      <a href="{{ '/' | relative_url }}#{{ s.id }}">{{ s.title | split: " — " | first }}</a>
+      {%- assign s_title = s.title | split: " — " | first -%}
+      {%- if s.kind == "page" -%}
+      {%- assign s_url = s.url | relative_url -%}
+      <a href="{{ s_url }}"{% if page.url == s.url %} aria-current="page"{% endif %}>{{ s_title }}
+        {%- comment -%} the dot says an entry landed in the last 30 days (_plugins/news.rb) {%- endcomment -%}
+        {%- if s.id == "news" and site.data.log_new %}<span class="newdot" title="new in the last 30 days"></span>{% endif -%}
+      </a>
+      {%- elsif s.tabs -%}
+      <span class="cc-m">
+        <a href="{{ '/' | relative_url }}#{{ s.id }}" aria-haspopup="true" aria-expanded="false">{{ s_title }}</a>
+        <ul>
+          {%- for t in s.tabs -%}
+          {%- capture tn %}{% include tab_count.html s=s t=t %}{% endcapture -%}
+          <li><a href="{{ '/' | relative_url }}#{{ s.id }}" data-go="{{ s.id }}:{{ t.id }}">{{ t.title }}
+            {%- if tn != "" %}<span class="pill">{{ tn }}</span>{% endif -%}
+          </a></li>
+          {%- endfor -%}
+        </ul>
+      </span>
+      {%- else -%}
+      <a href="{{ '/' | relative_url }}#{{ s.id }}">{{ s_title }}</a>
+      {%- endif -%}
       {%- endfor -%}
-      {%- comment -%} News is a page, not a section (plan 2026-09-07, Decision 2): a literal link; the dot
-        says an entry landed in the last 30 days (_plugins/news.rb) {%- endcomment -%}
-      <a href="{{ '/news/' | relative_url }}"{% if page.url == '/news/' %} aria-current="page"{% endif %}>News{% if site.data.log_new %}<span class="newdot" title="new in the last 30 days"></span>{% endif %}</a>
       <a href="https://calcofi.org">calcofi.org ↗</a>
     </nav>
 

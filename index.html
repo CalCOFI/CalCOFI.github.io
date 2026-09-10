@@ -16,6 +16,18 @@ layout: default
 {%- assign nums = site.data.catalog.numbers -%}
 
 {%- comment -%}
+  Where the two catalogs live, and where the front door points when one does not exist yet
+  (plan 2026-09-10 § D7, the D-2 rule: a door always leads somewhere true).
+    /species/       exists iff the release carries taxa.json         (_plugins/species.rb)
+    /measurements/  exists iff the release carries measurements.json (WS-M3's _plugins/measurements.rb)
+  Without the record the door falls back to the Explorer, prefilled on that realm.
+{%- endcomment -%}
+{%- if site.data.species -%}{%- assign species_url = '/species/' | relative_url -%}
+{%- else -%}{%- assign species_url = 'https://calcofi.io/explore/' -%}{%- endif -%}
+{%- if site.data.measurements -%}{%- assign meas_url = '/measurements/' | relative_url -%}
+{%- else -%}{%- assign meas_url = 'https://calcofi.io/explore/?var=temperature' -%}{%- endif -%}
+
+{%- comment -%}
   The reach: one inline JSON (≈ 40 KB) the drawing, the map and the years strip read — the 218 grid
   cells, the coastline rings, every dataset's measured years, the categories with their counts, the
   Line 90 sea floor and the six numbers. Built by _plugins/datasets.rb; no HTTP request, no
@@ -60,9 +72,16 @@ layout: default
     {%- if nums.years %}<div><dd>{{ nums.years }}</dd><dt>years · since {{ nums.since }}</dt></div>{% endif -%}
     {%- if nums.cruises %}<div><dd>{{ nums.cruises }}</dd><dt>cruises</dt></div>{% endif -%}
     {%- if nums.stations %}<div title="{{ nums.stations }} grid cells · {{ nums.grid.standard }} standard · {{ nums.grid.extended }} extended · {{ nums.grid.historical }} historical"><dd>{{ nums.stations }}</dd><dt>stations</dt></div>{% endif -%}
-    {%- if nums.species %}<div title="{{ nums.species_title | escape }}"><dd>{{ nums.species_fmt }}</dd><dt>species</dt></div>{% endif -%}
+    {%- comment -%}
+      The two COUNTED things now lead somewhere (plan 2026-09-10 § D7): species and measurements
+      each wrap their number in a link to their catalog. Where a catalog does not exist yet the
+      link falls back to the Explorer's own picker for that realm — the number is still read, the
+      link still true (the D-2 rule). The dd's text is unchanged, so check_layout.py's band
+      assertions parse exactly what they parsed before.
+    {%- endcomment -%}
+    {%- if nums.species %}<div title="{{ nums.species_title | escape }}"><dd><a href="{{ species_url }}">{{ nums.species_fmt }}</a></dd><dt>species</dt></div>{% endif -%}
     {%- if nums.organism_obs %}<div title="{{ nums.organism_obs_title | escape }}"><dd>{{ nums.organism_obs_m }} M</dd><dt>organism obs.</dt></div>{% endif -%}
-    {%- if nums.measurements %}<div title="{{ nums.measurements_title | escape }}"><dd>{{ nums.measurements_m }} M</dd><dt>measurements</dt></div>{% endif -%}
+    {%- if nums.measurements %}<div title="{{ nums.measurements_title | escape }}{% if nums.measurements_keys %} — {{ nums.measurements_keys_fmt }} measurements in {{ nums.measurements_datasets }} datasets{% endif %}"><dd><a href="{{ meas_url }}">{{ nums.measurements_m }} M</a></dd><dt>measurements</dt></div>{% endif -%}
   </dl>
 </section>
 
@@ -180,15 +199,25 @@ SELECT * FROM read_json('{{ rel.catalog_url }}')</pre>
       </p>
     </div>
 
-    {%- comment -%} Life (plan 2026-09-09 § D3): the species count from the release's MEASURED
-      coverage — 1,008 of the 1,506 taxa observed are identified to species. The taxon table's 2,614
-      rows are not a count of organisms (1,108 of them are ancestors and unused vocabulary), so they
-      stay on /datasets/release/. Six organism glyphs, small to large. A release with no coverage.json
-      draws no tile, as one with no catalog.json drew none before. {%- endcomment -%}
-    {%- if nums.species -%}
-    <div class="tile t-life">
-      <div class="cc-eyebrow">Life · WoRMS-keyed</div>
-      <div class="tile-row">
+    {%- comment -%}
+      What's observed (plan 2026-09-10 § D7; was the Life tile of 2026-09-09 § D3): the two halves
+      of the catalog in one cell, each a row with its count, its qualifier, its glyphs and its door.
+
+        species       the release's MEASURED coverage — 1,008 of the 1,506 taxa observed are
+                      identified to species. The taxon table's 2,614 rows are not a count of
+                      organisms (1,108 are ancestors and unused vocabulary): they stay on
+                      /datasets/release/.
+        measurements  coverage.json's variables[realm == env] — the keys (a `variable` where the
+                      crosswalk assigns one, else the measurement_type) and the series under them.
+
+      A row whose number the build cannot read is not drawn, and with neither there is no tile —
+      exactly as one release without catalog.json drew none.
+    {%- endcomment -%}
+    {%- if nums.species or nums.measurements_keys -%}
+    <div class="tile t-obs">
+      <div class="cc-eyebrow">What's observed · WoRMS- and NERC-keyed</div>
+      {%- if nums.species -%}
+      <div class="tile-row obsrow">
         <span class="tile-big">{{ nums.species_fmt }} species</span>
         <span class="cc-muted">of {{ nums.taxa_fmt }} taxa</span>
         <span class="tile-glyphs" aria-hidden="true">
@@ -197,28 +226,57 @@ SELECT * FROM read_json('{{ rel.catalog_url }}')</pre>
           <i class="cc-i cc-i-{{ g }}"></i>
           {%- endfor -%}
         </span>
+        <a class="cc-text-link obs-more" href="{{ species_url }}">{% if site.data.species %}Browse the species →{% else %}Browse them in the Explorer →{% endif %}</a>
       </div>
-      <p class="tile-cap">And {{ nums.taxa_more_fmt }} more taxa identified to genus, family or class — every one keyed to one accepted WoRMS id (ITIS for birds), so a name means the same thing in every dataset.</p>
-      {%- comment -%} /species/ exists only where the release carries taxa.json (_plugins/species.rb);
-        without it the tile still leads somewhere true — the Explorer's own organism picker {%- endcomment -%}
-      {%- if site.data.species -%}
-      <a class="cc-text-link tile-more" href="{{ '/species/' | relative_url }}">Browse the species →</a>
-      {%- else -%}
-      <a class="cc-text-link tile-more" href="https://calcofi.io/explore/">Browse them in the Explorer →</a>
       {%- endif -%}
+      {%- if nums.measurements_keys -%}
+      <div class="tile-row obsrow">
+        <span class="tile-big">{{ nums.measurements_keys_fmt }} measurements</span>
+        <span class="cc-muted">in {{ nums.measurements_series_fmt }} series</span>
+        <span class="tile-glyphs" aria-hidden="true">
+          {%- assign env_glyphs = "cat-physical,cat-nutrients,cat-carbonate,cat-productivity,cat-meteorology" | split: "," -%}
+          {%- for g in env_glyphs -%}
+          <i class="cc-i cc-i-{{ g }}"></i>
+          {%- endfor -%}
+        </span>
+        <a class="cc-text-link obs-more" href="{{ meas_url }}">{% if site.data.measurements %}Browse the measurements →{% else %}Browse them in the Explorer →{% endif %}</a>
+      </div>
+      {%- endif -%}
+      <p class="tile-cap">Every organism keyed to one accepted WoRMS name (ITIS for birds); every measurement to one name across its datasets, with its NERC P01 concept where one says exactly this.</p>
     </div>
     {%- endif -%}
   </div>
 </section>
 <script defer src="{{ '/assets/reach.js' | relative_url }}"></script>
 
+{%- comment -%}
+  The sticky section bar: the four on-page sections only — DATA · APPS · ACCESS · BUILD (plan
+  2026-09-10 § D7). DOCS and NEWS are `kind: page` and live in the header alone. DATA carries the
+  three counts of its three indexes; every other section carries how many cards it draws. A count
+  the build cannot read is not rendered.
+
+  The class stays `.section-tabs`: it is the boundary check_layout.py measures the first screen
+  against (everything before it is "above the fold").
+{%- endcomment -%}
 <nav class="cc-tabs section-tabs" aria-label="Sections">
   <div class="cc-container">
     {%- for s in data.sections -%}
+    {%- if s.kind == "page" -%}{%- continue -%}{%- endif -%}
     {%- if s.id == "datasets" -%}
-    <a href="#datasets">{{ s.title }}<span class="n">{{ site.data.catalog.counts.datasets }}</span></a>
+    <a href="#datasets">{{ s.title }}<span class="n">
+      <b>{{ site.data.catalog.counts.datasets }}</b> datasets
+      {%- if nums.species %} · <b>{{ nums.species_fmt }}</b> species{% endif -%}
+      {%- if nums.measurements_keys %} · <b>{{ nums.measurements_keys_fmt }}</b> measurements{% endif -%}
+    </span></a>
     {%- else -%}
     {%- assign items = data.products | where: "section", s.id -%}
+    {%- if s.tabs -%}
+      {%- assign items = "" | split: "" -%}
+      {%- for t in s.tabs -%}
+      {%- assign titems = data.products | where: "tab", t.id -%}
+      {%- assign items = items | concat: titems -%}
+      {%- endfor -%}
+    {%- endif -%}
     <a href="#{{ s.id }}">{{ s.title }}<span class="n">{{ items | size }}</span></a>
     {%- endif -%}
     {%- endfor -%}
@@ -232,30 +290,169 @@ SELECT * FROM read_json('{{ rel.catalog_url }}')</pre>
 {%- assign ds_section = data.sections | where: "id", "datasets" | first -%}
 <section class="prod-section ds-section-home cc-band" id="datasets">
   <div class="cc-container">
-    <div class="cc-eyebrow">{{ site.data.catalog.counts.datasets }} datasets · {{ site.data.catalog.counts.holdings }} holdings · {{ site.data.catalog.counts.reference }} reference rows</div>
+    <div class="cc-eyebrow">{{ site.data.catalog.counts.datasets }} datasets
+      {%- if nums.species %} · {{ nums.species_fmt }} species{% endif -%}
+      {%- if nums.measurements_keys %} · {{ nums.measurements_keys_fmt }} measurements{% endif %}
+      · {{ site.data.catalog.counts.holdings }} holdings</div>
     <h2 class="cc-h2">{{ ds_section.title }}</h2>
     <p class="blurb">{{ ds_section.blurb }}
       <a class="cc-text-link" href="{{ '/datasets/' | relative_url }}">All datasets</a>
       <a class="cc-text-link" href="{{ '/data.json' | relative_url }}">data.json</a>
     </p>
-    {% include release_strip.html %}
-    {% include catalog_grid.html %}
-    {% include reference_band.html %}
+
+    {%- comment -%}
+      ONE search over the three indexes (plan 2026-09-10 § D7 (3), open question 3 — Ben: yes).
+      assets/door-search.js fetches the three search records on first focus and nothing before,
+      so the front door's first paint is unchanged; a record that 404s simply contributes no
+      group. The counts in the hint are the same three the tabs' pills carry.
+    {%- endcomment -%}
+    <div class="dsearch" id="door-search"
+         data-datasets="{{ '/datasets/search.json' | relative_url }}"
+         data-species="{{ '/species/search.json' | relative_url }}"
+         data-measurements="{{ '/measurements/search.json' | relative_url }}"
+         data-species-url="{{ species_url }}" data-measurements-url="{{ meas_url }}">
+      <label class="dsearch-box">
+        <span class="cc-muted" aria-hidden="true">⌕</span>
+        <input id="door-q" type="search" autocomplete="off" spellcheck="false"
+               placeholder="sardine · nitrate · Sardinops · CTD · TEMPPR01 · Farallon …"
+               aria-label="Search datasets, species and measurements"
+               aria-controls="door-res" aria-expanded="false" role="combobox" aria-autocomplete="list">
+        <span class="dsearch-k" aria-hidden="true">{{ site.data.catalog.counts.datasets }}
+          {%- if nums.species %} · {{ nums.species_fmt }}{% endif -%}
+          {%- if nums.measurements_keys %} · {{ nums.measurements_keys_fmt }}{% endif -%}
+        </span>
+      </label>
+      <div class="dres" id="door-res" role="listbox" aria-label="Results"></div>
+    </div>
+
+    {%- comment -%}
+      The three indexes as tabs, each with a count pill. The first panel is the catalog exactly as
+      it was — release strip, filter row, realm grid, reference band — so its markup is unchanged;
+      the other two are each index's own head, counts, search and door.
+    {%- endcomment -%}
+    <div class="tabset" id="ts-datasets" data-url-tab>
+      <div class="tabrow" role="tablist" aria-label="The three indexes">
+        {%- for t in ds_section.tabs -%}
+        {%- capture tn %}{% include tab_count.html s=ds_section t=t %}{% endcapture -%}
+        <button type="button" role="tab" id="tab-{{ t.id }}" aria-controls="panel-{{ t.id }}"
+                data-tab="{{ t.id }}" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
+                tabindex="{% if forloop.first %}0{% else %}-1{% endif %}">{{ t.title }}
+          {%- if tn != "" %}<span class="pill">{{ tn }}</span>{% endif -%}
+        </button>
+        {%- endfor -%}
+      </div>
+
+      <div class="tabpanel" id="panel-datasets" data-panel="datasets" role="tabpanel" aria-labelledby="tab-datasets">
+        {% include release_strip.html %}
+        {% include catalog_grid.html %}
+        {% include reference_band.html %}
+      </div>
+
+      {%- comment -%} Species: the /species/ index's own head, read from site.data.species — never
+        re-counted here, so this tab and the catalog page can never disagree {%- endcomment -%}
+      <div class="tabpanel" id="panel-species" data-panel="species" role="tabpanel" aria-labelledby="tab-species" hidden>
+        {%- assign sp = site.data.species -%}
+        {%- if sp -%}
+        {%- assign spc = sp.counts_fmt -%}
+        <div class="idxtab">
+          <div class="idxtab-copy">
+            <div class="cc-eyebrow">Species · {{ sp.release.version | escape }} · WoRMS-keyed (ITIS for birds)</div>
+            <h3 class="cc-h2">{{ spc.species_observed }} species. {{ spc.taxa_observed }} taxa. {{ spc.datasets }} datasets, one tree.</h3>
+            <p class="blurb">Every organism CalCOFI has counted, from the diatoms of the phytoplankton slides to the
+              whales of the Farallon census, keyed to one accepted name so the same species means the same thing in
+              every dataset. Search it, walk the tree, or start from a dataset — every taxon has its own page.</p>
+          </div>
+          <dl class="idxtab-counts">
+            <div><dd class="tab">{{ spc.species_observed }}</dd><dt>species</dt></div>
+            <div><dd class="tab">{{ spc.taxa_observed }}</dd><dt>taxa observed</dt></div>
+            <div><dd class="tab">{{ spc.datasets }}</dd><dt>datasets</dt></div>
+            <div><dd class="tab">{{ spc.obs_bio_rows }}</dd><dt>observations</dt></div>
+            <div><dd class="tab">{{ spc.pages }}</dd><dt>pages</dt></div>
+          </dl>
+          <form class="idxtab-form" action="{{ '/species/' | relative_url }}" method="get">
+            <label class="dsearch-box">
+              <span class="cc-muted" aria-hidden="true">⌕</span>
+              <input type="search" name="q" placeholder="sardine · Sardinops · Alosidae · Aves · cufes …"
+                     aria-label="Search the species catalog">
+            </label>
+            <a class="cc-text-link" href="{{ '/species/' | relative_url }}">Open the species catalog →</a>
+          </form>
+        </div>
+        {%- else -%}
+        <p class="blurb cc-muted">This release carries no species record, so there is no species catalog to open.
+          <a class="cc-text-link" href="https://calcofi.io/explore/">Browse the organisms in the Explorer →</a></p>
+        {%- endif -%}
+      </div>
+
+      {%- comment -%} Measurements: the same shape. Until a release carries measurements.json
+        (WS-M3 · WS-M2) the head is built from the release's own coverage — the keys, the series,
+        the datasets, the rows at the release grain, the years — and the door is the Explorer
+        prefilled on temperature. Not one number is typed either way. {%- endcomment -%}
+      <div class="tabpanel" id="panel-measurements" data-panel="measurements" role="tabpanel" aria-labelledby="tab-measurements" hidden>
+        {%- if nums.measurements_keys -%}
+        <div class="idxtab">
+          <div class="idxtab-copy">
+            <div class="cc-eyebrow">Measurements · {{ nums.version | escape }} · NERC P01-keyed where a concept says exactly this</div>
+            <h3 class="cc-h2">{{ nums.measurements_keys_fmt }} measurements. {{ nums.measurements_datasets }} datasets. {{ nums.measurements_m }} M values, {{ nums.measurements_year_min }} → {{ nums.measurements_year_max }}.</h3>
+            <p class="blurb">Everything CalCOFI has measured in the water and the air above it — temperature and
+              salinity from the bottle casts of 1949 to this year's CTD profiles, nutrients, carbon, pigments and
+              light, the underway weather, the picoplankton counted by flow cytometry — keyed to one name across its
+              datasets. Search it, filter by category, or start from a dataset.</p>
+          </div>
+          <dl class="idxtab-counts">
+            <div><dd class="tab">{{ nums.measurements_keys_fmt }}</dd><dt>measurements</dt></div>
+            <div><dd class="tab">{{ nums.measurements_series_fmt }}</dd><dt>series</dt></div>
+            <div><dd class="tab">{{ nums.measurements_datasets }}</dd><dt>datasets</dt></div>
+            {%- if nums.measurements_env_m %}<div><dd class="tab">{{ nums.measurements_env_m }} M</dd><dt>values · release grain</dt></div>{% endif -%}
+            <div><dd class="tab">{{ nums.measurements_m }} M</dd><dt>with full resolution</dt></div>
+          </dl>
+          <form class="idxtab-form" action="{{ meas_url }}" method="get">
+            {%- if site.data.measurements -%}
+            <label class="dsearch-box">
+              <span class="cc-muted" aria-hidden="true">⌕</span>
+              <input type="search" name="q" placeholder="temperature · nitrate · chlorophyll · CTD · TEMPPR01 …"
+                     aria-label="Search the measurements catalog">
+            </label>
+            <a class="cc-text-link" href="{{ meas_url }}">Open the measurements catalog →</a>
+            {%- else -%}
+            <p class="blurb cc-muted">The measurements catalog is not in this release yet: these counts come from the
+              release's own coverage. Until it ships, the Explorer is the way in.</p>
+            <a class="cc-text-link" href="{{ meas_url }}">Open the Explorer on temperature →</a>
+            {%- endif -%}
+          </form>
+        </div>
+        {%- else -%}
+        <p class="blurb cc-muted">This release carries no measured coverage, so there is nothing to index.
+          <a class="cc-text-link" href="https://calcofi.io/explore/">Browse the variables in the Explorer →</a></p>
+        {%- endif -%}
+      </div>
+    </div>
   </div>
 </section>
+<script defer src="{{ '/assets/door-search.js' | relative_url }}"></script>
 
 {%- comment -%}
-  2–5 · The products. Same card as before; a section with `groups:` (Explore) renders its cards under
-  eyebrow group headings, so the across-datasets / one-dataset distinction survives without a second
-  tab. Bands keep alternating white / Sand down the page.
+  2–4 · The products — APPS · ACCESS · BUILD (plan 2026-09-10 § D7). A section with `tabs:` draws
+  one tab per tab id with a count pill, and each panel is the card grid of the products carrying
+  that `tab:` — so the Explore eyebrow groups became the General / Dataset tabs and the nine
+  student projects became the Student tab, without a Students section of their own. A section
+  without tabs (Build) draws one grid as before. `kind: page` sections (docs, news) draw nothing.
+  Bands keep alternating Sand / white down the page.
 {%- endcomment -%}
 {%- for s in data.sections -%}
-{%- if s.id == "datasets" -%}{%- continue -%}{%- endif -%}
+{%- if s.id == "datasets" or s.kind == "page" -%}{%- continue -%}{%- endif -%}
 {%- assign items = data.products | where: "section", s.id -%}
+{%- if s.tabs -%}
+  {%- assign items = "" | split: "" -%}
+  {%- for t in s.tabs -%}
+  {%- assign titems = data.products | where: "tab", t.id -%}
+  {%- assign items = items | concat: titems -%}
+  {%- endfor -%}
+{%- endif -%}
 {%- assign section_title = s.title | split: " — " | first -%}
-<section class="prod-section cc-band{% cycle '', ' cc-band-alt' %}" id="{{ s.id }}">
+<section class="prod-section cc-band{% cycle ' cc-band-alt', '' %}" id="{{ s.id }}">
   <div class="cc-container">
-    <div class="cc-eyebrow">{{ items | size }} product{% if items.size != 1 %}s{% endif %}</div>
+    <div class="cc-eyebrow">{{ items | size }} {% if s.id == "explore" %}app{% else %}product{% endif %}{% if items.size != 1 %}s{% endif %}{% if s.tabs %} · {{ s.tabs | size }} tabs{% endif %}</div>
     <h2 class="cc-h2">{{ s.title }}</h2>
     <p class="blurb">{{ s.blurb }}
       {%- if s.id == "build" %} <a class="cc-text-link" href="https://calcofi.io/docs/">Read the docs</a>{% endif -%}
@@ -268,21 +465,32 @@ SELECT * FROM read_json('{{ rel.catalog_url }}')</pre>
     </p>
     {%- endif -%}
 
-    {%- if s.groups -%}
-      {%- for g in s.groups -%}
-      {%- assign gitems = items | where: "group", g.id -%}
-      {%- if gitems.size > 0 -%}
-      <div class="prod-group">
-        <div class="cc-eyebrow prod-group-h">{{ g.title }}</div>
-        {%- if g.blurb %}<p class="blurb prod-group-blurb">{{ g.blurb }}</p>{% endif -%}
-        <div class="card-grid{% if s.featured %} featured-grid{% endif %}">
-          {%- for p in gitems -%}
-            {% include product_card.html p=p section=section_title featured=s.featured %}
+    {%- if s.tabs -%}
+    <div class="tabset" id="ts-{{ s.id }}">
+      <div class="tabrow" role="tablist" aria-label="{{ section_title | escape }}">
+        {%- for t in s.tabs -%}
+        {%- capture tn %}{% include tab_count.html s=s t=t %}{% endcapture -%}
+        <button type="button" role="tab" id="tab-{{ t.id }}" aria-controls="panel-{{ t.id }}"
+                data-tab="{{ t.id }}" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
+                tabindex="{% if forloop.first %}0{% else %}-1{% endif %}">{{ t.title }}
+          {%- if tn != "" %}<span class="pill">{{ tn }}</span>{% endif -%}
+        </button>
+        {%- endfor -%}
+      </div>
+      {%- for t in s.tabs -%}
+      {%- assign titems = data.products | where: "tab", t.id -%}
+      <div class="tabpanel" id="panel-{{ t.id }}" data-panel="{{ t.id }}" role="tabpanel"
+           aria-labelledby="tab-{{ t.id }}"{% unless forloop.first %} hidden{% endunless %}>
+        {%- if t.blurb %}<p class="blurb tab-blurb">{{ t.blurb }}</p>{% endif -%}
+        {%- comment -%} the Explorer tab holds the one `featured:` card, at full width {%- endcomment -%}
+        <div class="card-grid{% if s.featured %} featured-grid{% endif %}{% if s.featured and titems.size == 1 %} card-grid-solo{% endif %}">
+          {%- for p in titems -%}
+            {% include product_card.html p=p section=t.title featured=s.featured %}
           {%- endfor -%}
         </div>
       </div>
-      {%- endif -%}
       {%- endfor -%}
+    </div>
     {%- else -%}
       <div class="card-grid{% if s.featured %} featured-grid{% endif %}">
         {%- for p in items -%}

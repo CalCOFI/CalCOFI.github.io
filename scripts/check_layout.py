@@ -240,6 +240,96 @@ PROBE = r"""
     };
   }
 
+  // ── the front door's navigation (plan 2026-09-10 § D7, WS-M0) ──────────────
+  // The header's six words plus calcofi.org, the submenus, the sticky section bar, the tabsets and
+  // the one search over the three indexes. Everything here is measured on the real page: the
+  // submenu is opened by FOCUSING its trigger (that is the whole mechanism — :focus-within), and
+  // the search is driven by typing into the box and reading what came back.
+  const nav = d.querySelector(".cc-header .cc-links");
+  if (nav) {
+    const items = [...nav.children].filter(el => el.matches("a, .cc-m"));
+    const menus = [...nav.querySelectorAll(".cc-m")].map(m => {
+      const trig = m.querySelector("a[aria-haspopup]"), ul = m.querySelector("ul");
+      const shown = () => ul && cs(ul).display !== "none";
+      const before = shown();
+      if (trig) trig.focus();
+      const onFocus = shown();
+      // Escape closes: assets/tabs.js blurs the focused link, so the :focus-within rule lapses
+      d.activeElement && d.activeElement.dispatchEvent(new w.KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+      const afterEsc = shown();
+      if (trig) trig.blur();
+      return {
+        word: trig ? trig.textContent.trim() : null,
+        tabs: [...m.querySelectorAll("ul a")].map(a => ({
+          title: a.textContent.replace(/\s+/g, " ").trim(),
+          pill: (a.querySelector(".pill") || {}).textContent || null,
+          go: a.getAttribute("data-go")
+        })),
+        closed: !before, opensOnFocus: !!onFocus, closesOnEscape: !afterEsc,
+        haspopup: trig && trig.getAttribute("aria-haspopup") === "true",
+        expanded: trig && trig.getAttribute("aria-expanded")
+      };
+    });
+    out.nav = {
+      words: items.map(el => (el.matches(".cc-m") ? el.querySelector("a") : el).textContent.replace(/\s+/g, " ").trim()),
+      hrefs: items.map(el => (el.matches(".cc-m") ? el.querySelector("a") : el).getAttribute("href")),
+      visible: cs(nav).display !== "none",
+      menus
+    };
+  }
+
+  // the sticky section bar and the tabsets
+  const bar = d.querySelector(".section-tabs");
+  if (bar) {
+    out.sections = [...bar.querySelectorAll("a")].map(a => ({
+      title: a.firstChild ? a.firstChild.textContent.trim() : a.textContent.trim(),
+      n: (a.querySelector(".n") || {}).textContent.replace(/\s+/g, " ").trim(),
+      href: a.getAttribute("href")
+    }));
+  }
+  const sets = [...d.querySelectorAll(".tabset")];
+  if (sets.length) {
+    out.tabsets = sets.map(ts => ({
+      id: ts.id,
+      tabs: [...ts.querySelectorAll(".tabrow button")].map(b => {
+        const id = b.getAttribute("data-tab");
+        const panel = ts.querySelector('.tabpanel[data-panel="' + id + '"]');
+        return {
+          id, title: b.textContent.replace(/\s+/g, " ").trim(),
+          pill: (b.querySelector(".pill") || {}).textContent || null,
+          selected: b.getAttribute("aria-selected") === "true",
+          hidden: !panel || panel.hidden,
+          drawn: !!panel && cs(panel).display !== "none",
+          cards: panel ? panel.querySelectorAll(".prod-card").length : 0
+        };
+      })
+    }));
+  }
+
+  // the DATA section's height, so the front door cannot quietly grow (plan § Risks)
+  const dataSec = d.getElementById("datasets");
+  if (dataSec) out.dataSectionH = px(dataSec.getBoundingClientRect().height);
+
+  // the band's two counted things are doors now
+  out.bandLinks = [...d.querySelectorAll(".nums > div")]
+    .map(el => ({ label: el.querySelector("dt").textContent.trim(),
+                  href: (el.querySelector("dd a") || {}).getAttribute ? el.querySelector("dd a").getAttribute("href") : null }));
+
+  // the Observed tile: both rows drawn, nothing spilling out of the cell
+  const obs = d.querySelector(".tile.t-obs");
+  if (obs) {
+    const b = obs.getBoundingClientRect();
+    out.observed = {
+      rows: [...obs.querySelectorAll(".obsrow")].map(r => r.textContent.replace(/\s+/g, " ").trim()),
+      links: [...obs.querySelectorAll(".obsrow a")].map(a => a.getAttribute("href")),
+      overflow: Math.max(0, px(obs.scrollHeight - obs.clientHeight)),
+      spill: [...obs.querySelectorAll("*")].filter(e2 => {
+        const r2 = e2.getBoundingClientRect();
+        return r2.height > 0 && (r2.bottom > b.bottom + 1 || r2.right > b.right + 1);
+      }).length
+    };
+  }
+
   // ── the species catalog (plan 2026-09-09 § S3) ─────────────────────────────
   // The index: the counts, the matrix's shape and the two panes, all read back from the page's own
   // inline record so the check compares the drawing with the data it was drawn from.
@@ -323,7 +413,38 @@ PROBE = r"""
     if (m) tabledap[m[1]] = (tabledap[m[1]] || 0) + 1;
   });
   out.tabledap = tabledap;
-  return out;
+
+  // ── the one search over the three indexes (plan 2026-09-10 § D7 (3)) ───────
+  // assets/door-search.js fetches the three records on the FIRST focus, so the box has to be
+  // driven, not read: focus it, type each term, and count what came back per group. The promise
+  // is what the probe returns — the host resolves whatever `done()` is handed.
+  const dq = d.getElementById("door-q");
+  if (!dq) return out;
+  const TERMS = ["sardine", "nitrate", "CUFES", "TEMPPR01"];
+  const type = t => new Promise(res => {
+    dq.value = t;
+    dq.dispatchEvent(new w.Event("input", { bubbles: true }));
+    setTimeout(res, 220);
+  });
+  const readOut = () => {
+    const box = d.getElementById("door-res");
+    const groups = [...box.querySelectorAll(".dres-g")].map(g2 => g2.textContent.replace(/\s+/g, " ").trim());
+    return { open: box.classList.contains("open"), groups,
+             hits: box.querySelectorAll("a.dres-r").length,
+             none: !!box.querySelector(".dres-none"),
+             first: (box.querySelector("a.dres-r") || {}).getAttribute
+               ? box.querySelector("a.dres-r").getAttribute("href") : null };
+  };
+  dq.focus();
+  return new Promise(resolve => {
+    setTimeout(() => {                       // the three fetches
+      const search = {};
+      TERMS.reduce((p, t) => p.then(() => type(t)).then(() => { search[t] = readOut(); }),
+                   Promise.resolve())
+        .then(() => { dq.value = ""; out.search = search; resolve(out); })
+        .catch(e => { out.search = { error: String(e) }; resolve(out); });
+    }, 1200);
+  });
 }
 """
 
@@ -366,6 +487,22 @@ MAX_HERO_GAP = 120    # px between the head band's two columns
 MAX_GRID_H = 4400     # px at 1470 with the staging record (was 4,910)
 MAX_HERO_VH = 62      # the front door's drawing at 1470: the catalog must start within reach
 MAX_TILE_STRETCH = 1.25
+
+# ── the front door's navigation (plan 2026-09-10 § D7, WS-M0) ─────────────────
+# The six words plus calcofi.org ↗ — seven items, as before D7. DOCS and NEWS are pages, so the
+# section bar draws four; the header draws all six and the outbound link.
+NAV_WORDS = ["Data", "Apps", "Access", "Build", "Docs", "News", "calcofi.org ↗"]
+SECTION_WORDS = ["Data", "Apps", "Access", "Build"]
+# the sections whose tabs are CARDS, so a pill must equal the number of cards in its panel. DATA's
+# three pills count datasets, species and measurements — the release's numbers, checked against the
+# page's own inline record instead (the band assertions above already do it).
+CARD_TABSETS = ("ts-explore", "ts-access")
+# The Data section at 1470 px, measured on main's own build before D7 (2026-09-10, the v2026.09.06
+# record, light): 2,974 px. D7 adds one search box (48), one tab row (43) and one door line in each
+# realm head (35) and must not add a screen — plan § Risks, WS-M0's gate. Measured after: 3,078 px,
+# +104. Re-measure and re-state this number whenever the catalog's own furniture changes.
+DATA_SECTION_BASE = 2974
+DATA_SECTION_GROWTH = 120
 
 _PROBED = {}          # pin hrefs answered once per run, not per width and theme
 
@@ -583,6 +720,34 @@ def check(path, r, width, theme, fails, notes):
             fails.append(f"{where}: --warn on the first screen: {', '.join(sorted(set(fr['warnEls']))[:4])}")
         if len(fr["ctaEls"]) != 1:
             fails.append(f"{where}: {len(fr['ctaEls'])} yellow (--cta-bg) elements on the first screen, expected exactly one")
+        # ── D7: the band's two counted things are doors ──────────────────────
+        want_link = {"species": True, "measurements": True}
+        for b in r.get("bandLinks") or []:
+            key = next((k for k in want_link if b["label"].startswith(k)), None)
+            if key and not b["href"]:
+                fails.append(f"{where}: the band's {key!r} number is not a link")
+
+        # ── D7: the Observed tile shows both counted rows and spills nothing ──
+        ob = r.get("observed")
+        if ob:
+            notes.append(f"{where}: observed tile {len(ob['rows'])} rows, "
+                         f"overflow {ob['overflow']}px, {ob['spill']} spilling children")
+            if len(ob["rows"]) < 2:
+                fails.append(f"{where}: the Observed tile draws {len(ob['rows'])} rows, expected species and measurements")
+            if any(not h for h in ob["links"]):
+                fails.append(f"{where}: an Observed row has no way in")
+            if ob["overflow"] > 2 or ob["spill"]:
+                fails.append(f"{where}: the Observed tile overflows its cell "
+                             f"({ob['overflow']}px, {ob['spill']} children outside)")
+
+        # ── D7: the Data section must not grow by a screen ────────────────────
+        h = r.get("dataSectionH")
+        if h is not None and width >= 1400:
+            notes.append(f"{where}: the Data section is {h}px (main measured {DATA_SECTION_BASE}px)")
+            if h > DATA_SECTION_BASE + DATA_SECTION_GROWTH:
+                fails.append(f"{where}: the Data section is {h}px, more than "
+                             f"{DATA_SECTION_GROWTH}px taller than main's {DATA_SECTION_BASE}px")
+
         if width >= 1400 and theme == "light":      # once per run
             for href in fr["pins"]:
                 ok = url_ok(href)
@@ -590,6 +755,84 @@ def check(path, r, width, theme, fails, notes):
                     notes.append(f"{where}: pin {href} unreachable (warning only)")
                 elif not ok:
                     fails.append(f"{where}: pin {href} does not answer 200/206")
+
+    # ── the header: six words, calcofi.org, and the submenus (plan 2026-09-10 § D7) ────────────
+    nav = r.get("nav")
+    if nav and nav["visible"]:
+        notes.append(f"{where}: header {' · '.join(nav['words'])}; "
+                     f"{len(nav['menus'])} submenus ({', '.join(m['word'] + ' ' + str(len(m['tabs'])) for m in nav['menus'])})")
+        if nav["words"] != NAV_WORDS:
+            fails.append(f"{where}: the header reads {nav['words']}, expected {NAV_WORDS}")
+        for m in nav["menus"]:
+            if not m["haspopup"]:
+                fails.append(f"{where}: the {m['word']!r} submenu's trigger has no aria-haspopup")
+            if not m["closed"]:
+                fails.append(f"{where}: the {m['word']!r} submenu is open before anything is focused")
+            if not m["opensOnFocus"]:
+                fails.append(f"{where}: the {m['word']!r} submenu does not open on focus — it is not keyboard-reachable")
+            if not m["closesOnEscape"]:
+                fails.append(f"{where}: the {m['word']!r} submenu does not close on Escape")
+            for t in m["tabs"]:
+                if not t["go"]:
+                    fails.append(f"{where}: the {m['word']!r} submenu's {t['title']!r} does not name a tab (data-go)")
+                if not t["pill"]:
+                    fails.append(f"{where}: the {m['word']!r} submenu's {t['title']!r} carries no count")
+    elif nav and width < 900:
+        notes.append(f"{where}: the header nav is hidden (the brand hides it under 760px); the section bar carries the page")
+
+    # ── the sticky section bar: the four ON-PAGE sections, each counted ────────────────────────
+    secs = r.get("sections")
+    if secs is not None:
+        got = [s["title"] for s in secs]
+        notes.append(f"{where}: section bar {' · '.join(s['title'] + ' ' + s['n'] for s in secs)}")
+        if got != SECTION_WORDS:
+            fails.append(f"{where}: the section bar reads {got}, expected {SECTION_WORDS}")
+        for s in secs:
+            if not s["n"]:
+                fails.append(f"{where}: the section bar's {s['title']!r} carries no count")
+
+    # ── the tabsets: one selected tab, one drawn panel, and a pill that is the panel's own count ─
+    for ts in r.get("tabsets") or []:
+        sel = [t for t in ts["tabs"] if t["selected"]]
+        drawn = [t for t in ts["tabs"] if not t["hidden"]]
+        notes.append(f"{where}: {ts['id']} " + " · ".join(f"{t['title']}" + (f" [{t['cards']} cards]" if t["cards"] else "")
+                                                          for t in ts["tabs"]))
+        if len(sel) != 1:
+            fails.append(f"{where}: {ts['id']} has {len(sel)} selected tabs, expected exactly one")
+        if len(drawn) != 1:
+            fails.append(f"{where}: {ts['id']} draws {len(drawn)} panels, expected exactly one")
+        if sel and drawn and sel[0]["id"] != drawn[0]["id"]:
+            fails.append(f"{where}: {ts['id']} selects {sel[0]['id']!r} but draws {drawn[0]['id']!r}")
+        if ts["id"] in CARD_TABSETS:
+            for t in ts["tabs"]:
+                pill = int(str(t["pill"] or "0").replace(",", ""))
+                if pill != t["cards"]:
+                    fails.append(f"{where}: {ts['id']} tab {t['id']!r} says {pill} but its panel holds {t['cards']} cards")
+
+    # ── the one search over the three indexes ──────────────────────────────────────────────────
+    # "sardine" is a species, "nitrate" a measurement AND a dataset's variables, "CUFES" a dataset;
+    # "TEMPPR01" is a NERC id that only the measurements RECORD carries, so it is expected to find
+    # nothing until WS-M3 ships and is reported, not failed.
+    se = r.get("search")
+    if se and "error" not in se:
+        for term, res in se.items():
+            groups = [g.split(" ")[0] for g in res["groups"]]
+            notes.append(f"{where}: search {term!r} → {res['hits']} rows in {', '.join(groups) or 'nothing'}")
+        for term, want in (("sardine", "Species"), ("nitrate", "Measurements"), ("CUFES", "Datasets")):
+            res = se.get(term)
+            if not res:
+                continue
+            if not res["open"]:
+                fails.append(f"{where}: the door search did not open for {term!r}")
+            if not any(g.startswith(want) for g in res["groups"]):
+                fails.append(f"{where}: the door search found no {want} for {term!r} "
+                             f"(groups: {res['groups']})")
+        p01 = se.get("TEMPPR01")
+        if p01 and not p01["groups"]:
+            notes.append(f"{where}: 'TEMPPR01' finds nothing — the measurements RECORD carries the "
+                         f"NERC ids and no release has one yet (WS-M2/M3)")
+    elif se:
+        fails.append(f"{where}: the door search errored: {se['error']}")
 
 
 def main():

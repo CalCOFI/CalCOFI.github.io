@@ -17,7 +17,13 @@
 #               existed under their old keys since 2026-06-10). The ship's log (_plugins/news.rb)
 #               makes a "New: <title>" entry of it, and the header's News link wears a dot for 30 days
 # credits:      {org, year, team[]} — shown on student contributions
-# group:        an eyebrow group inside a section (Explore's `across` / `one`), from sections[].groups
+# tab:          the section tab this card is drawn in (sections[].tabs[].id) — the ONE thing that
+#               places a card on the front door since 2026-09-10 (D7). Tab ids are unique across
+#               sections, so a panel selects on `tab:` alone.
+# group:        an eyebrow group inside a section (Explore's `across` / `one`), from sections[].groups.
+#               No longer drawn on the landing page (tabs replaced it), but still READ by
+#               _plugins/datasets.rb for the group chip on a dataset page's Access > Explore rows —
+#               as is `section: students`, which is how that chip reads "Student contribution".
 # lenses:       the spatial grains an Explore app shows the data at — ids from sections[explore].lenses
 #               (stations · hexagons · cruises · regions · sections · contours); drawn as suffix
 #               icons after the card's title and on a dataset page's Access > Explore row
@@ -32,18 +38,64 @@
 #               behind each dataset page's Access > Explore rows, so this is the ONE place a
 #               product-to-dataset link is written.
 
+# sections: the six words of the header — DATA · APPS · ACCESS · BUILD · DOCS · NEWS (plan
+# 2026-09-10 § D7, Ben's scheme) — plus calcofi.org ↗, seven items in all. One list drives the
+# header, the sticky section bar and the page, so they can never drift.
+#
+# kind:   section (default) — drawn on the landing page under its own `id` anchor
+#         page             — a link only (`url:`); no section is drawn (docs, news)
+# tabs:   [{id, title, blurb, count}] — a crowded section is tabbed, each tab with a count PILL.
+#         `count` names where the pill's number is read from when it is not "how many products
+#         carry this tab": `datasets` · `species` · `measurements` resolve through
+#         site.data.catalog.numbers (_includes/tab_count.html). A count the build cannot read
+#         collapses the pill; it is never typed.
+# groups: RETIRED from the page by D7 (the Explore eyebrow groups became tabs) but KEPT here
+#         because _plugins/datasets.rb reads sections[].groups[] to title the group chip on a
+#         dataset page's Access > Explore rows. Products keep `group:` for the same reason.
 sections:
   - id: datasets
     emoji: "🗂"
-    title: Datasets
+    title: Data
+    tabs:
+      - id: datasets
+        title: Datasets
+        count: datasets
+        blurb: Who collected what — coverage, every endpoint, licence and citation.
+      - id: species
+        title: Species
+        count: species
+        blurb: Every organism counted, in which datasets and years.
+      - id: measurements
+        title: Measurements
+        count: measurements
+        blurb: Every ocean variable measured, in which datasets, years and depths.
+    # one line: the three ways in are named by the tabs beneath it, each with its own blurb, so the
+    # section's own blurb says what the three ARE and gets out of the way (the Data section may not
+    # grow by more than 120 px — scripts/check_layout.py asserts it)
     blurb: >-
-      Find what has been collected. One record per dataset — coverage, every endpoint it can be
-      reached through, its licence and how to cite it — by category, with the holdings CalCOFI has
-      but has not ingested yet.
+      Find what has been collected — by <b>dataset</b>, by <b>species</b> or by <b>measurement</b>,
+      each with its own catalog.
   - id: explore
     emoji: "🔭"
     featured: true
-    title: Explore
+    title: Apps
+    tabs:
+      - id: explorer
+        title: Explorer
+        blurb: >-
+          One browser-native app over every ingested dataset, at six spatial grains.
+      - id: general
+        title: General
+        blurb: >-
+          Apps that each go deep on one grain — station, hexagon, cruise, or contour.
+      - id: dataset
+        title: Dataset
+        blurb: >-
+          Apps focused on a single dataset or data source.
+      - id: student
+        title: Student
+        blurb: >-
+          Capstone and fellowship projects by university students partnering with CalCOFI.
     # the lenses, with the brand glyph each is drawn as (brand/v2/icons/, lens-*)
     lenses:
       - { id: stations, title: Stations, blurb: one value per station, the CalCOFI grid as points }
@@ -65,24 +117,41 @@ sections:
         blurb: >-
           Apps focused on a single dataset or data source.
     blurb: >-
-      Explore CalCOFI data in the browser — across every ingested dataset, or deep on one.
+      Explore CalCOFI data in the browser — the Explorer across every dataset, the general apps
+      that each go deep on one grain, the apps built around a single dataset, and the student
+      projects.
   - id: access
     emoji: "☁️"
     title: Access
+    tabs:
+      - id: services
+        title: Services
+        blurb: Standards-based services, public cloud storage and browser SQL.
+      - id: packages
+        title: Packages
+        blurb: The R and Python packages that read a release directly.
     blurb: >-
-      The ways to get the data: standards-based services, public cloud storage, browser SQL, and
+      The ways to get the data: standards-based services and public cloud storage, browser SQL, and
       the R and Python packages that read a release directly.
   - id: build
     emoji: "🛠"
     title: Build
     blurb: >-
-      The pipeline behind every release and the documentation tying it together — the ingest
-      workflows, the database tooling, the schema browser and the technical docs.
-  - id: students
-    emoji: "🎓"
-    title: Students
-    blurb: >-
-      Capstone and fellowship projects by university students partnering with CalCOFI.
+      The pipeline behind every release and the database tooling — the ingest workflows, calcofi4db
+      and the schema browser. The documentation is its own door now, in the header, for everyone.
+  # docs and news are PAGES, not sections: the header links them and no section is drawn (D7).
+  # The docs product keeps its key, its uptime and analytics slugs and its `added:` — only its card
+  # leaves the Build grid.
+  - id: docs
+    kind: page
+    emoji: "📖"
+    title: Docs
+    url: https://calcofi.io/docs/
+  - id: news
+    kind: page
+    emoji: "🗞"
+    title: News
+    url: /news/
 
 products:
 
@@ -94,6 +163,7 @@ products:
     uptime: explore
     usage: explore
     section: explore
+    tab: explorer
     group: across
     lenses: [stations, hexagons, contours, cruises, regions, sections]
     datasets: all
@@ -125,6 +195,7 @@ products:
     uptime: db-viz-station
     usage: db-viz-station
     section: explore
+    tab: general
     group: across
     lenses: [stations]
     datasets: all
@@ -146,6 +217,7 @@ products:
     uptime: db-viz-hex
     usage: db-viz-hex
     section: explore
+    tab: general
     group: across
     lenses: [hexagons]
     datasets: all
@@ -175,6 +247,7 @@ products:
     uptime: db-viz-cruise
     usage: db-viz-cruise
     section: explore
+    tab: general
     group: across
     lenses: [cruises]
     datasets: all
@@ -197,6 +270,7 @@ products:
     uptime: oceano
     usage: oceano
     section: explore
+    tab: general
     group: across
     lenses: [contours]
     datasets: [calcofi_bottle]
@@ -217,6 +291,7 @@ products:
     uptime: ctd-transects
     usage: ctd-transects
     section: explore
+    tab: dataset
     group: one
     lenses: [sections]
     datasets: [calcofi_ctd-cast]
@@ -241,6 +316,7 @@ products:
     uptime: ctd-viz
     usage: ctd-viz
     section: explore
+    tab: dataset
     group: one
     lenses: [stations, contours]
     datasets: [calcofi_ctd-cast]
@@ -259,6 +335,7 @@ products:
     uptime: pollutants
     usage: pollutants
     section: explore
+    tab: dataset
     group: one
     live_url: https://app.calcofi.io/pollutants/
     source_url: https://github.com/CalCOFI/pollutants-app
@@ -275,6 +352,7 @@ products:
     uptime: erddap
     usage: erddap
     section: access
+    tab: services
     datasets: all
     live_url: https://erddap.calcofi.io/
     source_url: https://github.com/CalCOFI/erddap
@@ -290,6 +368,7 @@ products:
     uptime: storage
     usage: storage
     section: access
+    tab: services
     datasets: all
     live_url: https://storage.calcofi.io/
     source_url: https://github.com/CalCOFI/server
@@ -309,6 +388,7 @@ products:
     uptime: calcofi4r
     usage: calcofi4r
     section: access
+    tab: packages
     datasets: all
     live_url: https://calcofi.io/calcofi4r/
     source_url: https://github.com/CalCOFI/calcofi4r
@@ -325,6 +405,7 @@ products:
     uptime: calcofi4db
     usage: calcofi4db
     section: build
+    tab: build
     datasets: all
     live_url: https://calcofi.io/calcofi4db/
     source_url: https://github.com/CalCOFI/calcofi4db
@@ -341,6 +422,7 @@ products:
     uptime: calcofi4py
     usage: calcofi4py
     section: access
+    tab: packages
     datasets: all
     live_url: https://calcofi.io/calcofi4py/
     source_url: https://github.com/CalCOFI/calcofi4py
@@ -358,6 +440,7 @@ products:
     uptime: db-query
     usage: db-query
     section: access
+    tab: services
     datasets: all
     live_url: https://calcofi.io/db-query/
     source_url: https://github.com/CalCOFI/db-query
@@ -374,6 +457,7 @@ products:
     uptime: db-schema
     usage: db-schema
     section: build
+    tab: build
     datasets: all
     live_url: https://calcofi.io/db-schema/
     source_url: https://github.com/CalCOFI/db-schema
@@ -389,6 +473,7 @@ products:
     uptime: workflows
     usage: workflows
     section: build
+    tab: build
     datasets: all
     live_url: https://calcofi.io/workflows/
     source_url: https://github.com/CalCOFI/workflows
@@ -399,12 +484,16 @@ products:
       versioned database — the pipeline behind every release.
     tech: [R, Quarto, DuckDB, Parquet]
 
+  # DOCS is the header's own word since 2026-09-10 (D7): the product keeps its key, its uptime and
+  # analytics slugs and its `added:` — the ship's log and the three-slug contract are untouched —
+  # but it sits in the `docs` (kind: page) section, so the Build grid draws three cards and the
+  # book is reached from the header instead.
   - key: docs
     added: 2026-06-10
     title: docs
     uptime: docs
     usage: docs
-    section: build
+    section: docs
     datasets: all
     live_url: https://calcofi.io/docs/
     source_url: https://github.com/CalCOFI/docs
@@ -430,6 +519,7 @@ products:
     uptime: ucla-monitoring-map
     usage: ucla-monitoring-map
     section: students
+    tab: student
     lenses: [hexagons]
     live_url: https://calcofi.io/2026-ucla-cal-ocean-coastal-monitoring-map/
     source_url: https://github.com/CalCOFI/2026-ucla-cal-ocean-coastal-monitoring-map
@@ -450,6 +540,7 @@ products:
     uptime: ucsb-larvae-dashboard
     usage: ucsb-larvae-dashboard
     section: students
+    tab: student
     datasets: [swfsc_ichthyo]
     status: archived   # GitHub repo archived 2026-07-29; the site keeps serving
     live_url: https://app.calcofi.io/2026-ucsb-larvae-dashboard/
@@ -470,6 +561,7 @@ products:
     uptime: ucsb-station-portal
     usage: ucsb-station-portal
     section: students
+    tab: student
     lenses: [stations]
     datasets: [cce-lter_euphausiids, cce-lter_zoodb]
     status: archived
@@ -492,6 +584,7 @@ products:
     uptime: marmam
     usage: marmam
     section: students
+    tab: student
     status: archived   # GitHub repo archived 2026-07-29; the site keeps serving
     live_url: https://app.calcofi.io/marmam/
     source_url: https://github.com/CalCOFI/marmam-app
@@ -507,6 +600,7 @@ products:
     added: 2026-07-14
     title: 75th Anniversary Timeline
     section: students
+    tab: student
     live_url: https://cdn.knightlab.com/libs/timeline3/latest/embed/index.html?source=12x10Qrf0UAyUT2BQ_TA3wTDgQJHYqov0fEQV42VtByU&font=Default&lang=en
     source_url: https://docs.google.com/spreadsheets/d/12x10Qrf0UAyUT2BQ_TA3wTDgQJHYqov0fEQV42VtByU/edit?usp=sharing
     img: images/calcofi-75th-timeline.png
@@ -526,6 +620,7 @@ products:
     uptime: hypoxia-story
     usage: hypoxia-story
     section: students
+    tab: student
     datasets: [calcofi_bottle]
     status: archived   # GitHub repo archived 2026-07-29; the site keeps serving
     live_url: https://calcofi.io/hypoxia-story/
@@ -543,6 +638,7 @@ products:
     added: 2026-07-14
     title: Offshore Wind Monitoring
     section: students
+    tab: student
     live_url: https://elizathomas.shinyapps.io/california_ofw_monitoring/
     img: images/offshore-wind-monitoring.png
     description: >-
@@ -560,6 +656,7 @@ products:
     uptime: saferseafood
     usage: saferseafood
     section: students
+    tab: student
     status: archived   # GitHub repo archived 2026-07-29; the site keeps serving
     live_url: https://app.calcofi.io/SaferSeafood/
     source_url: https://github.com/CalCOFI/SaferSeafood
@@ -577,6 +674,7 @@ products:
     uptime: capstone
     usage: capstone
     section: students
+    tab: student
     datasets: [calcofi_bottle]
     status: archived
     live_url: https://app.calcofi.io/capstone/

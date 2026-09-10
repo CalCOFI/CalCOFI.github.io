@@ -80,7 +80,9 @@ the numbers band         77 years · 842 cruises · 218 stations · 1,008 specie
                          collapses; nothing is typed.
 the bento                a 6-column grid on 25 px rows: Where (the static map), When (the strip), Latest release, the
                          ship's log, Explore, Get the data (five snippets behind radio-input tabs, no script) and
-                         Life (the species count, linking `/species/`). No tile ends in a button: the one CTA is the hero's; every tile ends
+                         What's observed (2026-09-10, was Life: two counted rows — the species count linking
+                         `/species/`, the measurements count linking `/measurements/` — each with its glyphs and its
+                         door). No tile ends in a button: the one CTA is the hero's; every tile ends
                          in an uppercase text link. The Explore cell is not tile markup — it is the SAME
                          _includes/product_card.html the Explore section below renders for the `explore` product, so
                          the tile and the card cannot drift; .t-exp-cell only fits it to the tile. The row unit is
@@ -106,6 +108,85 @@ copy clear of the ship's bounding box and above the surface; no tile drawn > 1.2
 six numbers on the band equal the inline record's; the strip has one row per dataset and the map one
 mark per cell; nothing on the first screen computes to `--warn` but the CTA; every pin's calcofi.org
 page answers a ranged GET. Lighthouse accessibility is 100 on `/` and `/news/` in both themes.
+
+### Six words, tabs, and one search over the three indexes
+
+Since 2026-09-10 (plan `2026-09-10 Measurements catalog …` § D7, Ben's scheme) the navigation is six
+words and an outbound link — **DATA · APPS · ACCESS · BUILD · DOCS · NEWS · calcofi.org ↗**, seven
+items, all of them generated from the one `sections:` list in `_data/products.yml`. A section is a
+`kind: section` (drawn on this page under its own anchor) or a `kind: page` (a header link to its
+`url:` and nothing else — that is what DOCS and NEWS are). The section ids `datasets`, `explore`,
+`access` and `build` did not change, so every anchor anyone has bookmarked still lands; only their
+titles did. `students` is gone as a section: the nine student projects are a tab of APPS. The
+`docs` product keeps its key, its uptime and analytics slugs and its `added:` — the ship's log and
+the three-slug contract are untouched — but its card left the Build grid for the header's word.
+
+**The submenus.** DATA, APPS and ACCESS each list their tabs on hover or focus, with a count pill.
+It is CSS, not a library: the section link is the trigger, `:hover` / `:focus-within` opens it, and
+`assets/tabs.js` blurs the focused link on Escape, which is the whole close. The brand hides
+`.cc-links` under 760 px, so on a phone a tap on the word goes to the section. The whole behaviour
+hangs off **one class** — `cc-submenus` on the `<nav class="cc-links">` in `_layouts/default.html`:
+remove it and the header is flat six words again, with no other edit anywhere (the plan's open
+question 8).
+
+**The tabs.** Every crowded section is tabbed, each tab with a count pill: DATA is *Datasets ·
+Species · Measurements*, APPS is *Explorer · General · Dataset · Student*, ACCESS is *Services ·
+Packages*; BUILD keeps three cards. A tab is declared in `sections[].tabs[]` (`id`, `title`,
+`blurb`, and an optional `count:` naming a catalog number rather than a card count) and a card joins
+one with `tab:` — tab ids are unique across sections, so a panel selects on `tab:` alone.
+`assets/tabs.js` (≤ 110 lines, no dependency) sets `aria-selected`, hides the other panels, moves on
+the arrow keys, writes the selected tab of the DATA tabset into `?tab=` and restores it on load. It
+is loaded **from the head**, deferred: deferred scripts run in document order and `assets/catalog.js`
+rewrites the URL from the dataset filters on load, dropping every parameter it does not own, so
+`?tab=` has to be read before that happens. (For the same reason, touching a catalog filter drops
+`?tab=` from the address bar — the tab itself does not change.) With JS off the first panel is the
+one that shows: the panels are rendered with `hidden` already set by Liquid.
+
+**One search, three indexes.** The box above the DATA tabs searches datasets, species and
+measurements at once. `assets/door-search.js` fetches `/datasets/search.json`, `/species/search.json`
+and `/measurements/search.json` **once, on the first focus** — never at load, so the first paint is
+untouched — and a record that 404s simply contributes no group. Results are grouped, four per group,
+with an "all *n* in …" row to that group's catalog; Enter opens the first hit, Escape closes, arrow
+keys walk the list. `species/search.json` is built by Liquid straight from the release's own
+`taxa.json`, so it is the same record `/species/` is drawn from. `measurements/search.json` is a
+**bridge stub** built from the release's own `coverage.json` (`variables[realm == "env"]`) until a
+release carries `measurements.json`; when `_plugins/measurements.rb` ships it writes that URL and
+the stub file must be deleted — a generated page and a source page of one permalink collide.
+
+**The two catalogs' counts, and where each comes from.** Nothing on the door is typed:
+
+```
+16 datasets          site.data.catalog.counts.datasets            the release record
+1,008 species        numbers.species_fmt                          coverage.json taxa[] at rank Species
+79 measurements      numbers.measurements_keys_fmt                coverage.json variables[realm == env],
+                                                                  counted as DISTINCT (variable ∥ measurement_type)
+84 series            numbers.measurements_series_fmt              the same rows, counted
+5 datasets           numbers.measurements_datasets                their distinct dataset_key
+25.0 M · 316 M       numbers.measurements_env_m · measurements_m  catalog.json obs_env · + the two full-res tables
+1949 → 2026          numbers.measurements_year_{min,max}          the same rows' year_min / year_max
+17 · 1 4 3 9 · 3 2   how many products carry that `tab:`          products.yml
+```
+
+`variable` is the crosswalk column: where the registry assigns one (the five unified pairs the
+Explorer carries — temperature, salinity, oxygen ml/L, oxygen µmol/kg, sigma-theta) its two series
+are one measurement, which is why v2026.09.06 reads **79 measurements in 84 series**. A count the
+build cannot read collapses its pill, its tile row and its door rather than being invented.
+
+**Where a door leads when the catalog does not exist.** `/species/` exists only where the release
+carries `taxa.json`; `/measurements/` only where it carries `measurements.json`. Without the record
+the band tile, the Observed row, the realm door and the tab all fall back to the Explorer —
+`…/explore/` for organisms, `…/explore/?var=temperature` for measurements — so a door always leads
+somewhere true.
+
+**Also checked** by `check_layout.py`, in both themes at 1470 and 375: the header reads exactly those
+seven words; each submenu is closed until focused, opens on focus, closes on Escape, and every item
+carries a count; the section bar reads DATA · APPS · ACCESS · BUILD, each counted; every tabset has
+exactly one selected tab and one drawn panel, and a card tabset's pill equals the cards in its panel;
+the band's species and measurements numbers are links; the Observed tile draws both rows and spills
+nothing; the search returns a Species group for "sardine", a Measurements group for "nitrate" and a
+Datasets group for "CUFES"; and the DATA section is no more than 120 px taller than it was before the
+tabs (`DATA_SECTION_BASE`, measured on main, is re-stated in the script whenever the furniture
+changes).
 
 ## News — where an entry comes from and when it appears
 
