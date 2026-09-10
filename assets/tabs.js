@@ -116,4 +116,29 @@
     var el = document.activeElement;
     if (el && el.closest && el.closest(".cc-links .cc-m")) el.blur();
   });
+
+  // the phone menu (Ben, 2026-09-10): under 480 px the brand hides .cc-links; the hamburger in the
+  // icon cluster toggles one class on the header and the CSS shows the same nav as a column. A tap
+  // on any link closes it (the page jumps to the section), Escape closes it and returns focus to
+  // the button, and growing past the breakpoint closes it so the desktop header is never stale.
+  var header = document.querySelector(".cc-header");
+  var burger = header && header.querySelector(".cc-menu-button");
+  if (header && burger) {
+    var setNav = function (open) {
+      header.classList.toggle("cc-nav-open", open);
+      burger.setAttribute("aria-expanded", open ? "true" : "false");
+      burger.setAttribute("aria-label", open ? "Close the menu" : "Open the menu");
+    };
+    burger.addEventListener("click", function () { setNav(!header.classList.contains("cc-nav-open")); });
+    header.addEventListener("click", function (e) {
+      var a = e.target && e.target.closest && e.target.closest(".cc-links a");
+      if (a && header.classList.contains("cc-nav-open")) setNav(false);
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && header.classList.contains("cc-nav-open")) { setNav(false); burger.focus(); }
+    });
+    window.addEventListener("resize", function () {
+      if (window.innerWidth >= 480 && header.classList.contains("cc-nav-open")) setNav(false);
+    });
+  }
 })();
