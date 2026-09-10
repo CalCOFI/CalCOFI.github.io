@@ -55,6 +55,7 @@ jobs:
           DATASETS_RELEASE_URL: ${{ inputs.datasets_release_url || vars.DATASETS_RELEASE_URL }}
           # the species catalog's record, the same bridge one release behind (plan 2026-09-09 § D7)
           TAXA_RELEASE_URL: ${{ vars.TAXA_RELEASE_URL }}
+          MEASUREMENTS_RELEASE_URL: ${{ vars.MEASUREMENTS_RELEASE_URL }}
 
       - name: Build with Jekyll
         run: bundle exec jekyll build

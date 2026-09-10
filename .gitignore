@@ -18,3 +18,5 @@ _data/release_anchors.json
 _data/release_coverage.json
 _data/taxa.json
 _data/erddap_taxon_key.json
+_data/measurements.json
+_data/erddap_measurement_type.json

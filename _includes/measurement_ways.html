@@ -1,0 +1,18 @@
+{%- comment -%}
+  The ways in: ONE row per endpoint, its URL on its own full-width mono line (assets/measurements.js
+  elides it from the middle when it does not fit, so the tail — the measurement the tool opens on —
+  survives a phone). Every tool opens PREFILLED: the Explorer on this key where the release's
+  coverage lists it, db-query with the query already in the shell, ERDDAP constrained per series
+  where the server carries a measurement_type column.
+
+  include measurement_ways.html ways=page.ways
+{%- endcomment -%}
+<ul class="mm-ways">
+  {%- for w in include.ways -%}
+  <li class="mm-way">
+    <div class="mm-l1"><b>{{ w.name | escape }}</b>{% if w.about %}<span>{{ w.about | escape }}</span>{% endif %}</div>
+    {%- if w.url %}<a class="mm-url" href="{{ w.url }}" rel="external">{{ w.url }}</a>{% endif -%}
+    {%- if w.code %}<pre>{{ w.code | escape }}</pre>{% endif -%}
+  </li>
+  {%- endfor -%}
+</ul>
