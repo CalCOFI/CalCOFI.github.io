@@ -551,6 +551,8 @@ Explorer link where it does not; underneath, a folded **Full resolution only · 
 series that are not canonical for any key and ride the supplemental table instead (21 on the CTD
 page, 37 on METS).
 
+The index opens with the overview — the category × dataset matrix and the datasets list — then the search, the category chips and the timeline they summarise (Ben, 2026-09-10). Its head states the count the way it works: a measurement is one quantity under one name, two datasets' series are one measurement only where they share a NERC P01 concept for the same kind of sample (the unified keys are listed and linked), and how many measurements carry a NERC concept at all — every number from the record. The machine-readable sentence on each catalog index (`/datasets/`, `/species/`, `/measurements/`) is a `.cc-aside`: small print in the muted colour behind a hairline.
+
 **The index's figures, and its two switches** (`assets/measurements.js`, no library). The
 **timeline** is one row per measurement, grouped under its category, with one bar per series laid on
 a 1949 → release-year axis (decade ticks in the header row, two series stacked thin), then units ·

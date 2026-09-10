@@ -52,7 +52,16 @@ module CalCOFI
     end
 
     def release      = rec["release"] || {}
-    def counts       = rec["counts"] || {}
+    # the record's counts plus three the head's copy needs, so "79 measurements" reads as the TOTAL
+    # and the NERC-keyed count as a part of it (Ben, 2026-09-10): how many keys unify two datasets'
+    # series (the same NERC P01 concept for the same kind of sample), how many carry a concept at
+    # all, and how many carry none and keep their own names
+    def counts
+      @counts ||= (rec["counts"] || {}).merge(
+        "n_unified" => measurements.count { |m| m["is_unified"] },
+        "n_p01"     => measurements.count { |m| Fmt.present(m["nerc_p01"]) },
+        "n_no_p01"  => measurements.count { |m| !Fmt.present(m["nerc_p01"]) })
+    end
     def measurements = @measurements ||= rec["measurements"] || []
     def datasets     = @datasets ||= rec["datasets"] || []
     def abs(path)    = "#{@base}#{path}"
@@ -643,6 +652,10 @@ module CalCOFI
                                  "full_rows_m"    => Fmt.millions(mm.counts["full_rows"])),
         "datasets"   => inline["ds"],
         "categories" => inline["cats"],
+        # the keys that unify two datasets' series, for the head's one sentence on how the count works
+        "unified"    => mm.measurements.select { |m| m["is_unified"] }
+                          .map { |m| { "key" => m["key"], "label" => mm.heading(m), "url" => mm.page_url(m),
+                                       "n_series" => (m["series"] || []).size } },
         "jsonld"     => JSON.pretty_generate(mm.index_jsonld),
         # measurement_type => the slug of the page it belongs to, so a dataset page can link the
         # variables in its Coverage list to pages that EXIST without guessing the key rule

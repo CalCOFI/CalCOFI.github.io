@@ -22,8 +22,8 @@ layout: default
       <p class="cc-lede cc-prose">Every organism CalCOFI has counted, from the diatoms of the phytoplankton slides
         to the whales of the Farallon census, keyed to one accepted name so the same species means the same thing in
         every dataset. Search it, walk the tree, or start from a dataset — every taxon has its own page, and the
-        {{ c.taxa_observed }} observed carry {{ c.ancestors }} ancestors that roll them up.
-        The machine-readable form is one JSON per taxon (<span class="mono">/species/{slug}.json</span>) and
+        {{ c.taxa_observed }} observed carry {{ c.ancestors }} ancestors that roll them up.</p>
+      <p class="cc-aside">The machine-readable form is one JSON per taxon (<span class="mono">/species/{slug}.json</span>) and
         <a href="{{ '/species/sitemap.xml' | relative_url }}">sitemap.xml</a>.</p>
       <dl class="sp-counts">
         <div><dd class="tab">{{ c.species_observed }}</dd><dt>species</dt></div>
