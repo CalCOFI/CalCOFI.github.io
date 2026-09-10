@@ -22,7 +22,9 @@
         series <code>{{ d.type | escape }}</code>
         {%- if d.source_column %} · source column <code>{{ d.source_column | escape }}</code>{% endif -%}
         {%- if d.qual_column %} · flag column <code>{{ d.qual_column | escape }}</code>{% endif -%}
-        {%- if d.units and d.units != page.units %} · <span class="mono">{{ d.units | escape }}</span>{% endif -%}
+        {%- comment -%} the unit is written the way a reader writes it (Fmt.units); the registry's
+          own ASCII spelling stays in the title and in the ids line above {%- endcomment -%}
+        {%- if d.units and d.units != page.units %} · <span class="mono" title="{{ d.units_raw | escape }} in metadata/measurement_type.csv">{{ d.units | escape }}</span>{% endif -%}
         {%- for c in d.chips %} <span class="cc-chip cc-chip-na" title="{{ c.title | escape }}">{{ c.label | escape }}</span>{% endfor -%}
       </div>
       {%- comment -%} the series' own registry description, only where it says something the title

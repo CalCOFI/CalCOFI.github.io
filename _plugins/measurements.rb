@@ -163,7 +163,7 @@ module CalCOFI
       rows << { "dd" => Fmt.num(t["n_values"]), "dt" => "values",
                 "title" => "rows of obs_env — one measurement × one sample" } if t["n_values"]
       if t["n_roots"]
-        rows << { "dd" => Fmt.num(t["n_roots"]), "dt" => "sampling roots",
+        rows << { "dd" => Fmt.num(t["n_roots"]), "dt" => "sampling events",
                   "title" => "the cast, tow or underway record each sample belongs to (sample_root) — " \
                              "#{Fmt.num(t['n_samples'])} samples hang from them; the record does not say " \
                              "which KIND of root, so this page does not say \"casts\"" }
@@ -205,10 +205,11 @@ module CalCOFI
           "type"   => s["measurement_type"],
           "source_column" => Fmt.present(s["source_column"]),
           "qual_column"   => Fmt.present(s["qual_column"]),
-          "units"  => Fmt.present(s["units"]),
+          "units"  => Fmt.units(s["units"]),
+          "units_raw" => Fmt.present(s["units"]),
           "desc"   => Fmt.present(s["description"]),
           "meta"   => [Fmt.num(s["n_values"]) && "#{Fmt.num(s['n_values'])} values",
-                       s["n_roots"] && "#{Fmt.num(s['n_roots'])} sampling roots",
+                       s["n_roots"] && "#{Fmt.num(s['n_roots'])} sampling events",
                        span(s["year_min"], s["year_max"]),
                        depth_txt(s["depth_min_m"], s["depth_max_m"]),
                        s["n_cells"] && "#{Fmt.num(s['n_cells'])} grid cells",
@@ -246,7 +247,7 @@ module CalCOFI
     def bounds_row(m)
       b = m["bounds"] || {}
       lo, hi = b["valid_min"], b["valid_max"]
-      units = Fmt.present(m["units"])
+      units = Fmt.units(m["units"])
       by = (b["declared_by"] || []).join(" · ")
       if lo.nil? && hi.nil?
         { "dt" => "bounds",
@@ -267,7 +268,7 @@ module CalCOFI
         next if o["min"].nil? && o["max"].nil?
         "#{CGI.escapeHTML(ds_name(s['dataset_key']))} <code>#{CGI.escapeHTML(s['measurement_type'].to_s)}</code> " \
           "#{numfmt(o['min'])} · median #{numfmt(o['p50'])} · #{numfmt(o['max'])}" \
-          "#{Fmt.present(s['units']) ? " #{CGI.escapeHTML(s['units'])}" : ''} " \
+          "#{Fmt.units(s["units"]) ? " #{CGI.escapeHTML(Fmt.units(s["units"]))}" : ""} " \
           "(5th–95th percentile #{numfmt(o['p05'])}–#{numfmt(o['p95'])})"
       end
     end
@@ -278,7 +279,7 @@ module CalCOFI
       b = m["bounds"] || {}
       bounded = !(b["valid_min"].nil? && b["valid_max"].nil?)
       return [] unless bounded
-      units = Fmt.present(m["units"])
+      units = Fmt.units(m["units"])
       (m["series"] || []).filter_map do |s|
         o = s["out_of_bounds"] || {}
         n = o["n"].to_i
@@ -512,7 +513,8 @@ module CalCOFI
           # `base + key + "/"` and 79 rows do not repeat their own key twice
           "rows"   => measurements.map do |m|
             { "k"  => m["key"], "l" => heading(m), "c" => m.dig("category", "name"),
-              "u"  => Fmt.present(m["units"]), "p" => m["nerc_p01"] && nerc_id(m["nerc_p01"]),
+              "u"  => Fmt.units(m["units"]), "ur" => Fmt.present(m["units"]),
+              "p" => m["nerc_p01"] && nerc_id(m["nerc_p01"]),
               "un" => m["is_unified"] ? 1 : nil,
               "cl" => m["climatology"] ? 1 : nil,
               "t"  => { "n" => m.dig("totals", "n_values"), "y0" => m.dig("totals", "year_min"),
@@ -539,7 +541,7 @@ module CalCOFI
       measurements.map do |m|
         t = m["totals"] || {}
         dsn = (m["series"] || []).map { |s| ds_name(s["dataset_key"]) }.uniq
-        hay = ([heading(m), m["key"], m["description"], m["units"],
+        hay = ([heading(m), m["key"], m["description"], m["units"], Fmt.units(m["units"]),
                 m["nerc_p01"] && nerc_id(m["nerc_p01"]), m.dig("category", "name")] +
                series_types(m) + dsn +
                (m["series"] || []).map { |s| s["dataset_key"] }).compact.join(" ").downcase
@@ -711,7 +713,8 @@ module CalCOFI
         "sub"         => mm.subtitle(m),
         "no_label"    => mm.no_label?(m),
         "category"    => m.dig("category", "name"),
-        "units"       => Fmt.present(m["units"]),
+        "units"       => Fmt.units(m["units"]),
+        "units_raw"   => Fmt.present(m["units"]),
         "is_unified"  => m["is_unified"],
         "ids"         => id_rows(mm, m),
         "stats"       => mm.stat_rows(m),

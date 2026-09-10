@@ -1192,6 +1192,9 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 .mm-page-body .mm-col-main > .cc-h3:first-child, .mm-page-body .mm-col-ways > .cc-h3:first-child { margin-top: 0; }
 .mm-note { font-size: var(--fs-sm); color: var(--muted); max-width: 80ch; margin: var(--space) 0 0; }
 .mm-note .mono, .mm-note code { font-family: var(--mono); font-size: 0.92em; }
+/* a link inside a MUTED note is 1.16:1 against the prose around it, so colour cannot be what
+   marks it as a link (Lighthouse's link-in-text-block, measured 2026-09-10): underline it. */
+.mm-note a { text-decoration: underline; text-underline-offset: 2px; }
 
 /* one row per SERIES: the dot in the record's colour, the dataset's NAME always beside it */
 .mm-dsrows { list-style: none; margin: var(--space) 0 0; padding: 0; }
@@ -1236,11 +1239,82 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
    an undrawn <svg> is 300 x 150 by the CSS default, which would leave a hole on every page read
    without JS (the `[viewBox]` trap the species strip hit on 2026-09-09: an attribute selector is
    lowercased in an HTML document and never matches SVG's camelCase attribute). */
-.mm-strip { display: none; width: 100%; height: auto; margin: var(--space) 0 0; }
+.mm-strip-wrap { overflow-x: auto; margin: var(--space) 0 0; }
+.mm-strip { display: none; width: 100%; min-width: 620px; height: auto; }
 .mm-strip.mm-drawn { display: block; }
 .mm-strip text { font: 11px var(--mono); fill: var(--muted); }
-.mm-bars, .mm-mstrip, .mm-tl, .mm-matrix, .mm-dslist { margin: var(--space) 0 0; }
+.mm-strip .mm-rl { font: 600 12px var(--sans); fill: var(--fg); }
+
+/* by depth: eight bands, one thin bar per series, the end label kept INSIDE the column (the
+   .mm-pair right padding is what keeps a "884 k" from hanging off the page at 375 px) */
+.mm-bars { display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 6px 10px; align-items: center; font-size: 12.5px; margin: var(--space) 0 0; }
+.mm-bars .mm-lb { font: 12px var(--mono); color: var(--muted); text-align: right; white-space: nowrap; }
+.mm-bars .mm-pair { display: flex; flex-direction: column; gap: 2px; padding-right: 58px; }
+.mm-bars .mm-b { height: 8px; border-radius: 2px; position: relative; min-width: 2px; }
+.mm-bars .mm-b span { position: absolute; left: calc(100% + 6px); top: -4px; font: 11px var(--mono); color: var(--muted); white-space: nowrap; }
+
+/* by month: 12 cells per series, the letters below */
+.mm-mstrip { display: grid; grid-template-columns: 108px repeat(12, minmax(0, 1fr)); gap: 3px; align-items: center; margin: var(--space) 0 0; font-size: 12px; }
+.mm-mstrip .mm-lb2 { font: 600 12px var(--sans); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 6px; }
+.mm-mstrip .mm-lb2 .mm-dot { margin-top: 0; flex: none; }
+.mm-mstrip .mm-c { height: 20px; border-radius: 3px; }
+.mm-mstrip .mm-ml { font: 11px var(--mono); color: var(--muted); text-align: center; }
+
+/* ── the index's figures ─────────────────────────────────────────────────────────────────── */
+.mm-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12.5px; color: var(--fg); align-items: center; }
+.mm-legend span { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.mm-legend .mm-dot { margin-top: 0; }
+.mm-chips button .mm-n { font-weight: 400; margin-left: 4px; }
+
+/* the timeline: one row per measurement, one bar per series, on a 1949 → release-year axis.
+   It is WIDER than a phone on purpose (a 78-year axis is not legible at 300 px), so its own
+   container scrolls sideways and the page does not. */
 .mm-tl-scroll { overflow-x: auto; }
+.mm-tl { min-width: 900px; display: grid; grid-template-columns: minmax(190px, 1.5fr) 78px minmax(300px, 3fr) minmax(110px, 1fr) 74px 92px; align-items: center; font-size: 14px; }
+.mm-trow { display: contents; }   /* the row is ARIA's, the grid is the cells' */
+.mm-tl > .mm-trow > div { padding: 5px 10px; border-top: 1px solid var(--border); min-width: 0; }
+.mm-tl .mm-trow > .mm-hd { position: sticky; top: 0; background: var(--panel-2); border-top: 0; font: 700 11px var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); padding: 10px; z-index: 2; }
+.mm-tl .mm-trow > .mm-cat { grid-column: 1 / -1; background: var(--band, var(--panel)); padding: 8px 10px; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
+.mm-tl .mm-cat b { font: 700 12.5px var(--sans); letter-spacing: 0.06em; text-transform: uppercase; }
+.mm-tl .mm-cat span { font-size: 12.5px; color: var(--muted); }
+.mm-tl .mm-nm a { font-weight: 600; }
+.mm-tl .mm-k { display: block; font: 11.5px var(--mono); color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mm-tl .mm-u, .mm-tl .mm-v, .mm-tl .mm-dp { font: 12.5px var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mm-tl .mm-v { color: var(--fg); text-align: right; }
+.mm-tl .mm-ds { font-size: 12.5px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 2px 8px; }
+.mm-tl .mm-ds span { white-space: nowrap; }
+.mm-tl .mm-ds .mm-dot { margin: 0 4px 0 0; width: 8px; height: 8px; }
+.mm-tl-empty { grid-column: 1 / -1; padding: 16px; color: var(--muted); }
+.mm-track { position: relative; height: 24px; }
+.mm-track .mm-tick { position: absolute; top: 0; bottom: 0; border-left: 1px solid var(--border); }
+.mm-track .mm-tick.mm-maj { border-left-color: var(--cc-stone, var(--muted)); }
+.mm-track .mm-bar { position: absolute; height: 7px; border-radius: 2px; box-shadow: 0 0 0 1px var(--panel-2); }
+.mm-track .mm-bar.mm-b1 { top: 8px; }
+.mm-track .mm-bar.mm-b2a { top: 4px; }
+.mm-track .mm-bar.mm-b2b { top: 13px; }
+.mm-tl .mm-hd .mm-track { height: 18px; }
+.mm-tl .mm-hd .mm-yl { position: absolute; top: 0; transform: translateX(-50%); font: 600 10.5px var(--mono); color: var(--muted); letter-spacing: 0; text-transform: none; }
+
+/* the matrix: ONE sequential ramp (--accent into --bg), the count in every cell */
+.mm-matrix { overflow-x: auto; }
+.mm-mx { display: grid; gap: 3px; align-items: stretch; min-width: 460px; }
+.mm-mh { font: 600 11.5px/1.15 var(--sans); color: var(--muted); display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 6px; height: 104px; padding-bottom: 4px; text-align: center; }
+.mm-mh .mm-vt { writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; }
+.mm-mh i { display: block; width: 10px; height: 10px; border-radius: 50%; }
+.mm-mh.mm-first { align-items: flex-start; justify-content: flex-end; height: auto; }
+.mm-rl2 { font-size: 12.5px; line-height: 1.15; padding: 0 8px 0 0; display: flex; flex-direction: column; justify-content: center; min-width: 0; }
+.mm-rl2 small { color: var(--muted); font-size: 10.5px; letter-spacing: 0.04em; text-transform: uppercase; }
+.mm-cell { height: 30px; border-radius: 3px; display: flex; align-items: center; justify-content: center; font: 600 12.5px var(--mono); font-variant-numeric: tabular-nums; color: var(--fg); background: var(--panel); }
+.mm-cell.mm-z { background: transparent; border: 1px dashed var(--border); color: transparent; }
+.mm-ramp { display: flex; align-items: center; gap: 10px; margin: 10px 0 0; font-size: 12px; color: var(--muted); }
+.mm-ramp i { height: 10px; width: 110px; border-radius: 3px; background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 8%, var(--bg)), var(--accent)); }
+
+/* the datasets list */
+.mm-dslist li { display: grid; grid-template-columns: 14px minmax(0, 1fr); gap: 10px; padding: 8px 0; border-top: 1px solid var(--border); align-items: start; font-size: 14px; }
+.mm-dslist li:first-child { border-top: 0; }
+.mm-dslist .mm-dot { margin-top: 6px; }
+.mm-dslist .mm-dscat { font-size: 13px; }
+.mm-dslist .mm-m { display: block; font: 12.5px var(--mono); color: var(--muted); }
 
 /* the index */
 .mm-idx-head .cc-lede { max-width: 78ch; }
@@ -1257,10 +1331,16 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 .mm-pane-h { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 11px 16px 8px; border-bottom: 1px solid var(--border); }
 .mm-pane-h h2 { margin: 0; }
 .mm-hint, .mm-legend { font-size: 12px; color: var(--muted); }
-.mm-pane .mm-tl, .mm-pane .mm-matrix, .mm-pane .mm-dslist { margin: 0; padding: 12px 16px; }
+.mm-pane .mm-matrix, .mm-pane .mm-dslist { margin: 0; padding: 12px 16px 16px; }
+.mm-pane .mm-tl { margin: 0; }
 .mm-dslist { list-style: none; }
-.mm-ttip { position: fixed; z-index: 40; pointer-events: none; opacity: 0; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 8px 10px; font-size: 12.5px; max-width: 340px; box-shadow: var(--shadow, 0 6px 24px rgba(0, 0, 0, 0.18)); }
-.mm-ttip.open { opacity: 1; }
+/* the tooltip is the species index's, one for one: absolute inside the body band, hidden until a
+   mark is hovered, and never the only place a fact lives — every mark carries the same text as its
+   `title`, so a reader without a mouse still gets it */
+.mm-body { position: relative; }
+.mm-ttip { position: absolute; z-index: 30; pointer-events: none; background: var(--fg); color: var(--bg); font: 13px/1.35 var(--sans); padding: 8px 10px; border-radius: 6px; max-width: 320px; box-shadow: 0 4px 18px rgb(0 0 0 / 25%); display: none; }
+.mm-ttip b { display: block; }
+.mm-ttip .mm-d { display: block; opacity: 0.85; }
 
 @media (max-width: 900px) {
   .mm-cols2 { grid-template-columns: minmax(0, 1fr); }

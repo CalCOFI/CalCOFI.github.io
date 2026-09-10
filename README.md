@@ -551,6 +551,37 @@ Explorer link where it does not; underneath, a folded **Full resolution only · 
 series that are not canonical for any key and ride the supplemental table instead (21 on the CTD
 page, 37 on METS).
 
+**The index's figures, and its two switches** (`assets/measurements.js`, no library). The
+**timeline** is one row per measurement, grouped under its category, with one bar per series laid on
+a 1949 → release-year axis (decade ticks in the header row, two series stacked thin), then units ·
+datasets (dot **and name**) · values · depth range; hovering a bar gives the dataset, the series and
+its description, years, values, sampling events, samples, depths, source column, flag column and
+P01 — the same text is the bar's `title` and `aria-label`, so it is there without a mouse. It is
+`role="table"` with `role="row"` wrappers that are `display: contents`, so the CSS grid lays out one
+grid while the accessibility tree gets a real table. Being 78 years wide it is **wider than a
+phone on purpose**: its own container scrolls sideways and the page never does. Beside it the
+**category × dataset matrix** (the cell is how many measurements that dataset carries in that
+category, one sequential ramp of `--accent` into `--bg`, capped at 45 % so the count stays in a text
+token at ≥ 4.5:1) and **the datasets** list (dot · name · category · realm note · series · years ·
+values · how many series are full-resolution only).
+
+Two switches, both written to the URL with `history.replaceState` and read back on load:
+
+| parameter | what it does |
+|---|---|
+| `?q=` | filters the timeline over the label, the key, the category, the units (either spelling), the P01 id, and every series' `measurement_type`, source column, flag column, description and dataset name. The live count beside the box reads *n of 79*. |
+| `?cat=` | the pressed category chip (the exact category name, e.g. `?cat=Nutrients+%26+Chemistry`); the chips are buttons with `aria-pressed`, each carrying its count. A measurement page's crumb links back with it. |
+
+**A measurement page's three figures** read the inline JSON beside them, one row per SERIES: the
+**years strip** (`#mm-strip-data` → `#mm-strip`, an `<svg>` on the mock's geometry — a 150 px label
+gutter, an 8 px year cell, a 22 px row — that scrolls inside its own box below ~620 px rather than
+shrinking its labels away; opacity is √(n / that row's maximum)), the **depth bars**
+(`#mm-depth-data` → `#mm-depth`, the record's own bands, one thin bar per series, the end label kept
+inside the column) and the **month strip** (`#mm-months-data` → `#mm-months`, twelve cells per
+series with the letters below). Each adds `.mm-drawn` when it has drawn — the CSS hides an undrawn
+`<svg>`, because an undrawn one is 300 × 150 by the CSS default and `:not([viewBox])` never matches
+in an HTML document.
+
 **The inline JSON.** `/measurements/` inlines **one** payload (31 KB): every key with its label,
 category, units, P01 and totals, and every series with its dataset index, spans, depths, columns and
 flags — the timeline, the matrix, the datasets list and the search all read it, so no count can be
@@ -626,10 +657,15 @@ whatever is deployed.
 Accessibility is Lighthouse, not this script, and it is **not in CI**: the five catalog pages in
 both themes measured **106 s** locally (10 s a run, its own Chrome), which is longer than the whole
 PR job and would double it for a number that has not moved since the refresh landed. Run it by hand
-when you change the page's structure — headings, landmarks, labels, a colour — and expect **100**:
+when you change the page's structure — headings, landmarks, labels, a colour — and expect **99**
+on a catalog page: the one audit still open is the shared footer's `<h4>` heading order
+(`_layouts/default.html`), which follows an `<h2>` on every catalog page and so skips a level.
+`/measurements/` scores 99 and `/measurements/temperature/` 98 in both themes (measured
+2026-09-10), against `/species/` 99 and `/species/{slug}/` 95 — the measurement page underlines
+the links inside its muted notes, which is the difference:
 
 ```bash
-for u in / /datasets/ /datasets/calcofi_ctd-cast/ /datasets/swfsc_ichthyo/ /datasets/calcofi_prodo/; do
+for u in / /datasets/ /datasets/calcofi_ctd-cast/ /species/ /measurements/ /measurements/temperature/; do
   for t in light dark; do
     npx lighthouse "http://localhost:4000$u?theme=$t" --only-categories=accessibility \
       --quiet --output=json --chrome-flags="--headless=new" \

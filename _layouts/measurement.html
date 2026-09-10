@@ -30,7 +30,7 @@ layout: default
       <div class="mm-h-main">
         <div class="cc-eyebrow">Measurement
           {%- if page.category %} · {{ page.category | escape }}{% endif -%}
-          {%- if page.units %} · {{ page.units | escape }}{% endif -%}
+          {%- if page.units %} · <span title="{{ page.units_raw | escape }} in metadata/measurement_type.csv">{{ page.units | escape }}</span>{% endif -%}
           {%- if page.is_unified %} · one key across {{ m.series.size }} datasets{% endif -%}
         </div>
         <h1 class="cc-h1">{{ page.h1 | escape }}</h1>
@@ -68,7 +68,11 @@ layout: default
         {% include measurement_rows.html rows=page.ds_rows %}
         {%- comment -%} WS-M4's three figure hosts, each with its own inline JSON: the years strip,
           the depth bars and the month strip, all one row per SERIES {%- endcomment -%}
-        <svg class="mm-strip" id="mm-strip" role="img" aria-label="Values per year in each dataset"></svg>
+        {%- comment -%} the strip is 78 years wide: below ~620 px it scrolls inside its own box
+          rather than shrinking its row labels to nothing (the timeline's rule) {%- endcomment -%}
+        <div class="mm-strip-wrap">
+          <svg class="mm-strip" id="mm-strip" role="img" aria-label="Values per year in each dataset"></svg>
+        </div>
         <p class="mm-note">One row per series, one cell per year, darker with more values — the same strip the front
           door draws per dataset and a species page draws per taxon. Each row is one dataset's own
           <span class="mono">measurement_type</span>; the label is written once, in the title above.</p>

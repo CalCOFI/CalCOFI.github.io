@@ -76,6 +76,23 @@ module CalCOFI
       return v unless v.is_a?(String) && v.include?('\u')
       v.gsub(/\\u([0-9a-fA-F]{4})/) { [Regexp.last_match(1).hex].pack("U") }
     end
+
+    # ── units, as a reader writes them ───────────────────────────────────────
+    # The registries spell a unit in ASCII, because a CSV column is machine-read: `degC`, `umol/kg`,
+    # `uE/m2/s`, `10^-8 m3/kg`. A PAGE writes °C, µmol/kg, µE/m²/s, 10⁻⁸ m³/kg. This is the ONE
+    # display map (plan 2026-09-10, WS-M4): it is applied wherever a unit is SHOWN, and never where
+    # the raw string is the fact — the ids line's P06 row and every `title` keep what the record
+    # says. Nothing else in a unit string is transformed.
+    UNIT_DISPLAY = [
+      [/\bdeg_?C\b/, "°C"], [/\bumol\b/, "µmol"], [/\bug\b/, "µg"], [/\buE\b/, "µE"],
+      [/\bul\b/, "µl"], [/\bum\b/, "µm"], [/m3\b/, "m³"], [/m2\b/, "m²"],
+      ["10^-8", "10⁻⁸"]
+    ].freeze
+
+    def units(v)
+      return nil if blank?(v)
+      UNIT_DISPLAY.reduce(v.to_s) { |s, (from, to)| s.gsub(from, to) }
+    end
   end
 
   # ── the record, wrapped ────────────────────────────────────────────────────
