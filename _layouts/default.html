@@ -97,9 +97,26 @@
         <ul>
           {%- for t in s.tabs -%}
           {%- capture tn %}{% include tab_count.html s=s t=t %}{% endcapture -%}
+          {%- comment -%}
+            A tab whose full listing lives on its own page (Species, Measurements — the homepage only
+            carries their heads) links that page from the header, when the site has its record
+            (`url:` + `data:` on the tab in products.yml; Ben, 2026-09-10). Datasets stays a homepage
+            tab because the whole grid IS on the homepage. Without the record the item falls back to
+            the tab, whose head links the Explorer.
+          {%- endcomment -%}
+          {%- assign t_page = nil -%}
+          {%- if t.url -%}
+            {%- if t.data == nil or site.data[t.data] -%}{%- assign t_page = t.url | relative_url -%}{%- endif -%}
+          {%- endif -%}
+          {%- if t_page -%}
+          <li><a href="{{ t_page }}">{{ t.title }}
+            {%- if tn != "" %}<span class="pill">{{ tn }}</span>{% endif -%}
+          </a></li>
+          {%- else -%}
           <li><a href="{{ '/' | relative_url }}#{{ s.id }}" data-go="{{ s.id }}:{{ t.id }}">{{ t.title }}
             {%- if tn != "" %}<span class="pill">{{ tn }}</span>{% endif -%}
           </a></li>
+          {%- endif -%}
           {%- endfor -%}
         </ul>
       </span>

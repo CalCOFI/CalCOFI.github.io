@@ -242,7 +242,7 @@ SELECT * FROM read_json('{{ rel.catalog_url }}')</pre>
         <a class="cc-text-link obs-more" href="{{ meas_url }}">{% if site.data.measurements %}Browse the measurements →{% else %}Browse them in the Explorer →{% endif %}</a>
       </div>
       {%- endif -%}
-      <p class="tile-cap">Every organism keyed to one accepted WoRMS name (ITIS for birds); every measurement to one name across its datasets, with its NERC P01 concept where one says exactly this.</p>
+      <p class="tile-cap">One accepted name per organism (WoRMS; ITIS for birds) and per measurement, with its NERC concept where one exists.</p>
     </div>
     {%- endif -%}
   </div>

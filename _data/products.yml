@@ -64,10 +64,14 @@ sections:
       - id: species
         title: Species
         count: species
+        url: /species/          # the header links the dedicated page, not the homepage tab (Ben, 2026-09-10)
+        data: species            # …when site.data.species exists; otherwise the tab, as before
         blurb: Every organism counted, in which datasets and years.
       - id: measurements
         title: Measurements
         count: measurements
+        url: /measurements/
+        data: measurements
         blurb: Every ocean variable measured, in which datasets, years and depths.
     # one line: the three ways in are named by the tabs beneath it, each with its own blurb, so the
     # section's own blurb says what the three ARE and gets out of the way (the Data section may not
