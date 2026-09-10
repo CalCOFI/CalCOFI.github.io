@@ -68,7 +68,7 @@
 
     <span class="cc-spacer"></span>
 
-    <nav class="cc-links cc-submenus" aria-label="Sections">
+    <nav class="cc-links cc-submenus" id="cc-nav" aria-label="Sections">
       {%- comment -%}
         Six words and calcofi.org ↗ — DATA · APPS · ACCESS · BUILD · DOCS · NEWS (plan 2026-09-10
         § D7, Ben's scheme). The section list drives the header, so it can never drift from the
@@ -115,6 +115,15 @@
       the reader mark it up, and sends it with the note, the URL, release, viewport and theme to the team.
       An icon button beside the toggle; the footer spells it out.
     {%- endcomment -%}
+    {%- comment -%}
+      The phone menu (Ben, 2026-09-10): the brand hides .cc-links under 480 px, so a hamburger in the
+      icon cluster opens the same nav as a column (style.css § the phone menu; assets/tabs.js toggles
+      `cc-nav-open` on the header). Hidden at every wider width.
+    {%- endcomment -%}
+    <button class="cc-icon-button cc-menu-button" type="button" aria-label="Open the menu" aria-controls="cc-nav" aria-expanded="false">
+      <svg class="cc-menu-icon-open" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+      <svg class="cc-menu-icon-close" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+    </button>
     <button class="cc-icon-button cc-feedback" type="button" aria-label="Send feedback" title="Send feedback — with a screenshot of this view"
       data-endpoint="{{ site.feedback_url }}" data-repo="{{ site.feedback_repo }}" data-release="{{ site.data.catalog.release.version }}" data-app="calcofi-io"><i class="cc-i cc-i-ui-feedback" aria-hidden="true"></i></button>
     <button class="cc-theme-toggle" type="button" aria-label="Toggle dark / light theme">🌓</button>
@@ -139,15 +148,15 @@
       </div>
       <div class="cols">
         <div>
-          <h4 class="cc-h3">Program</h4>
+          <h3 class="cc-h3">Program</h3>
           <p>Erin Satterthwaite<br><a href="mailto:esatterthwaite@ucsd.edu">esatterthwaite@ucsd.edu</a></p>
         </div>
         <div>
-          <h4 class="cc-h3">Technical</h4>
+          <h3 class="cc-h3">Technical</h3>
           <p>Ben Best<br><a href="mailto:ben@oceanmetrics.io">ben@oceanmetrics.io</a></p>
         </div>
         <div>
-          <h4 class="cc-h3">Links</h4>
+          <h3 class="cc-h3">Links</h3>
           <p>
             <a href="https://calcofi.org">CalCOFI.org</a><br>
             <a href="https://github.com/CalCOFI">github.com/CalCOFI</a><br>

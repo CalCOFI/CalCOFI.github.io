@@ -1025,9 +1025,54 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 }
 .cc-header .cc-links.cc-submenus .cc-m ul a:hover,
 .cc-header .cc-links.cc-submenus .cc-m ul a:focus-visible { background: var(--accent-bg); color: var(--accent); text-decoration: none; }
-/* the brand hides .cc-links entirely below 760 px, so a phone tap on the word goes to the
-   section; this is the belt to that braces, for any framework that keeps the nav */
+/* the hover bridge: the submenu floats 10 px under its trigger, and without this the pointer left
+   the group's hover area on its way down, so the menu closed before a click could land (Ben,
+   2026-09-10, live). A transparent strip belonging to the list itself spans the gap: the pointer is
+   always over the group or the list, never over nothing. */
+.cc-header .cc-links.cc-submenus .cc-m > ul::before {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 100%; height: 14px;
+}
+/* on a touch-width screen the submenus stay closed and a tap on the word goes to the section;
+   the phone menu below shows the same items inline instead */
 @media (max-width: 760px) { .cc-header .cc-links.cc-submenus .cc-m > ul { display: none !important; } }
+
+/* ── the phone menu (Ben, 2026-09-10: "there is NO menu in the mobile version") ──────────────
+   The brand hides .cc-links under 480 px (brand/v2/theme.css) and left nothing in its place. A
+   hamburger joins the icon cluster at the right — the lockup stays far left, as the brand contract
+   says — and opens the SAME nav as a column under the header row, each section word with its tab
+   items inline. One class on the header (`cc-nav-open`, assets/tabs.js) is the whole state; no
+   second nav, no framework. */
+.cc-header .cc-menu-button { display: none; }
+.cc-header .cc-menu-button svg { width: 1.25rem; height: 1.25rem; fill: currentColor; }
+.cc-header .cc-menu-button .cc-menu-icon-close { display: none; }
+.cc-header.cc-nav-open .cc-menu-button .cc-menu-icon-close { display: block; }
+.cc-header.cc-nav-open .cc-menu-button .cc-menu-icon-open { display: none; }
+@media (max-width: 479px) {
+  .cc-header { flex-wrap: wrap; }
+  /* the row must hold the lockup and three icon buttons at 375 px; the "CalCOFI.io" title goes on
+     this site alone — its root IS the lockup's, and the brand already hides its subtitle here */
+  .cc-header .cc-title { display: none; }
+  .cc-header .cc-menu-button { display: inline-flex; }
+  .cc-header.cc-nav-open .cc-links {
+    display: flex; flex-direction: column; align-items: stretch; gap: 0;
+    flex-basis: 100%; order: 10; margin: var(--space) 0 0; padding: var(--space) 0 2px;
+    border-top: 1px solid var(--border);
+  }
+  .cc-header.cc-nav-open .cc-links > a,
+  .cc-header.cc-nav-open .cc-links .cc-m > a { display: block; padding: 10px 4px; }
+  .cc-header.cc-nav-open .cc-links .cc-m { display: block; position: static; }
+  .cc-header.cc-nav-open .cc-links.cc-submenus .cc-m > a::after { content: none; }
+  .cc-header.cc-nav-open .cc-links .cc-m > ul,
+  .cc-header.cc-nav-open .cc-links.cc-submenus .cc-m > ul {
+    display: block !important; position: static; margin: -4px 0 6px; padding: 0 0 0 calc(var(--space) * 2);
+    min-width: 0; background: transparent; border: 0; box-shadow: none;
+  }
+  .cc-header.cc-nav-open .cc-links .cc-m > ul::before { content: none; }
+  .cc-header.cc-nav-open .cc-links .cc-m ul a {
+    display: flex; justify-content: space-between; align-items: baseline; gap: 14px;
+    padding: 6px 8px; font-weight: 600; font-size: 14px; letter-spacing: 0; text-transform: none;
+  }
+}
 
 /* the count pill: a number beside a tab or a submenu item, never the only cue */
 .pill {

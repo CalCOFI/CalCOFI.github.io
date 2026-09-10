@@ -254,6 +254,16 @@ PROBE = r"""
       const before = shown();
       if (trig) trig.focus();
       const onFocus = shown();
+      // the hover bridge (Ben, 2026-09-10): the list floats below its trigger, so the gap between the
+      // trigger's bottom and the list's top must be spanned by the list's own ::before strip, or the
+      // pointer leaves the group on its way down and the menu closes before a click lands
+      let gap = null, bridge = null;
+      if (trig && ul && onFocus) {
+        const tr = trig.getBoundingClientRect(), ur = ul.getBoundingClientRect();
+        gap = ur.top - tr.bottom;
+        const b = w.getComputedStyle(ul, "::before");
+        bridge = b && b.content !== "none" ? parseFloat(b.height) || 0 : 0;
+      }
       // Escape closes: assets/tabs.js blurs the focused link, so the :focus-within rule lapses
       d.activeElement && d.activeElement.dispatchEvent(new w.KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
       const afterEsc = shown();
@@ -265,7 +275,7 @@ PROBE = r"""
           pill: (a.querySelector(".pill") || {}).textContent || null,
           go: a.getAttribute("data-go")
         })),
-        closed: !before, opensOnFocus: !!onFocus, closesOnEscape: !afterEsc,
+        closed: !before, opensOnFocus: !!onFocus, closesOnEscape: !afterEsc, gap, bridge,
         haspopup: trig && trig.getAttribute("aria-haspopup") === "true",
         expanded: trig && trig.getAttribute("aria-expanded")
       };
@@ -276,6 +286,26 @@ PROBE = r"""
       visible: cs(nav).display !== "none",
       menus
     };
+  }
+
+  // the phone menu (Ben, 2026-09-10): under 480 px the brand hides .cc-links and the hamburger in the
+  // icon cluster must open the same nav as a column — every word, every submenu inline, no
+  // horizontal scroll while open — and Escape must close it. Measured by clicking the button.
+  const header = d.querySelector(".cc-header"), burger = header && header.querySelector(".cc-menu-button");
+  if (header && burger) {
+    const buttonShown = cs(burger).display !== "none" && burger.getBoundingClientRect().width > 0;
+    let opened = null, expanded = null, wordsOpen = null, subsOpen = null, scrollW = null, closedOnEsc = null;
+    if (buttonShown) {
+      burger.click();
+      opened = header.classList.contains("cc-nav-open") && !!nav && cs(nav).display !== "none";
+      expanded = burger.getAttribute("aria-expanded");
+      wordsOpen = nav ? [...nav.children].filter(el => el.matches("a, .cc-m") && el.getBoundingClientRect().height > 0).length : 0;
+      subsOpen = nav ? [...nav.querySelectorAll(".cc-m > ul")].filter(ul => cs(ul).display !== "none" && ul.getBoundingClientRect().height > 0).length : 0;
+      scrollW = d.documentElement.scrollWidth;
+      d.dispatchEvent(new w.KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+      closedOnEsc = !header.classList.contains("cc-nav-open");
+    }
+    out.phoneMenu = { buttonShown, opened, expanded, wordsOpen, subsOpen, scrollW, closedOnEsc };
   }
 
   // the sticky section bar and the tabsets
@@ -777,8 +807,36 @@ def check(path, r, width, theme, fails, notes):
                     fails.append(f"{where}: the {m['word']!r} submenu's {t['title']!r} does not name a tab (data-go)")
                 if not t["pill"]:
                     fails.append(f"{where}: the {m['word']!r} submenu's {t['title']!r} carries no count")
+            # the hover bridge: the list's ::before must span the gap below the trigger (Ben, 2026-09-10 —
+            # the live menu closed as soon as the pointer moved down to pick an item)
+            if m.get("gap") is not None and (m.get("bridge") or 0) < m["gap"]:
+                fails.append(f"{where}: the {m['word']!r} submenu floats {m['gap']:.0f}px below its trigger but its hover "
+                             f"bridge is {(m.get('bridge') or 0):.0f}px — the pointer leaves the menu on its way down")
     elif nav and width < 900:
-        notes.append(f"{where}: the header nav is hidden (the brand hides it under 760px); the section bar carries the page")
+        notes.append(f"{where}: the header nav is hidden (the brand hides it under 480px); the phone menu carries it")
+
+    # ── the phone menu: the hamburger under 480 px (Ben, 2026-09-10: "NO menu in the mobile version") ─
+    pm = r.get("phoneMenu")
+    if width < 480:
+        if not pm or not pm["buttonShown"]:
+            fails.append(f"{where}: no phone menu button under 480px, where the brand hides the nav")
+        else:
+            if not pm["opened"]:
+                fails.append(f"{where}: the phone menu button does not open the nav")
+            if pm["expanded"] != "true":
+                fails.append(f"{where}: the phone menu button's aria-expanded does not follow the menu (read {pm['expanded']!r})")
+            if pm["wordsOpen"] != len(NAV_WORDS):
+                fails.append(f"{where}: the phone menu shows {pm['wordsOpen']} items, expected {len(NAV_WORDS)}")
+            if nav and pm["subsOpen"] != len(nav["menus"]):
+                fails.append(f"{where}: the phone menu shows {pm['subsOpen']} of {len(nav['menus'])} submenus inline")
+            if pm["scrollW"] and pm["scrollW"] > width:
+                fails.append(f"{where}: the open phone menu scrolls horizontally — scrollWidth {pm['scrollW']} > {width}")
+            if not pm["closedOnEsc"]:
+                fails.append(f"{where}: the phone menu does not close on Escape")
+            if not fails or not any(where in f and "phone menu" in f for f in fails):
+                notes.append(f"{where}: the phone menu opens with {pm['wordsOpen']} items and {pm['subsOpen']} submenus inline, no horizontal scroll, closes on Escape")
+    elif pm and pm["buttonShown"]:
+        fails.append(f"{where}: the phone menu button is visible at {width}px; it belongs under 480px only")
 
     # ── the sticky section bar: the four ON-PAGE sections, each counted ────────────────────────
     secs = r.get("sections")
