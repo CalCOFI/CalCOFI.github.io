@@ -105,3 +105,10 @@ pages:
   species_page:
     url: https://calcofi.io/species/worms-217452/
     height: 950           # one taxon: the sardine — the lineage, its two datasets and the ways in
+  measurements:
+    url: https://calcofi.io/measurements/
+    height: 1400          # the head band is ~560 px; 1,400 reaches the timeline, the matrix and the datasets
+    wait: 6000            # the timeline, the matrix and the datasets list are all built at load
+  measurement_page:
+    url: https://calcofi.io/measurements/temperature/
+    height: 950           # one measurement: temperature — its two series, the strip and the ways in

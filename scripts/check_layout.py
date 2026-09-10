@@ -35,6 +35,19 @@ can only pass by the layout actually being fixed:
              page the "Observed in" rows are the record's datasets[] with its counts, the lineage
              is a chain of links ending in the taxon's parent, and the Explorer link opens
              prefilled on the taxon key.
+  measurements (/measurements/ and one measurement page, plan 2026-09-10 § D5, D6) the timeline
+             draws one row per measurement and one bar per series of the page's OWN inline record
+             (79 and 84 on v2026.09.06), grouped into its categories; the matrix is categories ×
+             datasets with every cell drawn and the counts summing to the series; every timeline bar
+             has its dataset NAMED in the row (identity is never colour alone); the timeline is
+             wider than a phone on purpose, so its own container scrolls and the page does not; the
+             chips carry the record's counts and one is pressed; the search finds "nitrate",
+             "NTRAZZXX", "µmol/kg" and "METS". On a measurement page the years strip is DRAWN
+             (`.mm-drawn`, the `[viewBox]` trap again) with one labelled row per series and one cell
+             per year the record counts, the depth bars are the record's bands × its series with
+             every end label inside its column, the month strip is 12 cells per series, and each
+             `.mm-url` is one line elided from the middle.
+
   front door (/, plan 2026-09-07 § D-8) the hero's SVG is drawn <= 62 vh at 1470 and the copy's
              text does not overlap the ship's bounding box; no .tile is drawn > 1.25 x its natural
              height; the six numbers on the band (years · cruises · stations · species · organism
@@ -59,6 +72,8 @@ DEFAULT_PATHS = [
     "/datasets/calcofi_prodo/",      # a holding: no map, no Access-from-the-release, a long name
     "/species/",                     # the species catalog: search + tree, the matrix, the icicle
     "/species/worms-217452/",        # the sardine: two datasets, twelve lineage ranks, five ways in
+    "/measurements/",                # the measurements catalog: search + timeline, matrix, datasets
+    "/measurements/temperature/",    # the unified key: two series, two datasets, eight ways in
 ]
 
 # ── the probe ─────────────────────────────────────────────────────────────────
@@ -414,6 +429,104 @@ PROBE = r"""
   });
   out.tabledap = tabledap;
 
+  // ── the measurements catalog (plan 2026-09-10 § D5, D6; WS-M4) ────────────
+  // The index's figures are read back against the page's OWN inline record, so the check compares
+  // the drawing with the data it was drawn from and never against a number typed here.
+  const mmData = d.getElementById("mm-data");
+  const mmStrip = d.getElementById("mm-strip-data");
+  if (mmStrip) {
+    let S = null; try { S = JSON.parse(mmStrip.textContent); } catch (e) {}
+    let DP = null; try { DP = JSON.parse(d.getElementById("mm-depth-data").textContent); } catch (e) {}
+    let MO = null; try { MO = JSON.parse(d.getElementById("mm-months-data").textContent); } catch (e) {}
+    const strip = d.getElementById("mm-strip"), dep = d.getElementById("mm-depth"), mon = d.getElementById("mm-months");
+    const bars = [...dep.querySelectorAll(".mm-b")];
+    out.mmPage = {
+      key: S && S.key,
+      recRows: S ? S.rows.length : 0,
+      // DRAWN, not merely populated — the `[viewBox]` trap the species strip hit on 2026-09-09
+      stripDrawn: strip.classList.contains("mm-drawn"),
+      stripH: px(strip.getBoundingClientRect().height),
+      stripRows: strip.querySelectorAll("text.mm-rl").length,
+      stripRects: strip.querySelectorAll("rect").length,
+      recRects: S ? S.rows.reduce((a, r) => a + Object.keys(r.y || {}).filter(k => r.y[k] > 0).length, 0) : 0,
+      depthBands: dep.querySelectorAll(".mm-lb").length,
+      recBands: DP ? (DP.bands || []).length : 0,
+      depthBars: bars.length,
+      // an end label that hangs outside its own column is the failure this padding exists for
+      depthLabelsOut: bars.filter(b => {
+        const sp = b.querySelector("span");
+        if (!sp) return false;
+        return sp.getBoundingClientRect().right > b.closest(".mm-pair").getBoundingClientRect().right + 1;
+      }).length,
+      depthLegend: d.querySelectorAll("#mm-depth-legend span").length,
+      monthCells: mon.querySelectorAll(".mm-c").length,
+      monthRows: MO ? MO.rows.length : 0,
+      monthLetters: mon.querySelectorAll(".mm-ml").length,
+      rows: [...d.querySelectorAll(".mm-dsrow")].map(li => ({
+        name: (li.querySelector(".mm-l1 a") || {}).textContent || "",
+        dot: !!li.querySelector(".mm-dot")
+      })),
+      explore: [...d.querySelectorAll('a[href*="/explore/"]')].map(a => a.getAttribute("href"))
+    };
+  }
+  // every .mm-url is ONE line, elided from the middle rather than wrapped or cut
+  out.mmUrls = [...d.querySelectorAll(".mm-url")].map(a => ({
+    h: px(a.getBoundingClientRect().height),
+    lh: px(parseFloat(cs(a).lineHeight) || 0),
+    full: (a.getAttribute("data-full") || "").length,
+    shown: (a.textContent || "").length,
+    elided: (a.textContent || "").indexOf("…") >= 0,
+    overflow: a.scrollWidth > a.clientWidth + 1,
+    t: (a.textContent || "").trim().slice(0, 48)
+  }));
+
+  if (mmData) {
+    let rec = null; try { rec = JSON.parse(mmData.textContent); } catch (e) {}
+    const tl = d.getElementById("mm-tl"), mx = d.querySelector(".mm-mx");
+    const cells = mx ? [...mx.querySelectorAll(".mm-cell")] : [];
+    const read = () => ({
+      rows: tl.querySelectorAll(".mm-nm").length,
+      n: (d.getElementById("mm-qn") || {}).textContent
+    });
+    out.mm = {
+      rec: rec && rec.counts,
+      cats: rec ? rec.cats.length : 0,
+      ds: rec ? rec.ds.length : 0,
+      recSeries: rec ? rec.rows.reduce((a, r) => a + (r.se || []).length, 0) : 0,
+      tlRows: tl.querySelectorAll(".mm-nm").length,
+      tlBars: tl.querySelectorAll(".mm-bar").length,
+      tlCats: tl.querySelectorAll(".mm-cat").length,
+      tlWidth: px(tl.getBoundingClientRect().width),
+      tlScroller: px(tl.parentElement.clientWidth),
+      tlOverflowX: cs(tl.parentElement).overflowX,
+      mxCells: cells.length,
+      mxFilled: cells.filter(c => !c.classList.contains("mm-z")).length,
+      mxSum: cells.reduce((a, c) => a + (parseInt(String(c.textContent).replace(/,/g, ""), 10) || 0), 0),
+      mxHeads: mx ? mx.querySelectorAll(".mm-mh").length : 0,
+      mxRows: mx ? mx.querySelectorAll(".mm-rl2").length : 0,
+      dsRows: d.querySelectorAll("#mm-dslist li").length,
+      chips: [...d.querySelectorAll("#mm-chips button")].map(b => ({
+        cat: b.getAttribute("data-cat"), pressed: b.getAttribute("aria-pressed"),
+        n: +String((b.querySelector(".mm-n") || {}).textContent || "").replace(/[^0-9]/g, "")
+      })),
+      legend: d.querySelectorAll("#mm-legend span").length,
+      tlRole: tl.getAttribute("role"),
+      tipRole: (d.getElementById("mm-ttip") || {}).getAttribute ? d.getElementById("mm-ttip").getAttribute("role") : null,
+      // a bar with no dataset name in its row would be identity by colour alone
+      barsWithoutName: [...tl.querySelectorAll(".mm-bar")].length -
+                       [...tl.querySelectorAll(".mm-ds span")].length
+    };
+    const q = d.getElementById("mm-q");
+    const MM_TERMS = ["nitrate", "NTRAZZXX", "µmol/kg", "METS"];
+    const mtype = t => new Promise(res => {
+      q.value = t;
+      q.dispatchEvent(new w.Event("input", { bubbles: true }));
+      setTimeout(() => { out.mm.search = out.mm.search || {}; out.mm.search[t] = read(); res(); }, 80);
+    });
+    return MM_TERMS.reduce((p, t) => p.then(() => mtype(t)), Promise.resolve())
+      .then(() => { q.value = ""; q.dispatchEvent(new w.Event("input", { bubbles: true })); return out; });
+  }
+
   // ── the one search over the three indexes (plan 2026-09-10 § D7 (3)) ───────
   // assets/door-search.js fetches the three records on the FIRST focus, so the box has to be
   // driven, not read: focus it, type each term, and count what came back per group. The promise
@@ -665,6 +778,96 @@ def check(path, r, width, theme, fails, notes):
             fails.append(f"{where}: a species URL overflows its line rather than being elided: {u['t']}…")
         if u["full"] and u["shown"] < u["full"] and not u["elided"]:
             fails.append(f"{where}: a species URL is cut short without an ellipsis: {u['t']}…")
+
+    # ── the measurements catalog (plan 2026-09-10 § D5, D6; § Verification M4) ─
+    mm = r.get("mm")
+    if mm:
+        rec = mm["rec"] or {}
+        notes.append(f"{where}: timeline {mm['tlRows']} rows / {mm['tlBars']} bars in {mm['tlCats']} categories, "
+                     f"matrix {mm['mxRows']}x{mm['ds']} = {mm['mxCells']} cells ({mm['mxFilled']} with a series, "
+                     f"summing {mm['mxSum']}), {mm['dsRows']} datasets, {len(mm['chips'])} chips")
+        if mm["tlRows"] != rec.get("measurements"):
+            fails.append(f"{where}: the timeline draws {mm['tlRows']} rows, the record has "
+                         f"{rec.get('measurements')} measurements")
+        if mm["tlBars"] != mm["recSeries"] or mm["tlBars"] != rec.get("series"):
+            fails.append(f"{where}: the timeline draws {mm['tlBars']} bars, the record has "
+                         f"{mm['recSeries']} series in rows[] and {rec.get('series')} in counts")
+        if mm["tlCats"] != mm["cats"]:
+            fails.append(f"{where}: {mm['tlCats']} category headings for {mm['cats']} categories")
+        # the matrix is category x dataset, every cell drawn, the counts summing to the series
+        if mm["mxCells"] != mm["cats"] * mm["ds"]:
+            fails.append(f"{where}: the matrix has {mm['mxCells']} cells, expected "
+                         f"{mm['cats']}x{mm['ds']} = {mm['cats'] * mm['ds']}")
+        if mm["mxHeads"] != mm["ds"] + 1 or mm["mxRows"] != mm["cats"]:
+            fails.append(f"{where}: the matrix has {mm['mxHeads']} column heads and {mm['mxRows']} row "
+                         f"labels, expected {mm['ds'] + 1} and {mm['cats']}")
+        if mm["mxSum"] != mm["recSeries"]:
+            fails.append(f"{where}: the matrix cells sum to {mm['mxSum']}, the record has "
+                         f"{mm['recSeries']} category x dataset series")
+        if mm["dsRows"] != mm["ds"] or mm["legend"] != mm["ds"]:
+            fails.append(f"{where}: {mm['dsRows']} dataset rows and {mm['legend']} legend entries for "
+                         f"{mm['ds']} datasets")
+        if mm["barsWithoutName"] > 0:
+            fails.append(f"{where}: {mm['barsWithoutName']} timeline bar(s) with no dataset name in the row "
+                         "— identity by colour alone")
+        # the timeline is wider than a phone ON PURPOSE: its own container must scroll, not the page
+        if mm["tlWidth"] > mm["tlScroller"] and mm["tlOverflowX"] not in ("auto", "scroll"):
+            fails.append(f"{where}: the timeline is {mm['tlWidth']}px in a {mm['tlScroller']}px container "
+                         f"whose overflow-x is {mm['tlOverflowX']}")
+        if mm["tlRole"] != "table":
+            fails.append(f"{where}: the timeline's role is {mm['tlRole']!r}, expected 'table'")
+        if mm["tipRole"] != "tooltip":
+            fails.append(f"{where}: the tooltip's role is {mm['tipRole']!r}, expected 'tooltip'")
+        chips = mm["chips"]
+        if not chips or chips[0]["cat"] != "" or chips[0]["n"] != rec.get("measurements"):
+            fails.append(f"{where}: the first chip is not 'all' with the record's {rec.get('measurements')}")
+        if sum(c["n"] for c in chips[1:]) != rec.get("measurements"):
+            fails.append(f"{where}: the category chips count {sum(c['n'] for c in chips[1:])}, the record "
+                         f"has {rec.get('measurements')} measurements")
+        if not any(c["pressed"] == "true" for c in chips):
+            fails.append(f"{where}: no chip carries aria-pressed=true")
+        s = mm.get("search") or {}
+        notes.append(f"{where}: search " + " · ".join(f"{t}: {v['rows']}" for t, v in s.items()))
+        for term in ("nitrate", "NTRAZZXX", "µmol/kg", "METS"):
+            if s.get(term, {}).get("rows", 0) < 1:
+                fails.append(f"{where}: the index search finds nothing for {term!r}")
+
+    mp = r.get("mmPage")
+    if mp:
+        notes.append(f"{where}: strip {mp['stripRows']} rows / {mp['stripRects']} year cells / {mp['stripH']}px, "
+                     f"depth {mp['depthBands']} bands x {mp['recRows']} series = {mp['depthBars']} bars, "
+                     f"months {mp['monthCells']} cells, {len(mp['rows'])} series rows")
+        if not mp["stripDrawn"] or mp["stripH"] < 20:
+            fails.append(f"{where}: the years strip is not drawn (.mm-drawn {mp['stripDrawn']}, "
+                         f"{mp['stripH']}px tall)")
+        if mp["stripRows"] != mp["recRows"]:
+            fails.append(f"{where}: the strip labels {mp['stripRows']} rows, the record has {mp['recRows']} series")
+        if mp["stripRects"] != mp["recRects"]:
+            fails.append(f"{where}: the strip draws {mp['stripRects']} year cells, the record counts "
+                         f"{mp['recRects']} years with a value")
+        if mp["depthBands"] != mp["recBands"] or mp["depthBars"] != mp["recBands"] * mp["recRows"]:
+            fails.append(f"{where}: the depth bars draw {mp['depthBands']} bands x {mp['depthBars']} bars, "
+                         f"the record has {mp['recBands']} bands x {mp['recRows']} series")
+        if mp["depthLabelsOut"]:
+            fails.append(f"{where}: {mp['depthLabelsOut']} depth-bar end label(s) hang outside their column")
+        if mp["recRows"] > 1 and mp["depthLegend"] != mp["recRows"]:
+            fails.append(f"{where}: {mp['depthLegend']} legend entries for {mp['recRows']} series "
+                         "— two series need a legend")
+        if mp["monthCells"] != 12 * mp["monthRows"] or mp["monthLetters"] != 12:
+            fails.append(f"{where}: the month strip draws {mp['monthCells']} cells and {mp['monthLetters']} "
+                         f"letters, expected {12 * mp['monthRows']} and 12")
+        if len(mp["rows"]) != mp["recRows"] or not all(x["dot"] and x["name"] for x in mp["rows"]):
+            fails.append(f"{where}: the Measured-in rows are {mp['rows']!r}, the record has {mp['recRows']} series")
+        if mp["key"] == "temperature" and f"/explore/?var=temperature" not in " ".join(mp["explore"]):
+            fails.append(f"{where}: the Explorer link does not open prefilled on the key: {mp['explore']!r}")
+
+    for u in r.get("mmUrls", []):
+        if u["lh"] and u["h"] > u["lh"] * 1.6:
+            fails.append(f"{where}: a measurement URL wraps ({u['h']}px over a {u['lh']}px line): {u['t']}…")
+        if u["overflow"]:
+            fails.append(f"{where}: a measurement URL overflows its line rather than being elided: {u['t']}…")
+        if u["full"] and u["shown"] < u["full"] and not u["elided"]:
+            fails.append(f"{where}: a measurement URL is cut short without an ellipsis: {u['t']}…")
 
     # ── the front door (plan 2026-09-07 § D-8) ────────────────────────────────
     fr = r.get("front")

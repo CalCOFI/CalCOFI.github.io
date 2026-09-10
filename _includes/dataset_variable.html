@@ -1,0 +1,15 @@
+{%- comment -%}
+  One variable chip on a dataset page's Coverage → Variables list. It links the MEASUREMENT page
+  where the release's measurements record carries one for that measurement_type (the catalog's own
+  key rule, never re-derived here), and the Explorer prefilled on this dataset and variable where it
+  does not — a bio variable, or any release built without measurements.json (plan 2026-09-10 § D2).
+
+  include dataset_variable.html v=<normalized variable> r=<the dataset record>
+{%- endcomment -%}
+{%- assign mslug = site.data.measurements.type_slugs[include.v.name] -%}
+{%- if mslug -%}
+<a class="cc-chip" href="{{ '/measurements/' | append: mslug | append: '/' | relative_url }}"
+   title="{{ site.data.measurements.labels[include.v.name] | default: include.v.name | escape }} — its page in the measurements catalog{% if include.v.uri %} · {{ include.v.uri | escape }}{% endif %}">{{ include.v.name | escape }}{% if include.v.units %} <small>{{ include.v.units | escape }}</small>{% endif %}</a>
+{%- else -%}
+<a class="cc-chip" href="https://calcofi.io/explore/?datasets={{ include.r.dataset_key | escape }}&amp;var={{ include.v.name | escape }}"{% if include.v.uri %} title="{{ include.v.uri | escape }}"{% endif %}>{{ include.v.name | escape }}{% if include.v.units %} <small>{{ include.v.units | escape }}</small>{% endif %}</a>
+{%- endif -%}

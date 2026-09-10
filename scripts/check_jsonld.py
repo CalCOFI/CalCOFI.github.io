@@ -27,6 +27,18 @@ What it asserts, and why each rule is here:
     · /species/ is one CollectionPage
     · /species/sitemap.xml lists the species pages that exist, and nothing else
 
+  JSON-LD (schema.org/DefinedTerm) on the measurements catalog, when the release carries
+  measurements.json
+    · every /measurements/*/ page carries exactly one JSON-LD block, and it parses
+    · @type DefinedTerm with `name`, `identifier` (the measurement key) and an absolute `url` that
+      is the page's own, `inDefinedTermSet` the NERC P01 collection
+    · `termCode` exactly where the record's entry carries a `nerc_p01` (read back from the sidecar
+      /measurements/{key}.json, so a page cannot claim a concept the record does not have) — an
+      absent id means "no concept says exactly this", never "not looked at"
+    · one PropertyValue per series, each named by its measurement_type, and no more
+    · /measurements/ is one DefinedTermSet listing every page that exists
+    · /measurements/sitemap.xml lists the measurement pages that exist, and nothing else
+
   sitemap.xml — well-formed, every <loc> absolute, one entry per public page, none for an
     `internal` record
 
@@ -372,6 +384,115 @@ def check_species(site, base):
     notes.append(f"species: {len(slugs)} taxon pages, each one Taxon node with its record beside it")
 
 
+# ── the measurements catalog (plan 2026-09-10 § D6, brief WS-M3) ──────────────
+# A release without measurements.json draws no measurement pages at all (the D-2 rule), so an
+# absent /measurements/ is not a failure — it is noted and skipped. Every rule mirrors a species
+# rule above, with DefinedTerm in the place of Taxon.
+P01_SET = "http://vocab.nerc.ac.uk/collection/P01/current/"
+
+
+def check_measurements(site, base):
+    root = site / "measurements"
+    if not root.is_dir():
+        notes.append("measurements: no /measurements/ — the release carries no measurements.json")
+        return
+    pages = sorted(p for p in root.glob("*/index.html"))
+    if not pages:
+        return fail("measurements/", "the /measurements/ directory exists but holds no measurement pages")
+    slugs = []
+    for p in pages:
+        slug = p.parent.name
+        where = f"measurements/{slug}/"
+        bs = blocks(p)
+        if len(bs) != 1:
+            fail(where, f"{len(bs)} JSON-LD blocks, expected exactly 1")
+            continue
+        try:
+            node = json.loads(bs[0])
+        except json.JSONDecodeError as e:
+            fail(where, f"JSON-LD does not parse: {e}")
+            continue
+        slugs.append(slug)
+        if node.get("@type") != "DefinedTerm":
+            fail(where, f'@type is {node.get("@type")!r}, expected "DefinedTerm"')
+        for req in ("name", "identifier", "url", "inDefinedTermSet"):
+            if not node.get(req):
+                fail(where, f"missing {req}")
+        page_url = f"{base}/measurements/{slug}/"
+        if node.get("url") and node["url"] != page_url:
+            fail(where, f'url {node["url"]} is not the page URL {page_url}')
+        if node.get("@id") and node["@id"] != page_url:
+            fail(where, f'@id {node["@id"]} is not the page URL {page_url}')
+        ts = node.get("inDefinedTermSet") or {}
+        if isinstance(ts, dict) and ts.get("url") != P01_SET:
+            fail(where, f'inDefinedTermSet is not the NERC P01 collection: {ts.get("url")!r}')
+        # the record beside the page is the authority on the concept, the key and the series
+        rec_path = root / f"{slug}.json"
+        if not rec_path.exists():
+            fail(where, f"no record measurements/{slug}.json")
+            continue
+        try:
+            rec = json.loads(rec_path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as e:
+            fail(where, f"record measurements/{slug}.json does not parse: {e}")
+            continue
+        if rec.get("slug") and rec["slug"] != slug:
+            fail(where, f'the record\'s slug is {rec["slug"]!r} but the page directory is {slug!r}')
+        if node.get("identifier") != rec.get("key"):
+            fail(where, f'identifier {node.get("identifier")!r}, the record\'s key is {rec.get("key")!r}')
+        p01 = rec.get("nerc_p01")
+        want_code = p01.rstrip("/").rsplit("/", 1)[-1] if p01 else None
+        if want_code != node.get("termCode"):
+            fail(where, f'termCode {node.get("termCode")!r}, the record\'s nerc_p01 is {p01!r}')
+        props = [x for x in (node.get("hasPart") or []) if x.get("@type") == "PropertyValue"]
+        want_series = [s.get("measurement_type") for s in rec.get("series") or []]
+        if [x.get("name") for x in props] != want_series:
+            fail(where, f'PropertyValue names {[x.get("name") for x in props]!r}, '
+                        f"the record's series are {want_series!r}")
+
+    idx = root / "index.html"
+    if not idx.exists():
+        fail("measurements/", "no /measurements/ index page")
+    else:
+        bs = blocks(idx)
+        if len(bs) != 1:
+            fail("measurements/", f"{len(bs)} JSON-LD blocks, expected 1")
+        else:
+            node = json.loads(bs[0])
+            if node.get("@type") != "DefinedTermSet":
+                fail("measurements/", f'@type {node.get("@type")!r}, expected "DefinedTermSet"')
+            if node.get("url") != f"{base}/measurements/":
+                fail("measurements/", f'url {node.get("url")!r} is not {base}/measurements/')
+            listed = {t["@id"].rstrip("/").rsplit("/", 1)[-1] for t in node.get("hasDefinedTerm", [])}
+            missing, extra = set(slugs) - listed, listed - set(slugs)
+            if missing:
+                fail("measurements/", f"pages not listed in the DefinedTermSet: {sorted(missing)[:5]}")
+            if extra:
+                fail("measurements/", f"listed in the DefinedTermSet with no page: {sorted(extra)[:5]}")
+
+    sm = root / "sitemap.xml"
+    if not sm.exists():
+        fail("measurements/sitemap.xml", "missing")
+    else:
+        try:
+            xroot = ET.fromstring(sm.read_text(encoding="utf-8"))
+        except ET.ParseError as e:
+            return fail("measurements/sitemap.xml", f"not well-formed: {e}")
+        ns = "{http://www.sitemaps.org/schemas/sitemap/0.9}"
+        locs = [u.findtext(ns + "loc") for u in xroot.findall(ns + "url")]
+        for loc in locs:
+            if not str(loc).startswith("http"):
+                fail("measurements/sitemap.xml", f"relative <loc>: {loc!r}")
+        want = {f"{base}/measurements/{s}/" for s in slugs} | {f"{base}/measurements/"}
+        if set(locs) != want:
+            fail("measurements/sitemap.xml",
+                 f"listed {len(locs)} URLs, the pages are {len(want)}; "
+                 f"only in sitemap: {sorted(set(locs) - want)[:5]}; "
+                 f"only as pages: {sorted(want - set(locs))[:5]}")
+        notes.append(f"measurements/sitemap.xml: {len(locs)} URLs")
+    notes.append(f"measurements: {len(slugs)} measurement pages, each one DefinedTerm with its record beside it")
+
+
 def main():
     site = Path(sys.argv[1] if len(sys.argv) > 1 else "_site").resolve()
     if not site.is_dir():
@@ -382,6 +503,7 @@ def main():
     check_sitemap(site, base, keys)
     check_data_json(site)
     check_species(site, base)
+    check_measurements(site, base)
     print(f"checked {len(keys)} dataset pages + the release page in {site}")
     for n in notes:
         print(f"  {n}")
