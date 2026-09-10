@@ -1,0 +1,18 @@
+{%- comment -%}
+  Related measurements: the same quantity from another platform or another kind of sample, kept
+  apart ON PURPOSE, each linking its own page with the record's reason
+  (`related[].why`: same_bottles · underway_vs_cast · replicate_vs_mean · pre_qc_twin ·
+  sensor_vs_mean · paired_sensors · same_casts, written as a sentence in _plugins/measurements.rb).
+
+  include measurement_related.html rows=page.related
+{%- endcomment -%}
+<ul class="mm-sibs">
+  {%- for r in include.rows -%}
+  <li>
+    <i class="mm-dot" style="background:{{ r.color | default: 'var(--muted)' }}" aria-hidden="true"></i>
+    <a href="{{ r.url | relative_url }}">{{ r.label | escape }}</a>
+    <span class="mm-m">{{ r.meta | escape }}</span>
+    <span class="mm-why cc-muted">{{ r.why | escape }}</span>
+  </li>
+  {%- endfor -%}
+</ul>

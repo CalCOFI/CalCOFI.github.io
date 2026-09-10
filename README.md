@@ -480,6 +480,98 @@ generated**: no `_data/taxa.json`, one NOTE, no species pages, and the front doo
 the Explorer instead — the same D-2 rule the numbers band follows (a fact the build cannot read is
 not rendered, never typed). Unset the variable when the promoted release carries the record.
 
+## The measurements catalog (`/measurements/`, `/measurements/{key}/`)
+
+The species catalog's pattern with `obs_env.measurement_type` in the place of `obs_bio.taxon_key`:
+one record, one generator, one page per key, and **not one measurement fact written in this repo**.
+The source is `measurements.json` — the record `calcofi4db::build_measurements_catalog()` writes
+into each release beside `taxa.json` (schema 1.0,
+`calcofi4db/inst/schema/measurements.schema.json`; 167 KB on v2026.09.06).
+
+```
+scripts/fetch_release.sh   {record_dir}/measurements.json → _data/measurements.json (git-ignored),
+                           and beside it _data/erddap_measurement_type.json — which ERDDAP tables
+                           carry a measurement_type column (5 of 5 today)
+_plugins/measurements.rb   the record → /measurements/, /measurements/{key}/, /measurements/{key}.json,
+                           /measurements/sitemap.xml, /measurements/search.json — and
+                           site.data.measurements for the index, the front door and the dataset pages
+assets/measurements.js     the URL elision (WS-M3), then the timeline table, the matrix, the years
+                           strip, the depth bars and the month strip (WS-M4)
+scripts/check_jsonld.py    one schema.org/DefinedTerm node per page, and the measurements sitemap
+```
+
+**The key.** A page is one measurement **key** — the registry's `variable` where the crosswalk
+unifies two series (bottle `temperature` + CTD `temperature_ave`), else the canonical
+`measurement_type` itself: `/measurements/temperature/`, `/measurements/nitrate/`,
+`/measurements/btl_temperature/`. **79 keys in 84 series across 5 datasets** on v2026.09.06. A
+**series** is one `measurement_type` × dataset under that key, listed with the dataset's own source
+column and flag column — *what the source called it*, the `dataset_taxon` of this catalog. The
+record decides both; nothing is re-derived here, and the slug is the key.
+
+**What a page carries**, in the mock's order: the crumb (Measurements › category › key), the eyebrow
+(`Measurement · category · units`), the label as the title — the record's authored `variable.csv`
+label on the five unified keys, else the canonical series' registry description with a line saying
+so (74 keys carry the `no_label` flag) — the ids linked out (NERC P01, P06 units) with the key and
+the series in mono, the stat row (values · sampling roots · years · datasets · depth · seasons),
+**Measured in** (one row per series: the dataset dot with its **name** beside it, its values,
+sampling roots, years, depths, grid cells and cruises, then the series, its source column, its flag
+column and the record's quiet pills), the three figures, **Range & quality**, **Related
+measurements**, the **ways in**, *This page as data* and *Cite*. Each URL is a full-width single
+mono line, elided from the **middle** by `measurements.js` so the tail — the measurement the tool
+opens on — survives a phone; one row per endpoint.
+
+**Range & quality, and what a bound means** (plan 2026-09-10 § D9, as Ben revised it). The block
+states the registry's declared bound, then the observed min · median · max and 5th–95th percentile
+**within** it, then — for a series with values outside a declared bound — one line: *n values
+outside the declared −2 … 40 degC (56.87 and 99) … are excluded from this range and from the
+Explorer, and leave the database at the next release*. A value outside a **declared** bound is a
+certain bug being removed at the ingest, never an open question; a series with **no** bound says so
+(`no_bound`), and the `sentinel_suspected` heuristic on such a series reads *range suspect · no
+bound*. Then the flag counts by code — each dataset's own vocabulary, uninterpreted — with what
+`qual_ok` keeps, and whether a `climatology` baseline exists.
+
+**Related measurements** are the record's `related[]`: the same quantity from another platform or
+another kind of sample, each its own page, never merged — `same_bottles` (the CTD files' own bottle
+samples, which would count the bottle dataset twice), `underway_vs_cast`, `replicate_vs_mean`,
+`pre_qc_twin`, `sensor_vs_mean`, `paired_sensors`, `same_casts`. The reason is written as a sentence
+from a map with a plain-text fallback, so a reason the next release adds still renders.
+
+**The ways in.** The Explorer prefilled `?var={key}` — **only** where the release's own
+`coverage.json` lists the key, otherwise the plain app, saying so — the anomaly section
+(`?lens=section&var={key}&anom=1`) where a climatology exists, db-query prefilled with
+`SELECT * FROM __TBL:obs_env__ WHERE measurement_type IN (…) LIMIT 100;`, **one ERDDAP row per
+series** constrained to `measurement_type` where the probe says the table carries the column
+(`_data/erddap_measurement_type.json`, the way `erddap_taxon_key.json` gates the species link), the
+Parquet note through the release catalog (`obs_env` is partitioned by `measurement_type`; never a
+path built by hand), and R and Python snippets.
+
+**On a dataset page.** Each variable in *Coverage → Variables* links its measurement page where the
+record has one (`site.data.measurements.type_slugs`, `measurement_type` → slug) and keeps its
+Explorer link where it does not; underneath, a folded **Full resolution only · n** list names the
+series that are not canonical for any key and ride the supplemental table instead (21 on the CTD
+page, 37 on METS).
+
+**The inline JSON.** `/measurements/` inlines **one** payload (31 KB): every key with its label,
+category, units, P01 and totals, and every series with its dataset index, spans, depths, columns and
+flags — the timeline, the matrix, the datasets list and the search all read it, so no count can be
+computed two ways. Per-key detail (the per-year, per-month, per-depth and per-flag maps) is on the
+page, in `#mm-strip-data`, `#mm-depth-data` and `#mm-months-data`, and in `/measurements/{key}.json`.
+
+**The checks.** `check_jsonld.py`: exactly one `DefinedTerm` node per page with `name`, `identifier`
+(the key), the page's own `url` and the NERC P01 collection as its `inDefinedTermSet`; `termCode`
+exactly where the record's entry carries a `nerc_p01` and nowhere else (23 series carry none, and an
+empty id means *no concept says exactly this*, never *not looked at*); one `PropertyValue` per
+series, named by its `measurement_type`; `/measurements/` one `DefinedTermSet` listing every page
+that exists; and the measurements sitemap equal to those pages (80 URLs today).
+
+**The `MEASUREMENTS_RELEASE_URL` bridge**, exactly as `TAXA_RELEASE_URL`: the promoted release's own
+`measurements.json` first, then the variable (a full `http(s)` URL, a `file://` URL or a plain local
+path), and **with neither, nothing is generated** — no `_data/measurements.json`, one NOTE, no
+measurement pages, no `/measurements/search.json`, and the front door's measurements tile, Observed
+row, realm door and tab fall back to the Explorer on `?var=temperature` with counts read from the
+release's own `coverage.json`. It is set as a repository variable and passed in `pages.yml`,
+`refresh.yml`, `pr.yml` and `check-brand.yml`. Unset it when the promoted release carries the record.
+
 ## Local preview
 
 ```bash

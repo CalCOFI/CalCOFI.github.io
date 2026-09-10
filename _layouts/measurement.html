@@ -1,0 +1,137 @@
+---
+layout: default
+---
+{%- comment -%}
+  /measurements/{key}/ — one page per measurement key (plan 2026-09-10 § D2, D6).
+
+  The integrated database integrates: a measurement has ONE page however many datasets carry it,
+  headed by its label once, with the SERIES under it — each dataset's own measurement_type, source
+  column and flag column, "what the source called it". Every value on the page comes from
+  _plugins/measurements.rb, which reads the release's measurements.json and nothing else.
+
+  The blocks, in the mock's order: crumb · eyebrow · label · description · ids · stats ·
+  Measured in (+ the years strip) · By depth · By month · Range & quality · Related measurements ·
+  Ways in · This page as data · Cite.
+{%- endcomment -%}
+{%- assign m = page.m -%}
+{%- assign mm = site.data.measurements -%}
+
+<section class="cc-band cc-band-alt mm-page-head">
+  <div class="cc-container">
+    <nav class="mm-crumb" aria-label="Where this page sits">
+      <a href="{{ '/measurements/' | relative_url }}">Measurements</a>
+      {%- if page.category %}<span class="mm-sep" aria-hidden="true">›</span>
+      <a href="{{ '/measurements/?cat=' | append: page.category | uri_escape | relative_url }}">{{ page.category | escape }}</a>{% endif -%}
+      <span class="mm-sep" aria-hidden="true">›</span>
+      <span class="mm-here">{{ page.h1 | escape }}</span>
+    </nav>
+
+    <div class="mm-h">
+      <div class="mm-h-main">
+        <div class="cc-eyebrow">Measurement
+          {%- if page.category %} · {{ page.category | escape }}{% endif -%}
+          {%- if page.units %} · {{ page.units | escape }}{% endif -%}
+          {%- if page.is_unified %} · one key across {{ m.series.size }} datasets{% endif -%}
+        </div>
+        <h1 class="cc-h1">{{ page.h1 | escape }}</h1>
+        {%- if page.sub %}<p class="mm-sub">{{ page.sub | escape }}</p>{% endif -%}
+        {%- if page.no_label -%}
+        <p class="mm-note mm-nolabel">The registry carries no authored label for this measurement, so the name above is
+          the canonical series' own description in <span class="mono">metadata/measurement_type.csv</span>
+          (<span class="mono">variable.csv</span> holds the authored labels, five today).</p>
+        {%- endif -%}
+      </div>
+      <div class="mm-ids">
+        {%- for i in page.ids -%}
+        <span><span class="cc-muted">{{ i.label }}</span> <a href="{{ i.url }}" rel="external">{{ i.id }}</a>{% if i.note %} <span class="cc-muted">{{ i.note | escape }}</span>{% endif %}</span>
+        {%- endfor -%}
+        <span><span class="cc-muted">key</span> <span class="mono">{{ page.key | escape }}</span></span>
+        <span><span class="cc-muted">series</span> <span class="mono">{% for s in m.series %}{{ s.measurement_type | escape }}{% unless forloop.last %} · {% endunless %}{% endfor %}</span></span>
+      </div>
+    </div>
+
+    {%- if page.stats.size > 0 -%}
+    <dl class="mm-stat">
+      {%- for s in page.stats -%}
+      <div{% if s.title %} title="{{ s.title | escape }}"{% endif %}><dd class="tab{% if s.small %} mm-stat-sm{% endif %}">{{ s.dd | escape }}</dd><dt>{{ s.dt }}</dt></div>
+      {%- endfor -%}
+    </dl>
+    {%- endif -%}
+  </div>
+</section>
+
+<section class="cc-band mm-page-body">
+  <div class="cc-container">
+    <div class="mm-cols2">
+      <div class="mm-col-main">
+        <h2 class="cc-h3">Measured in</h2>
+        {% include measurement_rows.html rows=page.ds_rows %}
+        {%- comment -%} WS-M4's three figure hosts, each with its own inline JSON: the years strip,
+          the depth bars and the month strip, all one row per SERIES {%- endcomment -%}
+        <svg class="mm-strip" id="mm-strip" role="img" aria-label="Values per year in each dataset"></svg>
+        <p class="mm-note">One row per series, one cell per year, darker with more values — the same strip the front
+          door draws per dataset and a species page draws per taxon. Each row is one dataset's own
+          <span class="mono">measurement_type</span>; the label is written once, in the title above.</p>
+
+        <h2 class="cc-h3">By depth</h2>
+        <div class="mm-legend" id="mm-depth-legend"></div>
+        <div class="mm-bars" id="mm-depth"></div>
+        <p class="mm-note">Values per depth band at the release grain, one thin bar per series. The bands are the
+          record's own (<span class="mono">0-10</span> … <span class="mono">2000+</span> m).</p>
+
+        <h2 class="cc-h3">By month</h2>
+        <div class="mm-mstrip" id="mm-months"></div>
+        <p class="mm-note">Values per calendar month, one row per series: CalCOFI's quarterly cruises show as peaks in
+          the months the ships sail.</p>
+
+        <h2 class="cc-h3">Range &amp; quality</h2>
+        <div class="mm-qual">
+          <dl class="mm-qgrid">
+            {%- for q in page.quality -%}
+            <dt>{{ q.dt }}</dt><dd>{{ q.dd }}</dd>
+            {%- endfor -%}
+          </dl>
+        </div>
+
+        {%- if page.related.size > 0 -%}
+        <h2 class="cc-h3">Related measurements</h2>
+        {% include measurement_related.html rows=page.related %}
+        <p class="mm-note">The same quantity from another platform or another kind of sample, each its own page and
+          never merged into this one: a dataset's own bottle samples would count that dataset twice, an underway intake
+          is not a cast, and a replicate is not a mean. The reason is the record's
+          (<span class="mono">related[].why</span>).</p>
+        {%- endif -%}
+      </div>
+
+      <div class="mm-col-ways">
+        <h2 class="cc-h3">Ways in</h2>
+        {% include measurement_ways.html ways=page.ways %}
+        <h2 class="cc-h3">This page as data</h2>
+        <ul class="mm-ways">
+          <li class="mm-way">
+            <div class="mm-l1"><b>JSON</b><span>this measurement's entry of the release record, verbatim</span></div>
+            <a class="mm-url" href="{{ '/measurements/' | append: page.slug | append: '.json' | relative_url }}">https://calcofi.io/measurements/{{ page.slug }}.json</a>
+          </li>
+        </ul>
+        <p class="mm-note">Read from <span class="mono">measurements.json</span> of release
+          <a href="{{ '/datasets/release/' | relative_url }}">{{ mm.release.version }}</a>, written at release by
+          <span class="mono">calcofi4db::build_measurements_catalog()</span> beside
+          <span class="mono">taxa.json</span>. The catalog's index is
+          <a href="{{ '/measurements/' | relative_url }}">/measurements/</a>; the JSON-LD on this page is a
+          <span class="mono">schema.org/DefinedTerm</span> in the NERC P01 term set with a
+          <span class="mono">PropertyValue</span> per series.</p>
+
+        <h2 class="cc-h3">Cite</h2>
+        <p class="mm-note">Cite the release; each dataset's own citation, licence and DOI are on its page —
+          {% for d in page.ds_rows %}<a href="{{ d.url | relative_url }}">{{ d.name | escape }}</a>{% unless forloop.last %}, {% endunless %}{% endfor %}.
+          The Explorer's <i>Share → Cite</i> writes it for the view you make.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script id="mm-strip-data" type="application/json">{{ page.strip }}</script>
+<script id="mm-depth-data" type="application/json">{{ page.depth }}</script>
+<script id="mm-months-data" type="application/json">{{ page.months }}</script>
+<script defer src="{{ '/assets/measurements.js' | relative_url }}"></script>
+<script type="application/ld+json">{{ page.jsonld }}</script>

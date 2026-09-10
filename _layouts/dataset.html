@@ -170,20 +170,44 @@ layout: default
   <div class="cc-container">
     <h2 class="cc-h2">Coverage</h2>
     {%- if page.variables.size > 0 -%}
+    {%- comment -%} each variable links its MEASUREMENT page where the release's measurements.json
+      carries one — site.data.measurements.type_slugs is measurement_type => slug, so a variable the
+      catalog has no page for (a bio variable, or a release without the record) keeps the Explorer
+      link it always had and the slug rule is never guessed here (plan 2026-09-10 § D2, WS-M3)
+    {%- endcomment -%}
     <h3 class="cc-h3 ds-cov-h">{{ page.variables.size }} variable{% unless page.variables.size == 1 %}s{% endunless %}</h3>
     <p class="ds-kw ds-varchips">
       {%- for v in page.variables limit: 16 -%}
-      <a class="cc-chip" href="https://calcofi.io/explore/?datasets={{ r.dataset_key | escape }}&amp;var={{ v.name | escape }}"{% if v.uri %} title="{{ v.uri | escape }}"{% endif %}>{{ v.name | escape }}{% if v.units %} <small>{{ v.units | escape }}</small>{% endif %}</a>
+      {% include dataset_variable.html v=v r=r %}
       {%- endfor -%}
       {%- if page.variables.size > 16 -%}
       <details class="ds-details ds-more-vars">
         <summary>all {{ page.variables.size }}</summary>
         {%- for v in page.variables offset: 16 -%}
-        <a class="cc-chip" href="https://calcofi.io/explore/?datasets={{ r.dataset_key | escape }}&amp;var={{ v.name | escape }}"{% if v.uri %} title="{{ v.uri | escape }}"{% endif %}>{{ v.name | escape }}{% if v.units %} <small>{{ v.units | escape }}</small>{% endif %}</a>
+        {% include dataset_variable.html v=v r=r %}
         {%- endfor -%}
       </details>
       {%- endif -%}
     </p>
+    {%- assign fullres = site.data.measurements.full_res[page.dataset_key] -%}
+    {%- if fullres.size > 0 -%}
+    {%- comment -%} the series this dataset carries that are not canonical for any measurement key —
+      the per-sensor and per-unit twins that live only in the full-resolution supplemental table. No
+      page of their own; they are named on the page of the key they belong to and here (plan § D2)
+    {%- endcomment -%}
+    <details class="ds-details ds-fullres">
+      <summary>Full resolution only · {{ fullres.size }}</summary>
+      <p class="ds-gloss">Series this dataset carries that are not canonical for any measurement, so the catalog draws
+        no page for them: they ride the full-resolution table
+        (<span class="mono">{{ fullres[0].table | escape }}</span>) at every scan, behind the headline series above.</p>
+      <ul class="ds-taxa">
+        {%- for f in fullres -%}
+        <li><span class="mono">{{ f.measurement_type | escape }}</span>
+          {%- if f.description %} <span class="cc-muted">{{ f.description | escape }}</span>{% endif -%}</li>
+        {%- endfor -%}
+      </ul>
+    </details>
+    {%- endif -%}
     {%- endif -%}
     {%- if cov.taxa.size > 0 -%}
     {%- comment -%} each taxon links to its page in the species catalog when the release's taxa.json

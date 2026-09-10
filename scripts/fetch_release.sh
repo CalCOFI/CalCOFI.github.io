@@ -24,6 +24,17 @@
 #                                 dataset uses. _plugins/species.rb draws /species/ from it and
 #                                 NOTHING else; without it the site builds with no species pages
 #                                 (plan 2026-09-09 § D7)
+#   _data/measurements.json       the measurements catalog record
+#                                 (calcofi4db::build_measurements_catalog(), schema 1.0, ~170 KB) —
+#                                 one entry per measurement KEY with its series, per-year, per-month,
+#                                 per-depth-band and per-flag counts, bounds and related keys.
+#                                 _plugins/measurements.rb draws /measurements/ from it and NOTHING
+#                                 else; without it the site builds with no measurement pages and the
+#                                 front door's measurement doors fall back to the Explorer
+#                                 (plan 2026-09-10 § D4, the D-2 rule)
+#   _data/erddap_measurement_type.json  which of THOSE datasets' ERDDAP tables carry a
+#                                 `measurement_type` variable — a measurement page constrains its
+#                                 ERDDAP row per series only where the server says the column exists
 #   _data/erddap_taxon_key.json   which of the record's current ERDDAP datasets carry a `taxon_key`
 #                                 variable, probed once here from erddap.calcofi.io/erddap/info —
 #                                 a species page constrains its ERDDAP link only where the server
@@ -47,6 +58,10 @@
 # written — the build then draws no species pages at all rather than inventing one (plan § D-2).
 # TAXA_RELEASE_URL takes a full http(s) URL *or* a local path (or a file:// URL) so a staging
 # record can be rendered from disk; the bridge goes away when a promoted release carries taxa.json.
+#
+# `measurements.json` is resolved by the SAME three steps with MEASUREMENTS_RELEASE_URL as its
+# bridge (plan 2026-09-10 § D4): the promoted release's own file first, then the variable, and
+# otherwise nothing at all — no measurement pages rather than an invented one.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -56,6 +71,7 @@ RELEASE_BASE="${CALCOFI_RELEASE_BASE:-https://storage.googleapis.com/calcofi-db/
 RELEASES_HTML="${CALCOFI_RELEASES_HTML:-https://storage.calcofi.io/calcofi-db/ducklake/releases/RELEASES.html}"
 FALLBACK_URL="${DATASETS_RELEASE_URL:-}"
 TAXA_FALLBACK="${TAXA_RELEASE_URL:-}"
+MEAS_FALLBACK="${MEASUREMENTS_RELEASE_URL:-}"
 
 mkdir -p "$DATA"
 
@@ -184,6 +200,76 @@ for i in sorted(set(ids)):
 json.dump(has, open(out, "w"), indent=1, sort_keys=True)
 print(f"erddap taxon_key: {sum(has.values())} of {len(has)} probed datasets carry the column")
 PYE
+fi
+
+# the measurements catalog record: one entry per measurement KEY the release carries, with its
+# series, its per-year / month / depth / flag counts, its declared bounds and what fell outside
+# them. Resolved exactly as taxa.json is (plan 2026-09-10 § D4): the promoted release's own
+# measurements.json first, then the MEASUREMENTS_RELEASE_URL bridge, and otherwise nothing at all —
+# _plugins/measurements.rb then draws no /measurements/ pages and says so once.
+rm -f "$DATA/measurements.json"
+if get "$record_dir/measurements.json" "$DATA/measurements.json"; then
+  meas_kind="promoted"; meas_url="$record_dir/measurements.json"
+elif [ -n "$MEAS_FALLBACK" ]; then
+  meas_kind="fallback"; meas_url="$MEAS_FALLBACK"
+  echo
+  echo "NOTE: measurements.json from a non-promoted release ---------------------------------"
+  echo "NOTE: the promoted release $version carries no measurements.json (it predates the catalog)."
+  echo "NOTE: building the measurement pages from  $meas_url"
+  echo "NOTE: MEASUREMENTS_RELEASE_URL is set; unset it to render the promoted release."
+  echo "NOTE: ------------------------------------------------------------------------------"
+  echo
+  case "$meas_url" in
+    http://*|https://*) get "$meas_url" "$DATA/measurements.json" ;;
+    file://*)           cp "${meas_url#file://}" "$DATA/measurements.json" ;;
+    *)                  cp "$meas_url" "$DATA/measurements.json" ;;
+  esac
+else
+  meas_kind="none"; meas_url=""
+  echo "NOTE: no measurements.json beside the record and no MEASUREMENTS_RELEASE_URL — the site builds with no measurement pages"
+fi
+
+if [ -s "$DATA/measurements.json" ]; then
+  python3 - "$DATA/measurements.json" "$meas_kind" "$meas_url" <<'PYM'
+import json, sys
+path, kind, url = sys.argv[1:4]
+d = json.load(open(path))
+c = d.get("counts", {})
+print(f"measurements {kind}: schema {d.get('schema_version')} · release {d['release']['version']} · "
+      f"{c.get('measurements')} measurements · {c.get('series')} series · {c.get('datasets')} datasets · "
+      f"{c.get('obs_env_rows')} values at the release grain")
+print(f"       {url}")
+PYM
+
+  # which of THOSE datasets' ERDDAP tables carry a `measurement_type` column. A measurement page
+  # links one tabledap row per series, constrained to that series — but only where the server says
+  # the column exists; otherwise the plain tabledap page, saying so. Probed once here (one small
+  # GET per dataset) and cached, so Jekyll never touches the network.
+  python3 - "$DATA/datasets.json" "$DATA/measurements.json" "$DATA/erddap_measurement_type.json" <<'PYX' || echo "NOTE: ERDDAP variables not probed — measurement pages will link the plain tabledap page" >&2
+import json, sys, urllib.request
+drec, mrec, out = sys.argv[1:4]
+rec = json.load(open(drec))
+keys = {d["dataset_key"] for d in json.load(open(mrec)).get("datasets", [])}
+ids = []
+for d in rec.get("datasets", []):
+    if d.get("dataset_key") not in keys:
+        continue
+    for x in d.get("distributions") or []:
+        # the dataset's OWN tabledap table, current, not the _sample / _attribute companions
+        if (x.get("format") == "erddap" and x.get("status") != "superseded"
+                and str(x.get("url", "")).endswith(".html") and x.get("id") == d["dataset_key"]):
+            ids.append(x["id"])
+has = {}
+for i in sorted(set(ids)):
+    try:
+        with urllib.request.urlopen(f"https://erddap.calcofi.io/erddap/info/{i}/index.csv", timeout=20) as r:
+            body = r.read().decode("utf-8", "replace")
+        has[i] = any(line.startswith("variable,measurement_type,") for line in body.splitlines())
+    except Exception:
+        pass                      # unreachable is not a fact: the id simply gets no entry
+json.dump(has, open(out, "w"), indent=1, sort_keys=True)
+print(f"erddap measurement_type: {sum(has.values())} of {len(has)} probed datasets carry the column")
+PYX
 fi
 
 # versions.json is release-history, kept at the prefix root, never inside a version folder

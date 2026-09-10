@@ -904,11 +904,16 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 .sp-counts dt { font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
 
 .sp-searchrow { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 0 0 calc(var(--space) * 1.75); }
-.sp-search { flex: 1 1 320px; display: flex; align-items: center; gap: 8px; background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 7px 12px; }
+/* min-width:0 is load-bearing at 375 px: a flex item's automatic minimum size is its MIN-CONTENT,
+   and this label's min-content includes the nowrap count (".sp-n") — so on a machine whose mono
+   fallback is wider than SF Mono (CI's Ubuntu image: DejaVu Sans Mono) the row could not shrink to
+   the container and the document scrolled sideways (PR #13, /species/ at 375: scrollWidth 405). The
+   count now truncates instead of pushing the page wide. */
+.sp-search { flex: 1 1 320px; min-width: 0; display: flex; align-items: center; gap: 8px; background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 7px 12px; }
 .sp-search input { flex: 1; border: 0; background: transparent; color: var(--fg); font: 16px var(--sans); min-width: 0; }
 .sp-search input:focus { outline: 0; }
 .sp-search:focus-within { border-color: var(--accent); }
-.sp-n { font: 12.5px var(--mono); color: var(--muted); white-space: nowrap; }
+.sp-n { font: 12.5px var(--mono); color: var(--muted); white-space: nowrap; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .sp-rankf { display: flex; gap: 6px; flex-wrap: wrap; }
 .sp-rankf button, .sp-seg button { border: 1px solid var(--border); background: var(--panel-2); color: var(--muted); border-radius: 999px; padding: 5px 11px; font: 600 12px var(--sans); cursor: pointer; }
 .sp-rankf button[aria-pressed="true"] { background: var(--accent-bg); color: var(--accent); border-color: transparent; }
@@ -1155,4 +1160,112 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
   .idxtab-counts dd { font-size: 22px; }
   .ds-realm-door .cc-text-link { margin-left: 0; flex-basis: 100%; }
   .tile.t-obs .tile-big { font-size: 26px; }
+}
+
+/* ══ the measurements catalog (/measurements/, /measurements/{key}/) ══════════════
+   The species catalog's rules with `mm-` in the place of `sp-`, so a reader who has read one page
+   has read both: the same head, the same stat row, the same two columns, the same one-line URLs.
+   WS-M3 ships the STRUCTURE (this block); WS-M4 adds the figures — the index's timeline table, the
+   category × dataset matrix, the years strip, the depth bars and the month strip — into the hosts
+   #mm-tl, #mm-matrix, #mm-dslist, #mm-strip, #mm-depth and #mm-months, which are empty until then.
+   Additive to brand v2: every colour is a token or the record's own dataset colour, which is never
+   the only cue — a dot always carries its dataset's name beside it. */
+
+/* the page head: the label once, the ids beside it */
+.mm-crumb { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; font-size: var(--fs-sm); margin: 0 0 var(--space); }
+.mm-crumb .mm-sep { color: var(--muted); }
+.mm-here { color: var(--muted); }
+.mm-h { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space) calc(var(--space) * 4); align-items: end; }
+.mm-h .cc-h1 { margin: 2px 0 4px; }
+.mm-sub { font-size: var(--fs-sm); color: var(--muted); max-width: 72ch; margin: 0 0 4px; }
+.mm-ids { display: flex; flex-wrap: wrap; gap: 5px 14px; font-size: 13px; }
+.mm-ids a, .mm-ids .mono { font-family: var(--mono); font-size: 12.5px; }
+.mm-nolabel { margin: 6px 0 0; max-width: 72ch; }
+
+.mm-stat { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: calc(var(--space) * 1.5); margin: calc(var(--space) * 2.5) 0 0; padding: calc(var(--space) * 2) 0 0; border-top: 1px solid var(--border); }
+.mm-stat dd { margin: 0; font-family: var(--display); font-weight: 500; font-size: 30px; line-height: 1; }
+.mm-stat dd.mm-stat-sm { font-family: var(--sans); font-size: 17px; font-weight: 600; line-height: 1.2; }
+.mm-stat dt { font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+
+.mm-cols2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 calc(var(--space) * 5); align-items: start; }
+.mm-page-body .cc-h3 { margin-top: calc(var(--space) * 3); }
+.mm-page-body .mm-col-main > .cc-h3:first-child, .mm-page-body .mm-col-ways > .cc-h3:first-child { margin-top: 0; }
+.mm-note { font-size: var(--fs-sm); color: var(--muted); max-width: 80ch; margin: var(--space) 0 0; }
+.mm-note .mono, .mm-note code { font-family: var(--mono); font-size: 0.92em; }
+
+/* one row per SERIES: the dot in the record's colour, the dataset's NAME always beside it */
+.mm-dsrows { list-style: none; margin: var(--space) 0 0; padding: 0; }
+.mm-dsrow { display: grid; grid-template-columns: 14px minmax(0, 1fr); gap: 10px; padding: 10px 0; border-top: 1px solid var(--border); align-items: start; }
+.mm-dsrow:first-child { border-top: 0; }
+.mm-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-top: 6px; box-shadow: 0 0 0 1px var(--bg); }
+.mm-l1 { display: flex; flex-wrap: wrap; gap: 3px 14px; align-items: baseline; }
+.mm-l1 a { font-weight: 600; }
+.mm-meta { font: 12.5px var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.mm-l2 { font-size: 13px; color: var(--muted); margin-top: 2px; }
+.mm-l2 code { font: 12px var(--mono); color: var(--fg); background: var(--panel); padding: 1px 5px; border-radius: 4px; }
+.mm-l2 .cc-chip { margin-left: 2px; }
+.mm-l3 { font-size: 13px; margin-top: 2px; }
+
+/* Range & quality: one labelled row per kind of fact, every number read from the record */
+.mm-qual { margin: var(--space) 0 0; }
+.mm-qgrid { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 8px 16px; margin: 0; font-size: var(--fs-sm); }
+.mm-qgrid dt { font-weight: 700; color: var(--muted); font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; padding-top: 2px; }
+.mm-qgrid dd { margin: 0; overflow-wrap: anywhere; }
+.mm-qgrid code, .mm-qgrid .mono { font-family: var(--mono); font-size: 0.92em; }
+
+/* related measurements: each its own page, with the record's reason it is kept apart */
+.mm-sibs { list-style: none; margin: var(--space) 0 0; padding: 0; }
+.mm-sibs li { display: grid; grid-template-columns: 14px minmax(0, 1fr); gap: 2px 10px; padding: 9px 0; border-top: 1px solid var(--border); font-size: 14px; align-items: baseline; }
+.mm-sibs li:first-child { border-top: 0; }
+.mm-sibs .mm-dot { grid-row: span 3; margin-top: 5px; }
+.mm-sibs a { font-weight: 600; }
+.mm-sibs .mm-m { font: 12.5px var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.mm-sibs .mm-why { font-size: 13px; }
+
+/* the ways in: ONE row per endpoint, the URL a full-width single mono line (assets/measurements.js
+   elides it from the middle rather than letting it wrap) */
+.mm-ways { list-style: none; margin: var(--space) 0 0; padding: 0; }
+.mm-way { padding: 10px 0; border-top: 1px solid var(--border); }
+.mm-way:first-child { border-top: 0; }
+.mm-way .mm-l1 b { font-weight: 600; }
+.mm-way .mm-l1 span { font-size: 13px; color: var(--muted); }
+.mm-url { display: block; width: 100%; font: 13px var(--mono); color: var(--accent); white-space: nowrap; overflow: hidden; margin-top: 3px; }
+.mm-way pre { margin: 6px 0 0; font: 12.5px/1.5 var(--mono); background: var(--panel); border-radius: var(--radius); padding: 8px 12px; overflow-x: auto; color: var(--fg); }
+
+/* the figure hosts WS-M4 fills. The strip is an <svg>, hidden until the drawing adds .mm-drawn —
+   an undrawn <svg> is 300 x 150 by the CSS default, which would leave a hole on every page read
+   without JS (the `[viewBox]` trap the species strip hit on 2026-09-09: an attribute selector is
+   lowercased in an HTML document and never matches SVG's camelCase attribute). */
+.mm-strip { display: none; width: 100%; height: auto; margin: var(--space) 0 0; }
+.mm-strip.mm-drawn { display: block; }
+.mm-strip text { font: 11px var(--mono); fill: var(--muted); }
+.mm-bars, .mm-mstrip, .mm-tl, .mm-matrix, .mm-dslist { margin: var(--space) 0 0; }
+.mm-tl-scroll { overflow-x: auto; }
+
+/* the index */
+.mm-idx-head .cc-lede { max-width: 78ch; }
+.mm-counts { display: flex; flex-wrap: wrap; gap: 10px 34px; margin: calc(var(--space) * 2) 0 0; padding: calc(var(--space) * 2) 0 0; border-top: 1px solid var(--border); }
+.mm-counts div { min-width: 0; }
+.mm-counts dd { margin: 0; font: 500 30px/1 var(--display); font-variant-numeric: tabular-nums; }
+.mm-counts dt { font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+.mm-searchrow { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 0 0 calc(var(--space) * 1.75); }
+.mm-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.mm-chips button { border: 1px solid var(--border); background: var(--panel-2); color: var(--muted); border-radius: 999px; padding: 5px 11px; font: 600 12px var(--sans); cursor: pointer; }
+.mm-chips button[aria-pressed="true"] { background: var(--accent-bg); color: var(--accent); border-color: transparent; }
+.mm-two { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: calc(var(--space) * 2.5); align-items: start; }
+.mm-pane { background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius-card); overflow: hidden; min-width: 0; margin-top: var(--space); }
+.mm-pane-h { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 11px 16px 8px; border-bottom: 1px solid var(--border); }
+.mm-pane-h h2 { margin: 0; }
+.mm-hint, .mm-legend { font-size: 12px; color: var(--muted); }
+.mm-pane .mm-tl, .mm-pane .mm-matrix, .mm-pane .mm-dslist { margin: 0; padding: 12px 16px; }
+.mm-dslist { list-style: none; }
+.mm-ttip { position: fixed; z-index: 40; pointer-events: none; opacity: 0; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 8px 10px; font-size: 12.5px; max-width: 340px; box-shadow: var(--shadow, 0 6px 24px rgba(0, 0, 0, 0.18)); }
+.mm-ttip.open { opacity: 1; }
+
+@media (max-width: 900px) {
+  .mm-cols2 { grid-template-columns: minmax(0, 1fr); }
+  .mm-h { grid-template-columns: minmax(0, 1fr); align-items: start; }
+  .mm-two { grid-template-columns: minmax(0, 1fr); }
+  .mm-qgrid { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .mm-qgrid dd { margin-bottom: 8px; }
 }
