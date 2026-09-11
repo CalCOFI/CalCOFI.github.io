@@ -892,7 +892,7 @@
   function attrEsc(s) { return String(s).replace(/"/g, '&quot;'); }
   function glyphHtml(s) {
     var w = Math.round(18 * (s.aspect || 1) * 100) / 100;
-    return '<svg class="sp-sil" width="' + w + '" height="18" viewBox="' + attrEsc(s.vb) +
+    return '<svg class="sp-tsil" width="' + w + '" height="18" viewBox="' + attrEsc(s.vb) +
            '" aria-hidden="true" focusable="false">' + s.inner + '</svg>';
   }
 
@@ -900,7 +900,7 @@
     var k = li.dataset && li.dataset.k, s = k && sil[k];
     if (!s) return;
     var nm = li.querySelector(':scope > .sp-tr > .sp-nm');
-    if (!nm || nm.querySelector(':scope > .sp-sil')) return;
+    if (!nm || nm.querySelector(':scope > .sp-tsil')) return;
     nm.insertAdjacentHTML('afterbegin', glyphHtml(s));
   }
 

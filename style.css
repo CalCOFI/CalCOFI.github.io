@@ -1547,7 +1547,7 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 }
 
 /* ── index glyphs (WS-F4) ──────────────────────────────────────────────────────────────────────
-   The tree's phylum/class silhouette (assets/species.js) and the front door's "What's observed"
+   The tree's phylum/class silhouette (assets/species.js; class `sp-tsil`, NOT the page's `.sp-sil`, whose block/100 %/min-height rules grew a tree row to 78 px — measured 2026-09-11) and the front door's "What's observed"
    species-row strip (index.html) — both draw the same inline SVGs `_data/taxa_media.json` supplies
    via `_plugins/species.rb`'s `sil` field, `fill: currentColor` baked into the markup so each takes
    its own row/link's colour. */
@@ -1556,7 +1556,7 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
    for the font's descender below it and grows the line box (measured: 30px drawn vs 26px without —
    the row DID grow before this rule); `middle` removes that gap so the row's height stays the
    .sp-tw button's 20px + the row's own 3px+3px padding, unchanged whether or not a row has one. */
-.sp-sil { display: inline-block; vertical-align: middle; margin-right: 4px; }
+.sp-tsil { display: inline-block; vertical-align: middle; margin-right: 4px; }
 
 /* the tile's species-row strip: real class silhouettes (fish run ~3:1 wide) are never as narrow as
    the six decorative icons they replace, so the strip must SHRINK and scroll horizontally rather

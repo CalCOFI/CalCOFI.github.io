@@ -460,10 +460,10 @@ PROBE = r"""
     };
     void natural;   // the tree pane is bounded by the matrix pane, which is checked directly
 
-    // WS-F4: a phylum/class row's silhouette (.sp-sil, 18 px tall — under the 20 px .sp-tw button,
+    // WS-F4: a phylum/class row's silhouette (.sp-tsil, 18 px tall — under the 20 px .sp-tw button,
     // the row's tallest fixed element) must not change the row's height; hidden vs shown on the
     // SAME row proves it rather than a remembered pixel count.
-    const silEl = d.querySelector("#sp-tree .sp-tr .sp-sil");
+    const silEl = d.querySelector("#sp-tree .sp-tr .sp-tsil");
     if (silEl) {
       const row = silEl.closest(".sp-tr");
       out.species.treeRowH = px(row.getBoundingClientRect().height);
