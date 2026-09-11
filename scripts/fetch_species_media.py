@@ -1344,6 +1344,12 @@ def main(argv=None):
     else:
         dest.parent.mkdir(parents=True, exist_ok=True)
         dest.write_text(json.dumps(doc, ensure_ascii=False, indent=1))
+        if args.upload:
+            # the rsync above ran BEFORE the `cached` stamps existed, so the JSON it copied is one
+            # run behind: the stamped record is always the last object written (found 2026-09-11)
+            log("  copying the stamped taxa_media.json")
+            subprocess.run(["gcloud", "storage", "cp", str(dest),
+                            f"{BUCKET}/{PREFIX}/{release}/taxa_media.json"], check=True)
     print(json.dumps(doc["coverage"]))
     print(f"{len(taxa)} taxa in {elapsed:.0f}s ({elapsed / max(1, len(taxa)):.2f} s/taxon) "
           f"→ {dest}")
