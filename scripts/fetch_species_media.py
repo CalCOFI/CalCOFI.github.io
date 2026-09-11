@@ -1362,8 +1362,13 @@ def rsync_cmd(out_dir, release, dry_run=False):
     stay where the pages that reference them expect them."""
     return (["gcloud", "storage", "rsync", "--recursive"]
             + (["--dry-run"] if dry_run else [])
-            # the per-slot `{slug}/photo.json` stamps are the fetcher's own bookkeeping, not media
-            + ["--exclude", r"^_cache/.*|^[^/]+/(photo|drawing|plate)\.json$",
+            # the per-slot `{slug}/photo.json` stamps are the fetcher's own bookkeeping, not media.
+            # The pattern's shape matters: `^_cache/.*|^[^/]+/…\.json$` (two ^-anchored branches)
+            # excluded NOTHING under _cache/ — 21,702 cache records reached the bucket on
+            # 2026-09-11 — while a dry run with either branch alone excluded correctly. gcloud
+            # evidently wraps the regex; the unanchored alternation below is the one measured to
+            # exclude both (0 _cache/ and 0 stamp lines in a dry run).
+            + ["--exclude", r"(^|/)_cache/.*|.*/(photo|drawing|plate)\.json$",
                str(out_dir), f"{BUCKET}/{PREFIX}/{release}"])
 
 
