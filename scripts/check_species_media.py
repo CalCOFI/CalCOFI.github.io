@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """check_species_media.py — refuse to publish a species-media sidecar that would mis-credit a page.
 
-    scripts/check_species_media.py [.cache/species-media/{release}/taxa_media.json]
+    scripts/check_species_media.py [.cache/species-media/taxa_media.json]
                                    [--taxa _data/taxa.json] [--sample 0.05] [--no-network]
 
 Six assertions, each from the plan `2026-09-11 Species faces …`:

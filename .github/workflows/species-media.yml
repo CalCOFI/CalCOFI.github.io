@@ -4,7 +4,8 @@ name: Refresh the species faces (fetch the media → the public bucket)
 # plate, the max length and Wikipedia's lead — come from eight external services that change on
 # their own cadence, so they are NOT release content (plan 2026-09-11 § D6). This workflow runs
 # scripts/fetch_species_media.py against the promoted release's taxa.json and rsyncs the result to
-# gs://calcofi-files-public/species-media/{release}/, where scripts/fetch_release.sh picks it up on
+# gs://calcofi-files-public/species-media/ — ONE copy, not one per release (assets under taxa/,
+# the sidecar beside them), where scripts/fetch_release.sh picks it up on
 # the next site build. Nothing here writes to this repo.
 #
 # ── DISABLED ────────────────────────────────────────────────────────────────────────────────────

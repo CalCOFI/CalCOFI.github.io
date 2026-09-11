@@ -35,9 +35,9 @@
 #   _data/taxa_media.json         the species FACES sidecar (scripts/fetch_species_media.py,
 #                                 schema 1.0) — per taxon the PhyloPic silhouette, a licensed
 #                                 photo, a drawing, the NOAA larval plate, the max length and
-#                                 Wikipedia's lead.  NOT release content: it is built weekly into
-#                                 gs://calcofi-files-public/species-media/{release}/ and is
-#                                 silently absent, in which case the species pages draw no faces
+#                                 Wikipedia's lead.  NOT release content and NOT keyed by release:
+#                                 one copy at gs://calcofi-files-public/species-media/, silently
+#                                 absent, in which case the species pages draw no faces
 #                                 (plan 2026-09-11 § D6)
 #   _data/erddap_measurement_type.json  which of THOSE datasets' ERDDAP tables carry a
 #                                 `measurement_type` variable — a measurement page constrains its
@@ -282,13 +282,26 @@ fi
 # the species FACES: taxa_media.json — the silhouette, photo, drawing, plate, size and sentence per
 # taxon (plan 2026-09-11 § D6).  It is NOT release content: the media come from eight external
 # services on their own cadence, so scripts/fetch_species_media.py builds it into
-# gs://calcofi-files-public/species-media/{release}/ weekly (.github/workflows/species-media.yml)
-# and the site reads it from there.  Silently absent: a release with no sidecar yet renders the
-# species pages exactly as it does today, with no faces and no gap.
+# gs://calcofi-files-public/species-media/ (.github/workflows/species-media.yml) and the site reads
+# it from there.  Silently absent: a release with no sidecar yet renders the species pages exactly
+# as it does today, with no faces and no gap.
+#
+# THE SIDECAR IS NOT KEYED BY RELEASE, and neither are the thumbnails it points at.  This line read
+# "$MEDIA_BASE/$version/taxa_media.json" until 2026-09-12, so promoting v2026.09.11 silently took
+# every face, size ladder and sourced sentence off every species page: the media had only ever been
+# built for v2026.09.10, and § D6's "silently absent" made the loss look deliberate.  The media
+# describe taxa, which outlive releases; one copy serves every release.  $version is still read
+# below only to fall back to the old per-release layout, and the sidecar's own `release` field says
+# which catalog it was built against.
 rm -f "$DATA/taxa_media.json"
 MEDIA_BASE="${CALCOFI_MEDIA_BASE:-https://storage.googleapis.com/calcofi-files-public/species-media}"
-if get "$MEDIA_BASE/$version/taxa_media.json" "$DATA/taxa_media.json"; then
-  python3 - "$DATA/taxa_media.json" "$MEDIA_BASE/$version/taxa_media.json" <<'PYF'
+media_url="$MEDIA_BASE/taxa_media.json"
+get "$media_url" "$DATA/taxa_media.json" ||
+  { media_url="$MEDIA_BASE/$version/taxa_media.json"       # the pre-2026-09-12 layout
+    get "$media_url" "$DATA/taxa_media.json" &&
+      echo "NOTE: fell back to the per-release species media at $media_url"; }
+if [ -s "$DATA/taxa_media.json" ]; then
+  python3 - "$DATA/taxa_media.json" "$media_url" <<'PYF'
 import json, sys
 path, url = sys.argv[1:3]
 d = json.load(open(path))
@@ -301,7 +314,7 @@ print(f"       {url}")
 PYF
 else
   rm -f "$DATA/taxa_media.json"
-  echo "NOTE: no taxa_media.json under $MEDIA_BASE/$version — the species pages draw no faces"
+  echo "NOTE: no taxa_media.json under $MEDIA_BASE — the species pages draw no faces"
 fi
 
 # versions.json is release-history, kept at the prefix root, never inside a version folder

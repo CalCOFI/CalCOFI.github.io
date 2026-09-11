@@ -7,8 +7,16 @@
 Walks `_data/taxa.json` (the release's species catalog record, fetched by scripts/fetch_release.sh)
 and writes, for every taxon, the sidecar `taxa_media.json` in the shape of the plan's Appendix A
 (plan `2026-09-11 Species faces …`, § D1 and § D5–D8) plus 800 px WebP thumbnails, under
-`.cache/species-media/{release}/`.  `--upload` rsyncs that folder to
-`gs://calcofi-files-public/species-media/{release}/` and stamps each asset's `cached` object path.
+`.cache/species-media/`.  `--upload` rsyncs that folder to
+`gs://calcofi-files-public/species-media/taxa/` and stamps each asset's `cached` object path.
+
+The media are NOT stored per release.  The assets live once at `species-media/taxa/{slug}/` and
+the sidecar once at `species-media/taxa_media.json`; the sidecar's `release` field records which
+catalog it was built against, and nothing else in the layout names a version.  It used to be
+`species-media/{release}/…`: promoting v2026.09.11 on 2026-09-11 therefore blanked every face,
+size ladder and sourced sentence on the species pages (the fetcher reads the promoted version and
+a missing sidecar renders silently absent, § D6), and healing it would have meant a second 355 MB
+copy of the same bytes plus a 1.2 h re-crawl of eight external services for every release.
 
 The sources, in the order they are asked:
 
@@ -32,7 +40,7 @@ The sources, in the order they are asked:
 The licence policy and the ranking are the plan's D7 — see `POLICY_ALLOW` and `rank_key()`.
 
 Resumable: every source's answer for every taxon is cached as one small JSON under
-`.cache/species-media/{release}/_cache/{source}/{slug}.json`, so a killed run continues where it
+`.cache/species-media/_cache/{source}/{slug}.json`, so a killed run continues where it
 stopped; `--refresh` ignores the cache.  A source that fails for a taxon leaves that slot null,
 logs one line, and the run continues.
 
@@ -67,6 +75,9 @@ CONTACT = os.environ.get("CALCOFI_MEDIA_CONTACT", "bdbest@gmail.com")
 UA = f"calcofi.io species-media/1.0 (https://calcofi.io; {CONTACT})"
 BUCKET = "gs://calcofi-files-public"
 PREFIX = "species-media"
+# one copy, never one per release: the assets hang off this version-free prefix and the sidecar
+# sits at {PREFIX}/taxa_media.json (see the module docstring for the release that proved why)
+ASSETS = f"{PREFIX}/taxa"
 
 # ── the licence policy (plan § D7) ──────────────────────────────────────────────────────────────
 # Take: CC0, public domain (incl. the Public Domain Mark), CC BY, CC BY-SA.  Take, rank last and
@@ -1119,7 +1130,7 @@ def do_taxon(t, rec, cache, out_dir, wd_all, sizes, dry_run, pool=None, override
             vb, aspect, inner = normalize_svg(svg)
             sil.update({"viewBox": vb, "aspect": aspect, "svg_inner": inner,
                         "length_axis": ("w" if (aspect or 1) >= 1 else "h"),
-                        "svg": f"{PREFIX}/{rec.release}/{slug}/silhouette.svg"})
+                        "svg": f"{ASSETS}/{slug}/silhouette.svg"})
             if not dry_run:
                 dest.mkdir(parents=True, exist_ok=True)
                 (dest / "silhouette.svg").write_text(
@@ -1146,7 +1157,7 @@ def do_taxon(t, rec, cache, out_dir, wd_all, sizes, dry_run, pool=None, override
         if c.get("source") == "commons":
             c["curated"] = bool(p18_title) and c.get("id") == p18_title
     ranked = annotate(cands, key, rec)
-    out_rel = f"{PREFIX}/{rec.release}/{slug}"
+    out_rel = f"{ASSETS}/{slug}"
     photos = apply_overrides([c for c in ranked if not c["is_drawing"]] or ranked,
                              key, "photo", overrides)
     entry["photo"] = materialize(photos, dest, "photo", dry_run, out_rel)
@@ -1221,7 +1232,7 @@ def main(argv=None):
     ap.add_argument("--refresh", action="store_true", help="ignore the cache and refetch")
     ap.add_argument("--dry-run", action="store_true", help="write nothing, upload nothing")
     ap.add_argument("--upload", action="store_true",
-                    help=f"rsync the folder to {BUCKET}/{PREFIX}/{{release}}/ and stamp `cached`")
+                    help=f"rsync the folder to {BUCKET}/{ASSETS}/ and stamp `cached`")
     ap.add_argument("--sizes", help="WS-F2b's sizes.json (default: _data/sizes.json if present)")
     ap.add_argument("--out", help="output root (default: .cache/species-media)")
     ap.add_argument("--workers", type=int, default=6,
@@ -1244,7 +1255,7 @@ def main(argv=None):
         log(f"sizes.json: {len(sizes)} taxa")
 
     out_root = Path(args.out) if args.out else (ROOT / ".cache" / PREFIX)
-    out_dir = out_root / release
+    out_dir = out_root                      # version-free: a new release reuses every thumbnail
     cache = Cache(out_dir / "_cache", args.refresh)
 
     taxa = rec.taxa
@@ -1325,7 +1336,7 @@ def main(argv=None):
            "taxa": entries, "refs": refs}
 
     if args.upload and not args.dry_run:
-        upload(out_dir, release)
+        upload(out_dir)
         for slug_entry in entries.values():
             for slot in ("photo", "drawing", "plate"):
                 a = slug_entry.get(slot)
@@ -1340,7 +1351,7 @@ def main(argv=None):
     if args.dry_run:
         log(f"[dry-run] would write {dest}")
         if args.upload:
-            upload(out_dir, release, dry_run=True)      # gcloud's own "Would copy …" listing
+            upload(out_dir, dry_run=True)      # gcloud's own "Would copy …" listing
     else:
         dest.parent.mkdir(parents=True, exist_ok=True)
         dest.write_text(json.dumps(doc, ensure_ascii=False, indent=1))
@@ -1349,17 +1360,18 @@ def main(argv=None):
             # run behind: the stamped record is always the last object written (found 2026-09-11)
             log("  copying the stamped taxa_media.json")
             subprocess.run(["gcloud", "storage", "cp", str(dest),
-                            f"{BUCKET}/{PREFIX}/{release}/taxa_media.json"], check=True)
+                            f"{BUCKET}/{PREFIX}/taxa_media.json"], check=True)
     print(json.dumps(doc["coverage"]))
     print(f"{len(taxa)} taxa in {elapsed:.0f}s ({elapsed / max(1, len(taxa)):.2f} s/taxon) "
           f"→ {dest}")
     return 0
 
 
-def rsync_cmd(out_dir, release, dry_run=False):
+def rsync_cmd(out_dir, dry_run=False):
     """The upload.  `--exclude ^_cache/.*` keeps the fetcher's working cache off the bucket, and
-    rsync never deletes (no --delete-unmatched-destination-objects): an earlier release's media
-    stay where the pages that reference them expect them."""
+    rsync never deletes (no --delete-unmatched-destination-objects): an asset an earlier sidecar
+    still references stays where the pages that reference it expect it.  The sidecar itself is
+    excluded here and copied separately, because it belongs beside this prefix, not inside it."""
     return (["gcloud", "storage", "rsync", "--recursive"]
             + (["--dry-run"] if dry_run else [])
             # the per-slot `{slug}/photo.json` stamps are the fetcher's own bookkeeping, not media.
@@ -1368,12 +1380,12 @@ def rsync_cmd(out_dir, release, dry_run=False):
             # 2026-09-11 — while a dry run with either branch alone excluded correctly. gcloud
             # evidently wraps the regex; the unanchored alternation below is the one measured to
             # exclude both (0 _cache/ and 0 stamp lines in a dry run).
-            + ["--exclude", r"(^|/)_cache/.*|.*/(photo|drawing|plate)\.json$",
-               str(out_dir), f"{BUCKET}/{PREFIX}/{release}"])
+            + ["--exclude", r"(^|/)_cache/.*|.*/(photo|drawing|plate)\.json$|^taxa_media\.json$",
+               str(out_dir), f"{BUCKET}/{ASSETS}"])
 
 
-def upload(out_dir, release, dry_run=False):
-    cmd = rsync_cmd(out_dir, release, dry_run)
+def upload(out_dir, dry_run=False):
+    cmd = rsync_cmd(out_dir, dry_run)
     log("  " + " ".join(cmd))
     subprocess.run(cmd, check=True)
 
