@@ -378,6 +378,19 @@ module CalCOFI
       end
     end
 
+    # WS-F4: the taxon's silhouette for a phylum/class tree row — 18 px tall, `fill: currentColor`,
+    # drawn by assets/species.js. Sourced from _data/taxa_media.json (WS-F2a's fetch, never
+    # git-tracked); a rank outside the tree's fold levels, or a key the sidecar lacks, carries no
+    # "sil" and the row keeps its height with no glyph (the correct empty state).
+    SIL_RANKS = ["Phylum", "Phylum (Division)", "Class"].freeze
+
+    def sil_of(key, rank)
+      return nil unless SIL_RANKS.include?(rank)
+      s = @site.data.dig("taxa_media", "taxa", key, "silhouette")
+      return nil unless s && Fmt.present(s["svg_inner"]) && Fmt.present(s["viewBox"]) && s["aspect"]
+      { "inner" => s["svg_inner"], "vb" => s["viewBox"], "aspect" => s["aspect"] }
+    end
+
     # ── the one payload the index inlines ────────────────────────────────────
     # key · slug · name · common · rank · parent · direct observations · per-dataset observations,
     # plus the matrix and the icicle, both already counted here. Datasets are referenced by their
@@ -404,7 +417,7 @@ module CalCOFI
             { "k" => n["k"], "n" => n["n"], "c" => n["c"], "r" => n["r"],
               "p" => n["p"], "o" => n["o"],
               "d" => n["d"].map { |k, v| [di[k], v] }.select { |i, _| i },
-              "l" => n["l"], "m" => n["m"] }.compact
+              "l" => n["l"], "m" => n["m"], "sil" => sil_of(n["k"], n["r"]) }.compact
           end,
           "mx"    => { "cols" => matrix["cols"].map { |k| di[k] },
                        "rows" => matrix["rows"].map do |r|
