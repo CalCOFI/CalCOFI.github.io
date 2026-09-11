@@ -662,7 +662,11 @@ CARD_TABSETS = ("ts-explore", "ts-access")
 # record, light): 2,974 px. D7 adds one search box (48), one tab row (43) and one door line in each
 # realm head (35) and must not add a screen — plan § Risks, WS-M0's gate. Measured after: 3,078 px,
 # +104. Re-measure and re-state this number whenever the catalog's own furniture changes.
-DATA_SECTION_BASE = 2974
+# Re-measured 2026-09-11 on main's build (c3d7ea7) with the v2026.09.10 record: 3,099 px light and
+# dark at 1470 (3,100 on unmodified main): D7's accepted +104 plus 21 px from what main and the
+# record have gained since, not a screen. Every PR since the release had failed here on main's own
+# height, which is the drift this number exists to catch in a PR, not in main.
+DATA_SECTION_BASE = 3099
 DATA_SECTION_GROWTH = 120
 
 _PROBED = {}          # pin hrefs answered once per run, not per width and theme
