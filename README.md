@@ -480,6 +480,68 @@ generated**: no `_data/taxa.json`, one NOTE, no species pages, and the front doo
 the Explorer instead — the same D-2 rule the numbers band follows (a fact the build cannot read is
 not rendered, never typed). Unset the variable when the promoted release carries the record.
 
+### Faces · the page
+
+A taxon page used to say nothing about the organism. It now opens with a **face row**, a **sentence**
+and — where the lengths exist — a **How big is it** section (plan 2026-09-11). None of it comes from
+the release: the media depend on eight external services and change on their own cadence, so they
+live in a second sidecar.
+
+```
+_data/taxa_media.json     scripts/fetch_species_media.py → the silhouette, the photo, the plate,
+                          the lengths and the Wikipedia lead, per taxon_key (git-ignored, weekly)
+_data/size_reference.csv  key,label,m,note,source — the ladder's six reference objects
+_plugins/species.rb       composes page.face / page.glance / page.sentence / page.credits /
+                          page.size_data, all nil-safe; and the JSON-LD `image`
+_includes/species_face.html   the face row, the sentence, the credit line (server-side: content)
+_includes/species_size.html   the How big section's hosts and its one inline payload
+_includes/species_credit.html the ONE credit format: kind · who · licence · where · what it shows
+assets/species.js         the ladder, the beside figure and the plate (figures: drawn in the browser)
+```
+
+**The row.** The **silhouette** is the constant: a 2–12 KB PhyloPic vector, inlined and filled with
+`currentColor`, so one file is navy on white and bone on navy. When the sidecar's `taxon_shown` is
+not the page's taxon the caption says so — *drawn from Ardenna creatopus, 1 rank up*. The **photo**
+is the enrichment: a 3 : 2 frame with the stored focal point and a radial mask **on the frame**, so
+the picture dissolves into whatever ground the page has; a non-commercial licence is accepted, ranked
+last, and labelled `NC`. The **glance** is two bars — the taxon's max length and the nearest familiar
+reference, the one whose |log₁₀(taxon ÷ reference)| is smallest among the quarter, the bongo ring, a
+person and the ship (the hair and the 505 µm mesh join only for something under 2 mm) — or one line
+saying *not on record*. **Every slot is independently absent, and an absent slot leaves no gap**: a
+taxon the sidecar has no entry for renders as it did before, bar the sentence and the stat word below.
+
+**The sentence** has three parts, each marked and each underlined in its source's colour with a
+legend: `s-wp` Wikipedia's lead under CC BY-SA 4.0 with its revision, `s-rec` this release's own
+numbers, `s-au` the naming authority. **`s-au` is not drawn today**: `taxa.json` carries no
+`taxonomic_authority`, and a page never fetches one — the clause is simply omitted.
+
+**The word.** A row of `obs_bio` is not an organism: 75.5 % of the CUFES rows and 85.0 % of the
+phytoplankton rows are `value = 0`. So the stat and the sentence say **records** until
+`build_taxa_catalog()` carries `n_present` (rows with `value > 0`); the moment the record has it,
+the stat reads `n_present` *observations* with `n_obs` *records* beside it and the sentence follows.
+The word is chosen from the field the record actually has — never typed.
+
+**How big is it** draws the log ladder (10 µm → 100 m, the six references above the axis, the taxon's
+egg, hatching, flexion, transformation and adult-max marks below), the silhouette to scale beside the
+nearest reference, and the AFSC developmental plate with the early-life lengths and their sources.
+The three are figures, so `species.js` draws them from one inline payload; on a phone the ladder's
+own container scrolls sideways and the page does not.
+
+**Credits and licences are never written here.** Every one is read from the sidecar, in one format,
+with the licence linked to its own deed; the JSON-LD gains an `ImageObject` with `contentUrl`,
+`license`, `creditText` and `acquireLicensePage` on exactly the pages that show a photo.
+
+**The checks.** `check_jsonld.py` asserts that `image` block against `_data/taxa_media.json` — present
+on every page with a photo, absent everywhere else, and complete when present. `check_layout.py` adds
+a `faces` block at 1470 and 375 px in both themes over four pages — the sardine (silhouette, photo,
+glance, five ladder marks, a plate), *Chaetoceros* (no length, no plate, no gap), the sooty shearwater
+(a stand-in silhouette, flagged) and jack mackerel (no sidecar entry at all): the silhouette is a
+labelled `role="img"` with real pixels, the photo has alt text, `loading="lazy"` and the mask, the
+glance draws two bars or says *not on record*, the sentence's marked parts and its legend agree, every
+asset shown has a credit line, the ladder draws exactly the payload's marks and the csv's references
+with **no two labels from different groups overlapping** (bounding boxes read from the DOM), the plate
+is drawn exactly where the payload has one, and the stat says *records*.
+
 ## The measurements catalog (`/measurements/`, `/measurements/{key}/`)
 
 The species catalog's pattern with `obs_env.measurement_type` in the place of `obs_bio.taxon_key`:

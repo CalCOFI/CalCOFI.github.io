@@ -1,0 +1,27 @@
+{%- comment -%}
+  "How big is it" — the log ladder, the beside figure and the developmental plate
+  (plan 2026-09-11 § D3, D5).
+
+  These three are FIGURES, so they are drawn by assets/species.js from the one inline JSON below
+  — the same trade the years strip and the index's tree make. Every number in that payload is read
+  from _data/taxa_media.json (the taxon's max length and its egg / hatching / flexion /
+  transformation lengths, each with its own source) and from _data/size_reference.csv (the six
+  reference objects with theirs). The script computes only positions.
+
+  The section is not rendered at all unless the sidecar carries a length, an early-life length or a
+  plate for this taxon, so a page with none of them keeps exactly the shape it had.
+
+  include species_size.html data=page.size_data
+{%- endcomment -%}
+<h2 class="cc-h3" id="how-big">How big is it</h2>
+<div class="sp-ladder-wrap">
+  <svg class="sp-ladder" id="sp-ladder" role="img" aria-label="This taxon's lengths on a logarithmic scale, against six familiar objects"></svg>
+  <p class="sp-note">Every mark is a measured length with its own source — hover one to read it.
+    The reference objects are <span class="mono">_data/size_reference.csv</span>: two of them,
+    the 505 µm bongo mesh and the net's ring, are CalCOFI's own sampling gear.</p>
+</div>
+<div class="sp-beside-wrap">
+  <svg class="sp-beside" id="sp-beside" role="img" aria-label="This taxon drawn to scale beside the nearest familiar object"></svg>
+</div>
+<div class="sp-plate" id="sp-plate"></div>
+<script id="sp-size-data" type="application/json">{{ include.data }}</script>

@@ -891,6 +891,111 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
   .sp-kids { columns: 1; }
 }
 
+/* ── faces (WS-F3) ────────────────────────────────────────────────────────────
+   The face row, the sentence, the glance and the three size figures (plan 2026-09-11 § D1–D5, D8),
+   ported from the mockup CalCOFI Species Faces onto brand v2's tokens. Additive: every rule below
+   is under a class that only exists when _data/taxa_media.json has an entry for the page's taxon,
+   so a page without one is untouched by this block.
+
+   The one site-local token is --sp-plate-filter: a scanned black-ink plate on a navy ground has to
+   be inverted, and brand/v2/theme.css is frozen, so the token lives here. It keys on
+   `[data-theme]` exactly as every other token does — brand/v2/theme.js always stamps the
+   attribute, so there is no prefers-color-scheme branch to keep in step. */
+:root { --sp-plate-filter: none; }
+:root[data-theme="dark"] { --sp-plate-filter: invert(0.9) hue-rotate(180deg); }
+
+/* the row: the silhouette and its glance beside the photo. Neither column has a minimum that can
+   push the page wide — both are minmax(0, …) and the photo is max-width: 100 %. */
+.sp-face { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: calc(var(--space) * 2.5); align-items: stretch; margin: calc(var(--space) * 2) 0 0; }
+.sp-sil-fig { display: flex; flex-direction: column; justify-content: space-between; gap: var(--space); min-width: 0; margin: 0; }
+.sp-photo-fig { margin: 0; min-width: 0; }
+
+/* the constant: ONE vector, filled with the page's ink, so it needs no second file for dark */
+/* width-driven with the vector's own ratio, capped so a near-square silhouette (a diatom, a
+   copepod) cannot tower over the photo beside it while a long one (a fish) still fills the row */
+.sp-sil { display: block; width: 100%; height: auto; min-height: 72px; max-height: 240px; color: var(--fg); fill: currentColor; max-width: 100%; }
+.sp-stand { font: 11.5px var(--mono); color: var(--muted); margin: 0; }
+.sp-stand i { font-family: var(--sans); }
+
+/* the glance: two bars on one scale — the taxon and the nearest familiar object */
+.sp-glance { border-top: 1px solid var(--border); padding-top: var(--space); font-size: 13px; margin: 0; }
+.sp-glance-row { display: grid; grid-template-columns: minmax(0, 96px) minmax(0, 1fr) auto; gap: var(--space); align-items: center; padding: 2px 0; }
+.sp-glance-l { color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.sp-glance-v { font: 12px var(--mono); text-align: right; white-space: nowrap; }
+.sp-bar { display: block; height: 8px; border-radius: 4px; background: var(--accent); min-width: 2px; }
+.sp-bar-ref { background: var(--muted); opacity: 0.55; }
+.sp-glance-none { color: var(--muted); }
+.sp-glance-none .cc-eyebrow { display: inline; }
+
+/* the fade is on the FRAME, not the image: the same file then sits on white and on navy without a
+   second crop, and `object-position` still honours the stored focal point (§ D2) */
+.sp-photo {
+  position: relative; aspect-ratio: 3 / 2; overflow: hidden; border-radius: var(--radius); max-width: 100%;
+  -webkit-mask-image: radial-gradient(ellipse 74% 70% at 50% 50%, #000 40%, transparent 100%);
+  mask-image: radial-gradient(ellipse 74% 70% at 50% 50%, #000 40%, transparent 100%);
+}
+.sp-photo img { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+/* one credit format everywhere: kind · who · licence · where · what it shows */
+.sp-credit { font: 11.5px/1.5 var(--mono); color: var(--muted); margin: 6px 0 0; }
+.sp-credit a { color: inherit; text-decoration: underline; text-decoration-color: var(--border); }
+.sp-credit a:hover { text-decoration-color: currentColor; }
+.sp-credits { margin-top: var(--space); }
+
+/* the sentence: borrowed prose, this release's numbers, the naming authority — each underlined in
+   its own source's colour, with a legend, so a reader can see which half is ours (§ D4) */
+.sp-sent { font-size: 16px; line-height: 1.55; margin: calc(var(--space) * 2) 0 0; max-width: 80ch; }
+.sp-sent .s-wp { text-decoration: underline; text-decoration-color: var(--accent); text-decoration-thickness: 1.5px; text-underline-offset: 3px; }
+.sp-sent .s-rec { text-decoration: underline; text-decoration-style: dotted; text-decoration-color: var(--cc-green); text-underline-offset: 3px; }
+.sp-sent .s-au { text-decoration: underline; text-decoration-style: dashed; text-decoration-color: var(--warn); text-underline-offset: 3px; }
+.sp-legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: var(--fs-sm); color: var(--muted); margin: var(--space) 0 0; }
+.sp-legend span::before { content: ""; display: inline-block; width: 18px; height: 0; border-top: 2px solid var(--accent); margin-right: 6px; vertical-align: middle; }
+.sp-legend .l-rec::before { border-top-style: dotted; border-top-color: var(--cc-green); }
+.sp-legend .l-au::before { border-top-style: dashed; border-top-color: var(--warn); }
+
+/* ── How big is it: the ladder, the beside figure, the plate ─────────────────── */
+/* Each <svg> is hidden until species.js has drawn into it — the `.sp-drawn` rule the years strip
+   learned on 2026-09-09, because a bare <svg> is 300 x 150 by the UA default and would leave a
+   hole on a page read without JavaScript. */
+.sp-ladder, .sp-beside { display: none; width: 100%; height: auto; margin: var(--space) 0 0; }
+.sp-ladder.sp-drawn, .sp-beside.sp-drawn { display: block; }
+.sp-ladder { overflow: visible; }
+.sp-ladder .sp-ax { stroke: var(--muted); stroke-width: 1; }
+.sp-ladder .sp-lead, .sp-beside .sp-base { stroke: var(--border); stroke-width: 1; }
+.sp-ladder .sp-tick, .sp-ladder .sp-mval, .sp-beside .sp-bval { font: 11px var(--mono); fill: var(--muted); }
+.sp-ladder .sp-rlab, .sp-beside .sp-blab { font: 12px var(--sans); fill: var(--fg); }
+.sp-ladder .sp-mlab { font: 12px var(--sans); fill: var(--fg); }
+.sp-ladder .sp-refg { fill: var(--fg); stroke: var(--fg); }
+.sp-beside .sp-refg { fill: var(--muted); stroke: var(--muted); }
+.sp-ladder .sp-mark { stroke: var(--accent); stroke-width: 5; stroke-linecap: butt; }
+.sp-ladder .sp-markdot { fill: var(--accent); stroke: var(--bg); stroke-width: 2; }
+.sp-ladder .sp-org, .sp-beside .sp-org { color: var(--accent); fill: currentColor; }
+.sp-beside-wrap { margin-top: var(--space); }
+/* Eight decades of scale with six labelled references do not fit a phone, and squeezing them into
+   327 px makes the tick labels unreadable. So the LADDER's own container scrolls sideways, the way
+   the measurements timeline does, and the page never does. */
+.sp-ladder-wrap { margin-top: var(--space); overflow-x: auto; }
+.sp-ladder { min-width: 500px; }
+
+/* the plate: a scanned ink figure, contained not cropped, never faded (it is a diagram) */
+.sp-plate-fig { margin: calc(var(--space) * 2) 0 0; display: grid; grid-template-columns: minmax(0, 260px) minmax(0, 1fr); gap: calc(var(--space) * 2); align-items: start; }
+.sp-plate-img { background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius); aspect-ratio: 3 / 4; overflow: hidden; max-width: 100%; }
+.sp-plate-img img { display: block; width: 100%; height: 100%; object-fit: contain; filter: var(--sp-plate-filter); }
+.sp-early { list-style: none; margin: 0; padding: 0; font-size: 14.5px; }
+.sp-early li { display: grid; grid-template-columns: minmax(0, 118px) minmax(0, 1fr); gap: 10px; padding: 5px 0; border-top: 1px solid var(--border); }
+.sp-early li:first-child { border-top: 0; }
+.sp-early b { font-weight: 600; }
+.sp-early .sp-esrc { font: 11.5px var(--mono); color: var(--muted); }
+
+/* the phone: the face row and the plate figure each become one column, and the glance's label
+   column stops being fixed so a long common name cannot push the page sideways */
+@media (max-width: 620px) {
+  .sp-face { grid-template-columns: minmax(0, 1fr); }
+  .sp-plate-fig { grid-template-columns: minmax(0, 1fr); }
+  .sp-glance-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) auto; }
+  .sp-early li { grid-template-columns: minmax(0, 1fr); gap: 0; }
+}
+
 /* ── the species catalog's index (/species/): search + tree, the matrix, the icicle ───────────
    Drawn by assets/species.js from the one inline JSON; the rules below are the mockup's, mapped
    onto brand v2's tokens. The tint of a matrix cell and of an icicle band is ONE sequential ramp

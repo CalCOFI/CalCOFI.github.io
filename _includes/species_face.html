@@ -1,0 +1,89 @@
+{%- comment -%}
+  The face row, the sentence and the credit line — plan 2026-09-11 § D1–D4, D8, D9.
+
+  Everything here is composed server-side in _plugins/species.rb from _data/taxa_media.json and
+  _data/size_reference.csv: this include only lays it out. It is CONTENT, not a figure, so no part
+  of it waits for JavaScript.
+
+  Three slots, each independently absent:
+    · the silhouette — the constant (§ D1). Inline SVG filled with `currentColor`, so one 2–12 KB
+      vector is navy on white and bone on navy. Drawn only when the sidecar carries normalised
+      markup; a silhouette drawn from an ancestor says so.
+    · the photo — the enrichment (§ D2). A fixed 3 : 2 crop with the stored focal point, the radial
+      fade applied to the FRAME so the picture dissolves into whatever ground the page has. A
+      non-commercial licence is accepted and labelled (§ D7).
+    · the glance — two bars, the taxon's length and the nearest familiar reference (§ D3), or one
+      line saying no length is on record. Never a typed number.
+
+  A taxon with no sidecar entry renders nothing at all from here, and the page keeps the spacing it
+  had before this include existed.
+
+  include species_face.html face=page.face glance=page.glance sentence=page.sentence credits=page.credits
+{%- endcomment -%}
+{%- assign f = include.face -%}
+{%- assign g = include.glance -%}
+{%- assign s = include.sentence -%}
+
+{%- if f.sil or f.photo or g -%}
+<div class="sp-face">
+  {%- if f.sil or g -%}
+  <figure class="sp-sil-fig">
+    {%- if f.sil -%}
+    <svg class="sp-sil" viewBox="{{ f.sil.viewBox }}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="{{ f.sil.label | escape }}">{{ f.sil.inner }}</svg>
+    {%- if f.sil.stand_in and f.sil.shown -%}
+    <figcaption class="sp-stand">drawn from <i>{{ f.sil.shown | escape }}</i>{% if f.sil.steps_up > 0 %}, {{ f.sil.steps_up }} rank{% if f.sil.steps_up > 1 %}s{% endif %} up{% endif %}</figcaption>
+    {%- endif -%}
+    {%- endif -%}
+    {%- if g -%}
+    <div class="sp-glance">
+      <div class="sp-glance-row"><span class="sp-glance-l">{{ g.org_label | escape }}</span><i class="sp-bar" style="width:{{ g.org_w }}%"></i><span class="sp-glance-v tab">{{ g.org_len }}</span></div>
+      <div class="sp-glance-row"{% if g.ref_note %} title="{{ g.ref_note | escape }}"{% endif %}><span class="sp-glance-l">{{ g.ref_label | escape }}</span><i class="sp-bar sp-bar-ref" style="width:{{ g.ref_w }}%"></i><span class="sp-glance-v tab">{{ g.ref_len }}</span></div>
+      <p class="sp-credit">{% if g.kind %}{{ g.kind | escape }}{% endif %}{% if g.source %} · {% if g.url %}<a href="{{ g.url }}" rel="external">{{ g.source | escape }}</a>{% else %}{{ g.source | escape }}{% endif %}{% endif %}</p>
+    </div>
+    {%- else -%}
+    <p class="sp-glance sp-glance-none"><span class="cc-eyebrow">Size</span> · not on record: no authority the fetcher reads carries a length for this taxon{% if page.rank != "Species" %} (a genus page could show the range of its species){% endif %}.</p>
+    {%- endif -%}
+  </figure>
+  {%- endif -%}
+
+  {%- if f.photo -%}
+  <figure class="sp-photo-fig">
+    <div class="sp-photo">
+      <img src="{{ f.photo.src }}" alt="{{ f.photo.alt | escape }}"{% if f.photo.w %} width="{{ f.photo.w }}"{% endif %}{% if f.photo.h %} height="{{ f.photo.h }}"{% endif %} loading="lazy" decoding="async" style="object-position:{{ f.photo.pos }}">
+    </div>
+    <figcaption class="sp-credit">
+      {%- include species_credit.html c=f.photo.credit -%}
+      {%- if f.photo.nc %} <span class="cc-chip cc-chip-na" title="a non-commercial Creative Commons licence: allowed here, ranked last, and named so a re-user knows the terms">NC</span>{% endif -%}
+    </figcaption>
+  </figure>
+  {%- endif -%}
+</div>
+{%- endif -%}
+
+{%- if s.wp or s.rec or s.au -%}
+<p class="sp-sent">
+  {%- if s.wp %}<span class="s-wp">{{ s.wp | escape }}</span>{% if s.wp_about_genus %} <span class="cc-muted">(Wikipedia has only the genus.)</span>{% endif %} {% endif -%}
+  {%- if s.rec %}<span class="s-rec">{{ s.rec | escape }}</span>{% endif -%}
+  {%- if s.au %} <span class="s-au">{{ s.au | escape }}</span>{% endif -%}
+</p>
+<p class="sp-legend">
+  {%- if s.wp %}<span class="l-wp">borrowed prose</span>{% endif -%}
+  {%- if s.rec %}<span class="l-rec">this release's own numbers</span>{% endif -%}
+  {%- if s.au %}<span class="l-au">the naming authority</span>{% endif -%}
+</p>
+{%- endif -%}
+
+{%- comment -%}
+  The credit line under the sentence carries the slots that have no caption of their own — the
+  silhouette and the borrowed text. The photo is credited in its own <figcaption> above, so it is
+  skipped here rather than printed twice.
+{%- endcomment -%}
+{%- assign rest = include.credits | where_exp: "c", "c.kind != 'Photo'" -%}
+{%- if rest.size > 0 -%}
+<p class="sp-credit sp-credits">
+  {%- for c in rest -%}
+  {%- unless forloop.first %} <span class="sp-sep" aria-hidden="true">·</span> {% endunless -%}
+  {%- include species_credit.html c=c -%}
+  {%- endfor -%}
+</p>
+{%- endif -%}

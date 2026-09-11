@@ -2,7 +2,11 @@
 #
 # `_data/taxa.json` (calcofi4db::build_taxa_catalog(), schema 1.0; fetched by
 # scripts/fetch_release.sh) is the ONLY source of a taxon fact on this site, exactly as
-# `_data/datasets.json` is for a dataset. This generator turns it into:
+# `_data/datasets.json` is for a dataset. Its FACE — the silhouette, the photo, the lengths, the
+# plate and the borrowed sentence — comes from `_data/taxa_media.json`, written by
+# scripts/fetch_species_media.py rather than by the release (plan 2026-09-11 § D6), and from
+# `_data/size_reference.csv`. A taxon with no entry in the sidecar renders exactly as it did
+# before. This generator turns it into:
 #
 #   /species/                 the index: the counts, search + the tree, the class x dataset matrix,
 #                             the icicle — all four drawn by assets/species.js from ONE inline JSON
@@ -424,16 +428,28 @@ module CalCOFI
     end
 
     # ── one species page's own facts ─────────────────────────────────────────
+    # The record's own word for its biggest number (plan 2026-09-11 § D9). A row of `obs_bio` is
+    # not an organism: 75.5 % of the CUFES rows and 85.0 % of the phytoplankton rows are
+    # `value = 0`, so "62,898 observations" of the sardine counted 38,929 tows that caught none.
+    # Until `build_taxa_catalog()` carries `n_present` (rows with `value > 0`) the page says
+    # **records**; when it does, the stat reads `n_present` observations with `n_obs` records
+    # beside it. Nothing here is typed: the word follows the field the record actually has.
     def stat_row(t)
       direct = t["direct"] || {}
       roll   = t["rollup"] || {}
       obs    = roll["n_obs"] || direct["n_obs"]
+      present = roll["n_present"] || direct["n_present"]
       rows = []
-      if obs
+      if present
+        rows << { "dd" => Fmt.num(present), "dt" => "observations",
+                  "title" => "rows of obs_bio with value > 0 — the taxon was actually caught" }
+        rows << { "dd" => Fmt.num(obs), "dt" => "records",
+                  "title" => "every row of obs_bio keyed to it, including the sampling events that caught none" }
+      elsif obs
         title = (roll["n_obs"].to_i > direct["n_obs"].to_i) ?
           "#{Fmt.num(direct['n_obs'])} keyed to this taxon itself · #{Fmt.num(roll['n_obs'])} including every taxon under it" :
-          "#{Fmt.num(obs)} rows of obs_bio — one taxon × one life stage × one sampling event"
-        rows << { "dd" => Fmt.num(obs), "dt" => "observations", "title" => title }
+          "#{Fmt.num(obs)} rows of obs_bio — one taxon × one life stage × one sampling event, whether or not any was caught"
+        rows << { "dd" => Fmt.num(obs), "dt" => "records", "title" => title }
       end
       rows << { "dd" => Fmt.num(direct["n_samples"]), "dt" => "sampling events" } if direct["n_samples"].to_i.positive?
       y0 = roll["year_min"] || direct["year_min"]
@@ -449,7 +465,252 @@ module CalCOFI
       rows
     end
 
-    # one row per dataset that observed it: what it counted, and the name it uses
+    # ══ faces (WS-F3) ════════════════════════════════════════════════════════
+    # The page's picture, its size and its sentence — plan 2026-09-11 § D1–D5, D8, D9.
+    #
+    # The ONLY new source is `_data/taxa_media.json`, written by scripts/fetch_species_media.py
+    # (never by the release: the media depend on eight external services and change on their own
+    # cadence — plan § D6). A taxon with no entry renders exactly as it did before this section
+    # existed: every slot below is nil-safe and an absent slot leaves no gap.
+    #
+    # Nothing here is typed. A length, a licence, a credit and a reference object all come from the
+    # sidecar or from `_data/size_reference.csv`; the only numbers in this file are the layout's
+    # own (a bar's percentage width) and the one display THRESHOLD below.
+    MEDIA_BASE = "https://storage.googleapis.com/calcofi-files-public/"
+    # hair and mesh are not "familiar" objects to compare an organism with — they join the glance's
+    # candidates only for something too small for a coin. A display rule, not a measurement.
+    GLANCE_SMALL_M = 0.002
+    GLANCE_FAMILIAR = %w[quarter ring person ship].freeze
+
+    def media = @media ||= (@site.data["taxa_media"] || {})
+    def media_taxa = @media_taxa ||= (media["taxa"] || {})
+
+    # a cached thumbnail on the public bucket first (pages are stable and no third party is
+    # hot-linked — plan § D8); the source URL only while the fetcher has not cached it yet
+    def media_url(a)
+      return nil if a.nil?
+      cached = Fmt.present(a["cached"])
+      return "#{media['base'] || MEDIA_BASE}#{cached}" if cached
+      Fmt.present(a["url"])
+    end
+
+    def license_url_of(a) = Fmt.present(a["license_url"])
+    def nc?(a) = a && a["license"].to_s.match?(/\bNC\b|NonCommercial/i)
+
+    # 0.395 → "39.5 cm". The page's one length formatter; assets/species.js mirrors it for the
+    # figures it draws.
+    def fmt_len(m)
+      return nil if m.nil?
+      m = m.to_f
+      v, u = if m < 1e-3 then [m * 1e6, "µm"]
+             elsif m < 1e-2 then [m * 1e3, "mm"]
+             elsif m < 1 then [m * 100, "cm"]
+             else [m, "m"]
+             end
+      "#{(v - v.round).abs < 0.05 ? v.round.to_s : format('%.1f', v)} #{u}"
+    end
+
+    # the ladder's reference objects, from _data/size_reference.csv and nowhere else
+    def size_refs
+      @size_refs ||= (@site.data["size_reference"] || []).filter_map do |r|
+        m = r["m"].to_s.strip
+        next if m.empty? || Fmt.present(r["key"]).nil?
+        { "k" => r["key"], "label" => r["label"], "m" => Float(m), "note" => r["note"], "source" => r["source"] }
+      end
+    end
+
+    # the reference within an order of magnitude whose log-ratio is smallest (plan § D3)
+    def nearest_ref(m)
+      pool = size_refs.select { |r| GLANCE_FAMILIAR.include?(r["k"]) }
+      pool = size_refs if m < GLANCE_SMALL_M || pool.empty?
+      pool.min_by { |r| (Math.log10(m / r["m"])).abs }
+    end
+
+    # the short name the glance and the beside figure label the organism with
+    def short_name(t)
+      c = Fmt.present(t["common_name"])
+      c ? c.sub(/\s*\(.*\)\s*\z/, "") : name_of(t)
+    end
+
+    def face_of(t) = media_taxa[t["taxon_key"]]
+
+    # ── the face row: the silhouette, the photo, the glance ──────────────────
+    def face(t)
+      f = face_of(t)
+      return nil if f.nil?
+      out = {}
+      if (s = f["silhouette"]) && Fmt.present(s["svg_inner"])
+        # no svg_inner means the generator could not normalise the vector: draw NO silhouette
+        # rather than an <img> that cannot take the page's ink
+        steps = s["steps_up"].to_i
+        shown = Fmt.present(s["taxon_shown"])
+        out["sil"] = {
+          "inner" => s["svg_inner"], "viewBox" => s["viewBox"] || "0 0 1 1",
+          "aspect" => s["aspect"], "axis" => Fmt.present(s["length_axis"]),
+          "label" => "Silhouette of #{shown || name_of(t)}",
+          "stand_in" => (steps.positive? || (shown && shown != name_of(t))),
+          "shown" => shown, "steps_up" => steps,
+          "credit" => { "kind" => "Silhouette", "by" => Fmt.present(s["credit"]),
+                        "license" => Fmt.present(s["license"]), "license_url" => license_url_of(s),
+                        "via" => "PhyloPic", "page" => Fmt.present(s["url"]) }
+        }.compact
+      end
+      if (p = f["photo"]) && (src = media_url(p))
+        focal = p["focal"].is_a?(Array) ? p["focal"] : [0.5, 0.5]
+        out["photo"] = {
+          "src" => src, "alt" => Fmt.present(p["shows"]) || "Photograph of #{name_of(t)}",
+          "w" => p["w"], "h" => p["h"],
+          "pos" => "#{(focal[0].to_f * 100).round(1)}% #{(focal[1].to_f * 100).round(1)}%",
+          "nc" => nc?(p), "license" => Fmt.present(p["license"]),
+          "license_url" => license_url_of(p), "page" => Fmt.present(p["page"]),
+          "credit" => { "kind" => "Photo", "by" => Fmt.present(p["credit"]),
+                        "license" => Fmt.present(p["license"]), "license_url" => license_url_of(p),
+                        "via" => Fmt.present(p["via"]) || Fmt.present(p["source"]),
+                        "page" => Fmt.present(p["page"]), "shows" => Fmt.present(p["shows"]) }
+        }.compact
+      end
+      if (x = f["text"]) && Fmt.present(x["url"])
+        out["text"] = { "kind" => "Text", "title" => Fmt.present(x["title"]),
+                        "page" => Fmt.present(x["url"]), "license" => Fmt.present(x["license"]),
+                        "revision" => Fmt.present(x["revision"].to_s), "timestamp" => Fmt.present(x["timestamp"]),
+                        "via" => "Wikipedia" }.compact
+      end
+      out.empty? ? nil : out
+    end
+
+    # ── the glance: two bars, the taxon and the nearest familiar reference ───
+    def glance(t)
+      f = face_of(t)
+      sz = f && f["size"]
+      return nil if sz.nil? || sz["m"].nil? || size_refs.empty?
+      m = sz["m"].to_f
+      ref = nearest_ref(m)
+      return nil if ref.nil?
+      r = m / ref["m"]
+      { "org_label" => short_name(t), "org_len" => fmt_len(m), "org_w" => format("%.1f", r >= 1 ? 100 : r * 100),
+        "ref_key" => ref["k"], "ref_label" => ref["label"], "ref_len" => fmt_len(ref["m"]),
+        "ref_w" => format("%.1f", r >= 1 ? 100 / r : 100), "ref_note" => ref["note"],
+        "kind" => Fmt.present(sz["kind"]), "source" => Fmt.present(sz["source"]), "url" => Fmt.present(sz["url"]) }
+    end
+
+    # ── the sentence: borrowed prose, generated facts, each part marked ──────
+    LEAD_MAX = 320
+
+    def stages_text(st)
+      st = (st || []).compact
+      return nil if st.empty?
+      return st.join(" and ") if st.size == 2
+      return "#{st.first(3).join(', ')} and #{st.size - 3} more stages" if st.size > 4
+      st.join(", ")
+    end
+
+    # the WoRMS/ITIS authority string, iff the RECORD carries one. v2026.09.10's taxa.json does
+    # not, so the clause is simply absent — it is never fetched and never invented.
+    def authority_of(t)
+      a = Fmt.present(t["taxonomic_authority"]) || Fmt.present(t.dig("worms", "authority"))
+      return nil if a.nil?
+      m = /\A\(?(.+?),\s*(\d{4})\)?\z/.match(a)
+      m ? "Named by #{m[1]} in #{m[2]}" : nil
+    end
+
+    def sentence(t)
+      f = face_of(t)
+      roll = t["rollup"] || {}
+      direct = t["direct"] || {}
+      out = {}
+
+      if (x = f && f["text"])
+        lead = Fmt.present(x["lead"]) || Fmt.present(x["extract"])
+        if lead && lead.length > LEAD_MAX
+          # the last sentence end inside the cap. The character BEFORE the stop must be a lower-case
+          # letter, a digit or a closing bracket, so "C. G. Ehrenberg" and "Moser, H.G." are not
+          # mistaken for the end of a sentence (the fixture's own Chaetoceros lead is cut there).
+          cut = lead[0, LEAD_MAX].rindex(/[a-z0-9)\]”"'][.!?](?=\s|\z)/)
+          lead = cut ? lead[0, cut + 2] : "#{lead[0, LEAD_MAX].rstrip}…"
+        end
+        # the borrowed half and the measured half are two sentences, so the borrowed one has to end
+        # like one. The fixture's Chaetoceros lead stops at "the German naturalist C. G." — without
+        # this the record's sentence ran straight on from it.
+        lead = "#{lead}…" if lead && !lead.match?(/[.!?”"'’)\]…]\z/)
+        out["wp"] = lead
+        out["wp_about_genus"] = (x["about"].to_s == "genus")
+        out["wp_title"] = Fmt.present(x["title"])
+        out["wp_url"] = Fmt.present(x["url"])
+        out["wp_revision"] = Fmt.present(x["revision"].to_s)
+      end
+
+      present = roll["n_present"] || direct["n_present"]
+      n  = present || roll["n_obs"] || direct["n_obs"]
+      if n
+        word = present ? "observations" : "records"
+        nd   = (roll["n_datasets"] || direct["n_datasets"]).to_i
+        y0, y1 = roll["year_min"] || direct["year_min"], roll["year_max"] || direct["year_max"]
+        rec = +"CalCOFI holds #{Fmt.num(n)} #{word} of it in #{Fmt.num(nd)} dataset#{'s' if nd != 1}"
+        rec << " between #{y0} and #{y1}" if y0 && y1
+        if (st = stages_text(direct["life_stages"]))
+          rec << ", as #{st}"
+        end
+        rec << ", across #{Fmt.num(roll['n_taxa'])} taxa under it" if roll["n_taxa"].to_i > 1
+        out["rec"] = "#{rec}."
+        out["rec_word"] = word
+      end
+
+      if (au = authority_of(t))
+        g = glance(t)
+        au = "#{au}; grows to #{g['org_len']} (#{g['kind']})" if g && g["kind"]
+        out["au"] = "#{au}."
+      end
+      out.compact.empty? ? nil : out
+    end
+
+    # ── the credit line under the face row ───────────────────────────────────
+    def credits(t)
+      f = face(t)
+      return [] if f.nil?
+      [f.dig("sil", "credit"), f.dig("photo", "credit"), f["text"]].compact
+    end
+
+    # ── How big: the ladder, the beside figure and the plate, as ONE payload ─
+    # assets/species.js draws all three from this; the Liquid include only hosts them.
+    def size_json(t)
+      f = face_of(t)
+      sil = face(t) && face(t)["sil"]
+      sz = f && f["size"]
+      early = ((f && f["early"]) || []).filter_map do |e|
+        mm = e["mm"]
+        next unless mm.is_a?(Array) && mm.size == 2 && mm[0]
+        { "stage" => e["stage"], "mm" => [mm[0].to_f, mm[1].to_f],
+          "source" => Fmt.present(e["source"]) || (e["ref"] && (media.dig("refs", e["ref"].to_s) || "ref #{e['ref']}")) }
+      end
+      plate = f && f["plate"]
+      { "name" => name_of(t), "short" => short_name(t), "italic" => italic?(t), "rank" => t["rank"],
+        "refs" => size_refs,
+        "sil" => sil && { "vb" => sil["viewBox"], "inner" => sil["inner"],
+                          "aspect" => sil["aspect"], "axis" => sil["axis"] },
+        "size" => sz && sz["m"] && { "m" => sz["m"].to_f, "kind" => Fmt.present(sz["kind"]),
+                                     "source" => Fmt.present(sz["source"]), "url" => Fmt.present(sz["url"]) },
+        "early" => early,
+        "plate" => (plate && media_url(plate)) && {
+          "src" => media_url(plate), "alt" => Fmt.present(plate["shows"]) || "Developmental plate of #{name_of(t)}",
+          "credit" => { "kind" => "Plate", "by" => Fmt.present(plate["credit"]),
+                        "license" => Fmt.present(plate["license"]), "license_url" => license_url_of(plate),
+                        "via" => Fmt.present(plate["via"]) || Fmt.present(plate["source"]),
+                        "page" => Fmt.present(plate["page"]), "shows" => Fmt.present(plate["shows"]) }.compact },
+        "stages" => (t["datasets"] || []).filter_map do |x|
+          st = x["life_stages"] || []
+          next if st.empty?
+          d = ds_by_key[x["dataset_key"]] || {}
+          { "name" => d["dataset_name_short"] || x["dataset_key"], "stages" => st }
+        end }
+    end
+
+    # is there anything to put in a How big section at all?
+    def has_size_section?(t)
+      j = size_json(t)
+      !(j["size"].nil? && j["early"].empty? && j["plate"].nil?)
+    end
+
+    # ── one row per dataset that observed it: what it counted, and the name it uses
     def dataset_rows(t)
       (t["datasets"] || []).map do |x|
         d = ds_by_key[x["dataset_key"]] || {}
@@ -563,6 +824,16 @@ module CalCOFI
                                 "url" => abs(page_url(parent)), "name" => name_of(parent) }
       end
       node["sameAs"] = same unless same.empty?
+      # the photo, with the terms it is shown under (plan 2026-09-11 § D8). Only where a photo is
+      # actually drawn: a page without one gains nothing here.
+      if (p = face(t) && face(t)["photo"])
+        img = { "@type" => "ImageObject", "contentUrl" => p["src"] }
+        img["license"] = p["license_url"] || p["license"] if p["license_url"] || p["license"]
+        img["creditText"] = p.dig("credit", "by") if p.dig("credit", "by")
+        img["acquireLicensePage"] = p["page"] if p["page"]
+        img["caption"] = p["alt"] if p["alt"]
+        node["image"] = img
+      end
       node["isPartOf"] = { "@type" => "CollectionPage", "@id" => abs("/species/"),
                            "name" => "CalCOFI species catalog" }
       node
@@ -633,6 +904,24 @@ module CalCOFI
       pages << json_page(site, "/species/", "sitemap.xml", sitemap(tx))
       site.pages.concat(pages)
 
+      # faces (WS-F3): what the sidecar actually covers of the pages being drawn, measured here
+      if tx.media_taxa.empty?
+        Jekyll.logger.info "species:", "no _data/taxa_media.json — no faces (run scripts/fetch_species_media.py)"
+      else
+        if Fmt.present(tx.media["release"]) && tx.media["release"] != tx.release["version"]
+          Jekyll.logger.warn "species:", "taxa_media.json was fetched for release " \
+                                         "#{tx.media['release']}, the record is #{tx.release['version']}"
+        end
+        hit = tx.taxa.count { |t| tx.media_taxa.key?(t["taxon_key"]) }
+        Jekyll.logger.info "species:",
+                           "faces #{hit} of #{tx.taxa.size} pages · " \
+                           "silhouettes #{tx.taxa.count { |t| tx.face(t)&.key?('sil') }} · " \
+                           "photos #{tx.taxa.count { |t| tx.face(t)&.key?('photo') }} · " \
+                           "sizes #{tx.taxa.count { |t| tx.glance(t) }} · " \
+                           "How big #{tx.taxa.count { |t| tx.has_size_section?(t) }} · " \
+                           "#{tx.size_refs.size} size references"
+      end
+
       Jekyll.logger.info "species:",
                          "#{tx.taxa.size} pages · #{Fmt.num(tx.counts['taxa_observed'])} taxa observed · " \
                          "#{Fmt.num(tx.counts['species_observed'])} species · #{tx.counts['datasets']} datasets " \
@@ -680,6 +969,14 @@ module CalCOFI
             "url" => tx.page_url(a), "italic" => tx.italic?(a) }
         end,
         "ids"        => tx.id_rows(t),
+        # faces (WS-F3): all nil where the sidecar has no entry for this taxon, and the includes
+        # draw nothing at all then — the page is what it was
+        "face"       => tx.face(t),
+        "glance"     => tx.glance(t),
+        "sentence"   => tx.sentence(t),
+        "credits"    => tx.credits(t),
+        "has_size"   => tx.has_size_section?(t),
+        "size_data"  => JSON.generate(tx.size_json(t)).gsub("</", "<\\/"),
         "stats"      => tx.stat_row(t),
         "ds_rows"    => tx.dataset_rows(t),
         "strip"      => JSON.generate(tx.strip_json(t)),

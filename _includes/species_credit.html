@@ -1,0 +1,24 @@
+{%- comment -%}
+  One credit, in the one format the whole species catalog uses (plan 2026-09-11 § D7, D8):
+
+      a picture   <kind> · <who> · <licence> · <where> · <what it shows>
+      the text    Text · <the article, linked> · <licence> · rev. <revision> (<date>)
+
+  Every part is read from _data/taxa_media.json; a part the sidecar does not carry is left out
+  rather than guessed, and a licence is NEVER written here. The licence links to its own deed when
+  the sidecar carries the URL, so a re-user can read the terms the picture is shown under.
+
+  include species_credit.html c=page.face.photo.credit
+{%- endcomment -%}
+{%- assign c = include.c -%}
+{{ c.kind }}
+{%- if c.title -%}
+{{ " · " }}<a href="{{ c.page }}" rel="external">{{ c.via | default: 'Wikipedia' }}, “{{ c.title | escape }}”</a>
+{%- if c.license %} · {% if c.license_url %}<a href="{{ c.license_url }}" rel="license external">{{ c.license | escape }}</a>{% else %}{{ c.license | escape }}{% endif %}{% endif -%}
+{%- if c.revision %} · rev. {{ c.revision | escape }}{% if c.timestamp %} ({{ c.timestamp | escape }}){% endif %}{% endif -%}
+{%- else -%}
+{%- if c.by %} · {{ c.by | escape }}{% endif -%}
+{%- if c.license %} · {% if c.license_url %}<a href="{{ c.license_url }}" rel="license external">{{ c.license | escape }}</a>{% else %}{{ c.license | escape }}{% endif %}{% endif -%}
+{%- if c.via %} · {% if c.page %}<a href="{{ c.page }}" rel="external">{{ c.via | escape }}</a>{% else %}{{ c.via | escape }}{% endif %}{% endif -%}
+{%- if c.shows %} · {{ c.shows | escape }}{% endif -%}
+{%- endif -%}
