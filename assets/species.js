@@ -596,3 +596,49 @@
   drawIce();
   addEventListener('resize', drawIce);
 })();
+
+// ── index glyphs (WS-F4) ───────────────────────────────────────────────────────────────────────
+// A phylum or class tree row draws its taxon's silhouette before the name — 18 px tall, width from
+// its aspect, `fill: currentColor` baked into the markup so it takes the row's own colour (a link's
+// accent, a plain label's --fg). `_plugins/species.rb` puts `sil: { inner, vb, aspect }` on a tree
+// node's JSON only when the rank is Phylum/Class AND `_data/taxa_media.json` (WS-F2a's fetch; ten
+// taxa in the WS-F4 fixture, so almost every row here has none yet) carries that taxon's silhouette
+// — so this reads #sp-data again rather than touching the tree code above, and a MutationObserver
+// decorates rows the tree builds lazily (search reveal, fold, "all ranks") as well as the ones it
+// draws up front. A row with no "sil" is untouched: no glyph, no change to its height.
+(function () {
+  var dataEl = document.getElementById('sp-data');
+  var tree = document.getElementById('sp-tree');
+  if (!dataEl || !tree) return;
+  var sil = {};
+  try {
+    (JSON.parse(dataEl.textContent).nodes || []).forEach(function (n) { if (n.sil) sil[n.k] = n.sil; });
+  } catch (e) { return; }
+  if (!Object.keys(sil).length) return; // the fixture's correct empty state — nothing to draw
+
+  function attrEsc(s) { return String(s).replace(/"/g, '&quot;'); }
+  function glyphHtml(s) {
+    var w = Math.round(18 * (s.aspect || 1) * 100) / 100;
+    return '<svg class="sp-sil" width="' + w + '" height="18" viewBox="' + attrEsc(s.vb) +
+           '" aria-hidden="true" focusable="false">' + s.inner + '</svg>';
+  }
+
+  function decorate(li) {
+    var k = li.dataset && li.dataset.k, s = k && sil[k];
+    if (!s) return;
+    var nm = li.querySelector(':scope > .sp-tr > .sp-nm');
+    if (!nm || nm.querySelector(':scope > .sp-sil')) return;
+    nm.insertAdjacentHTML('afterbegin', glyphHtml(s));
+  }
+
+  tree.querySelectorAll('li[data-k]').forEach(decorate);
+  new MutationObserver(function (muts) {
+    muts.forEach(function (m) {
+      m.addedNodes.forEach(function (node) {
+        if (node.nodeType !== 1) return;
+        if (node.matches && node.matches('li[data-k]')) decorate(node);
+        if (node.querySelectorAll) node.querySelectorAll('li[data-k]').forEach(decorate);
+      });
+    });
+  }).observe(tree, { childList: true, subtree: true });
+})();

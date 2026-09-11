@@ -217,14 +217,35 @@ SELECT * FROM read_json('{{ rel.catalog_url }}')</pre>
     <div class="tile t-obs">
       <div class="cc-eyebrow">What's observed · WoRMS- and NERC-keyed</div>
       {%- if nums.species -%}
-      <div class="tile-row obsrow">
+      <div class="tile-row obsrow sp-obsrow">
         <span class="tile-big">{{ nums.species_fmt }} species</span>
         <span class="cc-muted">of {{ nums.taxa_fmt }} taxa</span>
-        <span class="tile-glyphs" aria-hidden="true">
-          {%- assign life_glyphs = "cat-phytoplankton,cat-zooplankton,cat-krill,cat-ichthyo,cat-fish,cat-whale" | split: "," -%}
-          {%- for g in life_glyphs -%}
-          <i class="cc-i cc-i-{{ g }}"></i>
-          {%- endfor -%}
+        {%- comment -%}
+          WS-F4: the six classes with the most organism observations (site.data.taxa's own
+          `rollup.n_obs`, the same count the tree rolls up), each a real link with its silhouette
+          from `_data/taxa_media.json` (WS-F2a's fetch; git-ignored, ten taxa in the WS-F4 fixture —
+          none of them class-rank, so this renders empty today, the correct D-2 empty state, not a
+          placeholder). Real content replaces the old decorative cat-* icons, so the span can no
+          longer be aria-hidden; each glyph SVG is aria-hidden on its own and the link's aria-label
+          carries the name.
+        {%- endcomment -%}
+        <span class="tile-glyphs sp-glyphs">
+          {%- if site.data.taxa and site.data.taxa_media -%}
+            {%- assign sp-classes = site.data.taxa.taxa | where: "rank", "Class" | sort: "rollup.n_obs" | reverse -%}
+            {%- assign sp-tm = site.data.taxa_media.taxa -%}
+            {%- assign sp-n = 0 -%}
+            {%- for t in sp-classes -%}
+              {%- if sp-n >= 6 -%}{%- break -%}{%- endif -%}
+              {%- assign sp-sil = sp-tm[t.taxon_key].silhouette -%}
+              {%- if sp-sil and sp-sil.svg_inner and sp-sil.viewBox and sp-sil.aspect -%}
+                {%- assign sp-n = sp-n | plus: 1 -%}
+                {%- assign sp-w = 20.0 | times: sp-sil.aspect | round: 2 -%}
+                <a class="sp-glyph" href="{{ '/species/' | append: t.slug | append: '/' | relative_url }}" aria-label="{{ t.scientific_name | default: t.common_name | escape }}">
+                  <svg class="tile-sil" width="{{ sp-w }}" height="20" viewBox="{{ sp-sil.viewBox }}" aria-hidden="true" focusable="false">{{ sp-sil.svg_inner }}</svg>
+                </a>
+              {%- endif -%}
+            {%- endfor -%}
+          {%- endif -%}
         </span>
         <a class="cc-text-link obs-more" href="{{ species_url }}">{% if site.data.species %}Browse the species →{% else %}Browse them in the Explorer →{% endif %}</a>
       </div>

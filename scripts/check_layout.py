@@ -382,6 +382,15 @@ PROBE = r"""
         return r2.height > 0 && (r2.bottom > b.bottom + 1 || r2.right > b.right + 1);
       }).length
     };
+    // WS-F4: the species row's silhouette strip (.sp-glyphs) must fit the tile's EXISTING height
+    // budget — the line-height the shared `.tile-glyphs` rule already allocated for the six
+    // decorative icons this strip replaces, read from the class rather than a synthetic "emptied"
+    // state (the row was never actually empty: it always drew six glyphs, none or 0-6 today)
+    const glyphs = obs.querySelector(".sp-glyphs");
+    if (glyphs) {
+      out.observed.glyphsH = px(glyphs.getBoundingClientRect().height);
+      out.observed.glyphsBudget = px(parseFloat(cs(glyphs).lineHeight) || 0);
+    }
   }
 
   // ── the species catalog (plan 2026-09-09 § S3) ─────────────────────────────
@@ -432,6 +441,19 @@ PROBE = r"""
       }).map(el => String(el.className || el.tagName)).slice(0, 6)
     };
     void natural;   // the tree pane is bounded by the matrix pane, which is checked directly
+
+    // WS-F4: a phylum/class row's silhouette (.sp-sil, 18 px tall — under the 20 px .sp-tw button,
+    // the row's tallest fixed element) must not change the row's height; hidden vs shown on the
+    // SAME row proves it rather than a remembered pixel count.
+    const silEl = d.querySelector("#sp-tree .sp-tr .sp-sil");
+    if (silEl) {
+      const row = silEl.closest(".sp-tr");
+      out.species.treeRowH = px(row.getBoundingClientRect().height);
+      const was = silEl.style.display;
+      silEl.style.display = "none";
+      out.species.treeRowHNoSil = px(row.getBoundingClientRect().height);
+      silEl.style.display = was;
+    }
   }
 
   // one taxon page: the rows, the lineage and the Explorer link against the page's own record
@@ -763,6 +785,12 @@ def check(path, r, width, theme, fails, notes):
             fails.append(f"{where}: the tree drew {sp['treeRoots']} roots")
         if sp["warnEls"]:
             fails.append(f"{where}: --warn on the species index: {', '.join(sorted(set(sp['warnEls']))[:4])}")
+        # WS-F4: a phylum/class row's silhouette must not change the row's height (checked only
+        # when a row actually carries one — the WS-F4 fixture's ten taxa are none of them
+        # phylum/class rank, so this is a no-op until the real taxa_media.json lands)
+        if sp.get("treeRowH") is not None and sp["treeRowH"] != sp["treeRowHNoSil"]:
+            fails.append(f"{where}: a tree row with its silhouette is {sp['treeRowH']}px, "
+                         f"{sp['treeRowHNoSil']}px without it — the glyph grew the row")
         # No unbounded text beside a fixed-height figure: the tree scrolls INSIDE a pane that is
         # exactly the matrix pane's height, and the matrix pane is bounded by its own content — so
         # neither pane can be drawn taller than something real (the tree's own content is 2,403
@@ -1013,6 +1041,12 @@ def check(path, r, width, theme, fails, notes):
             if ob["overflow"] > 2 or ob["spill"]:
                 fails.append(f"{where}: the Observed tile overflows its cell "
                              f"({ob['overflow']}px, {ob['spill']} children outside)")
+            # WS-F4: the species row's silhouette strip must fit the tile's existing height budget
+            # — the shared .tile-glyphs rule's own line-height, the room the six decorative icons
+            # this strip replaces already had (0-6 real glyphs today; the WS-F4 fixture draws none)
+            if ob.get("glyphsBudget") and ob["glyphsH"] > ob["glyphsBudget"] + 1:
+                fails.append(f"{where}: the species silhouette strip is {ob['glyphsH']}px, taller "
+                             f"than the tile's existing {ob['glyphsBudget']}px glyph row")
 
         # ── D7: the Data section must not grow by a screen ────────────────────
         h = r.get("dataSectionH")

@@ -1440,3 +1440,32 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
   .mm-qgrid { grid-template-columns: minmax(0, 1fr); gap: 2px; }
   .mm-qgrid dd { margin-bottom: 8px; }
 }
+
+/* ── index glyphs (WS-F4) ──────────────────────────────────────────────────────────────────────
+   The tree's phylum/class silhouette (assets/species.js) and the front door's "What's observed"
+   species-row strip (index.html) — both draw the same inline SVGs `_data/taxa_media.json` supplies
+   via `_plugins/species.rb`'s `sil` field, `fill: currentColor` baked into the markup so each takes
+   its own row/link's colour. */
+
+/* the tree row (18 px): an inline SVG defaults to `vertical-align: baseline`, which reserves room
+   for the font's descender below it and grows the line box (measured: 30px drawn vs 26px without —
+   the row DID grow before this rule); `middle` removes that gap so the row's height stays the
+   .sp-tw button's 20px + the row's own 3px+3px padding, unchanged whether or not a row has one. */
+.sp-sil { display: inline-block; vertical-align: middle; margin-right: 4px; }
+
+/* the tile's species-row strip: real class silhouettes (fish run ~3:1 wide) are never as narrow as
+   the six decorative icons they replace, so the strip must SHRINK and scroll horizontally rather
+   than wrap the "Browse the species →" link onto its own line (measured: 251px drawn vs 225px
+   without at 375px — the wrap, not the glyphs themselves, was what grew the tile). */
+.tile.t-obs .sp-glyphs { flex: 1 1 0; min-width: 0; max-width: 100%; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; }
+.tile.t-obs .sp-glyphs::-webkit-scrollbar { display: none; height: 0; }
+/* the row's `align-items: baseline` (obsrow, shared with the measurements row) gives a glyph — a
+   replaced element with no text baseline of its own — the bottom of its margin box as its
+   baseline, which inflates the LINE beyond either sibling's own height (measured: 234px drawn vs
+   225px without at 375px, though neither sibling wrapped). `.sp-obsrow` scopes the fix to the
+   species row only, never the measurements row's cat-* icons. */
+.sp-obsrow .sp-glyphs, .sp-obsrow .obs-more { align-self: center; }
+.tile.t-obs .obs-more { flex: none; }
+.tile.t-obs a.sp-glyph { display: inline-flex; align-items: center; flex: none; color: inherit; text-decoration: none; }
+.tile.t-obs a.sp-glyph:hover .tile-sil, .tile.t-obs a.sp-glyph:focus-visible .tile-sil { opacity: 0.65; }
+.tile.t-obs .tile-sil { flex: none; }
