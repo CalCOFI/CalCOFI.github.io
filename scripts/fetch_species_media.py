@@ -398,11 +398,26 @@ def phylopic_by_name(name, steps_up, memo=None):
     q = urllib.parse.quote(low)
     d = get_json(f"https://api.phylopic.org/nodes?build={b}&filter_name={q}"
                  f"&embed_items=true&embed_primaryImage=true&page=0", "phylopic") or {}
+    # `filter_name` is a fuzzy search: "hydrobates" returns Hygrobates (a water mite), two
+    # homonyms and, fourth, the storm-petrel genus — and the first item with an image was taken,
+    # so Leach's storm petrel wore a mite (measured 2026-09-11).  Only a node one of whose
+    # scientific names IS the query (case-insensitive) may answer for it; the walk goes on up the
+    # lineage otherwise.  `matched_node` records which node answered.
     found = None
     for n in ((d.get("_embedded") or {}).get("items") or []):
+        title = ((n.get("_links") or {}).get("self") or {}).get("title") or ""
+        names = {title.lower()}
+        for nm in (n.get("names") or []):
+            for frag in (nm if isinstance(nm, list) else [nm]):
+                if isinstance(frag, dict) and frag.get("class") == "scientific":
+                    names.add((frag.get("text") or "").strip().lower())
+        if low not in names:
+            continue
         img = (n.get("_embedded") or {}).get("primaryImage")
         if img:
             found = _phylopic_from_image(img, "name", steps_up)
+            if found:
+                found["matched_node"] = title
             break
     _name_memo[low] = found
     if memo is not None:
@@ -1003,7 +1018,8 @@ def do_taxon(t, rec, cache, out_dir, wd_all, sizes, dry_run, pool=None, override
     sil = got.get("phylopic")
     if sil:
         sil = dict(sil)
-        svg = cache.run("phylopic_svg", slug,
+        svg = cache.run("phylopic_svg", sil["uuid"],       # by image, never by taxon: a taxon whose
+                                                           # silhouette changes must not serve the old vector
                         lambda: http(sil["svg_url"], "phylopic",
                                      accept="image/svg+xml").decode("utf-8", "replace"))
         if svg:

@@ -114,7 +114,11 @@ def shown_ok(by_key, by_name, key, shown, asset=None, slot=None) -> bool:
     return False
 
 
-def head_ok(url) -> bool:
+def head_ok(url):
+    """200 → True; a 403 / 429 → "refused" (inaturalist.org and gbif.org put their HTML pages behind a
+    bot wall that answers 403 to any non-browser client, browser User-Agent included — measured
+    2026-09-11 — so a refusal is not a dead link and is reported as a note, not a failure); anything
+    else (404, 410, 5xx, no answer) → False."""
     for method in ("HEAD", "GET"):
         try:
             req = urllib.request.Request(url, method=method, headers={"User-Agent": UA})
@@ -124,6 +128,8 @@ def head_ok(url) -> bool:
         except urllib.error.HTTPError as e:
             if e.code == 405:                               # the host refuses HEAD: try GET
                 continue
+            if e.code in (403, 429):
+                return "refused"
             return False
         except Exception:
             return False
@@ -194,12 +200,17 @@ def main(argv=None):
                         f"below the {SILHOUETTE_MIN:.0%} floor")
 
     checked = 0
+    refused = []
     if urls and args.sample > 0 and not args.no_network:
         random.seed(args.seed)
         pick = random.sample(urls, max(1, round(len(urls) * args.sample)))
+        refused = []
         for where, u in pick:
             checked += 1
-            if not head_ok(u):
+            ok = head_ok(u)
+            if ok == "refused":
+                refused.append(f"{where}: {u} refused a script (403/429; a bot wall, not a dead link)")
+            elif not ok:
                 problems.append(f"{where}: {u} did not answer 200")
 
     print(f"{path}")
@@ -207,7 +218,8 @@ def main(argv=None):
     for slot in ("photo", "drawing", "plate", "size", "text"):
         c = sum(1 for e in taxa.values() if e.get(slot))
         print(f"  {slot:<11} {c}" + (f" ({c / n:.0%})" if n else ""))
-    print(f"  {len(urls)} asset links · {checked} sampled with a live request")
+    print(f"  {len(urls)} asset links · {checked} sampled with a live request"
+          + (f" · {len(refused)} refused a script (403/429, not counted as dead)" if refused else ""))
     if warnings:
         print(f"\n  {len(warnings)} silhouette(s) stand in from more than two ranks up "
               f"(a quality finding for the hand review, not a failure):")
