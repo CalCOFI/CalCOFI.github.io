@@ -188,7 +188,12 @@ module CalCOFI
     # this grain is counted separately, because a zero there means "not flagged", not "all good".
     def flagged(s) = s["qual_ok_n"].nil? ? 0 : [s["n_values"].to_i - s["qual_ok_n"].to_i, 0].max
     def flagged_total(m) = (m["series"] || []).sum { |s| flagged(s) }
-    def unflaggable(m) = (m["series"] || []).select { |s| !Fmt.present(s["qual_column"]) }
+    # a CTD average ("sensor_mean") has no flag of its own, but since v2026.09.11 it is REBUILT from its two
+    # sensors with any sensor its provider flags 8 or 9 left out (the flag rule, calcofi4db::
+    # combine_sensor_pair()), so it is screened even though no code sits on its rows
+    def sensor_mean?(s) = (s["flags"] || []).include?("sensor_mean")
+    def unflaggable(m) = (m["series"] || []).select { |s| !Fmt.present(s["qual_column"]) && !sensor_mean?(s) }
+    def screened_means(m) = (m["series"] || []).select { |s| !Fmt.present(s["qual_column"]) && sensor_mean?(s) }
 
     # the heads-up under the stats band: how many values the provider flags, that the Explorer,
     # the climatology and its anomalies leave them out, and which series have no flag to consult
@@ -196,7 +201,8 @@ module CalCOFI
       t = m["totals"] || {}
       n = flagged_total(m)
       bare = unflaggable(m).map { |s| "the <code>#{CGI.escapeHTML(s['measurement_type'])}</code> series from #{CGI.escapeHTML(ds_name(s['dataset_key']).to_s)}" }
-      return nil if n.zero? && bare.empty?
+      means = screened_means(m).map { |s| "the <code>#{CGI.escapeHTML(s['measurement_type'])}</code> series from #{CGI.escapeHTML(ds_name(s['dataset_key']).to_s)}" }
+      return nil if n.zero? && bare.empty? && means.empty?
       parts = []
       if n.positive?
         pct = 100.0 * n / [t["n_values"].to_i, 1].max
@@ -210,6 +216,12 @@ module CalCOFI
         lead = bare.join(" and ")
         parts << "#{lead[0].upcase}#{lead[1..]} #{bare.size == 1 ? 'carries' : 'carry'} no flag at this grain, " \
                  "so #{bare.size == 1 ? 'its' : 'their'} values cannot be screened this way."
+      end
+      unless means.empty?
+        lead = means.join(" and ")
+        parts << "#{lead[0].upcase}#{lead[1..]} #{means.size == 1 ? 'is an average' : 'are averages'} of two sensors, " \
+                 "rebuilt with any sensor its provider flags questionable or bad left out, so " \
+                 "#{means.size == 1 ? 'it carries' : 'they carry'} no flag of #{means.size == 1 ? 'its' : 'their'} own."
       end
       parts.join(" ")
     end
