@@ -20,3 +20,8 @@ _data/taxa.json
 _data/erddap_taxon_key.json
 _data/measurements.json
 _data/erddap_measurement_type.json
+
+# the species faces sidecar, fetched at build time by scripts/fetch_release.sh, and the fetcher's
+# own working cache (thumbnails + one JSON per taxon per source) — neither is ever committed
+_data/taxa_media.json
+.cache/

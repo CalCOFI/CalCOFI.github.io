@@ -1,0 +1,84 @@
+name: Refresh the species faces (fetch the media → the public bucket)
+
+# The species pages' faces — the PhyloPic silhouette, a licensed photo, a drawing, the NOAA larval
+# plate, the max length and Wikipedia's lead — come from eight external services that change on
+# their own cadence, so they are NOT release content (plan 2026-09-11 § D6). This workflow runs
+# scripts/fetch_species_media.py against the promoted release's taxa.json and rsyncs the result to
+# gs://calcofi-files-public/species-media/{release}/, where scripts/fetch_release.sh picks it up on
+# the next site build. Nothing here writes to this repo.
+#
+# ── DISABLED ────────────────────────────────────────────────────────────────────────────────────
+# `if: false` on the job, because this repository has NO service-account secret: every other
+# workflow reads the release anonymously over https and never authenticates to GCS. To enable it,
+# add a repository secret GCP_SA_KEY holding the calcofi-admin service-account JSON key (the same
+# account `gcloud` already runs as on Ben's machine — the key lives on Drive under `private/`),
+# then delete the `if: false` line below. Until then the fetcher is run by hand:
+#
+#     scripts/fetch_release.sh
+#     scripts/fetch_species_media.py --upload        # resumable; ~2 h for 2,410 taxa
+#     scripts/check_species_media.py
+#
+# The bucket is public-read and its anonymous `list` is load-bearing elsewhere: never change the
+# bucket's IAM from here.
+
+on:
+  schedule:
+    - cron: "0 9 * * 0"          # Sundays 09:00 UTC
+  workflow_dispatch:
+    inputs:
+      refresh:
+        description: "Ignore the cache and refetch every source"
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: species-media
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    if: false                    # ← delete this line once GCP_SA_KEY exists (see the note above)
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install --quiet Pillow
+
+      # the record the faces are keyed to: the promoted release's own taxa.json
+      - name: Fetch the release record
+        run: scripts/fetch_release.sh
+        env:
+          DATASETS_RELEASE_URL: ${{ vars.DATASETS_RELEASE_URL }}
+          TAXA_RELEASE_URL: ${{ vars.TAXA_RELEASE_URL }}
+          MEASUREMENTS_RELEASE_URL: ${{ vars.MEASUREMENTS_RELEASE_URL }}
+
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+      - uses: google-github-actions/setup-gcloud@v2
+
+      # every request carries a User-Agent with this contact; the sources are rate-limited per host
+      - name: Fetch the media
+        run: scripts/fetch_species_media.py ${{ inputs.refresh && '--refresh' || '' }}
+        env:
+          CALCOFI_MEDIA_CONTACT: ${{ vars.CALCOFI_MEDIA_CONTACT || 'bdbest@gmail.com' }}
+
+      # the gate, BEFORE anything reaches the bucket: an allow-listed licence, a credit, a live
+      # link and a named taxon on every asset, and silhouettes on at least 95 % of the taxa
+      - name: Check the sidecar
+        run: scripts/check_species_media.py
+
+      # a second pass over a warm cache: it re-reads nothing, rsyncs the folder and stamps each
+      # asset's `cached` object path in the JSON it publishes
+      - name: Upload
+        run: scripts/fetch_species_media.py --upload
+        env:
+          CALCOFI_MEDIA_CONTACT: ${{ vars.CALCOFI_MEDIA_CONTACT || 'bdbest@gmail.com' }}

@@ -32,6 +32,13 @@
 #                                 else; without it the site builds with no measurement pages and the
 #                                 front door's measurement doors fall back to the Explorer
 #                                 (plan 2026-09-10 § D4, the D-2 rule)
+#   _data/taxa_media.json         the species FACES sidecar (scripts/fetch_species_media.py,
+#                                 schema 1.0) — per taxon the PhyloPic silhouette, a licensed
+#                                 photo, a drawing, the NOAA larval plate, the max length and
+#                                 Wikipedia's lead.  NOT release content: it is built weekly into
+#                                 gs://calcofi-files-public/species-media/{release}/ and is
+#                                 silently absent, in which case the species pages draw no faces
+#                                 (plan 2026-09-11 § D6)
 #   _data/erddap_measurement_type.json  which of THOSE datasets' ERDDAP tables carry a
 #                                 `measurement_type` variable — a measurement page constrains its
 #                                 ERDDAP row per series only where the server says the column exists
@@ -270,6 +277,31 @@ for i in sorted(set(ids)):
 json.dump(has, open(out, "w"), indent=1, sort_keys=True)
 print(f"erddap measurement_type: {sum(has.values())} of {len(has)} probed datasets carry the column")
 PYX
+fi
+
+# the species FACES: taxa_media.json — the silhouette, photo, drawing, plate, size and sentence per
+# taxon (plan 2026-09-11 § D6).  It is NOT release content: the media come from eight external
+# services on their own cadence, so scripts/fetch_species_media.py builds it into
+# gs://calcofi-files-public/species-media/{release}/ weekly (.github/workflows/species-media.yml)
+# and the site reads it from there.  Silently absent: a release with no sidecar yet renders the
+# species pages exactly as it does today, with no faces and no gap.
+rm -f "$DATA/taxa_media.json"
+MEDIA_BASE="${CALCOFI_MEDIA_BASE:-https://storage.googleapis.com/calcofi-files-public/species-media}"
+if get "$MEDIA_BASE/$version/taxa_media.json" "$DATA/taxa_media.json"; then
+  python3 - "$DATA/taxa_media.json" "$MEDIA_BASE/$version/taxa_media.json" <<'PYF'
+import json, sys
+path, url = sys.argv[1:3]
+d = json.load(open(path))
+c = d.get("coverage", {})
+print(f"species media: schema {d.get('schema_version')} · release {d.get('release')} · "
+      f"fetched {d.get('fetched')} · {c.get('taxa')} taxa · {c.get('silhouette')} silhouettes · "
+      f"{c.get('photo')} photos · {c.get('drawing')} drawings · {c.get('plate')} plates · "
+      f"{c.get('size')} sizes · {c.get('text')} sentences")
+print(f"       {url}")
+PYF
+else
+  rm -f "$DATA/taxa_media.json"
+  echo "NOTE: no taxa_media.json under $MEDIA_BASE/$version — the species pages draw no faces"
 fi
 
 # versions.json is release-history, kept at the prefix root, never inside a version folder
