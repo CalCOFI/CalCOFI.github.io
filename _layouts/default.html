@@ -53,18 +53,19 @@
 <div id="layout">
 
   {%- comment -%}
-    The v2 header: the horizontal lockup far left → calcofi.io (absolute, so the brand check's
-    back-link test passes on a local build too), the site as an uppercase nav item → its root,
-    the section anchors as uppercase links (from products.yml, so the header can never drift from
-    the sections rendered), calcofi.org ↗ where the SIO template's utility strip would carry
-    UCSD.EDU, and the toggle.
+    The v2 header: the "CalCOFI.io" lockup far left → calcofi.io (absolute, so the brand check's
+    back-link test passes on a local build too) with the tagline beside it — no second title: this
+    site IS CalCOFI.io, so a "CALCOFI.IO" item linking the current page only repeated the lockup and
+    looked like a way home (Ben, 2026-09-11) — then the section anchors as uppercase links (from
+    products.yml, so the header can never drift from the sections rendered), calcofi.org ↗ where the
+    SIO template's utility strip would carry UCSD.EDU, and the toggle.
   {%- endcomment -%}
   <header class="cc-header">
     <a class="cc-home" href="https://calcofi.io" aria-label="CalCOFI.io — home">
-      <img class="cc-logo-dark"  src="{{ '/brand/v2/logo_calcofi_h.svg'       | relative_url }}" alt="CalCOFI">
-      <img class="cc-logo-light" src="{{ '/brand/v2/logo_calcofi_h_light.svg' | relative_url }}" alt="CalCOFI">
+      <img class="cc-logo-dark"  src="{{ '/brand/v2/logo_calcofi_h.svg'       | relative_url }}" alt="CalCOFI.io">
+      <img class="cc-logo-light" src="{{ '/brand/v2/logo_calcofi_h_light.svg' | relative_url }}" alt="CalCOFI.io">
     </a>
-    <a class="cc-title" href="{{ page.url | relative_url }}">{{ site.title }} <small>open data ecosystem</small></a>
+    <span class="cc-tagline">open data ecosystem</span>
 
     <span class="cc-spacer"></span>
 
@@ -87,10 +88,7 @@
       {%- assign s_title = s.title | split: " — " | first -%}
       {%- if s.kind == "page" -%}
       {%- assign s_url = s.url | relative_url -%}
-      <a href="{{ s_url }}"{% if page.url == s.url %} aria-current="page"{% endif %}>{{ s_title }}
-        {%- comment -%} the dot says an entry landed in the last 30 days (_plugins/news.rb) {%- endcomment -%}
-        {%- if s.id == "news" and site.data.log_new %}<span class="newdot" title="new in the last 30 days"></span>{% endif -%}
-      </a>
+      <a href="{{ s_url }}"{% if page.url == s.url %} aria-current="page"{% endif %}>{{ s_title }}</a>
       {%- elsif s.tabs -%}
       <span class="cc-m">
         <a href="{{ '/' | relative_url }}#{{ s.id }}" aria-haspopup="true" aria-expanded="false">{{ s_title }}</a>

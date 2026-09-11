@@ -18,8 +18,8 @@
 #             release_date; only for versions that exist in versions.json, so a `since_version`
 #             that predates the catalog never invents a date
 #   app       products.yml `added: YYYY-MM-DD` (back-filled from each product's first commit) —
-#             "New: <title>"; a product added within NEW_DAYS is `new`, and the header's News link
-#             wears a dot while any entry is that young
+#             "New: <title>". (Until 2026-09-11 the header's News link wore a dot while any entry was
+#             under 30 days old; it could not know what a visitor had read, so it only confused. Gone.)
 #   data · site · paper   _data/news.yml rows {date, type, title, body, url} — hand-written
 #
 # A news.yml row may carry `dataset_key:` or `version:` to OVERRIDE a generated entry of the same key
@@ -38,7 +38,6 @@ require "yaml"
 module CalCOFI
   module News
     TYPES    = %w[release dataset app data site paper].freeze
-    NEW_DAYS = 30
     # the rendered changelog every release entry opens (storage.calcofi.io, not the raw .md on
     # googleapis); the two hand-written `data` rows of news.yml link their own `##` section of it
     RELEASES = "https://storage.calcofi.io/calcofi-db/ducklake/releases/RELEASES.html"
@@ -100,11 +99,7 @@ module CalCOFI
                      "title" => r["title"], "body" => r["body"].to_s, "url" => r["url"] }
       end
 
-      today = Date.today
-      entries.each do |e|
-        e["date"] = e["date"].to_s[0, 10]
-        e["new"]  = (today - Date.parse(e["date"])).to_i <= NEW_DAYS rescue false
-      end
+      entries.each { |e| e["date"] = e["date"].to_s[0, 10] }
       entries.sort_by { |e| [e["date"], TYPES.index(e["type"]) || 9] }.reverse
     end
 
@@ -154,7 +149,6 @@ module CalCOFI
     def generate(site)
       entries = News.build(site)
       site.data["log"] = entries
-      site.data["log_new"] = entries.any? { |e| e["new"] }
       site.pages << NewsPage.new(site, "/", "feed.xml", { "layout" => nil, "sitemap" => false }, News.atom(site, entries))
       Jekyll.logger.info "news:", "#{entries.size} entries (#{News::TYPES.map { |t| "#{entries.count { |e| e['type'] == t }} #{t}" }.join(' · ')})"
     end

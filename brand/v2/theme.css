@@ -122,8 +122,8 @@
 /* ── header ───────────────────────────────────────────────────────────────────
    <header class="cc-header">
      <a class="cc-home" href="https://calcofi.io" aria-label="CalCOFI.io home">
-       <img class="cc-logo-dark"  src="…/brand/v2/logo_calcofi_h.svg"       alt="CalCOFI">
-       <img class="cc-logo-light" src="…/brand/v2/logo_calcofi_h_light.svg" alt="CalCOFI">
+       <img class="cc-logo-dark"  src="…/brand/v2/logo_calcofi_h.svg"       alt="CalCOFI.io">
+       <img class="cc-logo-light" src="…/brand/v2/logo_calcofi_h_light.svg" alt="CalCOFI.io">
      </a>
      <a class="cc-title" href="./">Explorer <small>Stations</small></a>
      <a class="cc-release" …>release <b>v2026.08.25</b></a>
@@ -133,6 +133,9 @@
    </header>
    One bar, SIO-shaped: the horizontal lockup far left → calcofi.io, the product's title as an uppercase
    nav item → its own root, the release chip, uppercase links, the toggle. White in light, navy in dark.
+   The lockup's wordmark reads "CalCOFI.io" (2026-09-11), so the title is the product's own name alone
+   ("Explorer", "Query", "ERDDAP"), never "CalCOFI …" again; calcofi.io itself has no title, only a
+   .cc-tagline beside the lockup.
    Self-contained (explicit font, colour, size) so it reads the same inside a Bootstrap page. */
 .cc-header {
   position: sticky; top: 0; z-index: 1020;
@@ -158,6 +161,10 @@
 .cc-header .cc-title small {
   font-weight: 400; font-size: calc(var(--nav-fs) - 1px); letter-spacing: 0; text-transform: none;
   color: var(--muted); margin-left: 0.6em; white-space: nowrap;
+}
+/* added 2026-09-11 — a tagline straight after the lockup, for the one site whose title the lockup already is */
+.cc-header .cc-tagline {
+  font-weight: 400; font-size: calc(var(--nav-fs) - 1px); line-height: 1.2; color: var(--muted); white-space: nowrap;
 }
 .cc-header .cc-spacer { flex: 1; }
 .cc-header .cc-links { display: inline-flex; flex-wrap: wrap; align-items: center; gap: calc(var(--space) * 2.5); }
@@ -202,7 +209,7 @@
    <picture><source media="(max-width: 479px)" srcset="…/logo_calcofi_light.svg"><img class="cc-logo-light" …></picture> */
 @media (max-width: 479px) {
   .cc-header { gap: calc(var(--space) * 1.5); }
-  .cc-header .cc-title small, .cc-header .cc-links { display: none; }
+  .cc-header .cc-title small, .cc-header .cc-tagline, .cc-header .cc-links { display: none; }
 }
 
 /* ── type helpers (page scale) ────────────────────────────────────────────────
