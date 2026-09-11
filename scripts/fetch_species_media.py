@@ -936,7 +936,37 @@ def materialize(cands, dest: Path, slot, dry_run, out_rel):
 
 # ── one taxon ───────────────────────────────────────────────────────────────────────────────────
 
-def do_taxon(t, rec, cache, out_dir, wd_all, sizes, dry_run, pool=None):
+OVERRIDE_CSV = ROOT / "_data" / "rank_override.csv"
+
+
+def load_overrides(path=OVERRIDE_CSV):
+    """`_data/rank_override.csv` — the hand-curated exclusions the integrator's page review adds
+    (plan § Risks): `taxon_key,slot,source,id,note`.  A row excludes the candidate `source` + `id`
+    for that taxon from `slot` (`photo` | `drawing`; blank = both); a blank `id` excludes every
+    candidate of that source for the taxon, so the next-ranked file takes the slot.  The fetched
+    JSON is never edited by hand: the override is applied at ranking time on every run."""
+    rows = []
+    if not path.exists():
+        return rows
+    import csv
+    with path.open(newline="", encoding="utf-8") as fh:
+        for r in csv.DictReader(fh):
+            if (r.get("taxon_key") or "").strip():
+                rows.append({k: (v or "").strip() for k, v in r.items()})
+    return rows
+
+
+def apply_overrides(cands, key, slot, overrides):
+    rules = [o for o in overrides if o["taxon_key"] == key and o.get("slot", "") in ("", slot)]
+    if not rules:
+        return cands
+    def excluded(c):
+        return any(o["source"] == c.get("source") and (not o.get("id") or o["id"] == str(c.get("id")))
+                   for o in rules)
+    return [c for c in cands if not excluded(c)]
+
+
+def do_taxon(t, rec, cache, out_dir, wd_all, sizes, dry_run, pool=None, overrides=()):
     key = t["taxon_key"]
     slug = t["slug"]
     dest = out_dir / slug
@@ -1002,10 +1032,12 @@ def do_taxon(t, rec, cache, out_dir, wd_all, sizes, dry_run, pool=None):
         cands += got.get(source) or []
     ranked = annotate(cands, key, rec)
     out_rel = f"{PREFIX}/{rec.release}/{slug}"
-    photos = [c for c in ranked if not c["is_drawing"]] or ranked
+    photos = apply_overrides([c for c in ranked if not c["is_drawing"]] or ranked,
+                             key, "photo", overrides)
     entry["photo"] = materialize(photos, dest, "photo", dry_run, out_rel)
-    drawings = [c for c in ranked if c["source"] == "commons" and c["is_drawing"]
-                and (not entry["photo"] or c["id"] != entry["photo"]["id"])]
+    drawings = apply_overrides([c for c in ranked if c["source"] == "commons" and c["is_drawing"]
+                                and (not entry["photo"] or c["id"] != entry["photo"]["id"])],
+                               key, "drawing", overrides)
     entry["drawing"] = materialize(drawings, dest, "drawing", dry_run, out_rel) if drawings else None
 
     # e — the NOAA plate
@@ -1141,6 +1173,9 @@ def main(argv=None):
                     wd_all.setdefault(k, v["v"])
             log(f"  wikidata {prop}: {len(slugs)} taxa, {sum(1 for v in hit.values() if v and v.get('v'))} items")
 
+    overrides = load_overrides()
+    if overrides:
+        log(f"rank_override.csv: {len(overrides)} rows")
     t0 = time.time()
     entries = {}
     pool = (concurrent.futures.ThreadPoolExecutor(max_workers=args.workers)
@@ -1150,7 +1185,7 @@ def main(argv=None):
             log(f"[{i}/{len(taxa)}] {t['taxon_key']} {t.get('scientific_name')}")
             try:
                 entries[t["taxon_key"]] = do_taxon(t, rec, cache, out_dir, wd_all, sizes,
-                                                   args.dry_run, pool)
+                                                   args.dry_run, pool, overrides)
             except Exception as e:
                 log(f"  ! {t['taxon_key']}: {type(e).__name__}: {e}")
                 entries[t["taxon_key"]] = {}
@@ -1164,7 +1199,7 @@ def main(argv=None):
 
     refs = {}
     for v in (sizes or {}).values():
-        refs.update((v.get("fishbase") or {}).get("refs") or {})
+        refs.update((v.get("fishbase") or v).get("refs") or {})
 
     doc = {"schema_version": "1.0", "release": release,
            "fetched": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
