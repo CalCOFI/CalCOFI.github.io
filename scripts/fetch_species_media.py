@@ -135,8 +135,10 @@ class HttpError(Exception):
         self.code = code
 
 
-_dead_hosts: set[str] = set()      # media hosts that hung once this run: skipped from then on
-_dead_lock = threading.Lock()
+_dead_hosts: set[str] = set()      # media hosts that hung THREE times this run: skipped from then on
+_host_hangs: dict[str, int] = {}   # (one timeout on inaturalist-open-data.s3.amazonaws.com under six
+_dead_lock = threading.Lock()      #  workers once skipped 1,368 downloads — measured 2026-09-11)
+DEAD_AFTER = 3
 
 
 def _with_deadline(fn, seconds):
@@ -167,10 +169,9 @@ def http(url, host_key, accept="application/json", timeout=40, data=None, header
     hdr = {"User-Agent": UA, "Accept": accept, **(headers or {})}
     netloc = urllib.parse.urlsplit(url).netloc.lower()
     if host_key == "download":
-        tries = 1
         with _dead_lock:
             if netloc in _dead_hosts:
-                raise ConnectionError(f"{netloc} hung earlier this run; skipped")
+                raise ConnectionError(f"{netloc} hung {DEAD_AFTER} times this run; skipped")
     last = None
     for attempt in range(tries):
         _throttle(host_key)
@@ -184,12 +185,15 @@ def http(url, host_key, accept="application/json", timeout=40, data=None, header
             last = HttpError(e.code, url)
             if e.code in (400, 401, 403, 404, 410):          # a real answer: do not retry
                 raise last
-            time.sleep(2 ** attempt * 1.5)
+            time.sleep((6.0 if e.code == 429 else 1.5) * 2 ** attempt)   # 429: back off harder
         except Exception as e:                                # timeout, DNS, reset
             last = e
-            if host_key == "download" and isinstance(e, (TimeoutError, OSError)):
+            if host_key == "download" and isinstance(e, TimeoutError):
                 with _dead_lock:
-                    _dead_hosts.add(netloc)
+                    _host_hangs[netloc] = _host_hangs.get(netloc, 0) + 1
+                    if _host_hangs[netloc] >= DEAD_AFTER:
+                        _dead_hosts.add(netloc)
+                break                                         # a download is not retried
             time.sleep(2 ** attempt * 1.5)
     raise last
 
@@ -1135,6 +1139,12 @@ def do_taxon(t, rec, cache, out_dir, wd_all, sizes, dry_run, pool=None, override
     cands = []
     for source in ("commons", "inat", "gbif"):
         cands += got.get(source) or []
+    # `curated` is decided HERE, at ranking time, never trusted from a cached candidate: a Commons
+    # file is curated only if it is the taxon's Wikidata P18 (see commons_candidates)
+    p18_title = "File:" + links["p18"] if links and links.get("p18") else None
+    for c in cands:
+        if c.get("source") == "commons":
+            c["curated"] = bool(p18_title) and c.get("id") == p18_title
     ranked = annotate(cands, key, rec)
     out_rel = f"{PREFIX}/{rec.release}/{slug}"
     photos = apply_overrides([c for c in ranked if not c["is_drawing"]] or ranked,
