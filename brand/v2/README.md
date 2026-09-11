@@ -16,7 +16,7 @@ or behaves is `v3/`.
 | `theme.js` | resolve → apply → persist (an explicit choice only) → toggle → notify; `ccTheme.version === "2"` |
 | `head.html` | the `<head>` block to paste verbatim: favicons, the two font preloads, the pre-paint snippet, `fonts.css`, `theme.css`, `theme.js` |
 | `icons.css` + `icons/` | the 51-glyph sprite and masks, regenerated here from `CalCOFI/explore` (`node scripts/build_icons.mjs ../CalCOFI.github.io/brand/v2`) |
-| `logo_calcofi_h.svg` / `logo_calcofi_h_light.svg` | **the horizontal lockup** — the mark + "CalCOFI" wordmark, for a dark / light ground; 36 px tall on pages, 28 px in apps |
+| `logo_calcofi_h.svg` / `logo_calcofi_h_light.svg` | **the horizontal lockup** — the mark + "CalCOFI.io" wordmark (was "CalCOFI" until 2026-09-11), for a dark / light ground; 36 px tall on pages, 28 px in apps |
 | `logo_calcofi.svg` / `logo_calcofi_light.svg` | the mark, as v1 (favicons, cards, a phone header under 480 px) |
 | `favicon.ico` `favicon-32x32.png` `favicon-16x16.png` `apple-touch-icon.png` | the favicon set, unchanged |
 | `index.html` | the specimen: every token with its contrast, both themes, both scales, the header, type, buttons, cards on each band, an explorer rail sample |
@@ -171,10 +171,10 @@ Plain HTML / Jekyll / Hugo (a page):
 <body>
 <header class="cc-header">
   <a class="cc-home" href="https://calcofi.io" aria-label="CalCOFI.io home">
-    <img class="cc-logo-dark"  src="https://calcofi.io/brand/v2/logo_calcofi_h.svg"       alt="CalCOFI">
-    <img class="cc-logo-light" src="https://calcofi.io/brand/v2/logo_calcofi_h_light.svg" alt="CalCOFI">
+    <img class="cc-logo-dark"  src="https://calcofi.io/brand/v2/logo_calcofi_h.svg"       alt="CalCOFI.io">
+    <img class="cc-logo-light" src="https://calcofi.io/brand/v2/logo_calcofi_h_light.svg" alt="CalCOFI.io">
   </a>
-  <a class="cc-title" href="./">db-schema</a>
+  <a class="cc-title" href="/db-schema/">Schema</a>
   <a class="cc-release" href="https://calcofi.io/db-schema/#erd?v=v2026.08.25">release <b>v2026.08.25</b></a>
   <span class="cc-spacer"></span>
   <nav class="cc-links"><a href="…">query</a><a href="…">docs</a></nav>
@@ -183,13 +183,18 @@ Plain HTML / Jekyll / Hugo (a page):
 <section class="cc-band cc-band-alt"><div class="cc-container"> … </div></section>
 ```
 
+The title is the product's own name and links to its own root with no query or subpath ("Explorer",
+"Query", "Schema", "ERDDAP", "Docs") — never "CalCOFI Query": the lockup already says CalCOFI.io and is the
+way home, so the two links stay distinguishable. calcofi.io itself carries no title, only
+`<span class="cc-tagline">open data ecosystem</span>` after the lockup (2026-09-11).
+
 An app adds `<meta name="cc-scale" content="app">` **above** the head block and may swap the lockup for
 the mark on a narrow phone:
 
 ```html
 <picture>
   <source media="(max-width: 479px)" srcset="https://calcofi.io/brand/v2/logo_calcofi_light.svg">
-  <img class="cc-logo-light" src="https://calcofi.io/brand/v2/logo_calcofi_h_light.svg" alt="CalCOFI">
+  <img class="cc-logo-light" src="https://calcofi.io/brand/v2/logo_calcofi_h_light.svg" alt="CalCOFI.io">
 </picture>
 ```
 
