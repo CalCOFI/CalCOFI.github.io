@@ -755,7 +755,10 @@
     }
     refs.forEach(function (o) {
       var ly = 16 + o.row * 28;
-      var tip = o.r.label + ': ' + (o.r.note || fmtLen(o.r.m)) + (o.r.source ? ' · ' + o.r.source : '');
+      // the reference's own note, and its source where that is a citation rather than a bare URL
+      // (size_reference.csv carries either; a URL in a <title> tooltip is not clickable)
+      var src = o.r.source && !/^https?:\/\//.test(o.r.source) ? ' · ' + o.r.source : '';
+      var tip = o.r.label + ': ' + (o.r.note || fmtLen(o.r.m)) + src;
       s += '<g><title>' + esc(tip) + '</title>' + refGlyph(o.r.k, o.x, AX - 12, 40) +
            '<line x1="' + o.x + '" x2="' + o.x + '" y1="' + (AX - 10) + '" y2="' + (AX - 2) + '" class="sp-lead"/>' +
            '<text x="' + o.x + '" y="' + ly + '" text-anchor="middle" class="sp-rlab">' + esc(o.r.label) + '</text>' +
