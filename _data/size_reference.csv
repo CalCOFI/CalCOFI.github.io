@@ -1,0 +1,7 @@
+key,label,m,note,source
+hair,human hair,0.00007,"scalp hair fiber diameter; midpoint of the stated 60-80 µm range (Wolfram LJ 2003, J Am Acad Dermatol, via the Harvard BioNumbers database)",https://bionumbers.hms.harvard.edu/bionumber.aspx?id=114258
+mesh,bongo net mesh,0.000505,CalCOFI bongo (CalBOBL) net mesh opening (505 µm),https://calcofi.org/bongo-net-tow/
+quarter,US quarter,0.02426,US quarter dollar coin diameter (0.955 in / 24.26 mm),https://www.usmint.gov/coins/coin-medal-programs/circulating-coins/quarter
+ring,bongo net ring,0.71,CalCOFI bongo (CalBOBL) net frame ring opening diameter (71 cm),https://calcofi.org/bongo-net-tow/
+person,a person,1.70,"reference adult height, close to the global mean height of men born in 1996 (1.71 m; women 1.59 m)",https://ourworldindata.org/human-height
+ship,R/V Reuben Lasker,63.6,"NOAA OMAO fisheries survey vessel, length overall 208.70 ft = 63.6 m (NOT 63.8 m as stated in the umbrella plan's F7 -- flagged in WS-F2b's hand-back, sourced value used here)",https://www.omao.noaa.gov/marine-operations/ships/reuben-lasker
