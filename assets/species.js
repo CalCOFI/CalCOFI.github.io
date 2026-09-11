@@ -596,3 +596,321 @@
   drawIce();
   addEventListener('resize', drawIce);
 })();
+
+/* ── faces (WS-F3) ─────────────────────────────────────────────────────────────────────────────
+   "How big is it" on a species page: the log ladder, the beside figure and the developmental
+   plate (plan 2026-09-11 § D3, D5). Its own IIFE, so nothing above can reach it and WS-F4's
+   index glyphs append cleanly after it.
+
+   Every number this draws is read from the inline #sp-size-data written by _plugins/species.rb —
+   the taxon's lengths from _data/taxa_media.json, the six reference objects from
+   _data/size_reference.csv. Nothing here is a measurement; the script computes positions, formats
+   a length and lays out labels so that no two overlap.
+
+   The face row, the sentence and the glance are NOT here: they are content, composed server-side
+   in Liquid, and a page read without JavaScript still has them. */
+(function () {
+  'use strict';
+
+  var host = document.getElementById('sp-size-data');
+  if (!host) return;
+  var D;
+  try { D = JSON.parse(host.textContent); } catch (e) { return; }
+
+  var ladderEl = document.getElementById('sp-ladder');
+  var besideEl = document.getElementById('sp-beside');
+  var plateEl = document.getElementById('sp-plate');
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                                     .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+  /* the same rule _plugins/species.rb writes the glance with: µm below a millimetre, then mm, cm, m */
+  function tidy(v) { return Math.abs(v - Math.round(v)) < 0.05 ? String(Math.round(v)) : v.toFixed(1); }
+  function fmtLen(m) {
+    if (m < 1e-3) return tidy(m * 1e6) + ' µm';
+    if (m < 1e-2) return tidy(m * 1e3) + ' mm';
+    if (m < 1) return tidy(m * 100) + ' cm';
+    return tidy(m) + ' m';
+  }
+  function fmtMM(lo, hi) { return lo === hi ? lo + ' mm' : lo + '–' + hi + ' mm'; }
+  function article(l) { return /^(a |an |the )/i.test(l) ? l : 'the ' + l; }
+
+  var REFS = D.refs || [];
+  var FAMILIAR = ['quarter', 'ring', 'person', 'ship'];
+  /* the same choice the glance makes server-side: the smallest |log10(organism / reference)|
+     among the familiar objects, hair and mesh joining only for something below a couple of mm */
+  function nearestRef(m) {
+    var pool = REFS.filter(function (r) { return FAMILIAR.indexOf(r.k) >= 0; });
+    if (!pool.length || m < 0.002) pool = REFS;
+    return pool.reduce(function (best, r) {
+      return Math.abs(Math.log10(m / r.m)) < Math.abs(Math.log10(m / best.m)) ? r : best;
+    }, pool[0]);
+  }
+
+  /* ── the reference glyphs ───────────────────────────────────────────────────────────────────
+     Drawn to fit a box of height h, centred on x with its foot at y. They are drawings, not data:
+     the LENGTH each one stands for is read from size_reference.csv and never from these paths. */
+  function refGlyph(k, x, y, h, cls) {
+    cls = cls || 'sp-refg';
+    var s, x0, y0, r, w, L;
+    if (k === 'hair') {
+      return '<line x1="' + x + '" x2="' + x + '" y1="' + (y - h) + '" y2="' + y + '" class="' + cls + '" stroke-width="1.5"/>';
+    }
+    if (k === 'mesh') {
+      s = h * 0.8; x0 = x - s / 2; y0 = y - s;
+      var g = '<g class="' + cls + '" style="fill:none" stroke-width="1"><rect x="' + x0 + '" y="' + y0 + '" width="' + s + '" height="' + s + '"/>';
+      [1, 2].forEach(function (i) {
+        g += '<line x1="' + (x0 + i * s / 3) + '" x2="' + (x0 + i * s / 3) + '" y1="' + y0 + '" y2="' + (y0 + s) + '"/>';
+        g += '<line y1="' + (y0 + i * s / 3) + '" y2="' + (y0 + i * s / 3) + '" x1="' + x0 + '" x2="' + (x0 + s) + '"/>';
+      });
+      return g + '</g>';
+    }
+    if (k === 'quarter') {
+      r = h * 0.42;
+      return '<g class="' + cls + '"><circle cx="' + x + '" cy="' + (y - r) + '" r="' + r + '" style="fill:none" stroke-width="' +
+             Math.max(1, r * 0.12) + '" stroke-dasharray="' + (r * 0.18).toFixed(2) + ' ' + (r * 0.12).toFixed(2) +
+             '"/><circle cx="' + x + '" cy="' + (y - r) + '" r="' + (r * 0.72) + '" style="fill:none" stroke-width="' +
+             Math.max(1, r * 0.06) + '"/></g>';
+    }
+    if (k === 'ring') {
+      r = h * 0.46;
+      return '<circle cx="' + x + '" cy="' + (y - r) + '" r="' + r + '" style="fill:none" class="' + cls +
+             '" stroke-width="' + Math.max(2, r * 0.1) + '"/>';
+    }
+    if (k === 'person') {
+      /* a plain standing figure at roughly human proportions — the head about a seventh of it */
+      w = h * 0.26; x0 = x - w / 2;
+      var hr = h * 0.072, cy = y - h + hr;
+      return '<g class="' + cls + '" stroke="none"><circle cx="' + x + '" cy="' + cy + '" r="' + hr + '"/>' +
+             '<path d="M' + x0 + ',' + (y - h * 0.40) + ' L' + x0 + ',' + (y - h * 0.82) +
+             ' Q' + x + ',' + (y - h * 0.94) + ' ' + (x0 + w) + ',' + (y - h * 0.82) +
+             ' L' + (x0 + w) + ',' + (y - h * 0.40) + ' Z"/>' +
+             '<rect x="' + (x - w * 0.40) + '" y="' + (y - h * 0.44) + '" width="' + (w * 0.30) + '" height="' + (h * 0.44) + '"/>' +
+             '<rect x="' + (x + w * 0.10) + '" y="' + (y - h * 0.44) + '" width="' + (w * 0.30) + '" height="' + (h * 0.44) + '"/></g>';
+    }
+    if (k === 'ship') {
+      L = h * 3.2; x0 = x - L / 2;
+      return '<g class="' + cls + '" stroke="none"><path d="M' + x0 + ',' + (y - h * 0.32) + ' L' + (x0 + L) + ',' + (y - h * 0.32) +
+             ' L' + (x0 + L * 0.93) + ',' + y + ' L' + (x0 + L * 0.06) + ',' + y + ' Z"/>' +
+             '<path d="M' + (x0 + L * 0.18) + ',' + (y - h * 0.32) + ' L' + (x0 + L * 0.18) + ',' + (y - h * 0.62) +
+             ' L' + (x0 + L * 0.56) + ',' + (y - h * 0.62) + ' L' + (x0 + L * 0.56) + ',' + (y - h * 0.85) +
+             ' L' + (x0 + L * 0.72) + ',' + (y - h * 0.85) + ' L' + (x0 + L * 0.72) + ',' + (y - h * 0.32) + ' Z"/>' +
+             '<rect x="' + (x0 + L * 0.62) + '" y="' + (y - h) + '" width="' + (L * 0.015) + '" height="' + (h * 0.2) + '"/></g>';
+    }
+    return '';
+  }
+
+  function silSvg(x, y, w, h, cls) {
+    if (!D.sil || !D.sil.inner) return '';
+    return '<svg x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" viewBox="' + D.sil.vb +
+           '" preserveAspectRatio="xMidYMid meet" class="' + cls + '">' + D.sil.inner + '</svg>';
+  }
+
+  /* greedy row assignment: no two labels share a row while their boxes overlap horizontally */
+  function assignRows(items, gap) {
+    var ends = [];
+    items.sort(function (a, b) { return a.left - b.left; }).forEach(function (o) {
+      var r = 0;
+      while (ends[r] != null && o.left < ends[r] + gap) r++;
+      ends[r] = o.right;
+      o.row = r;
+    });
+    return items;
+  }
+
+  function marksOf() {
+    var out = (D.early || []).map(function (e) {
+      return { label: e.stage, lo: e.mm[0] / 1e3, hi: e.mm[1] / 1e3, src: e.source };
+    });
+    if (D.size) out.push({ label: 'adult, max', lo: D.size.m, hi: D.size.m, src: D.size.source, adult: true });
+    return out;
+  }
+
+  /* ── the ladder: 10 µm → 100 m, the references above the axis, the taxon's marks below ────── */
+  function drawLadder() {
+    if (!ladderEl || !REFS.length) return;
+    var W = 1000, x0 = 34, x1 = 966, AX = 122;
+    var lx = function (m) { return x0 + (Math.log10(m) + 5) / 7 * (x1 - x0); };
+    var refs = assignRows(REFS.map(function (r) {
+      var x = lx(r.m), w = Math.max(64, String(r.label).length * 6.6);
+      return { r: r, x: x, left: x - w / 2, right: x + w / 2 };
+    }), 12);
+    var aspect = (D.sil && D.sil.aspect) || 1;
+    var marks = assignRows(marksOf().map(function (m) {
+      var xa = lx(m.lo), xb = lx(m.hi);
+      var val = m.lo === m.hi ? fmtLen(m.lo) : fmtLen(m.lo) + '–' + fmtLen(m.hi);
+      var silW = m.adult && D.sil ? 18 * aspect + 6 : 0;
+      return { m: m, xa: xa, xb: xb, val: val, silW: silW,
+               left: xa - 5, right: xb + 8 + silW + (String(m.label).length + 1) * 6.4 + val.length * 6.3 };
+    }), 10);
+    var maxRow = marks.reduce(function (a, o) { return Math.max(a, o.row); }, 0);
+    var H = AX + 44 + (maxRow + 1) * 22 + 4;
+    var s = '<line x1="' + x0 + '" x2="' + x1 + '" y1="' + AX + '" y2="' + AX + '" class="sp-ax"/>';
+    for (var e = -5; e <= 2; e++) {
+      var x = lx(Math.pow(10, e));
+      s += '<line x1="' + x + '" x2="' + x + '" y1="' + (AX - 4) + '" y2="' + (AX + 4) + '" class="sp-ax"/>' +
+           '<text x="' + x + '" y="' + (AX + 18) + '" class="sp-tick" text-anchor="middle">' +
+           esc(fmtLen(Math.pow(10, e))) + '</text>';
+    }
+    refs.forEach(function (o) {
+      var ly = 16 + o.row * 28;
+      // the reference's own note, and its source where that is a citation rather than a bare URL
+      // (size_reference.csv carries either; a URL in a <title> tooltip is not clickable)
+      var src = o.r.source && !/^https?:\/\//.test(o.r.source) ? ' · ' + o.r.source : '';
+      var tip = o.r.label + ': ' + (o.r.note || fmtLen(o.r.m)) + src;
+      s += '<g><title>' + esc(tip) + '</title>' + refGlyph(o.r.k, o.x, AX - 12, 40) +
+           '<line x1="' + o.x + '" x2="' + o.x + '" y1="' + (AX - 10) + '" y2="' + (AX - 2) + '" class="sp-lead"/>' +
+           '<text x="' + o.x + '" y="' + ly + '" text-anchor="middle" class="sp-rlab">' + esc(o.r.label) + '</text>' +
+           '<text x="' + o.x + '" y="' + (ly + 13) + '" text-anchor="middle" class="sp-mval">' + esc(fmtLen(o.r.m)) + '</text></g>';
+    });
+    if (!marks.length) {
+      s += '<text x="' + x0 + '" y="' + (AX + 48) + '" class="sp-mlab">No length on record for ' + esc(D.name) +
+           ': nothing is marked under the axis.</text>';
+    }
+    marks.forEach(function (o) {
+      var xm = (o.xa + o.xb) / 2, y = AX + 44 + o.row * 22;
+      var tip = o.m.label + ': ' + o.val + (o.m.src ? ' · ' + o.m.src : '');
+      s += '<g><title>' + esc(tip) + '</title>' +
+           '<line x1="' + xm + '" x2="' + xm + '" y1="' + (AX + 2) + '" y2="' + (y - 7) + '" class="sp-lead"/>' +
+           (o.xa === o.xb
+             ? '<circle cx="' + o.xa + '" cy="' + y + '" r="4.5" class="sp-markdot"/>'
+             : '<line x1="' + o.xa + '" x2="' + o.xb + '" y1="' + y + '" y2="' + y + '" class="sp-mark"/>') +
+           (o.m.adult ? silSvg(o.xb + 8, y - 9, 18 * aspect, 18, 'sp-org') : '') +
+           '<text x="' + (o.xb + 8 + o.silW) + '" y="' + (y + 4) + '" class="sp-mlab">' + esc(o.m.label) +
+           ' <tspan class="sp-mval">' + esc(o.val) + '</tspan></text></g>';
+    });
+    ladderEl.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    ladderEl.innerHTML = s;
+    ladderEl.classList.add('sp-drawn');
+  }
+
+  /* ── the beside figure: the silhouette to scale next to the nearest familiar object ───────── */
+  function drawBeside() {
+    if (!besideEl || !D.size || !D.sil || !D.sil.axis || !REFS.length) return;
+    var m = D.size.m, ref = nearestRef(m), aspect = D.sil.aspect || 1;
+    var orgW = D.sil.axis === 'w' ? m : m * aspect;
+    var orgH = D.sil.axis === 'w' ? m / aspect : m;
+    var refW = ref.m, refH = ref.k === 'ship' ? ref.m * 0.31 : ref.m;
+    var W = 640, H = 250, pad = 24, gap = 40, base = H - 44;
+    var scale = Math.min((W - 2 * pad - gap) / (orgW + refW), (base - 30) / Math.max(orgH, refH));
+    var rw = refW * scale, rh = refH * scale, ow = orgW * scale, oh = orgH * scale;
+    var xr = pad + rw / 2, xo = pad + rw + gap + ow / 2;
+    var ratio = m / ref.m;
+    var phrase = ratio >= 1
+      ? tidy(ratio) + ' × ' + article(ref.label)
+      : Math.round(ref.m / m) + ' of them, ' + (D.sil.axis === 'w' ? 'nose to tail' : 'end to end') +
+        ', would span ' + article(ref.label);
+    var s = '<line x1="' + pad + '" x2="' + (W - pad) + '" y1="' + base + '" y2="' + base + '" class="sp-base"/>';
+    s += refGlyph(ref.k, xr, base, rh, 'sp-refg');
+    s += silSvg(xo - ow / 2, base - oh, ow, oh, 'sp-org');
+    s += '<text x="' + xr + '" y="' + (base + 18) + '" text-anchor="middle" class="sp-blab">' + esc(ref.label) + '</text>' +
+         '<text x="' + xr + '" y="' + (base + 32) + '" text-anchor="middle" class="sp-bval">' + esc(fmtLen(ref.m)) + '</text>' +
+         '<text x="' + xo + '" y="' + (base + 18) + '" text-anchor="middle" class="sp-blab">' + esc(D.short) + '</text>' +
+         '<text x="' + xo + '" y="' + (base + 32) + '" text-anchor="middle" class="sp-bval">' + esc(fmtLen(m)) +
+         (D.size.kind ? ' · ' + esc(D.size.kind) : '') + '</text>' +
+         '<text x="' + pad + '" y="16" class="sp-blab">' + esc(phrase) + '</text>';
+    besideEl.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    besideEl.innerHTML = s;
+    besideEl.classList.add('sp-drawn');
+  }
+
+  /* ── the plate, and the early-life lengths beside it ───────────────────────────────────────
+     The plate is the picture of what the ichthyoplankton and CUFES datasets actually record; the
+     list is the same lengths the ladder marks, each with the source that measured it. */
+  function creditHtml(c) {
+    if (!c) return '';
+    var out = esc(c.kind || '');
+    if (c.by) out += ' · ' + esc(c.by);
+    if (c.license) {
+      out += ' · ' + (c.license_url
+        ? '<a href="' + esc(c.license_url) + '" rel="license external">' + esc(c.license) + '</a>'
+        : esc(c.license));
+    }
+    if (c.via) out += ' · ' + (c.page ? '<a href="' + esc(c.page) + '" rel="external">' + esc(c.via) + '</a>' : esc(c.via));
+    if (c.shows) out += ' · ' + esc(c.shows);
+    return out;
+  }
+
+  function drawPlate() {
+    if (!plateEl) return;
+    var rows = (D.early || []).map(function (e) {
+      return '<li><b>' + esc(e.stage) + '</b><span>' + esc(fmtMM(e.mm[0], e.mm[1])) +
+             (e.source ? ' <span class="sp-esrc">' + esc(e.source) + '</span>' : '') + '</span></li>';
+    });
+    if (D.size) {
+      rows.push('<li><b>adult, max</b><span>' + esc(fmtLen(D.size.m)) +
+                (D.size.kind ? ' (' + esc(D.size.kind) + ')' : '') +
+                (D.size.source ? ' <span class="sp-esrc">' + esc(D.size.source) + '</span>' : '') + '</span></li>');
+    }
+    var list = rows.length ? '<ul class="sp-early">' + rows.join('') + '</ul>' : '';
+    var stages = (D.stages || []).map(function (d) {
+      return esc(d.name) + ': ' + esc(d.stages.slice(0, 4).join(', ')) +
+             (d.stages.length > 4 ? ' and ' + (d.stages.length - 4) + ' more' : '');
+    }).join('; ');
+    var note = stages ? '<p class="sp-note">Stages in the datasets · ' + stages + '</p>' : '';
+
+    if (!D.plate) {
+      plateEl.innerHTML = (list
+        ? '<p class="sp-note">No developmental plate for ' + esc(D.name) +
+          ': the NOAA Ichthyoplankton Information System covers north-east Pacific fishes. The lengths still show.</p>' + list
+        : '') + note;
+      return;
+    }
+    plateEl.innerHTML =
+      '<figure class="sp-plate-fig"><div><div class="sp-plate-img"><img src="' + esc(D.plate.src) +
+      '" alt="' + esc(D.plate.alt) + '" loading="lazy" decoding="async"></div>' +
+      '<figcaption class="sp-credit">' + creditHtml(D.plate.credit) + '</figcaption></div>' +
+      '<div>' + list + note + '</div></figure>';
+  }
+
+  drawLadder();
+  drawBeside();
+  drawPlate();
+  addEventListener('resize', function () { drawLadder(); drawBeside(); });
+})();
+
+// ── index glyphs (WS-F4) ───────────────────────────────────────────────────────────────────────
+// A phylum or class tree row draws its taxon's silhouette before the name — 18 px tall, width from
+// its aspect, `fill: currentColor` baked into the markup so it takes the row's own colour (a link's
+// accent, a plain label's --fg). `_plugins/species.rb` puts `sil: { inner, vb, aspect }` on a tree
+// node's JSON only when the rank is Phylum/Class AND `_data/taxa_media.json` (WS-F2a's fetch; ten
+// taxa in the WS-F4 fixture, so almost every row here has none yet) carries that taxon's silhouette
+// — so this reads #sp-data again rather than touching the tree code above, and a MutationObserver
+// decorates rows the tree builds lazily (search reveal, fold, "all ranks") as well as the ones it
+// draws up front. A row with no "sil" is untouched: no glyph, no change to its height.
+(function () {
+  var dataEl = document.getElementById('sp-data');
+  var tree = document.getElementById('sp-tree');
+  if (!dataEl || !tree) return;
+  var sil = {};
+  try {
+    (JSON.parse(dataEl.textContent).nodes || []).forEach(function (n) { if (n.sil) sil[n.k] = n.sil; });
+  } catch (e) { return; }
+  if (!Object.keys(sil).length) return; // the fixture's correct empty state — nothing to draw
+
+  function attrEsc(s) { return String(s).replace(/"/g, '&quot;'); }
+  function glyphHtml(s) {
+    var w = Math.round(18 * (s.aspect || 1) * 100) / 100;
+    return '<svg class="sp-tsil" width="' + w + '" height="18" viewBox="' + attrEsc(s.vb) +
+           '" aria-hidden="true" focusable="false">' + s.inner + '</svg>';
+  }
+
+  function decorate(li) {
+    var k = li.dataset && li.dataset.k, s = k && sil[k];
+    if (!s) return;
+    var nm = li.querySelector(':scope > .sp-tr > .sp-nm');
+    if (!nm || nm.querySelector(':scope > .sp-tsil')) return;
+    nm.insertAdjacentHTML('afterbegin', glyphHtml(s));
+  }
+
+  tree.querySelectorAll('li[data-k]').forEach(decorate);
+  new MutationObserver(function (muts) {
+    muts.forEach(function (m) {
+      m.addedNodes.forEach(function (node) {
+        if (node.nodeType !== 1) return;
+        if (node.matches && node.matches('li[data-k]')) decorate(node);
+        if (node.querySelectorAll) node.querySelectorAll('li[data-k]').forEach(decorate);
+      });
+    });
+  }).observe(tree, { childList: true, subtree: true });})();

@@ -24,6 +24,9 @@ What it asserts, and why each rule is here:
       dataset-local classes have no rank in the record and none is invented here
     · `parentTaxon` exactly where the record gives the entry a parent (read back from the sidecar
       /species/{slug}.json, so the page cannot claim a lineage the record does not have)
+    · `image` an ImageObject with `contentUrl`, `license`, `creditText` and `acquireLicensePage`
+      exactly where _data/taxa_media.json gives the taxon a photo, and NOWHERE else (plan
+      2026-09-11 § D8). A picture reaches a user under terms, or it does not reach them.
     · /species/ is one CollectionPage
     · /species/sitemap.xml lists the species pages that exist, and nothing else
 
@@ -297,6 +300,20 @@ def check_species(site, base):
     pages = sorted(p for p in root.glob("*/index.html"))
     if not pages:
         return fail("species/", "the /species/ directory exists but holds no taxon pages")
+
+    # the media sidecar is the authority on which pages have a photo (plan 2026-09-11 § D6, D8):
+    # it is written by scripts/fetch_species_media.py, not by the release, so it is read from the
+    # repo beside this script rather than from _site. Absent → no page may claim an image.
+    media = {}
+    media_path = Path(__file__).resolve().parent.parent / "_data" / "taxa_media.json"
+    if media_path.exists():
+        try:
+            media = json.loads(media_path.read_text(encoding="utf-8")).get("taxa", {})
+        except json.JSONDecodeError as e:
+            fail("species/", f"_data/taxa_media.json does not parse: {e}")
+    photo_slugs = {k.replace(":", "-") for k, v in media.items() if (v or {}).get("photo")}
+    notes.append(f"species: taxa_media.json covers {len(media)} taxa, {len(photo_slugs)} with a photo")
+    n_image = 0
     slugs = []
     for p in pages:
         slug = p.parent.name
@@ -346,6 +363,28 @@ def check_species(site, base):
                 fail(where, f"parentTaxon.url is not a species page: {pu!r}")
         if rec.get("slug") and rec["slug"] != slug:
             fail(where, f'the record\'s slug is {rec["slug"]!r} but the page directory is {slug!r}')
+
+        # the picture, and the terms it is shown under (plan 2026-09-11 § D8)
+        img = node.get("image")
+        want_img = slug in photo_slugs
+        if want_img and not img:
+            fail(where, "no image though taxa_media.json gives this taxon a photo")
+        elif img and not want_img:
+            fail(where, "an image on a taxon taxa_media.json gives no photo")
+        elif img:
+            n_image += 1
+            if not isinstance(img, dict) or img.get("@type") != "ImageObject":
+                fail(where, f"image is {img!r}, expected an ImageObject")
+            else:
+                for req in ("contentUrl", "license", "creditText", "acquireLicensePage"):
+                    if not img.get(req):
+                        fail(where, f"image has no {req} — a picture reaches a user under terms, "
+                                    f"or it does not reach them")
+                if not str(img.get("contentUrl", "")).startswith("http"):
+                    fail(where, f"image.contentUrl is not absolute: {img.get('contentUrl')!r}")
+
+    notes.append(f"species: {n_image} page(s) carry an ImageObject, for {len(photo_slugs)} "
+                 f"taxa with a photo in the sidecar")
 
     idx = root / "index.html"
     if not idx.exists():

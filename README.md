@@ -480,6 +480,131 @@ generated**: no `_data/taxa.json`, one NOTE, no species pages, and the front doo
 the Explorer instead — the same D-2 rule the numbers band follows (a fact the build cannot read is
 not rendered, never typed). Unset the variable when the promoted release carries the record.
 
+**Faces · the fetcher.** A species page that says nothing about the organism is a page nobody
+reads twice, so every taxon gets a picture. The pictures are **not release content** — they come
+from eight public services that change on their own cadence, and the release has to stay
+reproducible (plan `2026-09-11 Species faces …` § D6) — so they are fetched here, into
+`gs://calcofi-files-public/species-media/{release}/`, and read back at build time like any other
+sidecar.
+
+```
+scripts/fetch_species_media.py   _data/taxa.json → taxa_media.json + 800 px WebP thumbnails
+                                 under .cache/species-media/{release}/; --upload rsyncs them to
+                                 the public bucket and stamps each asset's `cached` object path
+scripts/check_species_media.py   the gate: an allow-listed licence, a credit, a live link and a
+                                 named taxon on every asset; silhouettes on >= 95 % of the taxa
+scripts/fetch_release.sh         {bucket}/species-media/{release}/taxa_media.json →
+                                 _data/taxa_media.json (git-ignored, silently absent)
+.github/workflows/species-media.yml   weekly, Sundays 09:00 UTC — DISABLED (`if: false`) until a
+                                 GCP_SA_KEY secret exists; run it by hand until then
+```
+
+**The sources, in the order they are asked.** **PhyloPic** for the silhouette — by WoRMS id, else
+by name at each rank up the lineage until a node has a primary image; it is the one picture every
+page can have, it is 2–12 KB of vector, and inked `fill="currentColor"` it is navy on white and
+bone on navy without a second file. **Wikidata**, one SPARQL per batch of 100 taxa (never one per
+taxon), for the item, its image, its English article and its iNat / eBird / FishBase / GBIF ids.
+**Wikipedia**'s REST summary for the lead sentence. **Commons** for the photo and the drawing —
+Wikidata's P18 and the files of `Category:{scientific name}`, whose `extmetadata` carries the
+licence, the artist and the categories. **iNaturalist**'s curated `taxon_photos`. **GBIF**
+occurrence media as the raw fallback. **WoRMS** attributes for the maximum body length. **NOAA
+AFSC**'s Ichthyoplankton Information System for the fishes' developmental plate — the picture of
+what the ichthyoplankton and CUFES surveys actually collect.
+
+**The policy, in five lines** (plan § D7, Ben 2026-09-11). *Take* CC0, public domain, the Public
+Domain Mark, CC BY and CC BY-SA. *Take, rank last, label* CC BY-NC and CC BY-NC-SA. *Leave* every
+ND — the crop and the fade are derivatives — and everything with no licence field, `null`, or "all
+rights reserved"; a licence is never inferred and a credit is never typed. *Never fetch at all*
+Macaulay, FishBase and WoRMS photographs and NOAA's Hornady drawings, until a written yes. *Rank*
+the page's own taxon first, then a species under it, then an ancestor within two ranks flagged
+"stands in"; curated before raw; then CC0 › PD › CC BY › CC BY-SA › NC; then landscape and ≥ 800 px.
+Every asset carries what the source said: `{source, id, url, page, license, license_url, credit,
+taxon_shown, steps_up}`. **`taxon_shown` is read, never assumed** — PhyloPic's `specificNode`, the
+Commons file's category, the iNaturalist taxon — because the silhouette on the Pacific sardine's
+page is drawn from the Japanese sardine and the caption has to say so.
+
+**The cache, and the clock.** Every source's answer for every taxon is one small JSON under
+`.cache/species-media/{release}/_cache/{source}/{slug}.json`, and PhyloPic's name lookups are
+memoised across taxa, so a run that is killed continues where it stopped and a source that fails
+for one taxon leaves that slot `null` and does not stop the run. Each per-taxon record is stamped
+with the accepted name and ids it was fetched **under**: a new `taxon_key` in the next release's
+`taxa.json` is simply fetched, and a taxon whose name or ids change under the same key is
+refetched on the next run without anyone asking (`~ … fetched under …, now … — refetching` in the
+log). Every request carries a
+User-Agent with a contact and obeys a per-host rate limit — and because those hosts are
+independent, a taxon's sources are asked **at once** (`--workers`, default 6, each host still
+behind its own lock), which is 1.76 s/taxon instead of 5.61 s cold, with byte-identical output:
+about **1.2 h for the record's 2,410 taxa** rather than 3.8. To redo one taxon, or the ten cast
+taxa of the plan's probe:
+
+```bash
+scripts/fetch_release.sh                                      # _data/taxa.json first
+printf 'worms:217452\n' > /tmp/one.txt
+scripts/fetch_species_media.py --only /tmp/one.txt --refresh  # --refresh ignores the cache
+scripts/check_species_media.py .cache/species-media/v2026.09.10/taxa_media.json
+```
+
+### Faces · the page
+
+A taxon page used to say nothing about the organism. It now opens with a **face row**, a **sentence**
+and — where the lengths exist — a **How big is it** section (plan 2026-09-11). None of it comes from
+the release: the media depend on eight external services and change on their own cadence, so they
+live in a second sidecar.
+
+```
+_data/taxa_media.json     scripts/fetch_species_media.py → the silhouette, the photo, the plate,
+                          the lengths and the Wikipedia lead, per taxon_key (git-ignored, weekly)
+_data/size_reference.csv  key,label,m,note,source — the ladder's six reference objects
+_plugins/species.rb       composes page.face / page.glance / page.sentence / page.credits /
+                          page.size_data, all nil-safe; and the JSON-LD `image`
+_includes/species_face.html   the face row, the sentence, the credit line (server-side: content)
+_includes/species_size.html   the How big section's hosts and its one inline payload
+_includes/species_credit.html the ONE credit format: kind · who · licence · where · what it shows
+assets/species.js         the ladder, the beside figure and the plate (figures: drawn in the browser)
+```
+
+**The row.** The **silhouette** is the constant: a 2–12 KB PhyloPic vector, inlined and filled with
+`currentColor`, so one file is navy on white and bone on navy. When the sidecar's `taxon_shown` is
+not the page's taxon the caption says so — *drawn from Ardenna creatopus, 1 rank up*. The **photo**
+is the enrichment: a 3 : 2 frame with the stored focal point and a radial mask **on the frame**, so
+the picture dissolves into whatever ground the page has; a non-commercial licence is accepted, ranked
+last, and labelled `NC`. The **glance** is two bars — the taxon's max length and the nearest familiar
+reference, the one whose |log₁₀(taxon ÷ reference)| is smallest among the quarter, the bongo ring, a
+person and the ship (the hair and the 505 µm mesh join only for something under 2 mm) — or one line
+saying *not on record*. **Every slot is independently absent, and an absent slot leaves no gap**: a
+taxon the sidecar has no entry for renders as it did before, bar the sentence and the stat word below.
+
+**The sentence** has three parts, each marked and each underlined in its source's colour with a
+legend: `s-wp` Wikipedia's lead under CC BY-SA 4.0 with its revision, `s-rec` this release's own
+numbers, `s-au` the naming authority. **`s-au` is not drawn today**: `taxa.json` carries no
+`taxonomic_authority`, and a page never fetches one — the clause is simply omitted.
+
+**The word.** A row of `obs_bio` is not an organism: 75.5 % of the CUFES rows and 85.0 % of the
+phytoplankton rows are `value = 0`. So the stat and the sentence say **records** until
+`build_taxa_catalog()` carries `n_present` (rows with `value > 0`); the moment the record has it,
+the stat reads `n_present` *observations* with `n_obs` *records* beside it and the sentence follows.
+The word is chosen from the field the record actually has — never typed.
+
+**How big is it** draws the log ladder (10 µm → 100 m, the six references above the axis, the taxon's
+egg, hatching, flexion, transformation and adult-max marks below), the silhouette to scale beside the
+nearest reference, and the AFSC developmental plate with the early-life lengths and their sources.
+The three are figures, so `species.js` draws them from one inline payload; on a phone the ladder's
+own container scrolls sideways and the page does not.
+
+**Credits and licences are never written here.** Every one is read from the sidecar, in one format,
+with the licence linked to its own deed; the JSON-LD gains an `ImageObject` with `contentUrl`,
+`license`, `creditText` and `acquireLicensePage` on exactly the pages that show a photo.
+
+**The checks.** `check_jsonld.py` asserts that `image` block against `_data/taxa_media.json` — present
+on every page with a photo, absent everywhere else, and complete when present. `check_layout.py` adds
+a `faces` block at 1470 and 375 px in both themes over four pages — the sardine (silhouette, photo,
+glance, five ladder marks, a plate), *Chaetoceros* (no length, no plate, no gap), the sooty shearwater
+(a stand-in silhouette, flagged) and jack mackerel (no sidecar entry at all): the silhouette is a
+labelled `role="img"` with real pixels, the photo has alt text, `loading="lazy"` and the mask, the
+glance draws two bars or says *not on record*, the sentence's marked parts and its legend agree, every
+asset shown has a credit line, the ladder draws exactly the payload's marks and the csv's references
+with **no two labels from different groups overlapping** (bounding boxes read from the DOM), the plate
+is drawn exactly where the payload has one, and the stat says *records*.
 ## The measurements catalog (`/measurements/`, `/measurements/{key}/`)
 
 The species catalog's pattern with `obs_env.measurement_type` in the place of `obs_bio.taxon_key`:

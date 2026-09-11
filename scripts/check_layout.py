@@ -35,6 +35,15 @@ can only pass by the layout actually being fixed:
              page the "Observed in" rows are the record's datasets[] with its counts, the lineage
              is a chain of links ending in the taxon's parent, and the Explorer link opens
              prefilled on the taxon key.
+  faces      (a taxon page, plan 2026-09-11 § D1–D5, D9) the silhouette is a labelled role="img"
+             with real pixels; the photo has alt text, loading="lazy" and the radial mask on its
+             FRAME; the glance draws two bars or says "not on record" — never a blank slot; the
+             sentence's marked parts and its legend agree; every asset shown has a credit line; the
+             ladder draws exactly the payload's marks and the six references of size_reference.csv
+             with NO two labels overlapping (bounding boxes read from the DOM); the plate is drawn
+             exactly where the payload has one; and the stat row says "records", not
+             "observations", until the record carries n_present (§ D9 — 75.5 % of the CUFES rows
+             and 85.0 % of the phytoplankton rows are zeros, so a row is not an organism).
   measurements (/measurements/ and one measurement page, plan 2026-09-10 § D5, D6) the timeline
              draws one row per measurement and one bar per series of the page's OWN inline record
              (79 and 84 on v2026.09.06), grouped into its categories; the matrix is categories ×
@@ -74,6 +83,15 @@ DEFAULT_PATHS = [
     "/species/?panes=matrix",        # the matrix expanded: the tree folds into a vertical pill, never gone
     "/species/?panes=matrix&q=sardine",  # …and a search with a hit shows the tree again (Ben, 2026-09-10)
     "/species/worms-217452/",        # the sardine: two datasets, twelve lineage ranks, five ways in
+                                     # — and the full face: silhouette, photo, glance, five ladder
+                                     #   marks and a NOAA plate (plan 2026-09-11 § Verification F3)
+    "/species/worms-148985/",        # Chaetoceros: a silhouette and a photo, "not on record" for
+                                     #   size, no plate — and NO gap where they would be
+    "/species/itis-1255050/",        # the sooty shearwater: an Ardenna silhouette, flagged as
+                                     #   drawn from one rank up
+    "/species/worms-273305/",        # jack mackerel — a taxon the media sidecar has no entry for
+                                     #   (the fixture's ten are the cast): the page is what
+                                     #   it was, plus the sentence's record part and D9's stat word
     "/measurements/",                # the measurements catalog: search + timeline, matrix, datasets
     "/measurements/temperature/",    # the unified key: two series, two datasets, eight ways in
 ]
@@ -382,6 +400,15 @@ PROBE = r"""
         return r2.height > 0 && (r2.bottom > b.bottom + 1 || r2.right > b.right + 1);
       }).length
     };
+    // WS-F4: the species row's silhouette strip (.sp-glyphs) must fit the tile's EXISTING height
+    // budget — the line-height the shared `.tile-glyphs` rule already allocated for the six
+    // decorative icons this strip replaces, read from the class rather than a synthetic "emptied"
+    // state (the row was never actually empty: it always drew six glyphs, none or 0-6 today)
+    const glyphs = obs.querySelector(".sp-glyphs");
+    if (glyphs) {
+      out.observed.glyphsH = px(glyphs.getBoundingClientRect().height);
+      out.observed.glyphsBudget = px(parseFloat(cs(glyphs).lineHeight) || 0);
+    }
   }
 
   // ── the species catalog (plan 2026-09-09 § S3) ─────────────────────────────
@@ -432,6 +459,19 @@ PROBE = r"""
       }).map(el => String(el.className || el.tagName)).slice(0, 6)
     };
     void natural;   // the tree pane is bounded by the matrix pane, which is checked directly
+
+    // WS-F4: a phylum/class row's silhouette (.sp-tsil, 18 px tall — under the 20 px .sp-tw button,
+    // the row's tallest fixed element) must not change the row's height; hidden vs shown on the
+    // SAME row proves it rather than a remembered pixel count.
+    const silEl = d.querySelector("#sp-tree .sp-tr .sp-tsil");
+    if (silEl) {
+      const row = silEl.closest(".sp-tr");
+      out.species.treeRowH = px(row.getBoundingClientRect().height);
+      const was = silEl.style.display;
+      silEl.style.display = "none";
+      out.species.treeRowHNoSil = px(row.getBoundingClientRect().height);
+      silEl.style.display = was;
+    }
   }
 
   // one taxon page: the rows, the lineage and the Explorer link against the page's own record
@@ -455,6 +495,54 @@ PROBE = r"""
       // with 93 rects in it and every count still agreed (measured 2026-09-09)
       stripH: d.querySelector("#sp-strip") ? px(d.querySelector("#sp-strip").getBoundingClientRect().height) : 0,
       stats: [...d.querySelectorAll(".sp-stat > div")].map(el => el.querySelector("dt").textContent.trim())
+    };
+  }
+
+  // ── faces: the face row, the sentence, the glance, the ladder (plan 2026-09-11 § D1–D5, D9)
+  // Read back from the page's OWN inline #sp-size-data where there is one, so the check compares
+  // the drawing with the payload it was drawn from and never with a number typed here.
+  if (d.querySelector(".sp-page-head")) {
+    const sil = d.querySelector(".sp-sil"), ph = d.querySelector(".sp-photo img");
+    const box = el => { const b = el.getBoundingClientRect(); return { x: px(b.x), y: px(b.y), w: px(b.width), h: px(b.height) }; };
+    let size = null;
+    const sd = d.getElementById("sp-size-data");
+    if (sd) { try { size = JSON.parse(sd.textContent); } catch (e) {} }
+    // every label the ladder draws, with its box, so Python can look for an overlapping pair
+    const ladder = d.getElementById("sp-ladder");
+    // …each tagged with the <g> it belongs to: a reference's name and its length are stacked on
+    // purpose, so only labels from DIFFERENT groups may not overlap
+    const lgroups = ladder ? [...ladder.querySelectorAll("g")] : [];
+    const labels = ladder && ladder.classList.contains("sp-drawn")
+      ? [...ladder.querySelectorAll("text")].map(t => Object.assign(box(t), {
+          t: t.textContent.trim(),
+          g: lgroups.indexOf(t.closest("g"))
+        }))
+      : [];
+    out.faces = {
+      sil: sil ? Object.assign(box(sil), { label: sil.getAttribute("aria-label"), role: sil.getAttribute("role"),
+                                           fill: cs(sil).fill.replace(/\s/g, "") }) : null,
+      stand: (d.querySelector(".sp-stand") || {}).textContent || null,
+      photo: ph ? Object.assign(box(ph), { alt: ph.getAttribute("alt"), w0: ph.getAttribute("width"),
+                                           h0: ph.getAttribute("height"), loading: ph.getAttribute("loading"),
+                                           pos: cs(ph).objectPosition,
+                                           masked: cs(ph.parentElement).maskImage !== "none" ||
+                                                   cs(ph.parentElement).webkitMaskImage !== "none" }) : null,
+      nc: !!d.querySelector(".sp-photo-fig .cc-chip"),
+      bars: [...d.querySelectorAll(".sp-glance .sp-bar")].map(b => px(b.getBoundingClientRect().width)),
+      glanceNone: !!d.querySelector(".sp-glance-none"),
+      sentParts: [...d.querySelectorAll(".sp-sent > span")].map(s => s.className),
+      legend: d.querySelectorAll(".sp-legend > span").length,
+      credits: [...d.querySelectorAll(".sp-credit")].map(p => p.textContent.replace(/\s+/g, " ").trim().slice(0, 90)),
+      statWords: [...d.querySelectorAll(".sp-stat > div")].map(el => el.querySelector("dt").textContent.trim()),
+      size,
+      ladderDrawn: !!(ladder && ladder.classList.contains("sp-drawn")),
+      ladderMarks: ladder ? ladder.querySelectorAll(".sp-mark, .sp-markdot").length : 0,
+      ladderRefs: ladder ? ladder.querySelectorAll(".sp-rlab").length : 0,
+      labels,
+      besideDrawn: !!(d.querySelector(".sp-beside") && d.querySelector(".sp-beside").classList.contains("sp-drawn")),
+      plateImg: !!d.querySelector(".sp-plate-img img"),
+      early: d.querySelectorAll(".sp-early li").length,
+      howBig: !!d.getElementById("how-big")
     };
   }
 
@@ -767,6 +855,12 @@ def check(path, r, width, theme, fails, notes):
             fails.append(f"{where}: the tree drew {sp['treeRoots']} roots")
         if sp["warnEls"]:
             fails.append(f"{where}: --warn on the species index: {', '.join(sorted(set(sp['warnEls']))[:4])}")
+        # WS-F4: a phylum/class row's silhouette must not change the row's height (checked only
+        # when a row actually carries one — the WS-F4 fixture's ten taxa are none of them
+        # phylum/class rank, so this is a no-op until the real taxa_media.json lands)
+        if sp.get("treeRowH") is not None and sp["treeRowH"] != sp["treeRowHNoSil"]:
+            fails.append(f"{where}: a tree row with its silhouette is {sp['treeRowH']}px, "
+                         f"{sp['treeRowHNoSil']}px without it — the glyph grew the row")
         # No unbounded text beside a fixed-height figure: the tree scrolls INSIDE a pane that is
         # exactly the matrix pane's height, and the matrix pane is bounded by its own content — so
         # neither pane can be drawn taller than something real (the tree's own content is 2,403
@@ -844,6 +938,97 @@ def check(path, r, width, theme, fails, notes):
                 fails.append(f"{where}: the sardine's lineage reads {' › '.join(chain)}")
             if spp["here"] != "Sardinops sagax":
                 fails.append(f"{where}: the lineage ends at {spp['here']!r}, expected 'Sardinops sagax'")
+
+    # ── the face row, the sentence, the glance and the ladder (plan 2026-09-11) ─
+    fa = r.get("faces")
+    if fa:
+        sd = fa.get("size") or {}
+        # D9: the page's biggest number is "records" until the record carries n_present, and
+        # "observations" (with "records" beside it) the moment it does. The word follows the
+        # record, so the check reads the same field the generator does.
+        words = fa["statWords"]
+        if words:
+            if "observations" in words and "records" not in words:
+                fails.append(f"{where}: the stat says 'observations' alone — a row of obs_bio is not "
+                             f"an organism; D9 wants 'records' until n_present is in the record")
+            if ("observations" in words and "records" in words
+                    and words.index("observations") > words.index("records")):
+                fails.append(f"{where}: 'records' is drawn before 'observations' in the stat row")
+        # the sentence: its parts are marked, and the legend names exactly the parts that are drawn
+        parts = [p for p in fa["sentParts"] if p.startswith("s-")]
+        if parts and fa["legend"] != len(parts):
+            fails.append(f"{where}: the sentence has {len(parts)} marked part(s) {parts} but "
+                         f"{fa['legend']} legend entries")
+        if fa["sil"]:
+            s = fa["sil"]
+            if s["role"] != "img" or not s["label"]:
+                fails.append(f"{where}: the silhouette has role={s['role']!r} aria-label={s['label']!r}")
+            if s["w"] < 20 or s["h"] < 20:
+                fails.append(f"{where}: the silhouette is drawn {s['w']}x{s['h']}px")
+            notes.append(f"{where}: silhouette {s['w']}x{s['h']} {s['label']!r}"
+                         + (f" · {fa['stand'].strip()}" if fa["stand"] else ""))
+        if fa["photo"]:
+            p = fa["photo"]
+            if not p["alt"]:
+                fails.append(f"{where}: the photo has no alt text")
+            if not p["masked"]:
+                fails.append(f"{where}: the photo frame carries no radial mask (§ D2)")
+            if p["loading"] != "lazy":
+                fails.append(f"{where}: the photo is not loading=lazy")
+            if p["w"] < 40 or p["h"] < 40:
+                fails.append(f"{where}: the photo is drawn {p['w']}x{p['h']}px")
+            notes.append(f"{where}: photo {p['w']}x{p['h']} pos {p['pos']}"
+                         + (" · NC labelled" if fa["nc"] else ""))
+        # the glance: two bars, or one honest line — never a blank slot
+        if fa["sil"] or fa["photo"]:
+            if not fa["glanceNone"] and len(fa["bars"]) != 2:
+                fails.append(f"{where}: the glance draws {len(fa['bars'])} bar(s) and does not say "
+                             f"'not on record'")
+            if fa["bars"] and min(fa["bars"]) < 1:
+                fails.append(f"{where}: a glance bar is drawn {min(fa['bars'])}px wide")
+        # the How big section: drawn exactly when the payload has something to draw
+        if fa["howBig"]:
+            want_marks = len(sd.get("early") or []) + (1 if sd.get("size") else 0)
+            if want_marks and not fa["ladderDrawn"]:
+                fails.append(f"{where}: the ladder is not drawn though the payload has {want_marks} mark(s)")
+            if fa["ladderDrawn"]:
+                if fa["ladderMarks"] != want_marks:
+                    fails.append(f"{where}: the ladder draws {fa['ladderMarks']} mark(s) for "
+                                 f"{want_marks} in the payload")
+                if fa["ladderRefs"] != len(sd.get("refs") or []):
+                    fails.append(f"{where}: the ladder labels {fa['ladderRefs']} reference(s) for "
+                                 f"{len(sd.get('refs') or [])} in size_reference.csv")
+                # no two labels may overlap: a ladder whose text collides is unreadable, and the
+                # greedy row assignment in species.js is the only thing preventing it
+                ls = fa["labels"]
+                for i in range(len(ls)):
+                    for j in range(i + 1, len(ls)):
+                        a, b = ls[i], ls[j]
+                        if a["g"] == b["g"] and a["g"] >= 0:
+                            continue        # a reference's own name and length, stacked on purpose
+                        if (a["x"] < b["x"] + b["w"] and b["x"] < a["x"] + a["w"]
+                                and a["y"] < b["y"] + b["h"] and b["y"] < a["y"] + a["h"]):
+                            fails.append(f"{where}: ladder labels overlap: {a['t']!r} and {b['t']!r}")
+                notes.append(f"{where}: ladder {fa['ladderMarks']} marks, {fa['ladderRefs']} references, "
+                             f"{len(fa['labels'])} labels, none overlapping")
+            if sd.get("size") and sd.get("sil", {}) and (sd.get("sil") or {}).get("axis") and not fa["besideDrawn"]:
+                fails.append(f"{where}: the beside figure is not drawn though the taxon has a length "
+                             f"and the silhouette a length axis")
+            if bool(sd.get("plate")) != fa["plateImg"]:
+                fails.append(f"{where}: the plate is {'missing' if sd.get('plate') else 'invented'} "
+                             f"(the payload's plate is {sd.get('plate') and sd['plate'].get('src')!r})")
+            if fa["early"] < len(sd.get("early") or []):
+                fails.append(f"{where}: {fa['early']} early-life row(s) for "
+                             f"{len(sd.get('early') or [])} in the payload")
+        elif sd:
+            fails.append(f"{where}: a How big payload exists but no section is drawn")
+        # a credit line for every asset that is shown: a picture without one is not publishable
+        if fa["sil"] and not any(c.startswith("Silhouette") for c in fa["credits"]):
+            fails.append(f"{where}: the silhouette is drawn with no credit line")
+        if fa["photo"] and not any(c.startswith("Photo") for c in fa["credits"]):
+            fails.append(f"{where}: the photo is drawn with no credit line")
+        if fa["plateImg"] and not any(c.startswith("Plate") for c in fa["credits"]):
+            fails.append(f"{where}: the plate is drawn with no credit line")
 
     # every URL row is one line, and elided from the middle rather than wrapped or simply cut off
     for u in r.get("spUrls", []):
@@ -1017,6 +1202,12 @@ def check(path, r, width, theme, fails, notes):
             if ob["overflow"] > 2 or ob["spill"]:
                 fails.append(f"{where}: the Observed tile overflows its cell "
                              f"({ob['overflow']}px, {ob['spill']} children outside)")
+            # WS-F4: the species row's silhouette strip must fit the tile's existing height budget
+            # — the shared .tile-glyphs rule's own line-height, the room the six decorative icons
+            # this strip replaces already had (0-6 real glyphs today; the WS-F4 fixture draws none)
+            if ob.get("glyphsBudget") and ob["glyphsH"] > ob["glyphsBudget"] + 1:
+                fails.append(f"{where}: the species silhouette strip is {ob['glyphsH']}px, taller "
+                             f"than the tile's existing {ob['glyphsBudget']}px glyph row")
 
         # ── D7: the Data section must not grow by a screen ────────────────────
         h = r.get("dataSectionH")

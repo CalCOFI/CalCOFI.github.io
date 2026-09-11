@@ -54,6 +54,10 @@ layout: default
       </div>
     </div>
 
+    {%- comment -%} the face row, the sentence and the credit line (plan 2026-09-11 § D1–D4, D8).
+      Absent in full for a taxon the media sidecar has no entry for. {%- endcomment -%}
+    {% include species_face.html face=page.face glance=page.glance sentence=page.sentence credits=page.credits %}
+
     {%- if page.stats.size > 0 -%}
     <dl class="sp-stat">
       {%- for s in page.stats -%}
@@ -79,6 +83,11 @@ layout: default
         <h2 class="cc-h3">Observed in</h2>
         <p class="sp-note">Nothing is keyed to this taxon directly — every observation under it belongs to one of the
           taxa below.</p>
+        {%- endif -%}
+
+        {%- comment -%} How big is it — the ladder, the beside figure and the plate (§ D3, D5) {%- endcomment -%}
+        {%- if page.has_size -%}
+        {% include species_size.html data=page.size_data %}
         {%- endif -%}
 
         {%- if page.children.size > 0 -%}

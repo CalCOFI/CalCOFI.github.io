@@ -104,7 +104,11 @@ pages:
     wait: 6000            # the tree, the matrix and the icicle are all built at load
   species_page:
     url: https://calcofi.io/species/worms-217452/
-    height: 950           # one taxon: the sardine — the lineage, its two datasets and the ways in
+    height: 1500          # one taxon: the sardine. The head band alone is ~830 px since the face row
+                          # (plan 2026-09-11 § D1–D4) — silhouette, photo, glance, sentence, credits —
+                          # so 1,500 reaches it, the "Observed in" rows and the How big ladder.
+    wait: 6000            # the ladder, the beside figure and the plate are drawn at load, and the
+                          # photo and the plate are fetched from the media bucket
   measurements:
     url: https://calcofi.io/measurements/
     height: 1400          # the head band is ~560 px; 1,400 reaches the timeline, the matrix and the datasets
