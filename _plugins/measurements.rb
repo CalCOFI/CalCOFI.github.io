@@ -62,7 +62,21 @@ module CalCOFI
         "n_p01"     => measurements.count { |m| Fmt.present(m["nerc_p01"]) },
         "n_no_p01"  => measurements.count { |m| !Fmt.present(m["nerc_p01"]) })
     end
-    def measurements = @measurements ||= rec["measurements"] || []
+    # A measurement the registry left without a category takes its first series' dataset's. In
+    # v2026.09.10 the 17 calcofi_mets keys carried `category: null` (their measurement_type.csv rows
+    # were empty until 2026-09-11), and every figure that groups by category — the index matrix,
+    # the chips, the timeline headings — silently dropped them. The registry fix reaches the record
+    # at the next release; this keeps a gap in the registry from ever removing rows from the page.
+    def measurements
+      @measurements ||= (rec["measurements"] || []).map do |m|
+        next m if m.dig("category", "name")
+        d = ds_by_key[m.dig("series", 0, "dataset_key")]
+        d && d.dig("category", "name") ? m.merge("category" => d["category"]) : m
+      end
+    end
+    # the record entry exactly as released, for /measurements/{key}.json ("verbatim"), which must not
+    # carry the category the page borrowed above
+    def raw(key)     = (@raw ||= (rec["measurements"] || []).to_h { |x| [x["key"], x] })[key]
     def datasets     = @datasets ||= rec["datasets"] || []
     def abs(path)    = "#{@base}#{path}"
 
@@ -740,7 +754,7 @@ module CalCOFI
         "months"      => JSON.generate(mm.months_json(m)),
         "jsonld"      => JSON.pretty_generate(mm.jsonld(m))
       )
-      [page, json_page(site, "/measurements/", "#{m['slug']}.json", JSON.pretty_generate(m))]
+      [page, json_page(site, "/measurements/", "#{m['slug']}.json", JSON.pretty_generate(mm.raw(m["key"]) || m))]
     end
 
     # the ids, linked out to the vocabulary that defines them
