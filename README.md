@@ -523,12 +523,15 @@ taxon_shown, steps_up}`. **`taxon_shown` is read, never assumed** — PhyloPic's
 Commons file's category, the iNaturalist taxon — because the silhouette on the Pacific sardine's
 page is drawn from the Japanese sardine and the caption has to say so.
 
-**The cache.** Every source's answer for every taxon is one small JSON under
+**The cache, and the clock.** Every source's answer for every taxon is one small JSON under
 `.cache/species-media/{release}/_cache/{source}/{slug}.json`, and PhyloPic's name lookups are
 memoised across taxa, so a run that is killed continues where it stopped and a source that fails
 for one taxon leaves that slot `null` and does not stop the run. Every request carries a
-User-Agent with a contact and obeys a per-host rate limit. To redo one taxon, or the ten cast taxa
-of the plan's probe:
+User-Agent with a contact and obeys a per-host rate limit — and because those hosts are
+independent, a taxon's sources are asked **at once** (`--workers`, default 6, each host still
+behind its own lock), which is 1.76 s/taxon instead of 5.61 s cold, with byte-identical output:
+about **1.2 h for the record's 2,410 taxa** rather than 3.8. To redo one taxon, or the ten cast
+taxa of the plan's probe:
 
 ```bash
 scripts/fetch_release.sh                                      # _data/taxa.json first

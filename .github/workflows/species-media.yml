@@ -15,7 +15,8 @@ name: Refresh the species faces (fetch the media → the public bucket)
 # then delete the `if: false` line below. Until then the fetcher is run by hand:
 #
 #     scripts/fetch_release.sh
-#     scripts/fetch_species_media.py --upload        # resumable; ~2 h for 2,410 taxa
+#     scripts/fetch_species_media.py --upload        # resumable; ~1.2 h for 2,410 taxa
+#                                                   # (1.76 s/taxon cold, measured on 200)
 #     scripts/check_species_media.py
 #
 # The bucket is public-read and its anonymous `list` is load-bearing elsewhere: never change the
