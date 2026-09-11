@@ -43,12 +43,14 @@ from __future__ import annotations
 
 import argparse
 import base64
+import concurrent.futures
 import io
 import json
 import os
 import re
 import subprocess
 import sys
+import threading
 import time
 import urllib.error
 import urllib.parse
@@ -76,12 +78,6 @@ POLICY_DENY = ["ND", "ARR", "unknown"]
 LICENSE_RANK = {"CC0": 0, "Public domain": 1, "Public Domain Mark": 1,
                 "CC BY": 2, "CC BY-SA": 3, "CC BY-NC": 4, "CC BY-NC-SA": 5}
 
-LICENSE_URL = {
-    "CC0 1.0": "https://creativecommons.org/publicdomain/zero/1.0/",
-    "Public Domain Mark": "https://creativecommons.org/publicdomain/mark/1.0/",
-    "Public domain": None,
-}
-
 # the fish classes whose species the AFSC Ichthyoplankton Information System may hold a plate for
 FISH_CLASSES = {"actinopteri", "actinopterygii", "teleostei", "elasmobranchii", "holocephali"}
 
@@ -105,6 +101,10 @@ NOT_DRAWING_WORDS = ("diagram", "chart", "graph", "map", "maps", "logo", "distri
 RATE = {"phylopic": 2.0, "wikidata": 1.0, "commons": 2.0, "wikipedia": 4.0,
         "inat": 1.0, "gbif": 4.0, "worms": 3.0, "noaa": 1.0, "download": 4.0}
 _last: dict[str, float] = {}
+# one lock per host, never a global one: a taxon's sources are asked in parallel (--workers), and a
+# single lock would serialise them back into the SUM of every host's gap instead of the longest.
+_locks: dict[str, threading.Lock] = {}
+_locks_guard = threading.Lock()
 
 VERBOSE = True
 
@@ -117,13 +117,16 @@ def log(*a):
 # ── HTTP ────────────────────────────────────────────────────────────────────────────────────────
 
 def _throttle(host_key: str):
-    rps = RATE.get(host_key, 2.0)
-    gap = 1.0 / rps
-    now = time.monotonic()
-    prev = _last.get(host_key)
-    if prev is not None and now - prev < gap:
-        time.sleep(gap - (now - prev))
-    _last[host_key] = time.monotonic()
+    with _locks_guard:
+        lock = _locks.setdefault(host_key, threading.Lock())
+    with lock:
+        rps = RATE.get(host_key, 2.0)
+        gap = 1.0 / rps
+        now = time.monotonic()
+        prev = _last.get(host_key)
+        if prev is not None and now - prev < gap:
+            time.sleep(gap - (now - prev))
+        _last[host_key] = time.monotonic()
 
 
 class HttpError(Exception):
@@ -155,7 +158,10 @@ def http(url, host_key, accept="application/json", timeout=40, data=None, header
 
 
 def get_json(url, host_key, **kw):
-    return json.loads(http(url, host_key, **kw))
+    body = http(url, host_key, **kw)
+    if not body.strip():                    # HTTP 204: the source has nothing, and says so
+        return None
+    return json.loads(body)
 
 
 # ── the cache: one small JSON per taxon per source ──────────────────────────────────────────────
@@ -368,7 +374,7 @@ def _phylopic_from_image(img, resolved_by, steps_up):
 def phylopic_by_worms(worms_id):
     b = phylopic_build()
     d = get_json(f"https://api.phylopic.org/resolve/marinespecies.org/taxname/{worms_id}"
-                 f"?build={b}&embed_primaryImage=true", "phylopic")
+                 f"?build={b}&embed_primaryImage=true", "phylopic") or {}
     img = (d.get("_embedded") or {}).get("primaryImage")
     return _phylopic_from_image(img, "worms_id", 0) if img else None
 
@@ -391,7 +397,7 @@ def phylopic_by_name(name, steps_up, memo=None):
     b = phylopic_build()
     q = urllib.parse.quote(low)
     d = get_json(f"https://api.phylopic.org/nodes?build={b}&filter_name={q}"
-                 f"&embed_items=true&embed_primaryImage=true&page=0", "phylopic")
+                 f"&embed_items=true&embed_primaryImage=true&page=0", "phylopic") or {}
     found = None
     for n in ((d.get("_embedded") or {}).get("items") or []):
         img = (n.get("_embedded") or {}).get("primaryImage")
@@ -561,8 +567,8 @@ def sentences(text, n=2, max_chars=320):
 def fetch_text(enwiki_url, t):
     title = urllib.parse.unquote(enwiki_url.split("/wiki/", 1)[1])
     s = get_json("https://en.wikipedia.org/api/rest_v1/page/summary/"
-                 + urllib.parse.quote(title.replace(" ", "_"), safe=""), "wikipedia")
-    if s.get("type") == "https://mediawiki.org/wiki/HyperSwitch/errors/not_found":
+                 + urllib.parse.quote(title.replace(" ", "_"), safe=""), "wikipedia") or {}
+    if not s or s.get("type") == "https://mediawiki.org/wiki/HyperSwitch/errors/not_found":
         return None
     art = s.get("titles", {}).get("normalized") or s.get("title") or title
     desc = (s.get("description") or "").lower()
@@ -587,7 +593,7 @@ API_COMMONS = "https://commons.wikimedia.org/w/api.php"
 def commons_category_files(name, limit=50):
     u = (f"{API_COMMONS}?action=query&format=json&list=categorymembers&cmtype=file"
          f"&cmlimit={limit}&cmtitle=" + urllib.parse.quote("Category:" + name))
-    d = get_json(u, "commons")
+    d = get_json(u, "commons") or {}
     return [m["title"] for m in (d.get("query") or {}).get("categorymembers", [])]
 
 
@@ -599,7 +605,7 @@ def commons_imageinfo(titles):
         u = (f"{API_COMMONS}?action=query&format=json&prop=imageinfo"
              f"&iiprop=extmetadata|url|size&iiurlwidth=1200&titles="
              + urllib.parse.quote("|".join(chunk)))
-        d = get_json(u, "commons")
+        d = get_json(u, "commons") or {}
         for pg in ((d.get("query") or {}).get("pages") or {}).values():
             ii = (pg.get("imageinfo") or [{}])[0]
             if not ii:
@@ -687,7 +693,7 @@ def inat_id_for(t, links):
     if not name:
         return None
     d = get_json("https://api.inaturalist.org/v1/taxa?per_page=3&q="
-                 + urllib.parse.quote(name), "inat")
+                 + urllib.parse.quote(name), "inat") or {}
     for r in (d.get("results") or []):
         if (r.get("name") or "").lower() == name.lower():
             return r["id"]
@@ -698,7 +704,7 @@ def inat_candidates(t, rec, links):
     iid = inat_id_for(t, links)
     if not iid:
         return []
-    d = get_json(f"https://api.inaturalist.org/v1/taxa/{iid}", "inat")
+    d = get_json(f"https://api.inaturalist.org/v1/taxa/{iid}", "inat") or {}
     res = (d.get("results") or [])
     if not res:
         return []
@@ -739,7 +745,8 @@ def gbif_key_for(t, links):
     name = (t.get("scientific_name") or "").strip()
     if not name:
         return None
-    d = get_json("https://api.gbif.org/v1/species/match?name=" + urllib.parse.quote(name), "gbif")
+    d = get_json("https://api.gbif.org/v1/species/match?name=" + urllib.parse.quote(name),
+                 "gbif") or {}
     return d.get("usageKey")
 
 
@@ -748,7 +755,7 @@ def gbif_candidates(t, rec, links):
     if not key:
         return []
     d = get_json(f"https://api.gbif.org/v1/occurrence/search?taxonKey={key}"
-                 f"&mediaType=StillImage&limit=50", "gbif")
+                 f"&mediaType=StillImage&limit=50", "gbif") or {}
     out = []
     for i, occ in enumerate(d.get("results") or []):
         for m in (occ.get("media") or [])[:1]:
@@ -831,6 +838,8 @@ def fetch_plate(t):
 
 def worms_size(worms_id):
     a = get_json(f"https://www.marinespecies.org/rest/AphiaAttributesByAphiaID/{worms_id}", "worms")
+    if not a:
+        return None
     rows = []
 
     def walk(lst):
@@ -924,14 +933,39 @@ def materialize(cands, dest: Path, slot, dry_run, out_rel):
 
 # ── one taxon ───────────────────────────────────────────────────────────────────────────────────
 
-def do_taxon(t, rec, cache, out_dir, wd_all, sizes, dry_run):
+def do_taxon(t, rec, cache, out_dir, wd_all, sizes, dry_run, pool=None):
     key = t["taxon_key"]
     slug = t["slug"]
     dest = out_dir / slug
     entry = {}
 
+    # Wikidata answered for every taxon in the prepass; everything else is one call per taxon per
+    # host, and the hosts are independent, so they are asked AT ONCE.  Each host still obeys its
+    # own rate limit (its own lock in _throttle), so a taxon costs the SLOWEST host's gap rather
+    # than the sum of all of them.  `--workers 1` runs them in order, with identical output.
+    links = wikidata_record(wd_all.get(key))
+    jobs = {
+        "phylopic": lambda: cache.run("phylopic", slug, lambda: fetch_silhouette(t, rec, cache)),
+        "commons": lambda: cache.run("cand_commons", slug,
+                                     lambda: commons_candidates(t, rec, links and links.get("p18"))),
+        "inat": lambda: cache.run("cand_inat", slug, lambda: inat_candidates(t, rec, links)),
+        "gbif": lambda: cache.run("cand_gbif", slug, lambda: gbif_candidates(t, rec, links)),
+        "noaa": lambda: cache.run("noaa", slug, lambda: fetch_plate(t)),
+    }
+    wid = (t.get("ids") or {}).get("worms_id")
+    if wid:
+        jobs["worms"] = lambda: cache.run("worms_size", slug, lambda: worms_size(wid))
+    if links and links.get("enwiki"):
+        jobs["wikipedia"] = lambda: cache.run("wikipedia", slug,
+                                              lambda: fetch_text(links["enwiki"], t))
+    if pool is None:
+        got = {k: f() for k, f in jobs.items()}
+    else:
+        futures = {k: pool.submit(f) for k, f in jobs.items()}
+        got = {k: f.result() for k, f in futures.items()}
+
     # a — the silhouette
-    sil = cache.run("phylopic", slug, lambda: fetch_silhouette(t, rec, cache))
+    sil = got.get("phylopic")
     if sil:
         sil = dict(sil)
         svg = cache.run("phylopic_svg", slug,
@@ -951,23 +985,16 @@ def do_taxon(t, rec, cache, out_dir, wd_all, sizes, dry_run):
         entry["silhouette"] = sil
 
     # b — Wikidata (batched in the prepass) → the links
-    links = wikidata_record(wd_all.get(key))
     entry["links"] = ({k: links[k] for k in ("wikidata", "inat", "fishbase", "gbif", "ebird")}
                       if links else None)
 
     # c — the sentence
-    if links and links.get("enwiki"):
-        entry["text"] = cache.run("wikipedia", slug, lambda: fetch_text(links["enwiki"], t))
-    else:
-        entry["text"] = None
+    entry["text"] = got.get("wikipedia")
 
     # d — the photo and the drawing
     cands = []
-    for source, fn in (("commons", lambda: commons_candidates(t, rec, links and links.get("p18"))),
-                       ("inat", lambda: inat_candidates(t, rec, links)),
-                       ("gbif", lambda: gbif_candidates(t, rec, links))):
-        got = cache.run(f"cand_{source}", slug, fn)
-        cands += got or []
+    for source in ("commons", "inat", "gbif"):
+        cands += got.get(source) or []
     ranked = annotate(cands, key, rec)
     out_rel = f"{PREFIX}/{rec.release}/{slug}"
     photos = [c for c in ranked if not c["is_drawing"]] or ranked
@@ -977,7 +1004,7 @@ def do_taxon(t, rec, cache, out_dir, wd_all, sizes, dry_run):
     entry["drawing"] = materialize(drawings, dest, "drawing", dry_run, out_rel) if drawings else None
 
     # e — the NOAA plate
-    plate = cache.run("noaa", slug, lambda: fetch_plate(t))
+    plate = got.get("noaa")
     if plate:
         plate = dict(plate)
         body = base64.b64decode(plate.pop("_bytes"))
@@ -996,8 +1023,7 @@ def do_taxon(t, rec, cache, out_dir, wd_all, sizes, dry_run):
         entry["plate"] = None
 
     # f — the size, WoRMS first, then WS-F2b's sizes.json, then Wikidata P2043
-    wid = (t.get("ids") or {}).get("worms_id")
-    size = cache.run("worms_size", slug, lambda: worms_size(wid)) if wid else None
+    size = got.get("worms")
     fb = (sizes or {}).get(key, {}).get("fishbase") if sizes else None
     if not size and fb and fb.get("length_cm"):
         size = {"m": round(fb["length_cm"] / 100.0, 5), "length_type": fb.get("length_type"),
@@ -1016,9 +1042,11 @@ def do_taxon(t, rec, cache, out_dir, wd_all, sizes, dry_run):
         for stage, k in (("egg", "egg_mm"), ("hatching", "hatch_mm"),
                          ("flexion", "flexion_mm"), ("transformation", "transformation_mm")):
             if fb.get(k):
+                refs = list(fb.get("refs") or {})
                 early.append({"stage": stage, "mm": fb[k],
                               "source": "fishbase_eggs" if stage == "egg" else "fishbase_larvae",
-                              "ref": (list(fb.get("refs") or {}) or [None])[0]})
+                              "ref": fb.get(f"{k[:-3]}_ref") or (refs[0] if len(refs) == 1
+                                                                 else None)})
     entry["early"] = early
     return entry
 
@@ -1032,12 +1060,16 @@ def main(argv=None):
     ap.add_argument("--taxa", default=str(ROOT / "_data" / "taxa.json"))
     ap.add_argument("--only", help="a file of taxon_keys, one per line")
     ap.add_argument("--limit", type=int, help="only the first N taxa")
+    ap.add_argument("--resume", action="store_true",
+                    help="the default: a taxon whose cache record is complete is skipped")
     ap.add_argument("--refresh", action="store_true", help="ignore the cache and refetch")
     ap.add_argument("--dry-run", action="store_true", help="write nothing, upload nothing")
     ap.add_argument("--upload", action="store_true",
                     help=f"rsync the folder to {BUCKET}/{PREFIX}/{{release}}/ and stamp `cached`")
     ap.add_argument("--sizes", help="WS-F2b's sizes.json (default: _data/sizes.json if present)")
     ap.add_argument("--out", help="output root (default: .cache/species-media)")
+    ap.add_argument("--workers", type=int, default=6,
+                    help="how many of one taxon's hosts to ask at once (1 = strictly in order)")
     ap.add_argument("--quiet", action="store_true")
     args = ap.parse_args(argv)
 
@@ -1102,16 +1134,23 @@ def main(argv=None):
 
     t0 = time.time()
     entries = {}
-    for i, t in enumerate(taxa, 1):
-        log(f"[{i}/{len(taxa)}] {t['taxon_key']} {t.get('scientific_name')}")
-        try:
-            entries[t["taxon_key"]] = do_taxon(t, rec, cache, out_dir, wd_all, sizes, args.dry_run)
-        except Exception as e:
-            log(f"  ! {t['taxon_key']}: {type(e).__name__}: {e}")
-            entries[t["taxon_key"]] = {}
-        e = entries[t["taxon_key"]]
-        log("    " + " ".join(k for k in ("silhouette", "photo", "drawing", "plate", "size", "text")
-                              if e.get(k)))
+    pool = (concurrent.futures.ThreadPoolExecutor(max_workers=args.workers)
+            if args.workers > 1 else None)
+    try:
+        for i, t in enumerate(taxa, 1):
+            log(f"[{i}/{len(taxa)}] {t['taxon_key']} {t.get('scientific_name')}")
+            try:
+                entries[t["taxon_key"]] = do_taxon(t, rec, cache, out_dir, wd_all, sizes,
+                                                   args.dry_run, pool)
+            except Exception as e:
+                log(f"  ! {t['taxon_key']}: {type(e).__name__}: {e}")
+                entries[t["taxon_key"]] = {}
+            e = entries[t["taxon_key"]]
+            log("    " + " ".join(k for k in ("silhouette", "photo", "drawing", "plate",
+                                              "size", "text") if e.get(k)))
+    finally:
+        if pool:
+            pool.shutdown()
     elapsed = time.time() - t0
 
     refs = {}
@@ -1142,7 +1181,7 @@ def main(argv=None):
     if args.dry_run:
         log(f"[dry-run] would write {dest}")
         if args.upload:
-            log(f"[dry-run] would run: {' '.join(rsync_cmd(out_dir, release))}")
+            upload(out_dir, release, dry_run=True)      # gcloud's own "Would copy …" listing
     else:
         dest.parent.mkdir(parents=True, exist_ok=True)
         dest.write_text(json.dumps(doc, ensure_ascii=False, indent=1))
@@ -1152,13 +1191,17 @@ def main(argv=None):
     return 0
 
 
-def rsync_cmd(out_dir, release):
-    return ["gcloud", "storage", "rsync", "--recursive", "--exclude", "^_cache/.*",
-            str(out_dir), f"{BUCKET}/{PREFIX}/{release}"]
+def rsync_cmd(out_dir, release, dry_run=False):
+    """The upload.  `--exclude ^_cache/.*` keeps the fetcher's working cache off the bucket, and
+    rsync never deletes (no --delete-unmatched-destination-objects): an earlier release's media
+    stay where the pages that reference them expect them."""
+    return (["gcloud", "storage", "rsync", "--recursive"]
+            + (["--dry-run"] if dry_run else [])
+            + ["--exclude", "^_cache/.*", str(out_dir), f"{BUCKET}/{PREFIX}/{release}"])
 
 
-def upload(out_dir, release):
-    cmd = rsync_cmd(out_dir, release)
+def upload(out_dir, release, dry_run=False):
+    cmd = rsync_cmd(out_dir, release, dry_run)
     log("  " + " ".join(cmd))
     subprocess.run(cmd, check=True)
 
