@@ -553,7 +553,10 @@ def wikidata_record(raw):
 
 def sentences(text, n=2, max_chars=320):
     """The probe's rule (species-faces-probe/build.py): the first one or two sentences, <= 320 c."""
-    parts = re.split(r"(?<=[.!?])\s+(?=[A-Z])", (text or "").strip())
+    # a sentence ends at . ! ? before a capital — but not after an initial ("C. G. Ehrenberg"),
+    # "et al.", "sp." / "spp." / "cf." / "var." / "subsp.", which the probe's rule cut through
+    parts = re.split(r"(?<=[.!?])(?<!\b[A-Z]\.)(?<!\bal\.)(?<!\bsp\.)(?<!\bspp\.)(?<!\bcf\.)"
+                     r"(?<!\bvar\.)(?<!\bsubsp\.)\s+(?=[A-Z])", (text or "").strip())
     out = []
     for p in parts:
         if len(" ".join(out + [p])) > max_chars and out:
@@ -1026,7 +1029,11 @@ def do_taxon(t, rec, cache, out_dir, wd_all, sizes, dry_run, pool=None):
 
     # f — the size, WoRMS first, then WS-F2b's sizes.json, then Wikidata P2043
     size = got.get("worms")
-    fb = (sizes or {}).get(key, {}).get("fishbase") if sizes else None
+    # WS-F2b writes the FishBase/SeaLifeBase fields flat per taxon_key; the plan's Appendix A
+    # sketched them under a "fishbase" key — accept both
+    fb = (sizes or {}).get(key) if sizes else None
+    if fb and "fishbase" in fb:
+        fb = fb["fishbase"]
     if not size and fb and fb.get("length_cm"):
         size = {"m": round(fb["length_cm"] / 100.0, 5), "length_type": fb.get("length_type"),
                 "kind": "max", "source": fb.get("server") or "fishbase",
