@@ -135,17 +135,51 @@ class HttpError(Exception):
         self.code = code
 
 
+_dead_hosts: set[str] = set()      # media hosts that hung once this run: skipped from then on
+_dead_lock = threading.Lock()
+
+
+def _with_deadline(fn, seconds):
+    """Run `fn` in a daemon thread and give up after `seconds`.  urllib's `timeout` bounds each
+    socket operation, not the whole request, and a media host that silently drops SYNs
+    (sweetgum.nybg.org, 2026-09-11) held one taxon — and the run behind it — for 40 minutes
+    across three retries.  The abandoned thread dies with the process."""
+    box = {}
+    def run():
+        try:
+            box["v"] = fn()
+        except BaseException as e:          # noqa: BLE001 — re-raised in the caller
+            box["e"] = e
+    th = threading.Thread(target=run, daemon=True)
+    th.start()
+    th.join(seconds)
+    if th.is_alive():
+        raise TimeoutError(f"no answer within {seconds:.0f} s")
+    if "e" in box:
+        raise box["e"]
+    return box["v"]
+
+
 def http(url, host_key, accept="application/json", timeout=40, data=None, headers=None,
          tries=3) -> bytes:
-    """One request with the contact User-Agent, a timeout, and three retries with backoff."""
+    """One request with the contact User-Agent, a hard deadline, and retries with backoff
+    (none for a media download: a host that hangs is remembered and skipped)."""
     hdr = {"User-Agent": UA, "Accept": accept, **(headers or {})}
+    netloc = urllib.parse.urlsplit(url).netloc.lower()
+    if host_key == "download":
+        tries = 1
+        with _dead_lock:
+            if netloc in _dead_hosts:
+                raise ConnectionError(f"{netloc} hung earlier this run; skipped")
     last = None
     for attempt in range(tries):
         _throttle(host_key)
         req = urllib.request.Request(url, headers=hdr, data=data)
-        try:
+        def once():
             with urllib.request.urlopen(req, timeout=timeout) as r:
                 return r.read()
+        try:
+            return _with_deadline(once, timeout + 15)
         except urllib.error.HTTPError as e:
             last = HttpError(e.code, url)
             if e.code in (400, 401, 403, 404, 410):          # a real answer: do not retry
@@ -153,6 +187,9 @@ def http(url, host_key, accept="application/json", timeout=40, data=None, header
             time.sleep(2 ** attempt * 1.5)
         except Exception as e:                                # timeout, DNS, reset
             last = e
+            if host_key == "download" and isinstance(e, (TimeoutError, OSError)):
+                with _dead_lock:
+                    _dead_hosts.add(netloc)
             time.sleep(2 ** attempt * 1.5)
     raise last
 
