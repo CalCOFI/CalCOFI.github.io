@@ -57,6 +57,9 @@ layout: default
       {%- endfor -%}
     </dl>
     {%- endif -%}
+    {%- comment -%} the heads-up: how many values their provider flags and what leaves them out —
+      the Explorer's "n flagged" count (NOT qual_ok), written where a reader of the data will see it {%- endcomment -%}
+    {%- if page.flag_note %}<p class="mm-flagnote"><span class="mm-flagnote-k">Heads-up</span> {{ page.flag_note }}</p>{% endif -%}
   </div>
 </section>
 

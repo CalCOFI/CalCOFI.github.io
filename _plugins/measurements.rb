@@ -180,11 +180,50 @@ module CalCOFI
       seen.size == 12 ? "every month" : seen.map { |i| MONTHS[i] }.join(" · ")
     end
 
+    # ── flagged: what the provider marks questionable or bad ─────────────────
+    # The Explorer's definition (explore/sql/picker.sql `n_flagged`): a value is flagged when
+    # `qual_ok` is FALSE, i.e. its provider's own code says questionable or bad. A code that says
+    # the value is fine (the bottle's 6, "Data OK but taken from CTD") is NOT flagged, so the count
+    # is `n_values - qual_ok_n`, never "rows carrying any code". A series with no flag column at
+    # this grain is counted separately, because a zero there means "not flagged", not "all good".
+    def flagged(s) = s["qual_ok_n"].nil? ? 0 : [s["n_values"].to_i - s["qual_ok_n"].to_i, 0].max
+    def flagged_total(m) = (m["series"] || []).sum { |s| flagged(s) }
+    def unflaggable(m) = (m["series"] || []).select { |s| !Fmt.present(s["qual_column"]) }
+
+    # the heads-up under the stats band: how many values the provider flags, that the Explorer,
+    # the climatology and its anomalies leave them out, and which series have no flag to consult
+    def flag_note(m)
+      t = m["totals"] || {}
+      n = flagged_total(m)
+      bare = unflaggable(m).map { |s| "the <code>#{CGI.escapeHTML(s['measurement_type'])}</code> series from #{CGI.escapeHTML(ds_name(s['dataset_key']).to_s)}" }
+      return nil if n.zero? && bare.empty?
+      parts = []
+      if n.positive?
+        pct = 100.0 * n / [t["n_values"].to_i, 1].max
+        pct_s = pct < 0.1 ? "under 0.1 %" : "#{pct < 10 ? format('%.1f', pct) : pct.round} %"
+        parts << "<b>#{Fmt.num(n)}</b> of these #{Fmt.num(t['n_values'])} values (#{pct_s}) are flagged by " \
+                 "their provider as questionable or bad. The Explorer, the climatology and its anomalies leave " \
+                 "them out; do the same when you read the data yourself " \
+                 "(<code>cc_qual_ok_sql()</code> in calcofi4r, <code>qual_ok_sql()</code> in calcofi4py)."
+      end
+      unless bare.empty?
+        lead = bare.join(" and ")
+        parts << "#{lead[0].upcase}#{lead[1..]} #{bare.size == 1 ? 'carries' : 'carry'} no flag at this grain, " \
+                 "so #{bare.size == 1 ? 'its' : 'their'} values cannot be screened this way."
+      end
+      parts.join(" ")
+    end
+
     def stat_rows(m)
       t = m["totals"] || {}
       rows = []
       rows << { "dd" => Fmt.num(t["n_values"]), "dt" => "values",
                 "title" => "rows of obs_env — one measurement × one sample" } if t["n_values"]
+      if (nf = flagged_total(m)).positive?
+        rows << { "dd" => Fmt.num(nf), "dt" => "flagged",
+                  "title" => "values their provider flags questionable or bad (qual_ok is FALSE); " \
+                             "the Explorer, the climatology and its anomalies leave them out" }
+      end
       if t["n_roots"]
         rows << { "dd" => Fmt.num(t["n_roots"]), "dt" => "sampling events",
                   "title" => "the cast, tow or underway record each sample belongs to (sample_root) — " \
@@ -211,15 +250,17 @@ module CalCOFI
     def dataset_rows(m)
       (m["series"] || []).map do |s|
         k = s["dataset_key"]
-        flagged = s["n_values"].to_i - (s["qual"] || {})["none"].to_i
+        nf = flagged(s)
         chips = series_chips(m, s)
-        if flagged.positive? && s["n_values"].to_i.positive?
-          pct = (100.0 * flagged / s["n_values"].to_i)
+        if nf.positive? && s["n_values"].to_i.positive?
+          pct = (100.0 * nf / s["n_values"].to_i)
           # under a tenth of a percent the percentage reads "0.0 %", which says less than the count
-          label = pct < 0.1 ? "#{Fmt.num(flagged)} flagged" :
-                  "#{pct < 10 ? format('%.1f', pct) : pct.round} % flagged"
+          label = pct < 0.1 ? "#{Fmt.num(nf)} flagged" :
+                  "#{Fmt.num(nf)} flagged · #{pct < 10 ? format('%.1f', pct) : pct.round} %"
           chips = chips + [{ "flag" => "flagged", "label" => label,
-                             "title" => "#{Fmt.num(flagged)} rows carry a measurement_qual; qual_ok keeps #{Fmt.num(s['qual_ok_n'])} of #{Fmt.num(s['n_values'])}" }]
+                             "title" => "#{Fmt.num(nf)} values their provider flags questionable or bad; qual_ok " \
+                                        "keeps #{Fmt.num(s['qual_ok_n'])} of #{Fmt.num(s['n_values'])}, and the Explorer, " \
+                                        "the climatology and its anomalies use only those" }]
         end
         { "key"    => k,
           "name"   => ds_name(k),
@@ -745,6 +786,7 @@ module CalCOFI
         "is_unified"  => m["is_unified"],
         "ids"         => id_rows(mm, m),
         "stats"       => mm.stat_rows(m),
+        "flag_note"   => mm.flag_note(m),
         "ds_rows"     => mm.dataset_rows(m),
         "quality"     => mm.quality_rows(m),
         "related"     => mm.related_rows(m),
