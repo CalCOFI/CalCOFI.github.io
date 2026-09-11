@@ -403,22 +403,30 @@ def phylopic_by_name(name, steps_up, memo=None):
     # so Leach's storm petrel wore a mite (measured 2026-09-11).  Only a node one of whose
     # scientific names IS the query (case-insensitive) may answer for it; the walk goes on up the
     # lineage otherwise.  `matched_node` records which node answered.
-    found = None
+    # A node whose TITLE is the query wins over one that lists it among its synonyms: the water
+    # mite Hygrobates lists "Hydrobates" as a synonym and sorts first, while the storm-petrel genus
+    # Hydrobates is the fourth item (measured 2026-09-11, build 555).
+    found, by_synonym = None, None
     for n in ((d.get("_embedded") or {}).get("items") or []):
         title = ((n.get("_links") or {}).get("self") or {}).get("title") or ""
-        names = {title.lower()}
+        names = set()
         for nm in (n.get("names") or []):
             for frag in (nm if isinstance(nm, list) else [nm]):
                 if isinstance(frag, dict) and frag.get("class") == "scientific":
                     names.add((frag.get("text") or "").strip().lower())
-        if low not in names:
-            continue
         img = (n.get("_embedded") or {}).get("primaryImage")
-        if img:
+        if not img:
+            continue
+        if title.lower() == low:
             found = _phylopic_from_image(img, "name", steps_up)
             if found:
                 found["matched_node"] = title
-            break
+                break
+        elif low in names and by_synonym is None:
+            by_synonym = _phylopic_from_image(img, "name", steps_up)
+            if by_synonym:
+                by_synonym["matched_node"] = title
+    found = found or by_synonym
     _name_memo[low] = found
     if memo is not None:
         memo.put("phylopic_name", re.sub(r"[^a-z0-9]+", "-", low), {"v": found})
@@ -692,8 +700,12 @@ def commons_candidates(t, rec, p18):
                     "download": ii.get("thumburl") or ii.get("url"),
                     "license": lic[0], "license_url": lic[1], "credit": credit,
                     "taxon_shown": shown, "shows": desc[:200] or None,
-                    "curated": True,       # D7: Commons P18 AND category files are curated;
-                                           # `order` keeps P18 (rank_i 0) ahead of the category
+                    # D7's "curated" is Wikidata's P18 — a file a person chose to represent the
+                    # taxon. A Category:{name} file is only tagged with the name: the sooty
+                    # shearwater's category held a flock of great shearwaters, the western gull's
+                    # an Alcatraz building, Teuthida's a sand sculpture and a NASA lab (hand review
+                    # 2026-09-11), so category files rank as raw, below iNaturalist's taxon photos.
+                    "curated": bool(p18) and title == "File:" + p18,
                     "w": ii.get("width"), "h": ii.get("height"),
                     "is_drawing": is_drawing, "order": rank_i})
     return out
@@ -929,18 +941,31 @@ def materialize(cands, dest: Path, slot, dry_run, out_rel):
         url = c.get("download")
         if not url:
             continue
+        # the thumbnail already on disk for THIS candidate is reused (a re-rank that keeps the
+        # same file costs no download); `{slot}.json` beside it records which file it is
+        stamp = dest / f"{slot}.json"
+        webp = dest / f"{slot}.webp"
         try:
-            body = http(url, "download", accept="image/*", timeout=60)
-            if not dry_run:
-                w, h = thumbnail(body, dest / f"{slot}.webp")
+            prior = json.loads(stamp.read_text()) if stamp.exists() and webp.exists() else None
+        except Exception:
+            prior = None
+        try:
+            if prior and prior.get("source") == c["source"] and prior.get("id") == c["id"]:
+                w, h = Image.open(webp).size
             else:
-                w, h = Image.open(io.BytesIO(body)).size
+                body = http(url, "download", accept="image/*", timeout=60)
+                if not dry_run:
+                    w, h = thumbnail(body, webp)
+                    stamp.write_text(json.dumps({"source": c["source"], "id": c["id"]}))
+                else:
+                    w, h = Image.open(io.BytesIO(body)).size
         except Exception as e:
             log(f"    ! {slot} {c['source']} {c['id'][:50]}: {type(e).__name__}: {e}")
             continue
         a = {k: c[k] for k in ("source", "id", "page", "url", "license", "license_url",
                               "credit", "taxon_shown", "steps_up", "shows", "curated")
              if k in c}
+        a["url"] = c.get("download") or c.get("url")   # the image itself; `page` is the file page
         a["cached"] = None
         a["local"] = f"{out_rel}/{slot}.webp"
         a["w"], a["h"] = w, h
@@ -1257,7 +1282,9 @@ def rsync_cmd(out_dir, release, dry_run=False):
     stay where the pages that reference them expect them."""
     return (["gcloud", "storage", "rsync", "--recursive"]
             + (["--dry-run"] if dry_run else [])
-            + ["--exclude", "^_cache/.*", str(out_dir), f"{BUCKET}/{PREFIX}/{release}"])
+            # the per-slot `{slug}/photo.json` stamps are the fetcher's own bookkeeping, not media
+            + ["--exclude", r"^_cache/.*|^[^/]+/(photo|drawing|plate)\.json$",
+               str(out_dir), f"{BUCKET}/{PREFIX}/{release}"])
 
 
 def upload(out_dir, release, dry_run=False):
