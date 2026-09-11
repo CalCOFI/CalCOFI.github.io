@@ -174,16 +174,30 @@ class Cache:
     def path(self, source: str, slug: str) -> Path:
         return self.root / source / f"{slug}.json"
 
-    def get(self, source, slug):
+    def get(self, source, slug, under=None):
+        """A record is a hit only for the taxon it was fetched UNDER — the accepted name and the
+        ids taxa.json carried at the time.  A taxon whose key survives a rename (the record's
+        `scientific_name` changes, the `taxon_key` does not) would otherwise keep serving the old
+        name's Commons category, iNaturalist match, NOAA plate and PhyloPic walk until someone ran
+        `--refresh` by hand (Ben, 2026-09-11).  A record written before this rule carries no
+        stamp: it is accepted once and re-stamped, so from then on it is tracked."""
         if self.refresh:
             return None
         p = self.path(source, slug)
-        if p.exists():
-            try:
-                return json.loads(p.read_text())
-            except Exception:
+        if not p.exists():
+            return None
+        try:
+            rec = json.loads(p.read_text())
+        except Exception:
+            return None
+        if under is not None:
+            if "under" not in rec:
+                rec["under"] = under
+                p.write_text(json.dumps(rec, ensure_ascii=False))
+            elif rec["under"] != under:
+                log(f"    ~ {source} {slug}: fetched under {rec['under']}, now {under} — refetching")
                 return None
-        return None
+        return rec
 
     def put(self, source, slug, value):
         p = self.path(source, slug)
@@ -191,9 +205,9 @@ class Cache:
         p.write_text(json.dumps(value, ensure_ascii=False))
         return value
 
-    def run(self, source, slug, fn):
+    def run(self, source, slug, fn, under=None):
         """Cached call.  A failure caches nothing and leaves the slot null."""
-        hit = self.get(source, slug)
+        hit = self.get(source, slug, under)
         if hit is not None:
             return hit.get("v")
         try:
@@ -201,8 +215,18 @@ class Cache:
         except Exception as e:
             log(f"    ! {source} {slug}: {type(e).__name__}: {e}")
             return None
-        self.put(source, slug, {"v": v, "at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())})
+        self.put(source, slug, {"v": v, "at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+                                "under": under})
         return v
+
+
+def fetched_under(t):
+    """What a per-taxon cache record is stamped with: the accepted name and the authority ids —
+    a change to either is a different taxon as far as the sources are concerned."""
+    ids = t.get("ids") or {}
+    return {"name": (t.get("scientific_name") or "").strip(),
+            "worms_id": ids.get("worms_id"), "itis_id": ids.get("itis_id"),
+            "gbif_id": ids.get("gbif_id")}
 
 
 # ── licences ────────────────────────────────────────────────────────────────────────────────────
@@ -1019,20 +1043,23 @@ def do_taxon(t, rec, cache, out_dir, wd_all, sizes, dry_run, pool=None, override
     # measured cold on the same first 200 taxa, with byte-identical output — 3.8 h vs 1.2 h for
     # the record's 2,410.  `--workers 1` runs them strictly in order.
     links = wikidata_record(wd_all.get(key))
+    under = fetched_under(t)                # a rename or an id change invalidates every record below
     jobs = {
-        "phylopic": lambda: cache.run("phylopic", slug, lambda: fetch_silhouette(t, rec, cache)),
+        "phylopic": lambda: cache.run("phylopic", slug, lambda: fetch_silhouette(t, rec, cache),
+                                      under),
         "commons": lambda: cache.run("cand_commons", slug,
-                                     lambda: commons_candidates(t, rec, links and links.get("p18"))),
-        "inat": lambda: cache.run("cand_inat", slug, lambda: inat_candidates(t, rec, links)),
-        "gbif": lambda: cache.run("cand_gbif", slug, lambda: gbif_candidates(t, rec, links)),
-        "noaa": lambda: cache.run("noaa", slug, lambda: fetch_plate(t)),
+                                     lambda: commons_candidates(t, rec, links and links.get("p18")),
+                                     under),
+        "inat": lambda: cache.run("cand_inat", slug, lambda: inat_candidates(t, rec, links), under),
+        "gbif": lambda: cache.run("cand_gbif", slug, lambda: gbif_candidates(t, rec, links), under),
+        "noaa": lambda: cache.run("noaa", slug, lambda: fetch_plate(t), under),
     }
     wid = (t.get("ids") or {}).get("worms_id")
     if wid:
-        jobs["worms"] = lambda: cache.run("worms_size", slug, lambda: worms_size(wid))
+        jobs["worms"] = lambda: cache.run("worms_size", slug, lambda: worms_size(wid), under)
     if links and links.get("enwiki"):
         jobs["wikipedia"] = lambda: cache.run("wikipedia", slug,
-                                              lambda: fetch_text(links["enwiki"], t))
+                                              lambda: fetch_text(links["enwiki"], t), under)
     if pool is None:
         got = {k: f() for k, f in jobs.items()}
     else:

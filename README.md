@@ -526,7 +526,11 @@ page is drawn from the Japanese sardine and the caption has to say so.
 **The cache, and the clock.** Every source's answer for every taxon is one small JSON under
 `.cache/species-media/{release}/_cache/{source}/{slug}.json`, and PhyloPic's name lookups are
 memoised across taxa, so a run that is killed continues where it stopped and a source that fails
-for one taxon leaves that slot `null` and does not stop the run. Every request carries a
+for one taxon leaves that slot `null` and does not stop the run. Each per-taxon record is stamped
+with the accepted name and ids it was fetched **under**: a new `taxon_key` in the next release's
+`taxa.json` is simply fetched, and a taxon whose name or ids change under the same key is
+refetched on the next run without anyone asking (`~ … fetched under …, now … — refetching` in the
+log). Every request carries a
 User-Agent with a contact and obeys a per-host rate limit — and because those hosts are
 independent, a taxon's sources are asked **at once** (`--workers`, default 6, each host still
 behind its own lock), which is 1.76 s/taxon instead of 5.61 s cold, with byte-identical output:
