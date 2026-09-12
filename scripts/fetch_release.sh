@@ -66,9 +66,10 @@
 # TAXA_RELEASE_URL takes a full http(s) URL *or* a local path (or a file:// URL) so a staging
 # record can be rendered from disk; the bridge goes away when a promoted release carries taxa.json.
 #
-# `measurements.json` is resolved by the SAME three steps with MEASUREMENTS_RELEASE_URL as its
-# bridge (plan 2026-09-10 § D4): the promoted release's own file first, then the variable, and
-# otherwise nothing at all — no measurement pages rather than an invented one.
+# `measurements.json` is resolved with MEASUREMENTS_RELEASE_URL as its bridge (plan 2026-09-10
+# § D4), but since 2026-09-12 a SET variable OVERRIDES the promoted release's own file (see the
+# note at the block) — the promoted file is read only when the variable is unset, and otherwise
+# nothing at all — no measurement pages rather than an invented one.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -214,16 +215,18 @@ fi
 # them. Resolved exactly as taxa.json is (plan 2026-09-10 § D4): the promoted release's own
 # measurements.json first, then the MEASUREMENTS_RELEASE_URL bridge, and otherwise nothing at all —
 # _plugins/measurements.rb then draws no /measurements/ pages and says so once.
+# Since 2026-09-12 a SET MEASUREMENTS_RELEASE_URL wins over the promoted record, not just fills its
+# absence: every promoted release now carries a measurements.json, so a bridge that only filled a
+# gap could never reach the site again — and the 1.1 bridge (the measurement faces, built from the
+# promoted release's own tables with the newer builder) would sit unread until the next release.
+# A set variable is a deliberate act; it is announced loudly and goes away when unset.
 rm -f "$DATA/measurements.json"
-if get "$record_dir/measurements.json" "$DATA/measurements.json"; then
-  meas_kind="promoted"; meas_url="$record_dir/measurements.json"
-elif [ -n "$MEAS_FALLBACK" ]; then
-  meas_kind="fallback"; meas_url="$MEAS_FALLBACK"
+if [ -n "$MEAS_FALLBACK" ]; then
+  meas_kind="bridge"; meas_url="$MEAS_FALLBACK"
   echo
-  echo "NOTE: measurements.json from a non-promoted release ---------------------------------"
-  echo "NOTE: the promoted release $version carries no measurements.json (it predates the catalog)."
+  echo "NOTE: measurements.json from MEASUREMENTS_RELEASE_URL, overriding the promoted release ----"
   echo "NOTE: building the measurement pages from  $meas_url"
-  echo "NOTE: MEASUREMENTS_RELEASE_URL is set; unset it to render the promoted release."
+  echo "NOTE: unset MEASUREMENTS_RELEASE_URL to render the promoted release $version's own record."
   echo "NOTE: ------------------------------------------------------------------------------"
   echo
   case "$meas_url" in
@@ -231,6 +234,8 @@ elif [ -n "$MEAS_FALLBACK" ]; then
     file://*)           cp "${meas_url#file://}" "$DATA/measurements.json" ;;
     *)                  cp "$meas_url" "$DATA/measurements.json" ;;
   esac
+elif get "$record_dir/measurements.json" "$DATA/measurements.json"; then
+  meas_kind="promoted"; meas_url="$record_dir/measurements.json"
 else
   meas_kind="none"; meas_url=""
   echo "NOTE: no measurements.json beside the record and no MEASUREMENTS_RELEASE_URL — the site builds with no measurement pages"
