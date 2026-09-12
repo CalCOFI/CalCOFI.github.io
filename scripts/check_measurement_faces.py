@@ -22,6 +22,9 @@ Six assertions, each from the plan `2026-09-11 Measurement faces …` (§ D1, §
     place a version appears.  (Shipping `{release}/` blanked every species page on 2026-09-11.)
   6 a ChEBI id the fetcher skips as "not the thing measured" (DIC's carbon atom) appears in
     `skipped` with a reason, and in no key's structures.
+  7 a `bjerrum` block NAMES WHAT MADE IT: every input it was computed from (each with the record
+    key, series and p50 it is), the package version and the constants.  A curve on a page is a
+    claim about chemistry, and a reader must be able to recompute it.
 
 Exits non-zero with the list of offenders.  Standard library only — it must run in CI where RDKit
 is not installed.
@@ -149,6 +152,25 @@ def main(argv=None):
                     # rebuilt key with fewer structures leaves behind
                     problems.append(f"{where}: path {rel!r} is not on disk beside the sidecar")
 
+        # 7 — a computed curve names its inputs, its package and its constants
+        if (b := e.get("bjerrum")):
+            where = f"{key}.bjerrum"
+            if not isinstance(b.get("curve"), list) or len(b["curve"]) < 2:
+                problems.append(f"{where}: no curve")
+            ins = b.get("inputs") or {}
+            if not ins:
+                problems.append(f"{where}: names no inputs — it must say which medians made it")
+            for name, v in ins.items():
+                if not isinstance(v, dict) or v.get("p50") is None or not v.get("key"):
+                    problems.append(f"{where}.inputs.{name}: not a record series with a p50")
+            vers = b.get("versions") or {}
+            if not (vers.get("PyCO2SYS") or "").strip():
+                problems.append(f"{where}: names no PyCO2SYS version")
+            if not (vers.get("constants") or "").strip():
+                problems.append(f"{where}: names no equilibrium constants")
+            if not (b.get("src") or "").strip():
+                problems.append(f"{where}: no credit line for the page to show")
+
         # 2 — every lead has a revision
         for i, w in enumerate(e.get("wikipedia") or []):
             where = f"{key}.wikipedia[{i}] {w.get('title')}"
@@ -160,6 +182,19 @@ def main(argv=None):
                 problems.append(f"{where}: an empty lead")
             if not (w.get("url") or "").strip():
                 problems.append(f"{where}: no link to the revision")
+
+    # 2 (continued) — a borrowed table is quotable too: a revision, a licence and a link
+    bf = (doc.get("tables") or {}).get("beaufort")
+    if bf:
+        if not isinstance(bf.get("revision"), int) or bf["revision"] <= 0:
+            problems.append("tables.beaufort: no revision id")
+        if (bf.get("license") or "") != "CC BY-SA 4.0":
+            problems.append(f"tables.beaufort: licence {bf.get('license')!r}, expected CC BY-SA 4.0")
+        if not (bf.get("url") or "").strip():
+            problems.append("tables.beaufort: no link to the revision")
+        rows = bf.get("rows") or []
+        if len(rows) < 2 or any(len(r) != 4 or r[1] is None for r in rows):
+            problems.append("tables.beaufort: rows are not [force, lo, hi, label] with a lower band")
 
     # 3 — no roles anywhere
     for jpath, k, _v in walk(doc):
@@ -191,7 +226,8 @@ def main(argv=None):
               f"(+{cov.get('nerc_borrowed')} borrowed) · "
               f"keys with a structure {cov.get('keys_with_structure')} · "
               f"structures {cov.get('structures')} ({n_svg} inline, {n_files} files) · "
-              f"leads {cov.get('leads')} · stands-in {cov.get('standsin')}")
+              f"leads {cov.get('leads')} · stands-in {cov.get('standsin')} · "
+              f"bjerrum {cov.get('bjerrum')} · tables {', '.join(cov.get('tables') or []) or '—'}")
         if doc.get("skipped"):
             for s in doc["skipped"]:
                 print(f"  skipped {s['chebi']} on {s['key']}: {s['why']}")

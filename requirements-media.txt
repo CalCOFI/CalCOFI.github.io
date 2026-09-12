@@ -18,3 +18,13 @@
 # probe's tight viewBoxes exactly on 2026.3.6.
 rdkit==2026.3.6
 Pillow>=10.0
+
+# PyCO2SYS draws the carbonate system's Bjerrum curve for the DIC and alkalinity pages, from the
+# record's own medians (plan § D2, § D8).  It is pinned to the series the probe computed with
+# (1.8.3), so a curve redrawn later is comparable with `measurement-faces-probe/chem_calc.json`.
+# It is NOT a release dependency: the release publishes the medians, this fetcher publishes what
+# they imply, and the block it writes names the version and the constants (Lueker et al. 2000).
+PyCO2SYS==1.8.3.4
+# gsw (TEOS-10) is deliberately NOT here: the one gsw mark on a measurement page — oxygen's
+# air-saturation at the surface medians — is already recomputed by the release itself
+# (`computed_at_build: true` in the record's `scale` rows), so the fetcher would only shadow it.

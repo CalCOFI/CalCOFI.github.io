@@ -40,7 +40,15 @@ The sources, in the order they are asked:
                molecule.  A molecule ChEBI lays out vertically and that is linear (CO₂) is redrawn
                from its SMILES so it reads horizontally.
     Wikipedia  the lead of each title the record's `why[kind = wikipedia]` rows name (1.1) or the
-               probe's curated titles (1.0): two sentences, the revision id, CC BY-SA 4.0.
+               probe's curated titles (1.0): two sentences, the revision id, CC BY-SA 4.0.  Plus
+               ONE table the world publishes and we only read: the Beaufort force scale, parsed
+               from the article's wikitext at a named revision into `tables.beaufort`, in both the
+               units the article gives (m/s and knots), for the wind page's strip.
+    PyCO2SYS   not a source but a computation, and not a release dependency: for every key whose
+               composition rows are the carbonate pool, how that pool splits between CO₂(aq),
+               HCO₃⁻ and CO₃²⁻ across pH — at the record's own DIC, alkalinity, temperature and
+               salinity medians, with the inputs, the package version and the constants named in
+               the `bjerrum` block the page credits (plan § D2, § D8).
     NOAA CPC   the Oceanic Niño Index table → `strong_el_nino` (every year with any 3-month ONI
                ≥ +1.5) and `latest`, for the El Niño shading on the anomaly figures (§ D6).
 
@@ -103,7 +111,13 @@ NVS = "http://vocab.nerc.ac.uk/collection"
 NVS_PROFILE = "?_profile=nvs&_mediatype=application/ld%2Bjson"
 CHEBI_API = "https://www.ebi.ac.uk/chebi/backend/api/public"
 WP_SUMMARY = "https://en.wikipedia.org/api/rest_v1/page/summary/"
+WP_API = "https://en.wikipedia.org/w/api.php"
 ONI_URL = "https://www.cpc.ncep.noaa.gov/data/indices/oni.ascii.txt"
+# the Beaufort scale is published, not ours: the wind page reads its own m/s against the table the
+# article states, at the revision recorded beside it (plan § D7, § D8 "the fetcher borrows what the
+# world publishes").  `metadata/measurement_scale.csv` carries the same bands as marks, authored
+# from the same article but with no revision to go back to; the table here is the citable copy.
+BEAUFORT_PAGE = "Beaufort_scale"
 
 NVS_LICENSE = "CC BY 4.0"
 CHEBI_LICENSE = "CC BY 4.0"
@@ -121,6 +135,23 @@ SKIP_CHEBI = {
     "CHEBI:27594": "the carbon atom, not the three-species pool DIC measures "
                    "(the composition rows carry CO₂, HCO₃⁻ and CO₃²⁻)",
 }
+
+# ── the carbonate system (plan § D2, § D8) ──────────────────────────────────────────────────────
+# A key whose composition rows ARE the three carbonate species gets a Bjerrum plot: how the pool
+# splits between CO₂, HCO₃⁻ and CO₃²⁻ across pH, with the record's own medians marked.  The split
+# is a computation, not a lookup, and PyCO2SYS is not a release dependency — so it is computed
+# HERE, from the four medians the record already publishes, with the package version and the
+# constants named in the block (§ D8: the release carries what it computes, the fetcher borrows
+# and computes what the world publishes).  The keys are reached by IDENTITY, never by name: the
+# P01 of total inorganic carbon, of total alkalinity, of temperature and of practical salinity.
+CARBONATE_CHEBI = {"CHEBI:16526", "CHEBI:17544", "CHEBI:41609"}   # CO₂(aq), HCO₃⁻, CO₃²⁻
+P01_DIC, P01_ALK = "TCO2MSXX", "MDMAP014"
+P01_TEMP, P01_SAL = "TEMPPR01", "PSLTZZ01"
+# the curve's domain, in pH units: the range over which a carbonate pool is worth drawing
+BJERRUM_PH = (4.0, 11.0, 0.1)
+# PyCO2SYS's `opt_k_carbonic = 4` is Lueker, Dickson & Keeling (2000), the constants the probe used
+K_CARBONIC_OPT = 4
+K_CARBONIC_SRC = "Lueker, Dickson & Keeling (2000) carbonic-acid constants (opt_k_carbonic = 4)"
 
 # ── the schema-1.0 fallbacks, transcribed from measurement-faces-probe/build.py ──────────────────
 # Under schema 1.1 all three come from the record (`face`, `chem[]`, `why[kind = wikipedia]`), which
@@ -634,6 +665,166 @@ def oni(cache: Cache) -> dict | None:
             "latest": [last[0], int(last[1]), float(last[3])]}
 
 
+# ── the Beaufort scale, as Wikipedia states it (plan § D7) ──────────────────────────────────────
+
+_WIKI_LINK = re.compile(r"\[\[(?:[^\]|]*\|)?([^\]|]*)\]\]")
+_WIKI_REF = re.compile(r"<ref[^>]*/>|<ref[^>]*>.*?</ref>", re.S)
+# "1–3", "0–0.2", "< 1", "≥ 32.7" — a band as the article writes it, either unit
+_BAND = re.compile(r"(?:(?P<lo>\d+(?:\.\d+)?)\s*[–—-]\s*(?P<hi>\d+(?:\.\d+)?)"
+                   r"|(?P<op><|≥|>|≤)\s*(?P<v>\d+(?:\.\d+)?))")
+
+
+def _wikitext(s: str) -> str:
+    s = _WIKI_LINK.sub(r"\1", _WIKI_REF.sub("", s)).replace("&nbsp;", " ")
+    # a description wraps in the article's cell ("Moderate gale,<br />near gale"); on one line of a
+    # strip it is one phrase
+    return re.sub(r"\s+", " ", re.sub(r"<br\s*/?>", " ", s)).strip(" |")
+
+
+def _band(cell: str, unit: str) -> tuple[float | None, float | None]:
+    """The (lo, hi) of the `unit` segment of a wind-speed cell.  An open band keeps its None: the
+    article says "≥ 32.7 m/s", and inventing a top would be inventing a number."""
+    for seg in re.split(r"<br\s*/?>", cell):
+        if unit not in seg:
+            continue
+        m = _BAND.search(_wikitext(seg))
+        if not m:
+            return (None, None)
+        if m.group("lo") is not None:
+            return (float(m.group("lo")), float(m.group("hi")))
+        v, op = float(m.group("v")), m.group("op")
+        return (0.0, v) if op in ("<", "≤") else (v, None)
+    return (None, None)
+
+
+def beaufort(cache: Cache) -> dict | None:
+    """The Beaufort force table from the English Wikipedia article, at a named revision: force,
+    its description, and the band in BOTH the units the article gives — m/s and knots.  The METS
+    wind series is declared m/s and reads high for it, which is an open question on the dataset
+    (`metadata/calcofi/mets/questions.csv`), so the page shows the force under each reading rather
+    than deciding which one the numbers are.  CC BY-SA 4.0."""
+    url = (f"{WP_API}?action=parse&page={BEAUFORT_PAGE}&prop=wikitext%7Crevid"
+           "&format=json&formatversion=2")
+    d = soft(lambda: cache.json("wikipedia", f"parse_{BEAUFORT_PAGE}",
+                                lambda: get_json(url, "wikipedia")), "beaufort")
+    if not isinstance(d, dict):
+        return None
+    parse = d.get("parse") or {}
+    rev, text = parse.get("revid"), (parse.get("wikitext") or "")
+    if not rev or not text:
+        return None
+    lines = text.splitlines()
+    rows, knots = [], []
+    for i, line in enumerate(lines):
+        m = re.search(r'id="Beaufort_Number_(\d+)"\s*\|\s*(\d+)', line)
+        if not m:
+            continue
+        cells = [l for l in lines[i + 1:i + 4] if l.startswith("|")]
+        if len(cells) < 2:
+            continue
+        force, label, speed = int(m.group(2)), _wikitext(cells[0]), cells[1]
+        lo, hi = _band(speed, "m/s")
+        klo, khi = _band(speed, "knot")
+        if lo is None:
+            continue
+        rows.append([force, lo, hi, label])
+        knots.append([force, klo, khi])
+    if len(rows) < 2 or [r[0] for r in rows] != sorted(r[0] for r in rows):
+        log(f"    ! beaufort: parsed {len(rows)} rows out of the table — not using them")
+        return None
+    return {"source": f"Wikipedia: {BEAUFORT_PAGE.replace('_', ' ')}", "revision": int(rev),
+            "license": WP_LICENSE,
+            "url": f"https://en.wikipedia.org/wiki/{BEAUFORT_PAGE}?oldid={rev}",
+            "units": "m s-1", "rows": rows, "knots": knots}
+
+
+# ── the carbonate system: PyCO2SYS at the record's own medians (plan § D2) ───────────────────────
+
+def bjerrum(key: str, rec: "Record") -> dict | None:
+    """How a pool of dissolved inorganic carbon splits between CO₂(aq), HCO₃⁻ and CO₃²⁻ across pH,
+    at the temperature and salinity the record itself measures, with the record's own DIC and
+    alkalinity medians marked on it.
+
+    Every input is a p50 the record publishes (`series[].observed.p50`) — nothing here is typed —
+    and every input, with the package and the constants that turned it into a curve, is named in
+    the block the page credits.  Returns None unless all four medians and PyCO2SYS are present."""
+    try:
+        import PyCO2SYS as pyco2
+    except ImportError:
+        log("    ! bjerrum: PyCO2SYS is not installed in this venv "
+            "(uv pip install --python .venv-media/bin/python -r requirements-media.txt)")
+        return None
+
+    ds = rec.dataset_of(key)
+    ins = {}
+    for name, p01 in (("dic", P01_DIC), ("alkalinity", P01_ALK),
+                      ("temperature", P01_TEMP), ("salinity", P01_SAL)):
+        got = rec.median(p01, prefer_dataset=ds)
+        if got is None:
+            log(f"    ! bjerrum: the record carries no median for {name} ({p01})")
+            return None
+        ins[name] = got
+
+    dic, alk = ins["dic"]["p50"], ins["alkalinity"]["p50"]
+    t, sp = ins["temperature"]["p50"], ins["salinity"]["p50"]
+    lo, hi, step = BJERRUM_PH
+    grid = [round(lo + i * step, 1) for i in range(int(round((hi - lo) / step)) + 1)]
+
+    def sys(**kw):
+        return pyco2.sys(salinity=sp, temperature=t, pressure=0,
+                         opt_k_carbonic=K_CARBONIC_OPT, **kw)
+
+    # the point: DIC + alkalinity, the two the record measures
+    at = sys(par1=dic, par1_type=2, par2=alk, par2_type=1)
+    # the curve: the same DIC held against every pH on the grid, so the three shares are the
+    # equilibrium's own and not a fit
+    cv = sys(par1=[dic] * len(grid), par1_type=2, par2=grid, par2_type=3)
+
+    def f(x):
+        return float(x[0] if hasattr(x, "__len__") and not isinstance(x, str) else x)
+
+    curve = []
+    for i, ph in enumerate(grid):
+        tot = float(cv["CO2"][i]) + float(cv["HCO3"][i]) + float(cv["CO3"][i])
+        if tot <= 0:
+            return None
+        curve.append([ph, round(float(cv["CO2"][i]) / tot, 4),
+                      round(float(cv["HCO3"][i]) / tot, 4), round(float(cv["CO3"][i]) / tot, 4)])
+
+    co2, hco3, co3 = f(at["CO2"]), f(at["HCO3"]), f(at["CO3"])
+    tot = co2 + hco3 + co3
+    src = (f"PyCO2SYS {pyco2.__version__} · {K_CARBONIC_SRC}, at the record's own series medians: "
+           f"DIC {dic} and alkalinity {alk} µmol/kg, {t} °C, practical salinity {sp}")
+    return {
+        "pH": round(f(at["pH"]), 3),
+        "co2": round(co2 / tot * 100, 2), "hco3": round(hco3 / tot * 100, 1),
+        "co3": round(co3 / tot * 100, 1),
+        "omega_arag": round(f(at["saturation_aragonite"]), 2),
+        "pco2": round(f(at["pCO2"]), 1),
+        "curve": curve,
+        "inputs": {k: {"key": v["key"], "dataset_key": v["dataset_key"],
+                       "measurement_type": v["measurement_type"], "p50": v["p50"],
+                       "units": v["units"], "n_values": v["n_values"]} for k, v in ins.items()},
+        "inputs_note": "every value is the record's own observed p50 over the whole series, "
+                       "at surface pressure",
+        "versions": {"PyCO2SYS": pyco2.__version__, "constants": K_CARBONIC_SRC},
+        # the record's own PyCO2SYS marks were typed from the plan's probe (`computed_at_build`
+        # false).  These are the same quantities recomputed from the medians above, and the page
+        # shows THESE in their place (plan § D7, "computed marks … are recomputed at build").
+        "marks": [
+            {"value": round(f(at["saturation_aragonite"]), 2),
+             "label": "aragonite saturation Ω at the record's medians", "kind": "computed"},
+            {"value": round(co2 / tot * 100, 2), "label": "CO₂(aq) share of the pool, %",
+             "kind": "computed"},
+            {"value": round(hco3 / tot * 100, 1), "label": "HCO₃⁻ share of the pool, %",
+             "kind": "computed"},
+            {"value": round(co3 / tot * 100, 1), "label": "CO₃²⁻ share of the pool, %",
+             "kind": "computed"},
+        ],
+        "src": src,
+    }
+
+
 # ── the record: 1.1 first, 1.0's fallbacks second ───────────────────────────────────────────────
 
 class Record:
@@ -652,6 +843,44 @@ class Record:
         m = self.by_key.get(key) or {}
         u = m.get("nerc_p01")
         return u or None
+
+    @staticmethod
+    def _p01_id(uri: str | None) -> str | None:
+        return uri.rstrip("/").rsplit("/", 1)[-1] if uri else None
+
+    def dataset_of(self, key: str) -> str | None:
+        """The dataset the key's canonical series comes from."""
+        ser = (self.by_key.get(key) or {}).get("series") or []
+        canon = next((s for s in ser if s.get("is_canonical")), ser[0] if ser else None)
+        return (canon or {}).get("dataset_key")
+
+    def median(self, p01_id: str, prefer_dataset: str | None = None) -> dict | None:
+        """The record's own median (`observed.p50`) of the quantity a P01 identifies — the same
+        dataset as the asking key where that dataset measures it, else the canonical series.
+        Reached by IDENTITY: a key's name never decides which median it gets."""
+        cands = []
+        for m in self.measurements:
+            if self._p01_id(m.get("nerc_p01")) != p01_id:
+                continue
+            for s in (m.get("series") or []):
+                p50 = ((s.get("observed") or {}).get("p50"))
+                if p50 is None:
+                    continue
+                cands.append({"key": m["key"], "dataset_key": s.get("dataset_key"),
+                              "measurement_type": s.get("measurement_type"), "p50": p50,
+                              "units": m.get("units"), "n_values": s.get("n_values"),
+                              "canonical": bool(s.get("is_canonical"))})
+        if not cands:
+            return None
+        same = [c for c in cands if c["dataset_key"] == prefer_dataset]
+        pool = same or cands
+        return (next((c for c in pool if c["canonical"]), None)
+                or max(pool, key=lambda c: c["n_values"] or 0))
+
+    def is_carbonate(self, key: str) -> bool:
+        """A key whose composition rows ARE the carbonate pool (plan § D2)."""
+        rows = {r.get("chebi") for r in ((self.by_key.get(key) or {}).get("chem") or [])}
+        return CARBONATE_CHEBI <= rows
 
     def face(self, key: str) -> dict:
         """{kind, face_of, source}.  The record's own `face` block under 1.1; under 1.0 the probe's
@@ -802,6 +1031,12 @@ def do_key(key: str, rec: Record, cache: Cache, out_dir: Path, dry_run: bool,
             leads.append(w)
     if leads:
         entry["wikipedia"] = leads
+
+    # the carbonate pool's split by pH, computed here because PyCO2SYS is not a release dependency
+    if rec.is_carbonate(key):
+        b = soft(lambda: bjerrum(key, rec), f"bjerrum {key}")
+        if b:
+            entry["bjerrum"] = b
     return entry
 
 
@@ -886,7 +1121,8 @@ def main(argv=None):
             log("    " + (e.get("face", {}).get("kind") or "?")
                 + f" · nerc {'y' if e.get('nerc') else '-'}"
                 + f" · structures {len(e.get('structures') or [])}"
-                + f" · leads {len(e.get('wikipedia') or [])}")
+                + f" · leads {len(e.get('wikipedia') or [])}"
+                + (" · bjerrum" if e.get("bjerrum") else ""))
     except SourceRefused as e:
         print(f"\nSTOP — {e}\n"
               f"Nothing was written.  {len(entries)} of {len(keys)} keys had been walked; the "
@@ -895,6 +1131,7 @@ def main(argv=None):
     elapsed = time.time() - t0
 
     index = oni(cache)
+    tables = {k: v for k, v in (("beaufort", beaufort(cache)),) if v}
 
     def n(pred):
         return sum(1 for e in entries.values() if pred(e))
@@ -912,6 +1149,8 @@ def main(argv=None):
             "wikipedia": {"base": WP_SUMMARY, "license": WP_LICENSE},
         },
         "oni": index,
+        # the tables a page reads that belong to no single key (plan § D7)
+        "tables": tables,
         "coverage": {
             "keys": len(entries),
             "nerc": n(lambda e: e.get("nerc")),
@@ -923,6 +1162,8 @@ def main(argv=None):
                                                    for s in (e.get("structures") or []))),
             "leads": n(lambda e: e.get("wikipedia")),
             "standsin": n(lambda e: (e.get("face") or {}).get("face_of")),
+            "bjerrum": n(lambda e: e.get("bjerrum")),
+            "tables": sorted(tables),
         },
         "skipped": skipped,
         "measurements": entries,
