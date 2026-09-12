@@ -715,6 +715,76 @@ flags — the timeline, the matrix, the datasets list and the search all read it
 computed two ways. Per-key detail (the per-year, per-month, per-depth and per-flag maps) is on the
 page, in `#mm-strip-data`, `#mm-depth-data` and `#mm-months-data`, and in `/measurements/{key}.json`.
 
+### Faces · what it is, how it is taken, why it matters
+
+A measurement page that only counts values says nothing about the thing counted. The **face** (plan
+`2026-09-11 Measurement faces …` § D1–D7) answers three questions under the stats band and again at
+length below *Measured in*, and **not one of its facts is written in this repo**. Two sources:
+
+| | |
+|---|---|
+| `_data/measurements.json` **1.1** | the RELEASE's, additive to 1.0: `face` (`kind` ∈ structure · composition · scale · organism · standsin · none, and `face_of`), `chem`, `method`, `scale`, `why` and `anomaly` per key — authored in `metadata/measurement_{chem,method,scale,why,face}.csv` and measured at release |
+| `_data/measurements_media.json` | the FETCHER's: the NERC concept and its definition, the structures RDKit draws from ChEBI's molfiles, the Wikipedia leads, the GOOS EOV sheet and NOAA's ONI table. Written by `scripts/fetch_measurement_faces.py` into **one version-free copy** at `gs://calcofi-files-public/measurement-media/` — `measurements_media.json` beside `keys/{key}/structure.svg` — and pulled into `_data/` by `scripts/fetch_release.sh` |
+
+**A key with neither renders exactly as it did before the face existed** — the row is not emitted,
+the three headings are not written, and the built page is byte-for-byte what `main` builds.
+
+**What.** The structure is **ours**: NERC's P01 → its S27 → `owl:sameAs` ChEBI → ChEBI's own
+molfile → RDKit with `currentColor`, so one file is navy on white and bone on navy and there is no
+second asset to fall out of step. ChEBI's *definition* may be quoted (CC BY 4.0); its **roles never
+are** — dioxygen's include "anti-inflammatory drug" and the S27 behind DIC is the carbon *atom*,
+whose roles include "antidepressant". A **pool** (DIC) or a **mixture** (salinity) therefore takes
+composition rows and their mass fractions, never that S27: it draws its components, and its ids row
+and its JSON-LD `sameAs` stay empty of ChEBI and CAS, because carbon's entry must never stand for
+DIC. A **property** (temperature, pH) has no molecule, so its face is the scale it is read on; an
+**organism** count reaches the species face through S25 → WoRMS.
+
+**Stands in.** A key with no P01 borrows the face of the quantity it estimates or repeats, wearing a
+chip that says whose face it is (`est_nitrate_sta_corr` → nitrate's, "estimated from the ISUS
+sensor") and **none of the borrowed ids**: not in the ids row, not in `sameAs`, and no `image` in
+its JSON-LD. A stand-in borrows a picture, not an identity.
+
+**How.** One card per series from the method registry — the platform glyph, the instrument, the
+principle, the reaction steps, the wavelength on a spectrum strip, the precision, the series' own
+flag column (or *no flag at this grain*), and a pin link to `calcofi.org` styled as the front door
+hero's, landing on its section through a text fragment because those pages have no stable anchors.
+Beside them, *Where in the water column* from the record's own depth bands.
+
+**Why.** One sentence, three sources, each underlined in its own colour with a legend that names
+exactly the parts drawn: NERC's definition · what the record holds and how it has moved · the
+authored pick with its citations. The **other readings are one click away** in a
+`<details class="ds-details">` — the datasets catalog's *not yet in the database* idiom — **closed
+on load**, its summary count the list's own; an authored alternative with no citation says *needs a
+citation before it can be the pick* rather than reading as a fact. Then the **familiar scale**
+(the record's 5th–95th per series, the declared bounds dashed, the marks sourced below the axis,
+and a red flag for a value the scale makes implausible), the **anomaly in every depth band the
+record measures in** on one shared scale with the strong El Niño years shaded from NOAA's ONI, and
+the **EOV card** — the GOOS question **quoted and linked, never paraphrased**, because
+goosocean.org reserves all rights.
+
+**Drawn, not fetched.** The structures are inline SVG, so the picture is on the page with
+JavaScript off. Everything else — the spark, the ion bar, the hair, the pH strip, the Beaufort row,
+the spectrum, the water column, the familiar scale, the anomaly and the Bjerrum plot — is drawn by
+the `// ── faces (WS-MF5)` section of `assets/measurements.js` from **one** inline payload,
+`#mm-face`, **at its host's own measured width**, one SVG unit per CSS pixel, so an 11 px label is
+11 px in a 560 px column and in an 1,100 px one. Each host adds `.mmf-drawn` when it has drawn.
+
+**`n_flagged`.** Schema 1.1 carries the flagged count per series and per key. The record is the
+source and `n_values − qual_ok_n` the fallback; where both exist and disagree the build warns once
+and the record wins — the two must never reach a reader as different numbers.
+
+**The checks.** `check_jsonld.py` asserts an `ImageObject` with `contentUrl`, `license`,
+`creditText` and `acquireLicensePage` exactly where the record's face is a `structure` **and** the
+sidecar drew one, and nowhere else — with no release version in the URL, because keying media by
+release blanked every species page on 2026-09-11 — and that no stand-in, pool, mixture, property or
+organism claims a chemical id in `sameAs`. `check_layout.py`'s `faces` block, at 1470 and 375 px in
+both themes over the seven pages that show all seven states (`nitrate`, `salinity`, `dic`,
+`synechococcus`, `wind_speed_ms`, `est_nitrate_sta_corr`, `ammonia`), asserts the row's three
+columns and a non-empty *What*, a labelled `role="img"` per structure, the stand-in's chip and
+empty ids, the sentence's parts against its legend, the details closed with a matching count, the
+familiar scale with **no two mark labels overlapping** (boxes read back from the DOM), the anomaly's
+rows against the record's own bands, and that nothing in the face is wider than its column.
+
 **The checks.** `check_jsonld.py`: exactly one `DefinedTerm` node per page with `name`, `identifier`
 (the key), the page's own `url` and the NERC P01 collection as its `inDefinedTermSet`; `termCode`
 exactly where the record's entry carries a `nerc_p01` and nowhere else (23 series carry none, and an

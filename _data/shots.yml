@@ -115,4 +115,16 @@ pages:
     wait: 6000            # the timeline, the matrix and the datasets list are all built at load
   measurement_page:
     url: https://calcofi.io/measurements/temperature/
-    height: 950           # one measurement: temperature — its two series, the strip and the ways in
+    height: 1500          # one measurement: temperature. The head band alone is ~900 px since the
+                          # face row (plan 2026-09-11 § D1–D7) — What · How · Why, the sentence and
+                          # the collapsed alternatives — so 1,500 reaches "Measured in", the years
+                          # strip and the start of "What it is".
+    wait: 6000            # the spark, the familiar scale and the anomaly small multiples are all
+                          # drawn at load, each at its host's own measured width
+  measurement_face:
+    url: https://calcofi.io/measurements/nitrate/
+    height: 1500          # the structure face: an ion drawn from ChEBI's own coordinates in the
+                          # page's ink, the method card's spectrum strip, and the anomaly band
+                          # with the strong El Niño years shaded. The one page that shows every
+                          # part of § D1–D7 at once.
+    wait: 6000
