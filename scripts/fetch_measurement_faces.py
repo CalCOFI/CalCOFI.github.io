@@ -231,6 +231,30 @@ class HttpError(Exception):
         self.code = code
 
 
+def _with_deadline(fn, seconds):
+    """Run `fn` in a daemon thread and give up after `seconds`.  urllib's `timeout` bounds each
+    socket OPERATION, not the whole request, so a server that accepts the connection and then
+    dribbles — which is exactly what NERC's S06 S0600045 does — is never timed out by it: the run
+    simply stops.  (scripts/fetch_species_media.py learned the same lesson from a media host on
+    2026-09-11.)  The abandoned thread dies with the process."""
+    box = {}
+
+    def run():
+        try:
+            box["v"] = fn()
+        except BaseException as e:                    # noqa: BLE001 — re-raised in the caller
+            box["e"] = e
+
+    th = threading.Thread(target=run, daemon=True)
+    th.start()
+    th.join(seconds)
+    if th.is_alive():
+        raise TimeoutError(f"no answer within {seconds:.0f} s")
+    if "e" in box:
+        raise box["e"]
+    return box["v"]
+
+
 def http(url, host_key, accept="application/json", timeout=60, tries=4) -> bytes:
     """One request with the contact User-Agent, the host's rate limit and exponential back-off.
     404/410 is a real answer and is raised at once; 403 and a persistent 429/503 raise
@@ -240,9 +264,13 @@ def http(url, host_key, accept="application/json", timeout=60, tries=4) -> bytes
     for attempt in range(tries):
         _throttle(host_key)
         req = urllib.request.Request(url, headers=hdr)
-        try:
+
+        def once():
             with urllib.request.urlopen(req, timeout=timeout) as r:
                 return r.read()
+
+        try:
+            return _with_deadline(once, timeout + 5)
         except urllib.error.HTTPError as e:
             last = HttpError(e.code, url)
             if e.code == 403:
@@ -282,14 +310,23 @@ class Cache:
     def __init__(self, root: Path, refresh: bool):
         self.root = root
         self.refresh = refresh
+        # what THIS run has already refetched.  `--refresh` means "ignore what is on disk", once
+        # per URI — not once per use.  The 89 keys share 24 P01s and every chain hops into the same
+        # handful of S06 and S26 concepts, so without this a refresh asks NVS for the same concept
+        # up to a dozen times: a refresh run was still on key 7 after 20 minutes, where the warm
+        # run took 26 s (measured 2026-09-12).
+        self.fresh: set[tuple[str, str]] = set()
 
     def path(self, source: str, name: str, ext="json") -> Path:
         safe = re.sub(r"[^A-Za-z0-9._:-]", "_", name)
         return self.root / source / f"{safe}.{ext}"
 
+    def _stale(self, source, name) -> bool:
+        return self.refresh and (source, name) not in self.fresh
+
     def json(self, source, name, fn):
         p = self.path(source, name)
-        if not self.refresh and p.exists():
+        if not self._stale(source, name) and p.exists():
             try:
                 return json.loads(p.read_text()).get("v")
             except Exception:
@@ -297,15 +334,17 @@ class Cache:
         v = fn()                                      # a SourceRefused propagates: the gate
         p.parent.mkdir(parents=True, exist_ok=True)
         p.write_text(json.dumps({"v": v, "at": stamp()}, ensure_ascii=False))
+        self.fresh.add((source, name))
         return v
 
     def text(self, source, name, fn, ext="txt"):
         p = self.path(source, name, ext)
-        if not self.refresh and p.exists():
+        if not self._stale(source, name) and p.exists():
             return p.read_text()
         v = fn()
         p.parent.mkdir(parents=True, exist_ok=True)
         p.write_text(v)
+        self.fresh.add((source, name))
         return v
 
 
@@ -343,10 +382,29 @@ def _val(x):
     return x
 
 
+# NVS concepts that did not answer THIS run.  A failure caches nothing on disk (tomorrow's run must
+# ask again), but asking a second time inside one run is pure cost: S06 S0600045 ("Concentration")
+# has hung for every run since the plan's probe, and it is a broader of most nutrient, oxygen and
+# chlorophyll P01s — so without this set, thirty-odd keys each spend the full timeout budget on it
+# (measured 2026-09-12: ~5 minutes PER KEY, against 26 s for all 89 warm).
+_nvs_dead: set[str] = set()
+
+
 def nvs_concept(uri: str, cache: Cache) -> dict | None:
-    """One NVS concept as JSON-LD, cached by URI."""
-    url = uri.rstrip("/") + "/" + NVS_PROFILE
-    d = cache.json("nvs", uri, lambda: get_json(url, "nvs"))
+    """One NVS concept as JSON-LD, cached by URI on disk and by failure for the run."""
+    key = uri.rstrip("/")
+    if key in _nvs_dead:
+        raise TimeoutError(f"{key} did not answer earlier this run")
+    url = key + "/" + NVS_PROFILE
+    try:
+        # two tries and 30 s: a concept that is up answers in under 2 s, and one that is down stays
+        # down for the run
+        d = cache.json("nvs", uri, lambda: get_json(url, "nvs", timeout=30, tries=2))
+    except SourceRefused:
+        raise
+    except Exception:
+        _nvs_dead.add(key)
+        raise
     return d if isinstance(d, dict) else None
 
 
@@ -530,8 +588,10 @@ def draw_structure(molblock: str | None, smiles: str | None) -> dict | None:
 def standalone_svg(st: dict, label: str) -> str:
     """One file per structure: no width or height, so the page sizes it; `currentColor` throughout,
     so it takes the page's ink in either theme."""
+    safe = (str(label).replace("&", "&amp;").replace("<", "&lt;")
+            .replace(">", "&gt;").replace("'", "&apos;"))
     return (f"<svg xmlns='http://www.w3.org/2000/svg' viewBox='{st['viewBox']}' "
-            f"fill='none' role='img' aria-label='{label}'>\n{st['inner']}\n</svg>\n")
+            f"fill='none' role='img' aria-label='{safe}'>\n{st['inner']}\n</svg>\n")
 
 
 # ── Wikipedia and the ONI ───────────────────────────────────────────────────────────────────────
