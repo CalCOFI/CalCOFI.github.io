@@ -39,6 +39,13 @@ What it asserts, and why each rule is here:
       /measurements/{key}.json, so a page cannot claim a concept the record does not have) — an
       absent id means "no concept says exactly this", never "not looked at"
     · one PropertyValue per series, each named by its measurement_type, and no more
+    · `image` an ImageObject with `contentUrl`, `license`, `creditText` and `acquireLicensePage`
+      exactly where the record's `face.kind` is "structure" AND _data/measurements_media.json has
+      drawn a structure for the key — and NOWHERE else (plan 2026-09-11 § D1, § D3, § F3). A
+      stand-in borrows a picture, not an identity; a pool (DIC) and a mixture (salinity) are not
+      the one substance their S27 names, and carbon's ChEBI entry must never stand for DIC.
+    · `sameAs` the P01 always, plus the ChEBI entry and the CAS registry entry on a `structure`
+      face and the WoRMS record on an `organism` face — and no borrowed id on a stand-in
     · /measurements/ is one DefinedTermSet listing every page that exists
     · /measurements/sitemap.xml lists the measurement pages that exist, and nothing else
 
@@ -438,6 +445,32 @@ def check_measurements(site, base):
     pages = sorted(p for p in root.glob("*/index.html"))
     if not pages:
         return fail("measurements/", "the /measurements/ directory exists but holds no measurement pages")
+
+    # the faces (plan 2026-09-11 § D1, § D3, § F3). Two authorities, neither of them the page:
+    # the RECORD says what kind of face a key has, the MEDIA sidecar says whether a structure was
+    # actually drawn for it — and it is the fetcher's, not the release's, so it is read from the
+    # repo beside this script. Absent → no page may claim an image.
+    data = Path(__file__).resolve().parent.parent / "_data"
+    face_kind, has_struct = {}, set()
+    rec_path = data / "measurements.json"
+    if rec_path.exists():
+        try:
+            for m in json.loads(rec_path.read_text(encoding="utf-8")).get("measurements", []):
+                k = (m.get("face") or {}).get("kind")
+                if k:
+                    face_kind[m.get("key")] = k
+        except json.JSONDecodeError as e:
+            fail("measurements/", f"_data/measurements.json does not parse: {e}")
+    media_path = data / "measurements_media.json"
+    if media_path.exists():
+        try:
+            mm = json.loads(media_path.read_text(encoding="utf-8"))
+            has_struct = {k for k, v in (mm.get("measurements") or {}).items() if (v or {}).get("structures")}
+        except json.JSONDecodeError as e:
+            fail("measurements/", f"_data/measurements_media.json does not parse: {e}")
+    notes.append(f"measurements: the record gives {len(face_kind)} key(s) a face kind, "
+                 f"the media sidecar draws a structure for {len(has_struct)}")
+    n_image = 0
     slugs = []
     for p in pages:
         slug = p.parent.name
@@ -488,6 +521,49 @@ def check_measurements(site, base):
         if [x.get("name") for x in props] != want_series:
             fail(where, f'PropertyValue names {[x.get("name") for x in props]!r}, '
                         f"the record's series are {want_series!r}")
+
+        # ── the face's picture and its identity (plan 2026-09-11 § D1, § D3, § F3) ─────
+        key = rec.get("key")
+        kind = face_kind.get(key)
+        img = node.get("image")
+        want_img = kind == "structure" and key in has_struct
+        if want_img and not img:
+            fail(where, "no image though the record's face is a structure and the media sidecar "
+                        "draws one for it")
+        elif img and not want_img:
+            fail(where, f"an image on a face of kind {kind!r} — a stand-in borrows a picture, not "
+                        f"an identity, and a pool or a mixture is not the one substance its S27 names")
+        elif img:
+            n_image += 1
+            if not isinstance(img, dict) or img.get("@type") != "ImageObject":
+                fail(where, f"image is {img!r}, expected an ImageObject")
+            else:
+                for req in ("contentUrl", "license", "creditText", "acquireLicensePage"):
+                    if not img.get(req):
+                        fail(where, f"image has no {req} — a picture reaches a user under terms, "
+                                    f"or it does not reach them")
+                url = str(img.get("contentUrl", ""))
+                if not url.startswith("http"):
+                    fail(where, f"image.contentUrl is not absolute: {url!r}")
+                # the version-free media layout (§ D8): keying media by release blanked every
+                # species page on 2026-09-11, and the fix must not be undone here
+                if re.search(r"/v\d{4}\.\d{2}\.\d{2}/", url):
+                    fail(where, f"image.contentUrl carries a release version: {url!r} — the media "
+                                f"are stored once, never once per release")
+        same = node.get("sameAs")
+        same = [same] if isinstance(same, str) else (same or [])
+        chem = [u for u in same if "chebi" in u.lower() or "cas_rn" in u]
+        worms = [u for u in same if "marinespecies" in u or "aphia" in u]
+        if kind == "standsin" and (chem or worms):
+            fail(where, f"a stand-in claims borrowed ids in sameAs: {chem + worms!r}")
+        if chem and kind != "structure":
+            fail(where, f"sameAs claims a chemical identity on a face of kind {kind!r}: {chem!r}")
+        if worms and kind != "organism":
+            fail(where, f"sameAs claims a WoRMS identity on a face of kind {kind!r}: {worms!r}")
+
+    notes.append(f"measurements: {n_image} page(s) carry an ImageObject, for "
+                 f"{len([k for k, v in face_kind.items() if v == 'structure' and k in has_struct])} "
+                 f"structure face(s) with a drawing")
 
     idx = root / "index.html"
     if not idx.exists():

@@ -1578,3 +1578,241 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 .tile.t-obs a.sp-glyph { display: inline-flex; align-items: center; flex: none; color: inherit; text-decoration: none; }
 .tile.t-obs a.sp-glyph:hover .tile-sil, .tile.t-obs a.sp-glyph:focus-visible .tile-sil { opacity: 0.65; }
 .tile.t-obs .tile-sil { flex: none; }
+
+/* ── faces (WS-MF5) ────────────────────────────────────────────────────────────
+   The measurement page's face row, its sentence and the three sections after it (plan
+   2026-09-11 "Measurement faces — …" § D1–D7), ported from the mockup CalCOFI Measurement Faces
+   onto brand v2's tokens. Additive, exactly as the species faces' block above is: every rule is
+   under an `mmf-` class that exists only when `_plugins/measurements.rb` built a `page.face` — a
+   key with no `face` block in the record and no entry in `_data/measurements_media.json` is
+   untouched by everything below.
+
+   The site-local tokens: brand/v2/theme.css is frozen and carries no divergent pair and no
+   qualitative ramp, so the anomaly's above/below, the El Niño shading and the nine ions of the
+   sea-salt bar are defined here — from the brand's own hues, keyed on `[data-theme]` the way
+   --sp-plate-filter is, since brand/v2/theme.js always stamps the attribute. Identity is never
+   colour alone anywhere below: every ion has its formula written in or beside its block, every
+   series bar has its dataset NAMED in the row, and every shaded year is named in the credit. */
+:root {
+  --mmf-warm: #c0392b;            /* above the normal — the brand red, darkened for 4.6:1 on white */
+  --mmf-cool: #2b6ea8;            /* below it — the brand blue */
+  --mmf-nino: rgba(214, 158, 46, 0.20);   /* a strong El Niño year: the brand gold at a wash */
+  --mmf-i1: #1b4f72; --mmf-i2: #2e86ab; --mmf-i3: #4fb6e6; --mmf-i4: #d69e2e; --mmf-i5: #7a8aa6;
+  --mmf-i6: #5d7f99; --mmf-i7: #8f9bb0; --mmf-i8: #a3aebf; --mmf-i9: #b9c2cf;
+}
+:root[data-theme="dark"] {
+  --mmf-warm: #e8705f;            /* 5.2:1 on the navy ground */
+  --mmf-cool: #6fb2e0;
+  --mmf-nino: rgba(240, 190, 90, 0.16);
+}
+
+/* ── the face row: What · How · Why, three columns under the stats band ─────── */
+.mmf-face { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: calc(var(--space) * 2.5) 0 0; border-top: 1px solid var(--border); }
+.mmf-col { padding: calc(var(--space) * 1.75) calc(var(--space) * 2) calc(var(--space) * 1.5); min-width: 0; border-left: 1px solid var(--border); display: flex; flex-direction: column; gap: var(--space); }
+.mmf-col:first-child { border-left: 0; padding-left: 0; }
+.mmf-col:last-child { padding-right: 0; }
+@media (max-width: 860px) {
+  .mmf-face { grid-template-columns: 1fr; }
+  .mmf-col { border-left: 0; padding-inline: 0; border-top: 1px solid var(--border); }
+  .mmf-col:first-child { border-top: 0; }
+}
+.mmf-k { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); }
+.mmf-line { font-size: 13.5px; line-height: 1.4; margin: 0; max-width: none; }
+.mmf-line b { font-weight: 600; }
+.mmf-none { font-size: 13px; color: var(--muted); margin: 0; }
+/* NERC's definition is clamped to three lines in the row and written WHOLE under What, so nothing
+   is lost — the title carries it too, for a reader who hovers rather than scrolls */
+.mmf-def { font-size: 12.5px; color: var(--muted); margin: 0; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.mmf-comp { color: var(--muted); }
+
+/* the structure, in the page's own ink: RDKit writes currentColor, so one file is navy on white
+   and bone on navy and no second asset exists to fall out of step */
+.mmf-glyph { display: flex; align-items: center; gap: calc(var(--space) * 1.5); min-height: 92px; color: var(--fg); }
+.mmf-mol { height: 92px; width: auto; max-width: min(100%, 200px); }
+.mmf-mol-1 { height: 100px; }
+.mmf-mini { flex: 1; min-width: 0; display: none; }
+/* the hair is a full figure under What; in the ROW it has to sit in the same 92 px the
+   structures do, or a 160-unit circle at width:100% grows the row to 350 px (measured) */
+.mmf-mini .mmf-hair { max-height: 92px; width: auto; max-width: 100%; margin: 0; }
+/* the equilibrium arrow between a conjugate pair */
+.mmf-eq { font-size: 20px; font-weight: 600; line-height: 1; color: var(--muted); flex: none; }
+.mmf-mini.mmf-drawn { display: block; }
+
+/* the platform glyphs, on the brand icons' 24-unit grid */
+.mmf-plat { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; font-size: 12.5px; color: var(--muted); }
+.mmf-pg { display: inline-flex; align-items: center; gap: 6px; }
+.mmf-pg svg { width: 26px; height: 26px; flex: none; color: var(--fg); fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.mmf-pg-lg svg { width: 38px; height: 38px; stroke-width: 1.5; }
+
+/* the pin, the front door hero's own: a disc in the accent with the arrow out */
+.mmf-pin { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); margin-top: auto; }
+.mmf-pin:hover { text-decoration: none; }
+.mmf-pin:hover .mmf-disc { background: var(--accent); }
+.mmf-disc { width: 22px; height: 22px; flex: none; border-radius: 50%; border: 2px solid var(--accent); background: var(--bg); }
+.mmf-q { font-size: 13px; font-style: italic; color: var(--fg); margin: 0; }
+.mmf-q::before { content: "GOOS asks: "; font-style: normal; font-weight: 700; font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+
+/* the spark: the band with the most values, the strong El Niño years shaded behind it */
+.mmf-spark { display: none; width: 100%; height: 58px; }
+.mmf-spark.mmf-drawn { display: block; }
+
+/* ── the sentence: three sources, three underlines, one legend ──────────────── */
+.mmf-sent { font-size: 15.5px; line-height: 1.55; margin: calc(var(--space) * 2) 0 0; max-width: 90ch; }
+.mmf-sent .s-nerc { text-decoration: underline; text-decoration-color: var(--accent); text-decoration-thickness: 1.5px; text-underline-offset: 3px; }
+.mmf-sent .s-rec { text-decoration: underline; text-decoration-style: dotted; text-decoration-color: var(--cc-green); text-underline-offset: 3px; }
+.mmf-sent .s-why { text-decoration: underline; text-decoration-style: dashed; text-decoration-color: var(--warn); text-underline-offset: 3px; }
+.mmf-sent sup { font-size: 10.5px; }
+.mmf-sent sup a { text-decoration: underline; }
+.mmf-legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: var(--fs-sm); color: var(--muted); margin: var(--space) 0 0; }
+.mmf-legend span::before { content: ""; display: inline-block; width: 18px; height: 0; border-top: 2px solid var(--accent); margin-right: 6px; vertical-align: middle; }
+.mmf-legend .l-rec::before { border-top-style: dotted; border-top-color: var(--cc-green); }
+.mmf-legend .l-why::before { border-top-style: dashed; border-top-color: var(--warn); }
+
+/* a stand-in never wears the ids of the face it borrows, so the chip has to say so loudly */
+.mmf-stands { display: inline-block; font-size: 12px; font-weight: 600; line-height: 1.6; color: var(--warn); background: var(--warn-bg); border: 1px dashed var(--warn); border-radius: 999px; padding: 0 10px; }
+.mmf-stands a { color: inherit; text-decoration: underline; }
+
+/* ── the why's other readings: the datasets catalog's collapsed block ────────── */
+.mmf-alts-det { margin-top: calc(var(--space) * 2); }
+.mmf-alts { list-style: none; margin: 6px 0 0; padding: 0; }
+.mmf-alts li { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 10px; padding: 8px 0; border-top: 1px solid var(--border); font-size: 14px; line-height: 1.45; }
+.mmf-alts li:first-child { border-top: 0; }
+.mmf-ak { font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); padding-top: 3px; }
+.mmf-ak-authored { color: var(--warn); }
+.mmf-ak-goos { color: var(--accent); }
+.mmf-ak-wikipedia, .mmf-ak-calcofi { color: var(--cc-green); }
+.mmf-ac { font-size: 12px; }
+.mmf-ac a { text-decoration: underline; }
+.mmf-anc { font-size: 11.5px; color: var(--warn); }
+
+/* ── What, at length ───────────────────────────────────────────────────────── */
+.mmf-h3 { font-size: 15px; font-weight: 700; letter-spacing: 0.04em; margin: calc(var(--space) * 3) 0 0; }
+.mmf-h4 { font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin: calc(var(--space) * 2) 0 0; }
+.mmf-kindnote { margin-top: var(--space); }
+.mmf-fig { display: none; margin: var(--space) 0 0; }
+.mmf-fig.mmf-drawn { display: block; }
+.mmf-mols { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px 22px; margin: var(--space) 0 0; background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius-card); padding: calc(var(--space) * 2); color: var(--fg); }
+.mmf-molcard { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; max-width: 100%; margin: 0; }
+.mmf-molcard .mmf-mol { height: 150px; max-width: min(100%, 320px); }
+.mmf-molcard figcaption { font-size: 13px; text-align: center; }
+.mmf-molcard figcaption b { font-size: 15px; font-weight: 600; }
+.mmf-molcard figcaption .mono { display: block; color: var(--muted); font-size: 11.5px; }
+.mmf-arrow { font-size: 15px; line-height: 1.2; color: var(--muted); text-align: center; }
+.mmf-arrow b { display: block; font-family: var(--display); font-weight: 500; font-size: 38px; line-height: 1; color: var(--fg); }
+.mmf-credit { font: 11.5px/1.5 var(--mono); color: var(--muted); margin: 6px 0 0; }
+.mmf-credit a { color: inherit; text-decoration: underline; text-decoration-color: var(--border); }
+.mmf-credit a:hover { text-decoration-color: currentColor; }
+.mmf-nerc-def { font-size: var(--fs-sm); margin: var(--space) 0 0; max-width: 80ch; }
+.mmf-nerc-def .mmf-credit { display: block; }
+
+/* the identity chain: P01 → its parts → the EOV, one row each */
+.mmf-chain { list-style: none; margin: var(--space) 0 0; padding: 0; }
+.mmf-chain li { display: grid; grid-template-columns: 54px minmax(0, 1fr); gap: 12px; padding: 9px 0; border-top: 1px solid var(--border); font-size: 14px; }
+.mmf-chain li:first-child { border-top: 0; }
+.mmf-cc { font: 700 12px var(--mono); color: var(--accent); padding-top: 2px; }
+.mmf-cv b { font-weight: 600; }
+.mmf-cv .mono { font-size: 11.5px; color: var(--muted); overflow-wrap: anywhere; }
+
+/* the sea-salt bar and its table: the formula is written in the block AND in the table row, so a
+   reader never has to hold a colour in their head to know which ion is which */
+.mmf-ions { display: flex; height: 46px; border-radius: 6px; overflow: hidden; margin: var(--space) 0 6px; }
+.mmf-ions-sm { height: 34px; margin: 0; }
+.mmf-ions div { display: grid; place-items: center; font-size: 12.5px; font-weight: 600; color: #fff; min-width: 0; overflow: hidden; white-space: nowrap; }
+.mmf-ion-tbl { width: 100%; border-collapse: collapse; font-size: 13.5px; margin-top: var(--space); }
+.mmf-ion-tbl td { padding: 4px 6px; border-top: 1px solid var(--border); }
+.mmf-ion-tbl td.n { text-align: right; font: 12.5px var(--mono); font-variant-numeric: tabular-nums; }
+.mmf-sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; vertical-align: -1px; margin-right: 6px; }
+.mmf-sw-nino { background: var(--mmf-nino); outline: 1px solid var(--border); }
+.mmf-hair { display: block; margin: 0 auto; width: 100%; max-width: 360px; height: auto; color: var(--fg); }
+.mmf-hair .mmf-lab { font: 13px var(--sans); fill: currentColor; }
+.mmf-hair .mmf-tick { font: 11px var(--mono); fill: var(--muted); }
+
+/* the familiar-scale strips of the face row: the record's own 5th–95th, boxed on the ramp */
+.mmf-strip { position: relative; height: 18px; border-radius: 4px; }
+.mmf-strip-plain { background: linear-gradient(90deg, var(--panel-2), var(--panel)); }
+.mmf-strip i { position: absolute; top: -4px; bottom: -4px; border: 2px solid var(--fg); border-radius: 3px; }
+.mmf-strip u { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--muted); }
+.mmf-strip-ax { display: flex; justify-content: space-between; font: 11px var(--mono); color: var(--muted); margin-top: 4px; }
+.mmf-bf { display: flex; gap: 2px; }
+.mmf-bf i { flex: 1; height: 22px; display: grid; place-items: center; font: 600 11px var(--sans); font-style: normal; border-radius: 2px; background: var(--panel); color: var(--muted); }
+.mmf-bf i.on { background: var(--nogo-bg); color: var(--cc-red); outline: 2px solid var(--cc-red); }
+
+/* ── How: one card per series ──────────────────────────────────────────────── */
+.mmf-how-cards { display: flex; flex-direction: column; gap: calc(var(--space) * 2); margin: var(--space) 0 0; }
+.mmf-card { background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius-card); padding: calc(var(--space) * 2); display: flex; flex-direction: column; gap: var(--space); }
+.mmf-card p { font-size: 14.5px; margin: 0; max-width: none; }
+.mmf-card-top { display: flex; gap: 12px; align-items: flex-start; }
+.mmf-ds { font-size: 11.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+.mmf-ds .mm-dot { margin-top: 0; }
+.mmf-ins { font-size: 16px; font-weight: 600; line-height: 1.25; }
+.mmf-steps { list-style: none; margin: 0; padding: 10px 12px; background: var(--panel); border-radius: var(--radius); font: 13px/1.6 var(--mono); }
+.mmf-steps li::before { content: "→ "; color: var(--muted); }
+.mmf-meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-width: 0; }
+/* a .cc-chip is nowrap by the brand's rule, which is right for a one-word status and wrong for
+   a precision sentence: at 375 px the salinometer's chip drew a 440 px card inside a 325 px
+   column and scrolled the whole page sideways (check_layout.py, 2026-09-12) */
+.mmf-meta .cc-chip { white-space: normal; max-width: 100%; }
+.mmf-card, .mmf-card-top > div { min-width: 0; }
+.mmf-card p, .mmf-ins { overflow-wrap: anywhere; }
+.mmf-steps { overflow-x: auto; }
+/* the spectrum: where the method reads. A gradient is decoration; the wavelength is written on the
+   mark and repeated in the chip above, so the colour carries nothing on its own. */
+.mmf-spec { position: relative; height: 18px; border-radius: 3px; margin: 20px 0 22px;
+  background: linear-gradient(90deg, #0b0718 0%, #2a0a4d 10%, #6a00c8 18%, #3a2cff 27%, #00a7ff 34%, #00d27a 40%, #7de000 45%, #ffe600 51%, #ff9d00 57%, #ff2a00 63%, #c40000 73%, #5a0000 82%, #1a0404 92%, #0b0304 100%); }
+.mmf-spec .mmf-mk { position: absolute; top: -6px; bottom: -6px; width: 2px; background: var(--fg); }
+.mmf-spec .mmf-mk span { position: absolute; top: -18px; left: 50%; transform: translateX(-50%); font: 600 12px var(--sans); white-space: nowrap; color: var(--fg); }
+.mmf-spec .mmf-ax { position: absolute; top: 22px; font: 10.5px var(--mono); color: var(--muted); transform: translateX(-50%); white-space: nowrap; }
+/* where in the water column: the record's bands, one thin bar per series */
+.mmf-col-fig { display: none; grid-template-columns: 92px minmax(0, 1fr); gap: 3px 10px; align-items: center; margin: var(--space) 0 0; }
+.mmf-col-fig.mmf-drawn { display: grid; }
+.mmf-dl { font: 11.5px var(--mono); color: var(--muted); text-align: right; white-space: nowrap; }
+.mmf-bars { display: flex; flex-direction: column; gap: 2px; }
+.mmf-bar { height: 7px; border-radius: 2px; min-width: 1px; }
+
+/* ── Why: the two charts, the flags, the EOV card ──────────────────────────── */
+/* each chart is hidden until the drawing adds .mmf-drawn — an undrawn <svg> is 300 x 150 by the
+   UA default and would leave a hole on a page read without JavaScript */
+.mmf-chart { display: none; width: 100%; height: auto; overflow: visible; }
+.mmf-chart.mmf-drawn { display: block; }
+.mmf-scale-wrap, .mmf-anom-wrap { overflow-x: auto; margin: var(--space) 0 0; }
+.mmf-chart text { font-family: var(--sans); }
+.mmf-chart .mmf-tick { font: 11px var(--mono); fill: var(--muted); }
+.mmf-chart .mmf-lab { font-size: 12.5px; fill: var(--fg); }
+.mmf-chart .mmf-lab-m { font-size: 11.5px; fill: var(--muted); }
+.mmf-chart .mmf-ax { stroke: var(--muted); stroke-width: 1; }
+.mmf-chart .mmf-gr { stroke: var(--border); stroke-width: 1; }
+.mmf-chart .mmf-lead { stroke: var(--border); stroke-width: 1; }
+.mmf-chart .mmf-bnd { stroke: var(--muted); stroke-dasharray: 4 3; stroke-width: 1; }
+.mmf-chart .mmf-flag { fill: var(--cc-red); }
+.mmf-chart .mmf-zero { stroke: var(--fg); stroke-width: 1; }
+.mmf-chart .mmf-trend { stroke: var(--fg); stroke-width: 1.5; stroke-dasharray: 6 4; fill: none; }
+.mmf-chart .mmf-nino, .mmf-spark .mmf-nino { fill: var(--mmf-nino); }
+.mmf-spark .mmf-zero { stroke: var(--fg); stroke-width: 1; }
+.mmf-flags { list-style: none; margin: var(--space) 0 0; padding: 0; font-size: 13px; }
+.mmf-flags li { padding: 3px 0; }
+.mmf-flags li::before { content: "▲ "; color: var(--cc-red); font-size: 10px; }
+.mmf-empty { border: 1px dashed var(--border); border-radius: var(--radius); padding: calc(var(--space) * 2); color: var(--muted); font-size: 14.5px; margin: var(--space) 0 0; }
+.mmf-why-row { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: calc(var(--space) * 3); margin-top: calc(var(--space) * 3); align-items: start; }
+@media (max-width: 860px) { .mmf-why-row { grid-template-columns: 1fr; } }
+.mmf-eov { background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius-card); padding: calc(var(--space) * 2); }
+.mmf-eov { min-width: 0; }
+/* a long EOV name in the display face ("Microbe biomass and diversity (pilot)") is wider than
+   the 5fr column at 1470 px, so it wraps rather than pushing its card out (check_layout.py) */
+.mmf-eov-n { font-family: var(--display); font-weight: 500; font-size: 26px; line-height: 1.05; text-transform: uppercase; margin: 2px 0 6px; overflow-wrap: anywhere; }
+.mmf-qs { margin: 6px 0 0; padding-left: 18px; font-size: 14.5px; }
+.mmf-qs li { margin-bottom: 6px; }
+.mmf-ph { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; min-width: 0; }
+/* a phenomenon is a phrase, not a status: the brand chip is nowrap, which pushed "Role in
+   cycling of elements" past the EOV card's own box (check_layout.py, 2026-09-12) */
+.mmf-ph .cc-chip { white-space: normal; max-width: 100%; }
+.mmf-qs li { overflow-wrap: anywhere; }
+.mmf-quote { font-size: 14.5px; border-left: 3px solid var(--border); padding-left: 12px; margin: var(--space) 0 0; color: var(--fg); }
+.mmf-quote .mmf-credit { display: block; }
+
+@media (max-width: 480px) {
+  .mmf-mol { height: 76px; }
+  .mmf-molcard .mmf-mol { height: 120px; }
+  .mmf-alts li { grid-template-columns: 1fr; gap: 2px; }
+  .mmf-col-fig { grid-template-columns: 74px minmax(0, 1fr); }
+  .mmf-sent { font-size: 15px; }
+}

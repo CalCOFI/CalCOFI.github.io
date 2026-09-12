@@ -1,0 +1,1416 @@
+{
+ "schema_version": "1.0",
+ "release": "v2026.09.10",
+ "fetched": "2026-09-11",
+ "base": "https://storage.googleapis.com/calcofi-files-public/measurement-media/",
+ "oni": {
+  "strong_el_nino": [
+   1957,
+   1958,
+   1965,
+   1972,
+   1973,
+   1982,
+   1983,
+   1992,
+   1997,
+   1998,
+   2009,
+   2015,
+   2016,
+   2023,
+   2024,
+   2026
+  ],
+  "latest": [
+   "JJA",
+   "2026",
+   "29.09",
+   "1.80"
+  ]
+ },
+ "tables": {
+  "beaufort": {
+   "source": "Wikipedia: Beaufort scale (WMO m/s bands)",
+   "rows": [
+    [
+     0,
+     0,
+     0.3,
+     "Calm"
+    ],
+    [
+     1,
+     0.3,
+     1.5,
+     "Light air"
+    ],
+    [
+     2,
+     1.6,
+     3.3,
+     "Light breeze"
+    ],
+    [
+     3,
+     3.4,
+     5.4,
+     "Gentle breeze"
+    ],
+    [
+     4,
+     5.5,
+     7.9,
+     "Moderate breeze"
+    ],
+    [
+     5,
+     8.0,
+     10.7,
+     "Fresh breeze"
+    ],
+    [
+     6,
+     10.8,
+     13.8,
+     "Strong breeze"
+    ],
+    [
+     7,
+     13.9,
+     17.1,
+     "Near gale"
+    ],
+    [
+     8,
+     17.2,
+     20.7,
+     "Gale"
+    ],
+    [
+     9,
+     20.8,
+     24.4,
+     "Strong gale"
+    ],
+    [
+     10,
+     24.5,
+     28.4,
+     "Storm"
+    ],
+    [
+     11,
+     28.5,
+     32.6,
+     "Violent storm"
+    ],
+    [
+     12,
+     32.7,
+     46,
+     "Hurricane force"
+    ]
+   ]
+  }
+ },
+ "measurements": {
+  "temperature": {
+   "nerc": {
+    "p01": "TEMPPR01",
+    "url": "http://vocab.nerc.ac.uk/collection/P01/current/TEMPPR01/",
+    "pref": "Temperature of the water body",
+    "definition": "The degree of hotness of the water column expressed against a standard scale.  Includes both IPTS-68 and ITS-90 scales.",
+    "license": "CC BY 4.0",
+    "links": {
+     "S06 S0600082": {
+      "pref": "Temperature; température",
+      "sameAs": [
+       "http://qudt.org/vocab/quantitykind/Temperature"
+      ]
+     },
+     "S26 MAT00640": {
+      "pref": "masse d'eau; water body",
+      "sameAs": [
+       "http://vocab.nerc.ac.uk/collection/S21/current/S21S027/"
+      ]
+     },
+     "A05 EV_SEATEMP": {
+      "pref": "Temperature",
+      "sameAs": [
+       "http://vocab.nerc.ac.uk/collection/OD1/current/SEATEMP/"
+      ]
+     },
+     "P02 TEMP": {
+      "pref": "Temperature of the water column",
+      "sameAs": [
+       "https://www.nodc.noaa.gov/cgi-bin/OAS/prd/datatype/details/373",
+       "http://vocab.nerc.ac.uk/collection/OD1/current/SEATEMP/"
+      ]
+     },
+     "P06 UPAA": {
+      "pref": "Degrees Celsius",
+      "sameAs": [
+       "http://qudt.org/vocab/unit/DEG_C",
+       "http://dbpedia.org/resource/Celsius",
+       "http://onto.nerc.ac.uk/CAST/153"
+      ]
+     },
+     "S02 S032": {
+      "pref": "of the; du/de la",
+      "sameAs": []
+     }
+    }
+   },
+   "eov": {
+    "name": "Subsurface temperature",
+    "doc": "https://goosocean.org/document/17467",
+    "version": "GOOS spec sheet",
+    "a05": "EV_SEATEMP",
+    "membership": "A05 lists this P01 as its narrower",
+    "phenomena": [
+     "Heat storage",
+     "Water mass",
+     "Sea level",
+     "Circulation",
+     "Stratification",
+     "Upwelling",
+     "Mixed layer",
+     "Coastal shelf exchange"
+    ]
+   }
+  },
+  "salinity": {
+   "nerc": {
+    "p01": "PSLTZZ01",
+    "url": "http://vocab.nerc.ac.uk/collection/P01/current/PSLTZZ01/",
+    "pref": "Practical salinity of the water body",
+    "definition": "The quantity of dissolved ions (predominantly salt in seawater) expressed on a scale (PSS-78) based on the conductivity ratio of a seawater sample to a standard KCl solution.",
+    "license": "CC BY 4.0",
+    "links": {
+     "S06 S0600083": {
+      "pref": "Practical salinity",
+      "sameAs": []
+     },
+     "S26 MAT00640": {
+      "pref": "masse d'eau; water body",
+      "sameAs": [
+       "http://vocab.nerc.ac.uk/collection/S21/current/S21S027/"
+      ]
+     },
+     "A05 EV_SALIN": {
+      "pref": "Salinity",
+      "sameAs": [
+       "http://vocab.nerc.ac.uk/collection/OD1/current/SAL/"
+      ]
+     },
+     "P02 PSAL": {
+      "pref": "Salinity of the water column",
+      "sameAs": [
+       "https://www.nodc.noaa.gov/cgi-bin/OAS/prd/datatype/details/307",
+       "http://vocab.nerc.ac.uk/collection/OD1/current/SAL/"
+      ]
+     },
+     "P06 UUUU": {
+      "pref": "Dimensionless",
+      "sameAs": [
+       "http://onto.nerc.ac.uk/CAST/163",
+       "http://vocab.nerc.ac.uk/collection/OG1/current/EDLAM/"
+      ]
+     },
+     "S02 S032": {
+      "pref": "of the; du/de la",
+      "sameAs": []
+     }
+    }
+   },
+   "wikipedia": [
+    {
+     "title": "Salinity",
+     "url": "https://en.wikipedia.org/wiki/Salinity",
+     "revision": "1368851206",
+     "timestamp": "2026-08-11T12:19:14Z",
+     "extract": "Salinity is the saltiness or amount of salt dissolved in a body of water, called saline water. It is usually measured in g/L or g/kg.",
+     "thumb": "https://upload.wikimedia.org/wikipedia/commons/9/98/Water_salinity_diagram.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+    }
+   ],
+   "eov": {
+    "name": "Subsurface salinity",
+    "doc": "https://goosocean.org/document/17471",
+    "a05": "EV_SALIN",
+    "membership": "A05 lists this P01 as its narrower",
+    "phenomena": [
+     "Water masses",
+     "Sea level",
+     "Freshwater storage",
+     "Circulation",
+     "Stratification",
+     "Upwelling",
+     "Mixed layer",
+     "Coastal shelf exchange"
+    ]
+   },
+   "composition": {
+    "src": "TEOS-10 Manual (IOC, SCOR & IAPSO 2010) Table D.3, mass fractions of Reference-Composition sea salt (Millero et al. 2008)",
+    "url": "https://www.teos-10.org/pubs/TEOS-10_Manual.pdf",
+    "ions": [
+     [
+      "Cl⁻",
+      "chloride",
+      0.5503396,
+      "CHEBI:17996"
+     ],
+     [
+      "Na⁺",
+      "sodium",
+      0.3065958,
+      "CHEBI:29101"
+     ],
+     [
+      "SO₄²⁻",
+      "sulfate",
+      0.0771319,
+      "CHEBI:16189"
+     ],
+     [
+      "Mg²⁺",
+      "magnesium",
+      0.0365055,
+      "CHEBI:18420"
+     ],
+     [
+      "Ca²⁺",
+      "calcium",
+      0.0117186,
+      "CHEBI:29108"
+     ],
+     [
+      "K⁺",
+      "potassium",
+      0.0113495,
+      "CHEBI:29103"
+     ],
+     [
+      "HCO₃⁻",
+      "bicarbonate",
+      0.0029805,
+      "CHEBI:17544"
+     ],
+     [
+      "Br⁻",
+      "bromide",
+      0.0019134,
+      "CHEBI:15858"
+     ],
+     [
+      "other 7",
+      "Sr²⁺, CO₃²⁻, B(OH)₄⁻, F⁻, OH⁻, B(OH)₃, CO₂",
+      0.0014652,
+      null
+     ]
+    ],
+    "sp_med": 33.472,
+    "sr_med": 33.63,
+    "med_src": "median practical salinity of the bottle series above 10 m, v2026.09.10"
+   }
+  },
+  "oxygen_umol_kg": {
+   "nerc": {
+    "p01": "DOXMZZXX",
+    "url": "http://vocab.nerc.ac.uk/collection/P01/current/DOXMZZXX/",
+    "pref": "Concentration of oxygen {O2 CAS 7782-44-7} per unit mass of the water body [dissolved plus reactive particulate phase]",
+    "definition": "Concentration of dissolved oxygen per unit mass of the water column. Oxygen may be expressed in terms of mass, volume or quantity of substance.",
+    "license": "CC BY 4.0",
+    "links": {
+     "S27 CS002779": {
+      "pref": "Oxygène; oxygen",
+      "sameAs": [
+       "https://chem.nlm.nih.gov/chemidplus/rn/7782-44-7",
+       "http://purl.obolibrary.org/obo/CHEBI_15379"
+      ]
+     },
+     "S26 MAT00633": {
+      "pref": "eau brute; water body [dissolved plus reactive particulate phase]",
+      "sameAs": []
+     },
+     "S06 S0600045": {
+      "pref": null,
+      "sameAs": []
+     },
+     "P07 CFSN0517": {
+      "pref": "moles_of_oxygen_per_unit_mass_in_sea_water",
+      "sameAs": [
+       "http://mmisw.org/ont/cf/parameter/moles_of_oxygen_per_unit_mass_in_sea_water",
+       "http://vocab.nerc.ac.uk/standard_name/moles_of_oxygen_per_unit_mass_in_sea_water/"
+      ]
+     },
+     "P02 DOXY": {
+      "pref": "Dissolved oxygen parameters in the water column",
+      "sameAs": [
+       "http://vocab.nerc.ac.uk/collection/OD1/current/DOXY/",
+       "http://vocab.nerc.ac.uk/collection/C47/current/IN5_3_2/",
+       "http://vocab.nerc.ac.uk/collection/P04/current/G687/"
+      ]
+     },
+     "A05 EV_OXY": {
+      "pref": "Oxygen",
+      "sameAs": [
+       "http://vocab.nerc.ac.uk/collection/OD1/current/DOXY/"
+      ]
+     },
+     "P06 KGUM": {
+      "pref": "Micromoles per kilogram",
+      "sameAs": [
+       "http://qudt.org/vocab/unit/MicroMOL-PER-KiloGM"
+      ]
+     },
+     "S02 S057": {
+      "pref": "per unit mass of the",
+      "sameAs": []
+     }
+    },
+    "s27": {
+     "id": "CS002779",
+     "chebi": "CHEBI:15379",
+     "cas": "7782-44-7"
+    }
+   },
+   "structures": [
+    {
+     "chebi": "CHEBI:15379",
+     "name": "dioxygen",
+     "formula": "O2",
+     "charge": 0,
+     "mass": "31.998",
+     "role": "the thing",
+     "viewBox": "25.8 73.4 167.8 32.8",
+     "svg_inner": "<path class='bond-0 atom-0 atom-1' d='M 53.3,79.4 L 166.1,79.4' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-0 atom-0 atom-1' d='M 53.3,100.2 L 166.1,100.2' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='atom-0' d='M 31.8 89.9 Q 31.8 85.4, 34.0 83.0 Q 36.2 80.5, 40.3 80.5 Q 44.4 80.5, 46.5 83.0 Q 48.7 85.4, 48.7 89.9 Q 48.7 94.3, 46.5 96.9 Q 44.3 99.4, 40.3 99.4 Q 36.2 99.4, 34.0 96.9 Q 31.8 94.4, 31.8 89.9 M 40.3 97.3 Q 43.1 97.3, 44.6 95.4 Q 46.1 93.5, 46.1 89.9 Q 46.1 86.2, 44.6 84.4 Q 43.1 82.6, 40.3 82.6 Q 37.5 82.6, 35.9 84.4 Q 34.4 86.2, 34.4 89.9 Q 34.4 93.6, 35.9 95.4 Q 37.5 97.3, 40.3 97.3 ' fill='currentColor'/> <path class='atom-1' d='M 170.7 89.9 Q 170.7 85.4, 172.9 83.0 Q 175.0 80.5, 179.1 80.5 Q 183.2 80.5, 185.4 83.0 Q 187.6 85.4, 187.6 89.9 Q 187.6 94.3, 185.4 96.9 Q 183.2 99.4, 179.1 99.4 Q 175.1 99.4, 172.9 96.9 Q 170.7 94.4, 170.7 89.9 M 179.1 97.3 Q 181.9 97.3, 183.4 95.4 Q 185.0 93.5, 185.0 89.9 Q 185.0 86.2, 183.4 84.4 Q 181.9 82.6, 179.1 82.6 Q 176.3 82.6, 174.8 84.4 Q 173.3 86.2, 173.3 89.9 Q 173.3 93.6, 174.8 95.4 Q 176.3 97.3, 179.1 97.3 ' fill='currentColor'/>",
+     "drawn_by": "RDKit 2026.03 from the ChEBI molfile",
+     "license": "CC BY 4.0 (ChEBI)",
+     "key": "dioxygen"
+    }
+   ],
+   "wikipedia": [
+    {
+     "title": "Ocean deoxygenation",
+     "url": "https://en.wikipedia.org/wiki/Ocean_deoxygenation",
+     "revision": "1354922617",
+     "timestamp": "2026-05-19T00:18:47Z",
+     "extract": "Ocean deoxygenation is the reduction of the oxygen content in different parts of the ocean due to human activities. There are two areas where this occurs. Firstly, it occurs in coastal zones where eutrophication has driven some quite rapid declines in oxygen to very low levels. This type of ocean deoxygenation is also called dead zones. Secondly, ocean deoxygenation occurs also in the open ocean. In that part of the ocean, there is nowadays an ongoing reduction in oxygen levels. As a result, the naturally occurring low oxygen areas are now expanding slowly. This expansion is happening as a consequence of human caused climate change. The resulting decrease in oxygen content of the oceans poses a threat to marine life, as well as to people who depend on marine life for nutrition or livelihood. A decrease in ocean oxygen levels affects how productive the ocean is, how nutrients and carbon move around, and how marine habitats function.",
+     "thumb": "https://upload.wikimedia.org/wikipedia/commons/9/91/Global_areas_of_hypoxia.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+    }
+   ],
+   "eov": {
+    "name": "Oxygen",
+    "doc": "https://goosocean.org/document/17473",
+    "a05": "EV_OXY",
+    "membership": "A05 EV_OXY names DOXMZZXX exactly",
+    "questions": [
+     "How large are the ocean’s “dead zones” and how fast are they changing?",
+     "How is the ocean carbon content changing?"
+    ]
+   }
+  },
+  "nitrate": {
+   "nerc": {
+    "p01": "NTRAZZXX",
+    "url": "http://vocab.nerc.ac.uk/collection/P01/current/NTRAZZXX/",
+    "pref": "Concentration of nitrate {NO3- CAS 14797-55-8} per unit volume of the water body [unknown phase]",
+    "definition": "Concentration of nitrate per unit volume of the water column. Nitrate may be expressed in terms of mass or quantity of substance.",
+    "license": "CC BY 4.0",
+    "links": {
+     "S27 CS002879": {
+      "pref": "Nitrates; nitrate",
+      "sameAs": [
+       "http://purl.obolibrary.org/obo/CHEBI_17632",
+       "https://chem.nlm.nih.gov/chemidplus/rn/14797-55-8"
+      ]
+     },
+     "S26 MAT01060": {
+      "pref": "water body [unknown phase]",
+      "sameAs": []
+     },
+     "S06 S0600045": {
+      "pref": null,
+      "sameAs": []
+     },
+     "P02 NTRA": {
+      "pref": "Nitrate concentration parameters in the water column",
+      "sameAs": []
+     },
+     "P06 UPOX": {
+      "pref": "Micromoles per litre",
+      "sameAs": [
+       "http://qudt.org/vocab/unit/MicroMOL-PER-L"
+      ]
+     },
+     "S02 S053": {
+      "pref": "per unit volume of the; par unité de volume",
+      "sameAs": []
+     }
+    },
+    "s27": {
+     "id": "CS002879",
+     "chebi": "CHEBI:17632",
+     "cas": "14797-55-8"
+    }
+   },
+   "structures": [
+    {
+     "chebi": "CHEBI:17632",
+     "name": "nitrate",
+     "formula": "NO3",
+     "charge": -1,
+     "mass": "62.004",
+     "definition": "A nitrogen oxoanion formed by loss of a proton from nitric acid. Principal species present at pH 7.3.",
+     "role": "the thing",
+     "viewBox": "23.5 15.9 172.4 147.8",
+     "svg_inner": "<path class='bond-0 atom-3 atom-0' d='M 161.5,141.7 L 115.0,114.4' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-1 atom-0 atom-1' d='M 111.4,97.1 L 111.8,43.4' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-1 atom-0 atom-1' d='M 99.8,97.0 L 100.1,43.3' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-2 atom-2 atom-0' d='M 53.6,138.4 L 96.0,114.3' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='atom-0' d='M 101.4 99.6 L 107.5 109.4 Q 108.1 110.4, 109.0 112.1 Q 110.0 113.8, 110.0 113.9 L 110.0 99.6 L 112.5 99.6 L 112.5 118.1 L 110.0 118.1 L 103.5 107.4 Q 102.7 106.1, 101.9 104.7 Q 101.1 103.3, 100.9 102.8 L 100.9 118.1 L 98.5 118.1 L 98.5 99.6 L 101.4 99.6 ' fill='currentColor'/> <path class='atom-0' d='M 115.9 103.0 L 119.2 103.0 L 119.2 99.6 L 120.6 99.6 L 120.6 103.0 L 124.0 103.0 L 124.0 104.2 L 120.6 104.2 L 120.6 107.6 L 119.2 107.6 L 119.2 104.2 L 115.9 104.2 L 115.9 103.0 ' fill='currentColor'/> <path class='atom-1' d='M 97.6 31.2 Q 97.6 26.8, 99.8 24.4 Q 101.9 21.9, 106.0 21.9 Q 110.1 21.9, 112.3 24.4 Q 114.5 26.8, 114.5 31.2 Q 114.5 35.7, 112.3 38.3 Q 110.0 40.8, 106.0 40.8 Q 102.0 40.8, 99.8 38.3 Q 97.6 35.7, 97.6 31.2 M 106.0 38.7 Q 108.8 38.7, 110.3 36.8 Q 111.9 34.9, 111.9 31.2 Q 111.9 27.6, 110.3 25.8 Q 108.8 24.0, 106.0 24.0 Q 103.2 24.0, 101.7 25.8 Q 100.2 27.6, 100.2 31.2 Q 100.2 35.0, 101.7 36.8 Q 103.2 38.7, 106.0 38.7 ' fill='currentColor'/> <path class='atom-2' d='M 29.5 147.3 Q 29.5 142.9, 31.7 140.4 Q 33.9 137.9, 38.0 137.9 Q 42.1 137.9, 44.2 140.4 Q 46.4 142.9, 46.4 147.3 Q 46.4 151.8, 44.2 154.3 Q 42.0 156.8, 38.0 156.8 Q 33.9 156.8, 31.7 154.3 Q 29.5 151.8, 29.5 147.3 M 38.0 154.8 Q 40.8 154.8, 42.3 152.9 Q 43.8 151.0, 43.8 147.3 Q 43.8 143.7, 42.3 141.9 Q 40.8 140.0, 38.0 140.0 Q 35.2 140.0, 33.6 141.8 Q 32.1 143.7, 32.1 147.3 Q 32.1 151.0, 33.6 152.9 Q 35.2 154.8, 38.0 154.8 ' fill='currentColor'/> <path class='atom-2' d='M 49.1 140.9 L 55.4 140.9 L 55.4 142.3 L 49.1 142.3 L 49.1 140.9 ' fill='currentColor'/> <path class='atom-3' d='M 164.0 148.2 Q 164.0 143.8, 166.2 141.3 Q 168.4 138.8, 172.5 138.8 Q 176.6 138.8, 178.8 141.3 Q 180.9 143.8, 180.9 148.2 Q 180.9 152.6, 178.7 155.2 Q 176.5 157.7, 172.5 157.7 Q 168.4 157.7, 166.2 155.2 Q 164.0 152.7, 164.0 148.2 M 172.5 155.6 Q 175.3 155.6, 176.8 153.8 Q 178.3 151.9, 178.3 148.2 Q 178.3 144.6, 176.8 142.7 Q 175.3 140.9, 172.5 140.9 Q 169.7 140.9, 168.2 142.7 Q 166.6 144.5, 166.6 148.2 Q 166.6 151.9, 168.2 153.8 Q 169.7 155.6, 172.5 155.6 ' fill='currentColor'/> <path class='atom-3' d='M 183.6 141.8 L 189.9 141.8 L 189.9 143.2 L 183.6 143.2 L 183.6 141.8 ' fill='currentColor'/>",
+     "drawn_by": "RDKit 2026.03 from the ChEBI molfile",
+     "license": "CC BY 4.0 (ChEBI)",
+     "key": "nitrate"
+    }
+   ],
+   "wikipedia": [
+    {
+     "title": "Upwelling",
+     "url": "https://en.wikipedia.org/wiki/Upwelling",
+     "revision": "1356825477",
+     "timestamp": "2026-05-30T01:44:08Z",
+     "extract": "Upwelling is an oceanographic phenomenon that involves wind-driven motion of dense, cooler, and usually nutrient-rich water from deep water towards the ocean surface. It replaces the warmer and usually nutrient-depleted surface water. The nutrient-rich upwelled water stimulates the growth and reproduction of primary producers such as phytoplankton. The biomass of phytoplankton and the presence of cool water in those regions allow upwelling zones to be identified by cool sea surface temperatures (SST) and high concentrations of chlorophyll a.",
+     "thumb": "https://upload.wikimedia.org/wikipedia/commons/2/22/Upwelling_animated.gif?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+    }
+   ],
+   "eov": {
+    "name": "Nutrients",
+    "doc": "https://goosocean.org/document/17474",
+    "a05": null,
+    "membership": "GOOS sub-variable “Nitrate (NO3-)”; A05 EV_NUTS lists other nitrate P01s, not NTRAZZXX",
+    "questions": [
+     "How do the eutrophication and pollution impact ocean productivity and water quality?",
+     "Is the biomass of the ocean changing?"
+    ]
+   }
+  },
+  "ammonia": {
+   "nerc": {
+    "p01": "AMONZZXX",
+    "url": "http://vocab.nerc.ac.uk/collection/P01/current/AMONZZXX/",
+    "pref": "Concentration of ammonium {NH4+ CAS 14798-03-9} per unit volume of the water body [unknown phase]",
+    "definition": "Concentration of ammonium per unit volume of the water column. Ammonium may be expressed in terms of mass or quantity of substance.",
+    "license": "CC BY 4.0",
+    "links": {
+     "S27 CS026908": {
+      "pref": "Ammonium; ammonium",
+      "sameAs": [
+       "https://chem.nlm.nih.gov/chemidplus/rn/14798-03-9",
+       "http://purl.obolibrary.org/obo/CHEBI_28938"
+      ]
+     },
+     "S26 MAT01060": {
+      "pref": "water body [unknown phase]",
+      "sameAs": []
+     },
+     "S06 S0600045": {
+      "pref": null,
+      "sameAs": []
+     },
+     "P02 AMON": {
+      "pref": "Ammonium and ammonia concentration parameters in water bodies",
+      "sameAs": []
+     },
+     "P06 UPOX": {
+      "pref": "Micromoles per litre",
+      "sameAs": [
+       "http://qudt.org/vocab/unit/MicroMOL-PER-L"
+      ]
+     },
+     "S02 S053": {
+      "pref": "per unit volume of the; par unité de volume",
+      "sameAs": []
+     }
+    },
+    "s27": {
+     "id": "CS026908",
+     "chebi": "CHEBI:28938",
+     "cas": "14798-03-9"
+    }
+   },
+   "structures": [
+    {
+     "chebi": "CHEBI:28938",
+     "name": "ammonium",
+     "formula": "H4N",
+     "charge": 1,
+     "mass": "18.039",
+     "definition": "An onium cation obtained by protonation of ammonia.",
+     "role": "the thing",
+     "viewBox": "31.4 13.9 156.6 151.8",
+     "svg_inner": "<path class='bond-0 atom-0 atom-3' d='M 72.5,140.9 L 103.9,109.5' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-1 atom-3 atom-1' d='M 113.3,88.7 L 113.3,40.7' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-2 atom-3 atom-2' d='M 103.9,102.7 L 54.1,116.1' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-3 atom-3 atom-4' d='M 122.6,105.6 L 165.3,130.3' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='atom-0' d='M 55.8 141.3 L 58.3 141.3 L 58.3 149.1 L 67.7 149.1 L 67.7 141.3 L 70.2 141.3 L 70.2 159.7 L 67.7 159.7 L 67.7 151.2 L 58.3 151.2 L 58.3 159.7 L 55.8 159.7 L 55.8 141.3 ' fill='currentColor'/> <path class='atom-1' d='M 106.0 19.9 L 108.5 19.9 L 108.5 27.7 L 118.0 27.7 L 118.0 19.9 L 120.5 19.9 L 120.5 38.3 L 118.0 38.3 L 118.0 29.8 L 108.5 29.8 L 108.5 38.3 L 106.0 38.3 L 106.0 19.9 ' fill='currentColor'/> <path class='atom-2' d='M 37.4 109.4 L 39.9 109.4 L 39.9 117.2 L 49.3 117.2 L 49.3 109.4 L 51.8 109.4 L 51.8 127.8 L 49.3 127.8 L 49.3 119.3 L 39.9 119.3 L 39.9 127.8 L 37.4 127.8 L 37.4 109.4 ' fill='currentColor'/> <path class='atom-3' d='M 109.2 91.0 L 115.2 100.8 Q 115.8 101.7, 116.8 103.5 Q 117.7 105.2, 117.8 105.3 L 117.8 91.0 L 120.2 91.0 L 120.2 109.4 L 117.7 109.4 L 111.2 98.8 Q 110.5 97.5, 109.7 96.1 Q 108.9 94.6, 108.7 94.2 L 108.7 109.4 L 106.3 109.4 L 106.3 91.0 L 109.2 91.0 ' fill='currentColor'/> <path class='atom-3' d='M 123.7 94.3 L 126.9 94.3 L 126.9 90.9 L 128.4 90.9 L 128.4 94.3 L 131.7 94.3 L 131.7 95.6 L 128.4 95.6 L 128.4 99.0 L 126.9 99.0 L 126.9 95.6 L 123.7 95.6 L 123.7 94.3 ' fill='currentColor'/> <path class='atom-4' d='M 167.6 126.6 L 170.1 126.6 L 170.1 134.4 L 179.5 134.4 L 179.5 126.6 L 182.0 126.6 L 182.0 145.0 L 179.5 145.0 L 179.5 136.5 L 170.1 136.5 L 170.1 145.0 L 167.6 145.0 L 167.6 126.6 ' fill='currentColor'/>",
+     "drawn_by": "RDKit 2026.03 from the ChEBI molfile",
+     "license": "CC BY 4.0 (ChEBI)",
+     "key": "ammonium"
+    },
+    {
+     "chebi": "CHEBI:16134",
+     "name": "ammonia",
+     "formula": "H3N",
+     "charge": 0,
+     "mass": "17.031",
+     "definition": "An azane that consists of a single nitrogen atom covelently bonded to three hydrogen atoms.",
+     "role": "its conjugate base",
+     "viewBox": "17.4 32.9 184.6 113.8",
+     "svg_inner": "<path class='bond-0 atom-2 atom-0' d='M 95.6,53.8 L 40.6,85.5' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-1 atom-2 atom-1' d='M 108.6,60.1 L 124.5,119.5' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-2 atom-2 atom-3' d='M 115.2,50.7 L 178.8,67.7' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='atom-0' d='M 23.4 82.1 L 25.9 82.1 L 25.9 89.9 L 35.3 89.9 L 35.3 82.1 L 37.8 82.1 L 37.8 100.5 L 35.3 100.5 L 35.3 92.0 L 25.9 92.0 L 25.9 100.5 L 23.4 100.5 L 23.4 82.1 ' fill='currentColor'/> <path class='atom-1' d='M 120.5 122.3 L 123.0 122.3 L 123.0 130.1 L 132.4 130.1 L 132.4 122.3 L 134.9 122.3 L 134.9 140.7 L 132.4 140.7 L 132.4 132.2 L 123.0 132.2 L 123.0 140.7 L 120.5 140.7 L 120.5 122.3 ' fill='currentColor'/> <path class='atom-2' d='M 101.3 38.9 L 107.4 48.6 Q 107.9 49.6, 108.9 51.3 Q 109.9 53.1, 109.9 53.2 L 109.9 38.9 L 112.4 38.9 L 112.4 57.3 L 109.8 57.3 L 103.4 46.6 Q 102.6 45.4, 101.8 44.0 Q 101.0 42.5, 100.8 42.1 L 100.8 57.3 L 98.4 57.3 L 98.4 38.9 L 101.3 38.9 ' fill='currentColor'/> <path class='atom-3' d='M 181.6 61.2 L 184.1 61.2 L 184.1 69.1 L 193.5 69.1 L 193.5 61.2 L 196.0 61.2 L 196.0 79.6 L 193.5 79.6 L 193.5 71.1 L 184.1 71.1 L 184.1 79.6 L 181.6 79.6 L 181.6 61.2 ' fill='currentColor'/>",
+     "drawn_by": "RDKit 2026.03 from the ChEBI molfile",
+     "license": "CC BY 4.0 (ChEBI)",
+     "key": "ammonia"
+    }
+   ],
+   "wikipedia": [
+    {
+     "title": "Ammonium",
+     "url": "https://en.wikipedia.org/wiki/Ammonium",
+     "revision": "1373528385",
+     "timestamp": "2026-09-06T13:46:31Z",
+     "extract": "Ammonium is a modified form of ammonia that has an extra hydrogen atom. It is a positively charged (cationic) molecular ion with the chemical formula NH+4 or [NH4]+. It is formed by the addition of a proton to ammonia. Ammonium is also a general name for positively charged (protonated) substituted amines and quaternary ammonium cations, where one or more hydrogen atoms are replaced by organic or other groups. Not only is ammonium a source of nitrogen and a key metabolite for many living organisms, but it is an integral part of the global nitrogen cycle. As such, human impact in recent years could have an effect on the biological communities that depend on it.",
+     "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fe/Ammonium-2D.svg/960px-Ammonium-2D.svg.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+    }
+   ],
+   "eov": {
+    "name": "Nutrients",
+    "doc": "https://goosocean.org/document/17474",
+    "a05": null,
+    "membership": "GOOS sub-variable “Ammonium (NH4)”",
+    "questions": [
+     "Is the biomass of the ocean changing?"
+    ]
+   }
+  },
+  "chlorophyll_a": {
+   "nerc": {
+    "p01": "CPHLZZXX",
+    "url": "http://vocab.nerc.ac.uk/collection/P01/current/CPHLZZXX/",
+    "pref": "Concentration of chlorophyll-a {chl-a CAS 479-61-8} per unit volume of the water body [particulate >unknown phase]",
+    "definition": "The mass of all variants of chlorophyll-a per unit volume of the water column held in particles of any size.  Includes measurements made by instruments unable to resolve chorophyll-a types and the sum of HPLC chlorophyll-a types.",
+    "license": "CC BY 4.0",
+    "links": {
+     "S27 CS002896": {
+      "pref": "chlorophyll-a; Chlorophylle a",
+      "sameAs": [
+       "https://chem.nlm.nih.gov/chemidplus/rn/479-61-8",
+       "http://purl.obolibrary.org/obo/CHEBI_18230"
+      ]
+     },
+     "S26 MAT01053": {
+      "pref": "water body [particulate >unknown phase]",
+      "sameAs": []
+     },
+     "S06 S0600045": {
+      "pref": null,
+      "sameAs": []
+     },
+     "A05 EV_CHLA": {
+      "pref": "Chlorophyll-a and fluorescence",
+      "sameAs": []
+     },
+     "P02 CPWC": {
+      "pref": "Chlorophyll pigment concentrations in water bodies",
+      "sameAs": [
+       "http://vocab.nerc.ac.uk/collection/C47/current/IN5_2_1/"
+      ]
+     },
+     "S02 S053": {
+      "pref": "per unit volume of the; par unité de volume",
+      "sameAs": []
+     },
+     "P06 UMMC": {
+      "pref": "Milligrams per cubic metre",
+      "sameAs": [
+       "http://qudt.org/vocab/unit/MilliGM-PER-M3"
+      ]
+     }
+    },
+    "s27": {
+     "id": "CS002896",
+     "chebi": "CHEBI:18230",
+     "cas": "479-61-8"
+    }
+   },
+   "structures": [
+    {
+     "chebi": "CHEBI:18230",
+     "name": "chlorophyll a",
+     "formula": "C55H72MgN4O5",
+     "charge": 0,
+     "mass": "893.509",
+     "role": "the thing",
+     "viewBox": "30.0 97.9 540.0 244.0",
+     "svg_inner": "<path class='bond-0 atom-0 atom-23' d='M 412.4,173.7 L 431.0,170.4' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-1 atom-14 atom-0' d='M 401.2,151.4 L 412.4,173.7' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-1 atom-14 atom-0' d='M 405.9,152.1 L 414.5,169.5' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-2 atom-0 atom-10' d='M 412.4,173.7 L 400.0,194.8' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-3 atom-1 atom-2' d='M 440.4,145.1 L 461.5,132.7' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-4 atom-23 atom-1' d='M 437.7,162.2 L 440.4,145.1' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-5 atom-19 atom-1' d='M 418.6,134.0 L 440.4,145.1' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-5 atom-19 atom-1' d='M 419.3,138.6 L 436.2,147.3' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-6 atom-2 atom-3' d='M 461.5,132.7 L 483.2,145.1' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-6 atom-2 atom-3' d='M 461.5,137.1 L 479.7,147.5' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-7 atom-3 atom-11' d='M 483.2,145.1 L 485.8,162.2' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-8 atom-16 atom-3' d='M 504.9,134.0 L 483.2,145.1' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-9 atom-4 atom-5' d='M 511.1,173.7 L 523.6,194.8' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-10 atom-11 atom-4' d='M 492.5,170.4 L 511.1,173.7' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-10 atom-11 atom-4' d='M 493.2,166.6 L 509.1,169.5' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-11 atom-22 atom-4' d='M 522.9,151.4 L 511.1,173.7' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-12 atom-5 atom-6' d='M 523.6,194.8 L 511.1,215.9' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-12 atom-5 atom-6' d='M 519.2,194.8 L 508.7,212.5' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-13 atom-6 atom-12' d='M 511.1,215.9 L 492.5,219.3' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-14 atom-6 atom-17' d='M 511.1,215.9 L 522.9,238.3' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-15 atom-7 atom-28' d='M 483.2,244.5 L 461.5,256.9' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-15 atom-7 atom-28' d='M 479.7,242.1 L 461.5,252.5' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-16 atom-29 atom-7' d='M 504.9,255.7 L 483.2,244.5' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-17 atom-12 atom-7' d='M 485.8,227.4 L 483.2,244.5' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-18 atom-8 atom-28' d='M 440.4,244.5 L 461.5,256.9' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-19 atom-13 atom-8' d='M 437.7,227.4 L 440.4,244.5' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-19 atom-13 atom-8' d='M 434.0,228.0 L 436.2,242.4' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-20 atom-37 atom-8' d='M 418.6,255.7 L 440.4,244.5' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-21 atom-9 atom-10' d='M 412.4,215.9 L 400.0,194.8' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-21 atom-9 atom-10' d='M 414.8,212.5 L 404.4,194.8' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-22 atom-13 atom-9' d='M 431.0,219.3 L 412.4,215.9' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-23 atom-63 atom-9' d='M 401.2,238.3 L 412.4,215.9' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-24 atom-24 atom-12' d='M 466.5,199.8 L 481.3,214.6' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-25 atom-19 atom-14' d='M 418.6,134.0 L 401.2,151.4' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-26 atom-14 atom-15' d='M 401.2,151.4 L 377.5,145.0' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-27 atom-16 atom-22' d='M 504.9,134.0 L 522.9,151.4' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-27 atom-16 atom-22' d='M 504.2,138.6 L 518.2,152.1' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-28 atom-16 atom-27' d='M 504.9,134.0 L 511.3,110.3' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-29 atom-17 atom-29' d='M 522.9,238.3 L 504.9,255.7' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-29 atom-17 atom-29' d='M 518.2,237.5 L 504.2,251.1' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-30 atom-17 atom-18' d='M 522.9,238.3 L 546.6,244.6' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-31 atom-63 atom-37' d='M 401.2,238.3 L 418.6,255.7' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-32 atom-19 atom-20' d='M 418.6,134.0 L 412.3,110.3' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-33 atom-20 atom-21' d='M 412.3,110.3 L 388.6,103.9' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-33 atom-20 atom-21' d='M 409.2,113.4 L 387.6,107.6' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-34 atom-22 atom-25' d='M 522.9,151.4 L 546.6,145.0' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-35 atom-23 atom-24' d='M 442.3,175.1 L 454.5,187.7' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-36 atom-25 atom-26' d='M 546.6,145.0 L 564.0,162.4' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-37 atom-28 atom-32' d='M 461.5,256.9 L 467.8,280.6' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-38 atom-29 atom-30' d='M 504.9,255.7 L 498.6,280.6' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-39 atom-32 atom-30' d='M 467.8,280.6 L 498.6,280.6' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-40 atom-30 atom-31' d='M 496.4,280.6 L 505.0,295.6' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-40 atom-30 atom-31' d='M 499.2,278.0 L 508.3,293.7' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-41 atom-32 atom-34' d='M 466.0,283.1 L 466.5,283.4' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:0.8px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-41 atom-32 atom-34' d='M 464.3,285.7 L 465.2,286.2' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:0.8px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-41 atom-32 atom-34' d='M 462.5,288.2 L 463.9,289.0' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:0.8px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-41 atom-32 atom-34' d='M 460.7,290.7 L 462.6,291.8' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:0.8px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-41 atom-32 atom-34' d='M 459.0,293.2 L 461.3,294.6' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:0.8px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-41 atom-32 atom-34' d='M 457.2,295.7 L 460.0,297.4' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:0.8px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-41 atom-32 atom-34' d='M 455.4,298.3 L 458.7,300.2' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:0.8px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-42 atom-34 atom-33' d='M 456.6,300.0 L 437.6,300.0' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-42 atom-34 atom-33' d='M 456.6,303.8 L 437.6,303.8' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-43 atom-34 atom-35' d='M 455.5,301.9 L 463.6,315.9' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-44 atom-35 atom-36' d='M 474.5,323.1 L 492.4,323.1' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-45 atom-39 atom-38' d='M 397.4,292.5 L 420.4,279.2' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-46 atom-37 atom-38' d='M 418.6,255.7 L 420.4,279.2 L 416.6,281.4 Z' style='fill:currentColor;fill-rule:evenodd;fill-opacity:1;stroke:currentColor;stroke-width:0.4px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /> <path class='bond-47 atom-39 atom-40' d='M 397.4,292.5 L 397.4,317.0' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-48 atom-40 atom-42' d='M 397.4,317.0 L 382.7,325.5' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-49 atom-40 atom-41' d='M 395.5,318.1 L 411.0,327.1' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-49 atom-40 atom-41' d='M 397.4,314.8 L 412.9,323.8' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-50 atom-43 atom-42' d='M 354.8,317.0 L 369.5,325.5' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-51 atom-44 atom-43' d='M 333.6,329.3 L 354.8,317.0' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-52 atom-45 atom-44' d='M 312.3,317.0 L 333.6,329.3' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-52 atom-45 atom-44' d='M 316.1,314.8 L 333.6,324.9' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-53 atom-46 atom-45' d='M 291.1,329.3 L 312.3,317.0' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-54 atom-47 atom-45' d='M 312.3,292.5 L 312.3,317.0' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-55 atom-48 atom-46' d='M 269.8,317.0 L 291.1,329.3' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-56 atom-49 atom-48' d='M 248.6,329.3 L 269.8,317.0' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-57 atom-50 atom-49' d='M 227.3,317.0 L 248.6,329.3' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-58 atom-51 atom-50' d='M 206.1,329.3 L 227.3,317.0' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-59 atom-50 atom-52' d='M 227.3,317.0 L 225.4,292.5 L 229.2,292.5 Z' style='fill:currentColor;fill-rule:evenodd;fill-opacity:1;stroke:currentColor;stroke-width:0.4px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /> <path class='bond-60 atom-53 atom-51' d='M 184.8,317.0 L 206.1,329.3' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-61 atom-54 atom-53' d='M 163.5,329.3 L 184.8,317.0' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-62 atom-55 atom-54' d='M 142.3,317.0 L 163.5,329.3' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-63 atom-56 atom-55' d='M 121.0,329.3 L 142.3,317.0' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-64 atom-55 atom-57' d='M 142.3,317.0 L 140.4,292.5 L 144.2,292.5 Z' style='fill:currentColor;fill-rule:evenodd;fill-opacity:1;stroke:currentColor;stroke-width:0.4px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /> <path class='bond-65 atom-58 atom-56' d='M 99.8,317.0 L 121.0,329.3' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-66 atom-59 atom-58' d='M 78.5,329.3 L 99.8,317.0' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-67 atom-60 atom-59' d='M 57.3,317.0 L 78.5,329.3' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-68 atom-61 atom-60' d='M 57.3,292.5 L 57.3,317.0' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-69 atom-62 atom-60' d='M 36.0,329.3 L 57.3,317.0' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-70 atom-63 atom-64' d='M 398.3,239.3 L 398.2,238.8' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:0.8px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-70 atom-63 atom-64' d='M 395.4,240.3 L 395.2,239.4' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:0.8px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-70 atom-63 atom-64' d='M 392.5,241.4 L 392.2,240.0' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:0.8px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-70 atom-63 atom-64' d='M 389.6,242.4 L 389.1,240.5' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:0.8px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-70 atom-63 atom-64' d='M 386.7,243.4 L 386.1,241.1' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:0.8px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-70 atom-63 atom-64' d='M 383.8,244.4 L 383.1,241.7' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:0.8px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-70 atom-63 atom-64' d='M 380.9,245.4 L 380.1,242.2' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:0.8px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-70 atom-63 atom-64' d='M 378.0,246.5 L 377.0,242.8' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:0.8px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-71 atom-11 atom-24' d='M 481.3,175.0 L 471.3,185.0' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-72 atom-13 atom-24' d='M 443.7,213.1 L 454.5,202.0' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path d='M 460.4,133.3 L 461.5,132.7 L 462.5,133.3' style='fill:none;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /> <path d='M 522.9,193.8 L 523.6,194.8 L 522.9,195.9' style='fill:none;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /> <path d='M 400.6,193.8 L 400.0,194.8 L 400.6,195.9' style='fill:none;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /> <path d='M 412.6,111.4 L 412.3,110.3 L 411.1,109.9' style='fill:none;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /> <path d='M 545.5,145.3 L 546.6,145.0 L 547.5,145.9' style='fill:none;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /> <path d='M 498.9,279.4 L 498.6,280.6 L 497.0,280.6' style='fill:none;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /> <path d='M 467.5,279.4 L 467.8,280.6 L 469.4,280.6' style='fill:none;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /> <path d='M 419.7,255.1 L 418.6,255.7 L 417.8,254.8' style='fill:none;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /> <path d='M 398.5,291.8 L 397.4,292.5 L 397.4,293.7' style='fill:none;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /> <path d='M 397.4,315.8 L 397.4,317.0 L 396.6,317.5' style='fill:none;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /> <path d='M 355.6,317.5 L 354.8,317.0 L 353.8,317.6' style='fill:none;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /> <path d='M 334.7,328.7 L 333.6,329.3 L 332.5,328.7' style='fill:none;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /> <path d='M 292.1,328.7 L 291.1,329.3 L 290.0,328.7' style='fill:none;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /> <path d='M 270.9,317.6 L 269.8,317.0 L 268.8,317.6' style='fill:none;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /> <path d='M 249.6,328.7 L 248.6,329.3 L 247.5,328.7' style='fill:none;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /> <path d='M 228.4,317.6 L 227.3,317.0 L 226.2,317.6' style='fill:none;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /> <path d='M 207.1,328.7 L 206.1,329.3 L 205.0,328.7' style='fill:none;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /> <path d='M 185.9,317.6 L 184.8,317.0 L 183.7,317.6' style='fill:none;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /> <path d='M 164.6,328.7 L 163.5,329.3 L 162.5,328.7' style='fill:none;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /> <path d='M 143.3,317.6 L 142.3,317.0 L 141.2,317.6' style='fill:none;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /> <path d='M 122.1,328.7 L 121.0,329.3 L 120.0,328.7' style='fill:none;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /> <path d='M 100.8,317.6 L 99.8,317.0 L 98.7,317.6' style='fill:none;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /> <path d='M 79.6,328.7 L 78.5,329.3 L 77.4,328.7' style='fill:none;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /> <path d='M 401.8,237.2 L 401.2,238.3 L 402.1,239.2' style='fill:none;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /> <path class='atom-11' d='M 484.1 163.0 L 488.3 169.7 Q 488.7 170.4, 489.3 171.6 Q 490.0 172.8, 490.0 172.9 L 490.0 163.0 L 491.7 163.0 L 491.7 175.7 L 490.0 175.7 L 485.5 168.4 Q 485.0 167.5, 484.5 166.5 Q 483.9 165.5, 483.8 165.2 L 483.8 175.7 L 482.1 175.7 L 482.1 163.0 L 484.1 163.0 ' fill='currentColor'/> <path class='atom-11' d='M 494.1 165.3 L 496.3 165.3 L 496.3 163.0 L 497.3 163.0 L 497.3 165.3 L 499.6 165.3 L 499.6 166.2 L 497.3 166.2 L 497.3 168.5 L 496.3 168.5 L 496.3 166.2 L 494.1 166.2 L 494.1 165.3 ' fill='currentColor'/> <path class='atom-12' d='M 484.1 214.0 L 488.3 220.7 Q 488.7 221.3, 489.3 222.5 Q 490.0 223.7, 490.0 223.8 L 490.0 214.0 L 491.7 214.0 L 491.7 226.6 L 490.0 226.6 L 485.5 219.3 Q 485.0 218.4, 484.5 217.4 Q 483.9 216.5, 483.8 216.2 L 483.8 226.6 L 482.1 226.6 L 482.1 214.0 L 484.1 214.0 ' fill='currentColor'/> <path class='atom-13' d='M 433.8 214.0 L 438.0 220.7 Q 438.4 221.3, 439.0 222.5 Q 439.7 223.7, 439.7 223.8 L 439.7 214.0 L 441.4 214.0 L 441.4 226.6 L 439.7 226.6 L 435.2 219.3 Q 434.7 218.4, 434.2 217.4 Q 433.6 216.5, 433.5 216.2 L 433.5 226.6 L 431.8 226.6 L 431.8 214.0 L 433.8 214.0 ' fill='currentColor'/> <path class='atom-13' d='M 443.8 216.2 L 446.0 216.2 L 446.0 213.9 L 447.0 213.9 L 447.0 216.2 L 449.3 216.2 L 449.3 217.1 L 447.0 217.1 L 447.0 219.4 L 446.0 219.4 L 446.0 217.1 L 443.8 217.1 L 443.8 216.2 ' fill='currentColor'/> <path class='atom-23' d='M 433.8 163.0 L 438.0 169.7 Q 438.4 170.4, 439.0 171.6 Q 439.7 172.8, 439.7 172.9 L 439.7 163.0 L 441.4 163.0 L 441.4 175.7 L 439.7 175.7 L 435.2 168.4 Q 434.7 167.5, 434.2 166.5 Q 433.6 165.5, 433.5 165.2 L 433.5 175.7 L 431.8 175.7 L 431.8 163.0 L 433.8 163.0 ' fill='currentColor'/> <path class='atom-24' d='M 455.2 201.1 L 453.6 201.1 L 452.2 190.8 L 448.8 201.1 L 447.1 201.1 L 443.7 190.8 L 442.4 201.1 L 440.7 201.1 L 442.4 188.5 L 444.5 188.5 L 448.0 198.7 L 451.5 188.5 L 453.6 188.5 L 455.2 201.1 ' fill='currentColor'/> <path class='atom-24' d='M 465.6 191.9 L 465.6 201.7 Q 465.6 205.6, 461.5 205.6 Q 459.4 205.6, 457.6 204.7 L 458.2 203.5 Q 459.2 203.9, 459.9 204.1 Q 460.6 204.3, 461.5 204.3 Q 462.8 204.3, 463.4 203.7 Q 464.0 203.1, 464.0 201.7 L 464.0 200.1 Q 463.0 201.3, 461.3 201.3 Q 459.4 201.3, 458.3 200.1 Q 457.3 198.9, 457.3 196.7 Q 457.3 194.4, 458.5 193.1 Q 459.8 191.8, 462.0 191.8 Q 463.2 191.8, 464.2 192.1 L 464.3 191.9 L 465.6 191.9 M 461.4 200.0 Q 462.4 200.0, 463.0 199.5 Q 463.7 198.9, 464.0 198.0 L 464.0 193.4 Q 463.0 193.1, 462.0 193.1 Q 460.6 193.1, 459.8 194.1 Q 459.0 195.0, 459.0 196.7 Q 459.0 198.3, 459.6 199.1 Q 460.3 200.0, 461.4 200.0 ' fill='currentColor'/> <path class='atom-24' d='M 468.1 187.5 Q 468.4 186.7, 469.1 186.2 Q 469.8 185.8, 470.9 185.8 Q 472.1 185.8, 472.8 186.5 Q 473.5 187.2, 473.5 188.4 Q 473.5 189.6, 472.6 190.8 Q 471.7 191.9, 469.8 193.3 L 473.7 193.3 L 473.7 194.2 L 468.1 194.2 L 468.1 193.4 Q 469.6 192.3, 470.5 191.5 Q 471.5 190.7, 471.9 189.9 Q 472.4 189.2, 472.4 188.4 Q 472.4 187.6, 472.0 187.2 Q 471.6 186.7, 470.9 186.7 Q 470.2 186.7, 469.7 187.0 Q 469.3 187.3, 469.0 187.9 L 468.1 187.5 ' fill='currentColor'/> <path class='atom-24' d='M 475.3 190.0 L 479.7 190.0 L 479.7 190.9 L 475.3 190.9 L 475.3 190.0 ' fill='currentColor'/> <path class='atom-31' d='M 505.0 301.9 Q 505.0 298.9, 506.5 297.2 Q 508.0 295.5, 510.9 295.5 Q 513.7 295.5, 515.2 297.2 Q 516.7 298.9, 516.7 301.9 Q 516.7 305.0, 515.1 306.7 Q 513.6 308.5, 510.9 308.5 Q 508.1 308.5, 506.5 306.7 Q 505.0 305.0, 505.0 301.9 M 510.9 307.0 Q 512.8 307.0, 513.8 305.8 Q 514.9 304.5, 514.9 301.9 Q 514.9 299.4, 513.8 298.2 Q 512.8 296.9, 510.9 296.9 Q 508.9 296.9, 507.9 298.2 Q 506.8 299.4, 506.8 301.9 Q 506.8 304.5, 507.9 305.8 Q 508.9 307.0, 510.9 307.0 ' fill='currentColor'/> <path class='atom-33' d='M 425.2 301.9 Q 425.2 298.9, 426.7 297.2 Q 428.2 295.5, 431.0 295.5 Q 433.8 295.5, 435.3 297.2 Q 436.8 298.9, 436.8 301.9 Q 436.8 305.0, 435.3 306.7 Q 433.8 308.5, 431.0 308.5 Q 428.2 308.5, 426.7 306.7 Q 425.2 305.0, 425.2 301.9 M 431.0 307.0 Q 432.9 307.0, 434.0 305.8 Q 435.0 304.5, 435.0 301.9 Q 435.0 299.4, 434.0 298.2 Q 432.9 296.9, 431.0 296.9 Q 429.1 296.9, 428.0 298.2 Q 427.0 299.4, 427.0 301.9 Q 427.0 304.5, 428.0 305.8 Q 429.1 307.0, 431.0 307.0 ' fill='currentColor'/> <path class='atom-35' d='M 462.0 323.2 Q 462.0 320.1, 463.5 318.4 Q 465.0 316.7, 467.8 316.7 Q 470.6 316.7, 472.1 318.4 Q 473.6 320.1, 473.6 323.2 Q 473.6 326.2, 472.1 328.0 Q 470.6 329.7, 467.8 329.7 Q 465.0 329.7, 463.5 328.0 Q 462.0 326.3, 462.0 323.2 M 467.8 328.3 Q 469.7 328.3, 470.8 327.0 Q 471.8 325.7, 471.8 323.2 Q 471.8 320.7, 470.8 319.4 Q 469.7 318.2, 467.8 318.2 Q 465.9 318.2, 464.8 319.4 Q 463.8 320.7, 463.8 323.2 Q 463.8 325.7, 464.8 327.0 Q 465.9 328.3, 467.8 328.3 ' fill='currentColor'/> <path class='atom-41' d='M 412.8 329.3 Q 412.8 326.3, 414.3 324.6 Q 415.8 322.9, 418.6 322.9 Q 421.4 322.9, 422.9 324.6 Q 424.4 326.3, 424.4 329.3 Q 424.4 332.4, 422.9 334.2 Q 421.4 335.9, 418.6 335.9 Q 415.8 335.9, 414.3 334.2 Q 412.8 332.4, 412.8 329.3 M 418.6 334.5 Q 420.5 334.5, 421.6 333.2 Q 422.6 331.9, 422.6 329.3 Q 422.6 326.9, 421.6 325.6 Q 420.5 324.3, 418.6 324.3 Q 416.7 324.3, 415.6 325.6 Q 414.6 326.8, 414.6 329.3 Q 414.6 331.9, 415.6 333.2 Q 416.7 334.5, 418.6 334.5 ' fill='currentColor'/> <path class='atom-42' d='M 370.3 329.3 Q 370.3 326.3, 371.8 324.6 Q 373.3 322.9, 376.1 322.9 Q 378.9 322.9, 380.4 324.6 Q 381.9 326.3, 381.9 329.3 Q 381.9 332.4, 380.4 334.2 Q 378.9 335.9, 376.1 335.9 Q 373.3 335.9, 371.8 334.2 Q 370.3 332.4, 370.3 329.3 M 376.1 334.5 Q 378.0 334.5, 379.1 333.2 Q 380.1 331.9, 380.1 329.3 Q 380.1 326.9, 379.1 325.6 Q 378.0 324.3, 376.1 324.3 Q 374.2 324.3, 373.1 325.6 Q 372.1 326.8, 372.1 329.3 Q 372.1 331.9, 373.1 333.2 Q 374.2 334.5, 376.1 334.5 ' fill='currentColor'/>",
+     "drawn_by": "RDKit 2026.03 from the ChEBI molfile",
+     "license": "CC BY 4.0 (ChEBI)",
+     "key": "chlorophyll_a"
+    },
+    {
+     "chebi": "CHEBI:44898",
+     "name": "pheophytin a",
+     "formula": "C55H74N4O5",
+     "charge": 0,
+     "mass": "871.220",
+     "role": "what acid turns it into",
+     "viewBox": "30.0 97.9 540.0 244.0",
+     "svg_inner": "<path class='bond-0 atom-0 atom-23' d='M 412.4,173.7 L 431.0,170.4' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-1 atom-14 atom-0' d='M 401.2,151.4 L 412.4,173.7' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-1 atom-14 atom-0' d='M 405.7,152.1 L 414.5,169.6' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-2 atom-0 atom-10' d='M 412.4,173.7 L 400.0,194.8' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-3 atom-1 atom-2' d='M 440.3,145.1 L 461.5,132.7' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-4 atom-23 atom-1' d='M 437.7,162.2 L 440.3,145.1' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-5 atom-19 atom-1' d='M 418.6,134.0 L 440.3,145.1' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-5 atom-19 atom-1' d='M 419.3,138.5 L 436.3,147.2' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-6 atom-2 atom-3' d='M 461.5,132.7 L 483.2,145.1' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-6 atom-2 atom-3' d='M 461.5,137.0 L 479.8,147.5' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-7 atom-3 atom-11' d='M 483.2,145.1 L 485.8,162.2' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-8 atom-16 atom-3' d='M 504.9,134.0 L 483.2,145.1' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-9 atom-4 atom-5' d='M 511.1,173.7 L 523.6,194.8' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-10 atom-11 atom-4' d='M 492.5,170.4 L 511.1,173.7' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-10 atom-11 atom-4' d='M 493.2,166.7 L 509.1,169.6' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-11 atom-22 atom-4' d='M 522.9,151.4 L 511.1,173.7' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-12 atom-5 atom-6' d='M 523.6,194.8 L 511.1,215.9' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-12 atom-5 atom-6' d='M 519.3,194.8 L 508.8,212.6' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-13 atom-6 atom-12' d='M 511.1,215.9 L 492.5,219.3' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-14 atom-6 atom-17' d='M 511.1,215.9 L 522.9,238.3' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-15 atom-7 atom-27' d='M 483.2,244.5 L 461.5,256.9' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-15 atom-7 atom-27' d='M 479.8,242.2 L 461.5,252.6' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-16 atom-28 atom-7' d='M 504.9,255.7 L 483.2,244.5' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-17 atom-12 atom-7' d='M 485.8,227.4 L 483.2,244.5' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-18 atom-8 atom-27' d='M 440.3,244.5 L 461.5,256.9' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-19 atom-13 atom-8' d='M 437.7,227.4 L 440.3,244.5' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-19 atom-13 atom-8' d='M 434.1,228.0 L 436.3,242.4' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-20 atom-36 atom-8' d='M 418.6,255.7 L 440.3,244.5' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-21 atom-9 atom-10' d='M 412.4,215.9 L 400.0,194.8' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-21 atom-9 atom-10' d='M 414.7,212.6 L 404.3,194.8' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-22 atom-13 atom-9' d='M 431.0,219.3 L 412.4,215.9' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-23 atom-62 atom-9' d='M 401.2,238.3 L 412.4,215.9' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-24 atom-19 atom-14' d='M 418.6,134.0 L 401.2,151.4' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-25 atom-14 atom-15' d='M 401.2,151.4 L 377.5,145.0' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-26 atom-16 atom-22' d='M 504.9,134.0 L 522.9,151.4' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-26 atom-16 atom-22' d='M 504.3,138.5 L 518.4,152.1' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-27 atom-16 atom-26' d='M 504.9,134.0 L 511.3,110.3' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-28 atom-17 atom-28' d='M 522.9,238.3 L 504.9,255.7' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-28 atom-17 atom-28' d='M 518.4,237.6 L 504.3,251.2' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-29 atom-17 atom-18' d='M 522.9,238.3 L 546.6,244.6' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-30 atom-62 atom-36' d='M 401.2,238.3 L 418.6,255.7' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-31 atom-19 atom-20' d='M 418.6,134.0 L 412.3,110.3' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-32 atom-20 atom-21' d='M 412.3,110.3 L 388.6,103.9' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-32 atom-20 atom-21' d='M 409.2,113.3 L 387.6,107.5' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-33 atom-22 atom-24' d='M 522.9,151.4 L 546.6,145.0' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-34 atom-24 atom-25' d='M 546.6,145.0 L 564.0,162.4' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-35 atom-27 atom-31' d='M 461.5,256.9 L 467.8,280.6' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-36 atom-28 atom-29' d='M 504.9,255.7 L 498.6,280.6' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-37 atom-31 atom-29' d='M 467.8,280.6 L 498.6,280.6' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-38 atom-29 atom-30' d='M 496.4,280.6 L 505.1,295.6' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-38 atom-29 atom-30' d='M 499.2,278.1 L 508.3,293.7' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-39 atom-31 atom-33' d='M 466.1,283.1 L 466.5,283.4' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:0.8px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-39 atom-31 atom-33' d='M 464.3,285.7 L 465.2,286.2' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:0.8px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-39 atom-31 atom-33' d='M 462.5,288.2 L 463.9,289.0' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:0.8px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-39 atom-31 atom-33' d='M 460.8,290.7 L 462.6,291.8' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:0.8px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-39 atom-31 atom-33' d='M 459.0,293.2 L 461.3,294.6' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:0.8px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-39 atom-31 atom-33' d='M 457.2,295.8 L 460.0,297.3' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:0.8px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-39 atom-31 atom-33' d='M 455.5,298.3 L 458.7,300.1' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:0.8px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-40 atom-33 atom-32' d='M 456.6,300.0 L 437.6,300.0' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-40 atom-33 atom-32' d='M 456.6,303.7 L 437.6,303.7' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-41 atom-33 atom-34' d='M 455.5,301.9 L 463.7,315.9' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-42 atom-34 atom-35' d='M 474.4,323.1 L 492.4,323.1' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-43 atom-38 atom-37' d='M 397.4,292.5 L 420.4,279.2' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-44 atom-36 atom-37' d='M 418.6,255.7 L 420.4,279.2 L 416.7,281.3 Z' style='fill:currentColor;fill-rule:evenodd;fill-opacity:1;stroke:currentColor;stroke-width:0.4px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /> <path class='bond-45 atom-38 atom-39' d='M 397.4,292.5 L 397.4,317.0' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-46 atom-39 atom-41' d='M 397.4,317.0 L 382.7,325.5' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-47 atom-39 atom-40' d='M 395.5,318.1 L 411.1,327.1' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-47 atom-39 atom-40' d='M 397.4,314.9 L 412.9,323.9' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-48 atom-42 atom-41' d='M 354.8,317.0 L 369.5,325.5' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-49 atom-43 atom-42' d='M 333.6,329.3 L 354.8,317.0' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-50 atom-44 atom-43' d='M 312.3,317.0 L 333.6,329.3' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-50 atom-44 atom-43' d='M 316.0,314.9 L 333.6,325.0' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-51 atom-45 atom-44' d='M 291.1,329.3 L 312.3,317.0' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-52 atom-46 atom-44' d='M 312.3,292.5 L 312.3,317.0' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-53 atom-47 atom-45' d='M 269.8,317.0 L 291.1,329.3' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-54 atom-48 atom-47' d='M 248.6,329.3 L 269.8,317.0' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-55 atom-49 atom-48' d='M 227.3,317.0 L 248.6,329.3' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-56 atom-50 atom-49' d='M 206.1,329.3 L 227.3,317.0' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-57 atom-49 atom-51' d='M 227.3,317.0 L 225.5,292.5 L 229.2,292.5 Z' style='fill:currentColor;fill-rule:evenodd;fill-opacity:1;stroke:currentColor;stroke-width:0.4px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /> <path class='bond-58 atom-52 atom-50' d='M 184.8,317.0 L 206.1,329.3' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-59 atom-53 atom-52' d='M 163.5,329.3 L 184.8,317.0' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-60 atom-54 atom-53' d='M 142.3,317.0 L 163.5,329.3' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-61 atom-55 atom-54' d='M 121.0,329.3 L 142.3,317.0' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-62 atom-54 atom-56' d='M 142.3,317.0 L 140.4,292.5 L 144.1,292.5 Z' style='fill:currentColor;fill-rule:evenodd;fill-opacity:1;stroke:currentColor;stroke-width:0.4px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /> <path class='bond-63 atom-57 atom-55' d='M 99.8,317.0 L 121.0,329.3' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-64 atom-58 atom-57' d='M 78.5,329.3 L 99.8,317.0' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-65 atom-59 atom-58' d='M 57.3,317.0 L 78.5,329.3' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-66 atom-60 atom-59' d='M 57.3,292.5 L 57.3,317.0' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-67 atom-61 atom-59' d='M 36.0,329.3 L 57.3,317.0' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-68 atom-62 atom-63' d='M 398.3,239.3 L 398.2,238.9' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:0.8px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-68 atom-62 atom-63' d='M 395.4,240.3 L 395.2,239.4' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:0.8px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-68 atom-62 atom-63' d='M 392.5,241.3 L 392.2,240.0' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:0.8px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-68 atom-62 atom-63' d='M 389.6,242.4 L 389.1,240.6' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:0.8px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-68 atom-62 atom-63' d='M 386.7,243.4 L 386.1,241.1' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:0.8px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-68 atom-62 atom-63' d='M 383.8,244.4 L 383.1,241.7' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:0.8px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-68 atom-62 atom-63' d='M 380.9,245.4 L 380.1,242.3' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:0.8px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-68 atom-62 atom-63' d='M 378.0,246.4 L 377.0,242.8' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:0.8px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path d='M 460.4,133.3 L 461.5,132.7 L 462.5,133.3' style='fill:none;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /> <path d='M 522.9,193.8 L 523.6,194.8 L 522.9,195.9' style='fill:none;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /> <path d='M 400.6,193.8 L 400.0,194.8 L 400.6,195.9' style='fill:none;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /> <path d='M 412.6,111.4 L 412.3,110.3 L 411.1,109.9' style='fill:none;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /> <path d='M 545.5,145.3 L 546.6,145.0 L 547.5,145.9' style='fill:none;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /> <path d='M 498.9,279.4 L 498.6,280.6 L 497.0,280.6' style='fill:none;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /> <path d='M 467.5,279.4 L 467.8,280.6 L 469.4,280.6' style='fill:none;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /> <path d='M 419.7,255.1 L 418.6,255.7 L 417.7,254.8' style='fill:none;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /> <path d='M 398.5,291.8 L 397.4,292.5 L 397.4,293.7' style='fill:none;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /> <path d='M 397.4,315.8 L 397.4,317.0 L 396.6,317.5' style='fill:none;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /> <path d='M 355.6,317.5 L 354.8,317.0 L 353.8,317.6' style='fill:none;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /> <path d='M 334.7,328.7 L 333.6,329.3 L 332.5,328.7' style='fill:none;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /> <path d='M 292.1,328.7 L 291.1,329.3 L 290.0,328.7' style='fill:none;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /> <path d='M 270.9,317.6 L 269.8,317.0 L 268.8,317.6' style='fill:none;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /> <path d='M 249.6,328.7 L 248.6,329.3 L 247.5,328.7' style='fill:none;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /> <path d='M 228.4,317.6 L 227.3,317.0 L 226.2,317.6' style='fill:none;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /> <path d='M 207.1,328.7 L 206.1,329.3 L 205.0,328.7' style='fill:none;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /> <path d='M 185.9,317.6 L 184.8,317.0 L 183.7,317.6' style='fill:none;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /> <path d='M 164.6,328.7 L 163.5,329.3 L 162.5,328.7' style='fill:none;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /> <path d='M 143.3,317.6 L 142.3,317.0 L 141.2,317.6' style='fill:none;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /> <path d='M 122.1,328.7 L 121.0,329.3 L 120.0,328.7' style='fill:none;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /> <path d='M 100.8,317.6 L 99.8,317.0 L 98.7,317.6' style='fill:none;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /> <path d='M 79.6,328.7 L 78.5,329.3 L 77.4,328.7' style='fill:none;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /> <path d='M 401.8,237.2 L 401.2,238.3 L 402.1,239.2' style='fill:none;stroke:currentColor;stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /> <path class='atom-11' d='M 484.1 163.0 L 488.3 169.7 Q 488.7 170.4, 489.3 171.6 Q 490.0 172.8, 490.0 172.9 L 490.0 163.0 L 491.7 163.0 L 491.7 175.7 L 490.0 175.7 L 485.5 168.4 Q 485.0 167.5, 484.5 166.5 Q 483.9 165.5, 483.8 165.2 L 483.8 175.7 L 482.1 175.7 L 482.1 163.0 L 484.1 163.0 ' fill='currentColor'/> <path class='atom-12' d='M 469.7 214.0 L 471.5 214.0 L 471.5 219.3 L 477.9 219.3 L 477.9 214.0 L 479.6 214.0 L 479.6 226.6 L 477.9 226.6 L 477.9 220.8 L 471.5 220.8 L 471.5 226.6 L 469.7 226.6 L 469.7 214.0 ' fill='currentColor'/> <path class='atom-12' d='M 484.1 214.0 L 488.3 220.7 Q 488.7 221.3, 489.3 222.5 Q 490.0 223.7, 490.0 223.8 L 490.0 214.0 L 491.7 214.0 L 491.7 226.6 L 490.0 226.6 L 485.5 219.3 Q 485.0 218.4, 484.5 217.4 Q 483.9 216.5, 483.8 216.2 L 483.8 226.6 L 482.1 226.6 L 482.1 214.0 L 484.1 214.0 ' fill='currentColor'/> <path class='atom-13' d='M 433.8 214.0 L 438.0 220.7 Q 438.4 221.3, 439.0 222.5 Q 439.7 223.7, 439.7 223.8 L 439.7 214.0 L 441.4 214.0 L 441.4 226.6 L 439.7 226.6 L 435.2 219.3 Q 434.7 218.4, 434.2 217.4 Q 433.6 216.5, 433.5 216.2 L 433.5 226.6 L 431.8 226.6 L 431.8 214.0 L 433.8 214.0 ' fill='currentColor'/> <path class='atom-23' d='M 433.8 163.0 L 438.0 169.7 Q 438.4 170.4, 439.0 171.6 Q 439.7 172.8, 439.7 172.9 L 439.7 163.0 L 441.4 163.0 L 441.4 175.7 L 439.7 175.7 L 435.2 168.4 Q 434.7 167.5, 434.2 166.5 Q 433.6 165.5, 433.5 165.2 L 433.5 175.7 L 431.8 175.7 L 431.8 163.0 L 433.8 163.0 ' fill='currentColor'/> <path class='atom-23' d='M 443.9 163.0 L 445.6 163.0 L 445.6 168.4 L 452.0 168.4 L 452.0 163.0 L 453.8 163.0 L 453.8 175.7 L 452.0 175.7 L 452.0 169.8 L 445.6 169.8 L 445.6 175.7 L 443.9 175.7 L 443.9 163.0 ' fill='currentColor'/> <path class='atom-30' d='M 505.0 301.9 Q 505.0 298.9, 506.5 297.2 Q 508.0 295.5, 510.9 295.5 Q 513.7 295.5, 515.2 297.2 Q 516.7 298.9, 516.7 301.9 Q 516.7 305.0, 515.1 306.7 Q 513.6 308.5, 510.9 308.5 Q 508.1 308.5, 506.5 306.7 Q 505.0 305.0, 505.0 301.9 M 510.9 307.0 Q 512.8 307.0, 513.8 305.8 Q 514.9 304.5, 514.9 301.9 Q 514.9 299.4, 513.8 298.2 Q 512.8 296.9, 510.9 296.9 Q 508.9 296.9, 507.9 298.2 Q 506.8 299.4, 506.8 301.9 Q 506.8 304.5, 507.9 305.8 Q 508.9 307.0, 510.9 307.0 ' fill='currentColor'/> <path class='atom-32' d='M 425.2 301.9 Q 425.2 298.9, 426.7 297.2 Q 428.2 295.5, 431.0 295.5 Q 433.8 295.5, 435.3 297.2 Q 436.8 298.9, 436.8 301.9 Q 436.8 305.0, 435.3 306.7 Q 433.8 308.5, 431.0 308.5 Q 428.2 308.5, 426.7 306.7 Q 425.2 305.0, 425.2 301.9 M 431.0 307.0 Q 432.9 307.0, 434.0 305.8 Q 435.0 304.5, 435.0 301.9 Q 435.0 299.4, 434.0 298.2 Q 432.9 296.9, 431.0 296.9 Q 429.1 296.9, 428.0 298.2 Q 427.0 299.4, 427.0 301.9 Q 427.0 304.5, 428.0 305.8 Q 429.1 307.0, 431.0 307.0 ' fill='currentColor'/> <path class='atom-34' d='M 462.0 323.2 Q 462.0 320.1, 463.5 318.4 Q 465.0 316.7, 467.8 316.7 Q 470.6 316.7, 472.1 318.4 Q 473.6 320.1, 473.6 323.2 Q 473.6 326.2, 472.1 328.0 Q 470.6 329.7, 467.8 329.7 Q 465.0 329.7, 463.5 328.0 Q 462.0 326.3, 462.0 323.2 M 467.8 328.3 Q 469.7 328.3, 470.8 327.0 Q 471.8 325.7, 471.8 323.2 Q 471.8 320.7, 470.8 319.4 Q 469.7 318.2, 467.8 318.2 Q 465.9 318.2, 464.8 319.4 Q 463.8 320.7, 463.8 323.2 Q 463.8 325.7, 464.8 327.0 Q 465.9 328.3, 467.8 328.3 ' fill='currentColor'/> <path class='atom-40' d='M 412.8 329.3 Q 412.8 326.3, 414.3 324.6 Q 415.8 322.9, 418.6 322.9 Q 421.4 322.9, 422.9 324.6 Q 424.4 326.3, 424.4 329.3 Q 424.4 332.4, 422.9 334.2 Q 421.4 335.9, 418.6 335.9 Q 415.8 335.9, 414.3 334.2 Q 412.8 332.4, 412.8 329.3 M 418.6 334.5 Q 420.5 334.5, 421.6 333.2 Q 422.6 331.9, 422.6 329.3 Q 422.6 326.9, 421.6 325.6 Q 420.5 324.3, 418.6 324.3 Q 416.7 324.3, 415.6 325.6 Q 414.6 326.8, 414.6 329.3 Q 414.6 331.9, 415.6 333.2 Q 416.7 334.5, 418.6 334.5 ' fill='currentColor'/> <path class='atom-41' d='M 370.3 329.3 Q 370.3 326.3, 371.8 324.6 Q 373.3 322.9, 376.1 322.9 Q 378.9 322.9, 380.4 324.6 Q 381.9 326.3, 381.9 329.3 Q 381.9 332.4, 380.4 334.2 Q 378.9 335.9, 376.1 335.9 Q 373.3 335.9, 371.8 334.2 Q 370.3 332.4, 370.3 329.3 M 376.1 334.5 Q 378.0 334.5, 379.1 333.2 Q 380.1 331.9, 380.1 329.3 Q 380.1 326.9, 379.1 325.6 Q 378.0 324.3, 376.1 324.3 Q 374.2 324.3, 373.1 325.6 Q 372.1 326.8, 372.1 329.3 Q 372.1 331.9, 373.1 333.2 Q 374.2 334.5, 376.1 334.5 ' fill='currentColor'/>",
+     "drawn_by": "RDKit 2026.03 from the ChEBI molfile",
+     "license": "CC BY 4.0 (ChEBI)",
+     "key": "pheophytin_a"
+    }
+   ],
+   "wikipedia": [
+    {
+     "title": "Phytoplankton",
+     "url": "https://en.wikipedia.org/wiki/Phytoplankton",
+     "revision": "1371003717",
+     "timestamp": "2026-08-24T02:59:27Z",
+     "extract": "Phytoplankton are the autotrophic (self-feeding) components of the plankton community and a key part of ocean and freshwater ecosystems. The name comes from Ancient Greek φυτόν (phutón), meaning \"plant\", and πλαγκτός (planktós), meaning \"drifter, wanderer, roamer\", and thus, \"plant drifter\".",
+     "thumb": "https://upload.wikimedia.org/wikipedia/commons/7/7b/Mixed_phytoplankton_community_2.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+    }
+   ],
+   "eov": {
+    "name": "Phytoplankton biomass and diversity",
+    "doc": "https://goosocean.org/document/17507",
+    "a05": "EV_CHLA",
+    "membership": "A05 EV_CHLA is a broader of this P01",
+    "phenomena": [
+     "Status and trends",
+     "Role in transport and cycling of elements",
+     "HAB occurrence"
+    ]
+   }
+  },
+  "ph": {
+   "nerc": {
+    "p01": "PHXXZZXX",
+    "url": "http://vocab.nerc.ac.uk/collection/P01/current/PHXXZZXX/",
+    "pref": "pH (unspecified scale) of the water body",
+    "definition": "Minus the log of the hydrogen ion concentration (moles per litre) in the water column.",
+    "license": "CC BY 4.0",
+    "links": {
+     "S06 S0600281": {
+      "pref": "pH (unspecified scale)",
+      "sameAs": []
+     },
+     "P02 ALKY": {
+      "pref": "Alkalinity, acidity and pH of the water column",
+      "sameAs": []
+     },
+     "S26 MAT00640": {
+      "pref": "masse d'eau; water body",
+      "sameAs": [
+       "http://vocab.nerc.ac.uk/collection/S21/current/S21S027/"
+      ]
+     },
+     "S02 S032": {
+      "pref": "of the; du/de la",
+      "sameAs": []
+     },
+     "P06 UUPH": {
+      "pref": "pH units",
+      "sameAs": []
+     }
+    }
+   },
+   "wikipedia": [
+    {
+     "title": "Ocean acidification",
+     "url": "https://en.wikipedia.org/wiki/Ocean_acidification",
+     "revision": "1372947827",
+     "timestamp": "2026-09-03T03:26:56Z",
+     "extract": "Ocean acidification is the ongoing decrease in the pH of the Earth's ocean. Between 1950 and 2020, the average pH of the ocean surface fell from approximately 8.15 to 8.05. Carbon dioxide emissions from human activities are the primary cause of ocean acidification, with atmospheric carbon dioxide levels exceeding 422 ppm. CO2 from the atmosphere is absorbed by the oceans. This chemical reaction produces carbonic acid which dissociates into a bicarbonate ion and a hydrogen ion. The presence of free hydrogen ions lowers the pH of the ocean, increasing acidity. Marine calcifying organisms, such as mollusks and corals, are especially vulnerable because they rely on calcium carbonate to build shells and skeletons.",
+     "thumb": "https://upload.wikimedia.org/wikipedia/commons/7/75/Mean-seawater-ph.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+    }
+   ],
+   "eov": {
+    "name": "Inorganic carbon",
+    "doc": "https://goosocean.org/document/17475",
+    "a05": null,
+    "membership": "GOOS sub-variable pH; A05 EV_CO2 reached only through the P06 unit",
+    "questions": [
+     "What are rates and impacts of ocean acidification?"
+    ]
+   }
+  },
+  "dic": {
+   "nerc": {
+    "p01": "TCO2MSXX",
+    "url": "http://vocab.nerc.ac.uk/collection/P01/current/TCO2MSXX/",
+    "pref": "Concentration of total inorganic carbon {TCO2 CAS 7440-44-0} per unit mass of the water body [dissolved plus reactive particulate phase]",
+    "definition": "Concentration of dissolved inorganic carbon per unit mass of the water column. Solute may be expressed in terms of mass or quantity of substance.",
+    "license": "CC BY 4.0",
+    "links": {
+     "S27 CS002894": {
+      "pref": "total inorganic carbon",
+      "sameAs": [
+       "https://chem.nlm.nih.gov/chemidplus/rn/7440-44-0",
+       "http://purl.obolibrary.org/obo/CHEBI_27594"
+      ]
+     },
+     "S26 MAT00633": {
+      "pref": "eau brute; water body [dissolved plus reactive particulate phase]",
+      "sameAs": []
+     },
+     "S06 S0600045": {
+      "pref": null,
+      "sameAs": []
+     },
+     "P02 TCO2": {
+      "pref": "Total dissolved inorganic carbon (TCO2) concentration in the water column",
+      "sameAs": []
+     },
+     "A05 EV_CO2": {
+      "pref": "Carbonate system",
+      "sameAs": [
+       "http://vocab.nerc.ac.uk/collection/OD1/current/C02/"
+      ]
+     },
+     "P06 KGUM": {
+      "pref": "Micromoles per kilogram",
+      "sameAs": [
+       "http://qudt.org/vocab/unit/MicroMOL-PER-KiloGM"
+      ]
+     },
+     "S02 S057": {
+      "pref": "per unit mass of the",
+      "sameAs": []
+     }
+    },
+    "s27": {
+     "id": "CS002894",
+     "chebi": "CHEBI:16526",
+     "cas": "7440-44-0"
+    }
+   },
+   "structures": [
+    {
+     "chebi": "CHEBI:16526",
+     "name": "carbon dioxide",
+     "formula": "CO2",
+     "charge": 0,
+     "mass": "44.009",
+     "definition": "A one-carbon compound with formula CO<small><sub>2</sub></small> in which the carbon is attached to each oxygen atom by a double bond. A colourless, odourless gas under normal conditions, it is produced during respiration by all animals, fungi and microorganisms that depend directly or indirectly on living or decaying plants for food.",
+     "role": "dissolved CO₂",
+     "viewBox": "7.9 74.5 204.2 31.0",
+     "svg_inner": "<path class='bond-0 atom-0 atom-1' d='M 186.3,96.4 L 120.0,96.4' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-0 atom-0 atom-1' d='M 186.3,83.3 L 120.0,83.3' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-1 atom-1 atom-2' d='M 100.0,96.4 L 33.7,96.4' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-1 atom-1 atom-2' d='M 100.0,83.3 L 33.7,83.3' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='atom-0' d='M 189.2 89.9 Q 189.2 85.5, 191.3 83.0 Q 193.5 80.5, 197.6 80.5 Q 201.7 80.5, 203.9 83.0 Q 206.1 85.5, 206.1 89.9 Q 206.1 94.4, 203.9 96.9 Q 201.6 99.5, 197.6 99.5 Q 193.6 99.5, 191.3 96.9 Q 189.2 94.4, 189.2 89.9 M 197.6 97.4 Q 200.4 97.4, 201.9 95.5 Q 203.5 93.6, 203.5 89.9 Q 203.5 86.3, 201.9 84.5 Q 200.4 82.6, 197.6 82.6 Q 194.8 82.6, 193.3 84.4 Q 191.8 86.3, 191.8 89.9 Q 191.8 93.6, 193.3 95.5 Q 194.8 97.4, 197.6 97.4 ' fill='currentColor'/> <path class='atom-1' d='M 102.9 89.9 Q 102.9 85.4, 105.0 83.0 Q 107.2 80.5, 111.3 80.5 Q 115.1 80.5, 117.1 83.2 L 115.4 84.6 Q 113.9 82.7, 111.3 82.7 Q 108.5 82.7, 107.0 84.6 Q 105.6 86.4, 105.6 89.9 Q 105.6 93.6, 107.1 95.4 Q 108.6 97.3, 111.6 97.3 Q 113.6 97.3, 116.0 96.1 L 116.7 98.0 Q 115.7 98.7, 114.3 99.0 Q 112.8 99.4, 111.2 99.4 Q 107.2 99.4, 105.0 97.0 Q 102.9 94.5, 102.9 89.9 ' fill='currentColor'/> <path class='atom-2' d='M 13.9 89.9 Q 13.9 85.5, 16.1 83.0 Q 18.3 80.5, 22.4 80.5 Q 26.5 80.5, 28.7 83.0 Q 30.8 85.5, 30.8 89.9 Q 30.8 94.4, 28.6 96.9 Q 26.4 99.5, 22.4 99.5 Q 18.3 99.5, 16.1 96.9 Q 13.9 94.4, 13.9 89.9 M 22.4 97.4 Q 25.2 97.4, 26.7 95.5 Q 28.2 93.6, 28.2 89.9 Q 28.2 86.3, 26.7 84.5 Q 25.2 82.6, 22.4 82.6 Q 19.6 82.6, 18.0 84.4 Q 16.5 86.3, 16.5 89.9 Q 16.5 93.6, 18.0 95.5 Q 19.6 97.4, 22.4 97.4 ' fill='currentColor'/>",
+     "drawn_by": "RDKit 2026.03 from the ChEBI molfile",
+     "license": "CC BY 4.0 (ChEBI)",
+     "key": "carbon_dioxide"
+    },
+    {
+     "chebi": "CHEBI:17544",
+     "name": "hydrogencarbonate",
+     "formula": "CHO3",
+     "charge": -1,
+     "mass": "61.016",
+     "definition": "The carbon oxoanion resulting from the removal of a proton from carbonic acid.",
+     "role": "bicarbonate",
+     "viewBox": "25.3 25.5 168.8 128.6",
+     "svg_inner": "<path class='bond-0 atom-2 atom-0' d='M 119.2,108.8 L 119.2,52.5' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-0 atom-2 atom-0' d='M 109.4,108.8 L 109.4,52.5' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-1 atom-2 atom-1' d='M 114.3,105.9 L 68.5,132.4' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-2 atom-2 atom-3' d='M 114.3,105.9 L 160.1,132.4' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path d='M 112.0,107.3 L 114.3,105.9 L 116.6,107.3' style='fill:none;stroke:currentColor;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /> <path class='atom-0' d='M 105.9 40.9 Q 105.9 36.4, 108.1 34.0 Q 110.2 31.5, 114.3 31.5 Q 118.4 31.5, 120.6 34.0 Q 122.8 36.4, 122.8 40.9 Q 122.8 45.3, 120.6 47.9 Q 118.4 50.4, 114.3 50.4 Q 110.3 50.4, 108.1 47.9 Q 105.9 45.4, 105.9 40.9 M 114.3 48.3 Q 117.1 48.3, 118.6 46.4 Q 120.2 44.5, 120.2 40.9 Q 120.2 37.2, 118.6 35.4 Q 117.1 33.6, 114.3 33.6 Q 111.5 33.6, 110.0 35.4 Q 108.5 37.2, 108.5 40.9 Q 108.5 44.6, 110.0 46.4 Q 111.5 48.3, 114.3 48.3 ' fill='currentColor'/> <path class='atom-1' d='M 31.3 129.4 L 33.8 129.4 L 33.8 137.2 L 43.2 137.2 L 43.2 129.4 L 45.7 129.4 L 45.7 147.8 L 43.2 147.8 L 43.2 139.3 L 33.8 139.3 L 33.8 147.8 L 31.3 147.8 L 31.3 129.4 ' fill='currentColor'/> <path class='atom-1' d='M 49.5 138.6 Q 49.5 134.1, 51.6 131.7 Q 53.8 129.2, 57.9 129.2 Q 62.0 129.2, 64.2 131.7 Q 66.4 134.1, 66.4 138.6 Q 66.4 143.0, 64.2 145.6 Q 61.9 148.1, 57.9 148.1 Q 53.9 148.1, 51.6 145.6 Q 49.5 143.1, 49.5 138.6 M 57.9 146.0 Q 60.7 146.0, 62.2 144.2 Q 63.8 142.3, 63.8 138.6 Q 63.8 134.9, 62.2 133.1 Q 60.7 131.3, 57.9 131.3 Q 55.1 131.3, 53.6 133.1 Q 52.1 134.9, 52.1 138.6 Q 52.1 142.3, 53.6 144.2 Q 55.1 146.0, 57.9 146.0 ' fill='currentColor'/> <path class='atom-3' d='M 162.3 138.6 Q 162.3 134.1, 164.5 131.7 Q 166.7 129.2, 170.7 129.2 Q 174.8 129.2, 177.0 131.7 Q 179.2 134.1, 179.2 138.6 Q 179.2 143.0, 177.0 145.6 Q 174.8 148.1, 170.7 148.1 Q 166.7 148.1, 164.5 145.6 Q 162.3 143.1, 162.3 138.6 M 170.7 146.0 Q 173.6 146.0, 175.1 144.2 Q 176.6 142.3, 176.6 138.6 Q 176.6 134.9, 175.1 133.1 Q 173.6 131.3, 170.7 131.3 Q 167.9 131.3, 166.4 133.1 Q 164.9 134.9, 164.9 138.6 Q 164.9 142.3, 166.4 144.2 Q 167.9 146.0, 170.7 146.0 ' fill='currentColor'/> <path class='atom-3' d='M 181.8 132.2 L 188.1 132.2 L 188.1 133.6 L 181.8 133.6 L 181.8 132.2 ' fill='currentColor'/>",
+     "drawn_by": "RDKit 2026.03 from the ChEBI molfile",
+     "license": "CC BY 4.0 (ChEBI)",
+     "key": "hydrogencarbonate"
+    },
+    {
+     "chebi": "CHEBI:41609",
+     "name": "carbonate",
+     "formula": "CO3",
+     "charge": -2,
+     "mass": "60.008",
+     "role": "carbonate",
+     "viewBox": "23.3 15.9 172.8 147.8",
+     "svg_inner": "<path class='bond-0 atom-0 atom-1' d='M 53.2,139.2 L 105.2,109.1' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-1 atom-1 atom-2' d='M 105.2,109.1 L 161.7,141.7' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-2 atom-1 atom-3' d='M 111.1,112.5 L 111.1,43.4' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-2 atom-1 atom-3' d='M 99.4,112.5 L 99.4,43.4' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path d='M 102.6,110.6 L 105.2,109.1 L 108.1,110.8' style='fill:none;stroke:currentColor;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' /> <path class='atom-0' d='M 29.3 148.1 Q 29.3 143.7, 31.5 141.2 Q 33.7 138.8, 37.8 138.8 Q 41.9 138.8, 44.1 141.2 Q 46.2 143.7, 46.2 148.1 Q 46.2 152.6, 44.0 155.1 Q 41.8 157.7, 37.8 157.7 Q 33.7 157.7, 31.5 155.1 Q 29.3 152.6, 29.3 148.1 M 37.8 155.6 Q 40.6 155.6, 42.1 153.7 Q 43.6 151.8, 43.6 148.1 Q 43.6 144.5, 42.1 142.7 Q 40.6 140.8, 37.8 140.8 Q 35.0 140.8, 33.4 142.7 Q 31.9 144.5, 31.9 148.1 Q 31.9 151.8, 33.4 153.7 Q 35.0 155.6, 37.8 155.6 ' fill='currentColor'/> <path class='atom-0' d='M 48.9 141.8 L 55.2 141.8 L 55.2 143.1 L 48.9 143.1 L 48.9 141.8 ' fill='currentColor'/> <path class='atom-2' d='M 164.2 148.1 Q 164.2 143.7, 166.4 141.2 Q 168.6 138.8, 172.7 138.8 Q 176.8 138.8, 179.0 141.2 Q 181.1 143.7, 181.1 148.1 Q 181.1 152.6, 178.9 155.1 Q 176.7 157.7, 172.7 157.7 Q 168.6 157.7, 166.4 155.1 Q 164.2 152.6, 164.2 148.1 M 172.7 155.6 Q 175.5 155.6, 177.0 153.7 Q 178.5 151.8, 178.5 148.1 Q 178.5 144.5, 177.0 142.7 Q 175.5 140.8, 172.7 140.8 Q 169.9 140.8, 168.3 142.7 Q 166.8 144.5, 166.8 148.1 Q 166.8 151.8, 168.3 153.7 Q 169.9 155.6, 172.7 155.6 ' fill='currentColor'/> <path class='atom-2' d='M 183.8 141.8 L 190.1 141.8 L 190.1 143.1 L 183.8 143.1 L 183.8 141.8 ' fill='currentColor'/> <path class='atom-3' d='M 96.8 31.3 Q 96.8 26.9, 99.0 24.4 Q 101.2 21.9, 105.2 21.9 Q 109.3 21.9, 111.5 24.4 Q 113.7 26.9, 113.7 31.3 Q 113.7 35.8, 111.5 38.3 Q 109.3 40.8, 105.2 40.8 Q 101.2 40.8, 99.0 38.3 Q 96.8 35.8, 96.8 31.3 M 105.2 38.8 Q 108.0 38.8, 109.6 36.9 Q 111.1 35.0, 111.1 31.3 Q 111.1 27.7, 109.6 25.9 Q 108.0 24.0, 105.2 24.0 Q 102.4 24.0, 100.9 25.8 Q 99.4 27.7, 99.4 31.3 Q 99.4 35.0, 100.9 36.9 Q 102.4 38.8, 105.2 38.8 ' fill='currentColor'/>",
+     "drawn_by": "RDKit 2026.03 from the ChEBI molfile",
+     "license": "CC BY 4.0 (ChEBI)",
+     "key": "carbonate"
+    }
+   ],
+   "wikipedia": [
+    {
+     "title": "Dissolved inorganic carbon",
+     "url": "https://en.wikipedia.org/wiki/Dissolved_inorganic_carbon",
+     "revision": "1294570528",
+     "timestamp": "2025-06-08T14:11:13Z",
+     "extract": "Dissolved inorganic carbon (DIC) is the sum of the aqueous species of inorganic carbon in a solution. Carbon compounds can be distinguished as either organic or inorganic, and as dissolved or particulate, depending on their composition. Organic carbon forms the backbone of key component of organic compounds such as – proteins, lipids, carbohydrates, and nucleic acids.",
+     "thumb": "https://upload.wikimedia.org/wikipedia/commons/f/fe/Annual_DOC_and_DIC_fluxes_in_the_Tanguro_Ranch_watershed.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+    }
+   ],
+   "eov": {
+    "name": "Inorganic carbon",
+    "doc": "https://goosocean.org/document/17475",
+    "a05": "EV_CO2",
+    "membership": "A05 EV_CO2 is a broader of this P01",
+    "questions": [
+     "How is the ocean carbon content changing?",
+     "What are rates and impacts of ocean acidification?"
+    ]
+   },
+   "calcofi_quote": "first, the long-term characterization of the inorganic carbon system and its response to changing ocean climate, and second, measurements of pH in the coastal zone in order to monitor the impact of ‘corrosive’ waters on benthic ecosystems in the Southern California Bight.",
+   "bjerrum": {
+    "pH": 8.071,
+    "co2": 0.67,
+    "hco3": 91.3,
+    "co3": 8.0,
+    "omega_arag": 2.5,
+    "pco2": 368.0,
+    "curve": [
+     [
+      4.0,
+      0.9885,
+      0.0115,
+      0.0
+     ],
+     [
+      4.1,
+      0.9856,
+      0.0144,
+      0.0
+     ],
+     [
+      4.2,
+      0.9819,
+      0.0181,
+      0.0
+     ],
+     [
+      4.3,
+      0.9773,
+      0.0227,
+      0.0
+     ],
+     [
+      4.4,
+      0.9716,
+      0.0284,
+      0.0
+     ],
+     [
+      4.5,
+      0.9645,
+      0.0355,
+      0.0
+     ],
+     [
+      4.6,
+      0.9558,
+      0.0442,
+      0.0
+     ],
+     [
+      4.7,
+      0.945,
+      0.055,
+      0.0
+     ],
+     [
+      4.8,
+      0.9317,
+      0.0683,
+      0.0
+     ],
+     [
+      4.9,
+      0.9155,
+      0.0845,
+      0.0
+     ],
+     [
+      5.0,
+      0.8959,
+      0.1041,
+      0.0
+     ],
+     [
+      5.1,
+      0.8723,
+      0.1276,
+      0.0
+     ],
+     [
+      5.2,
+      0.8444,
+      0.1556,
+      0.0
+     ],
+     [
+      5.3,
+      0.8117,
+      0.1882,
+      0.0
+     ],
+     [
+      5.4,
+      0.774,
+      0.226,
+      0.0
+     ],
+     [
+      5.5,
+      0.7312,
+      0.2687,
+      0.0001
+     ],
+     [
+      5.6,
+      0.6836,
+      0.3163,
+      0.0001
+     ],
+     [
+      5.7,
+      0.6318,
+      0.368,
+      0.0001
+     ],
+     [
+      5.8,
+      0.5768,
+      0.423,
+      0.0002
+     ],
+     [
+      5.9,
+      0.5198,
+      0.4799,
+      0.0003
+     ],
+     [
+      6.0,
+      0.4623,
+      0.5373,
+      0.0004
+     ],
+     [
+      6.1,
+      0.4057,
+      0.5937,
+      0.0006
+     ],
+     [
+      6.2,
+      0.3516,
+      0.6477,
+      0.0008
+     ],
+     [
+      6.3,
+      0.301,
+      0.698,
+      0.001
+     ],
+     [
+      6.4,
+      0.2548,
+      0.7438,
+      0.0014
+     ],
+     [
+      6.5,
+      0.2135,
+      0.7847,
+      0.0019
+     ],
+     [
+      6.6,
+      0.1773,
+      0.8203,
+      0.0024
+     ],
+     [
+      6.7,
+      0.146,
+      0.8508,
+      0.0032
+     ],
+     [
+      6.8,
+      0.1195,
+      0.8764,
+      0.0041
+     ],
+     [
+      6.9,
+      0.0972,
+      0.8975,
+      0.0053
+     ],
+     [
+      7.0,
+      0.0787,
+      0.9145,
+      0.0068
+     ],
+     [
+      7.1,
+      0.0634,
+      0.9279,
+      0.0087
+     ],
+     [
+      7.2,
+      0.0509,
+      0.938,
+      0.0111
+     ],
+     [
+      7.3,
+      0.0408,
+      0.9452,
+      0.0141
+     ],
+     [
+      7.4,
+      0.0325,
+      0.9496,
+      0.0178
+     ],
+     [
+      7.5,
+      0.0259,
+      0.9516,
+      0.0225
+     ],
+     [
+      7.6,
+      0.0206,
+      0.9511,
+      0.0283
+     ],
+     [
+      7.7,
+      0.0163,
+      0.9482,
+      0.0355
+     ],
+     [
+      7.8,
+      0.0129,
+      0.9427,
+      0.0444
+     ],
+     [
+      7.9,
+      0.0101,
+      0.9344,
+      0.0555
+     ],
+     [
+      8.0,
+      0.0079,
+      0.9231,
+      0.069
+     ],
+     [
+      8.1,
+      0.0062,
+      0.9083,
+      0.0855
+     ],
+     [
+      8.2,
+      0.0048,
+      0.8898,
+      0.1054
+     ],
+     [
+      8.3,
+      0.0037,
+      0.867,
+      0.1293
+     ],
+     [
+      8.4,
+      0.0029,
+      0.8395,
+      0.1576
+     ],
+     [
+      8.5,
+      0.0022,
+      0.8071,
+      0.1907
+     ],
+     [
+      8.6,
+      0.0017,
+      0.7694,
+      0.2289
+     ],
+     [
+      8.7,
+      0.0012,
+      0.7266,
+      0.2721
+     ],
+     [
+      8.8,
+      0.0009,
+      0.6789,
+      0.3201
+     ],
+     [
+      8.9,
+      0.0007,
+      0.6271,
+      0.3722
+     ],
+     [
+      9.0,
+      0.0005,
+      0.572,
+      0.4275
+     ],
+     [
+      9.1,
+      0.0004,
+      0.5151,
+      0.4846
+     ],
+     [
+      9.2,
+      0.0002,
+      0.4577,
+      0.5421
+     ],
+     [
+      9.3,
+      0.0002,
+      0.4014,
+      0.5985
+     ],
+     [
+      9.4,
+      0.0001,
+      0.3475,
+      0.6524
+     ],
+     [
+      9.5,
+      0.0001,
+      0.2973,
+      0.7026
+     ],
+     [
+      9.6,
+      0.0001,
+      0.2516,
+      0.7484
+     ],
+     [
+      9.7,
+      0.0,
+      0.2107,
+      0.7892
+     ],
+     [
+      9.8,
+      0.0,
+      0.175,
+      0.825
+     ],
+     [
+      9.9,
+      0.0,
+      0.1442,
+      0.8558
+     ],
+     [
+      10.0,
+      0.0,
+      0.118,
+      0.882
+     ],
+     [
+      10.1,
+      0.0,
+      0.0961,
+      0.9039
+     ],
+     [
+      10.2,
+      0.0,
+      0.0779,
+      0.9221
+     ],
+     [
+      10.3,
+      0.0,
+      0.0629,
+      0.9371
+     ],
+     [
+      10.4,
+      0.0,
+      0.0506,
+      0.9494
+     ],
+     [
+      10.5,
+      0.0,
+      0.0406,
+      0.9594
+     ],
+     [
+      10.6,
+      0.0,
+      0.0325,
+      0.9675
+     ],
+     [
+      10.7,
+      0.0,
+      0.026,
+      0.974
+     ],
+     [
+      10.8,
+      0.0,
+      0.0208,
+      0.9792
+     ],
+     [
+      10.9,
+      0.0,
+      0.0166,
+      0.9834
+     ],
+     [
+      11.0,
+      0.0,
+      0.0132,
+      0.9868
+     ]
+    ],
+    "src": "PyCO2SYS 1.8.3 (Lueker et al. 2000 constants) from the record’s surface medians: DIC 2009.8, TA 2234.65 µmol/kg, 16.08 °C, S 33.47"
+   }
+  },
+  "synechococcus": {
+   "nerc": {
+    "p01": "P700A90Z",
+    "url": "http://vocab.nerc.ac.uk/collection/P01/current/P700A90Z/",
+    "pref": "Abundance of Synechococcus (ITIS: 773: WoRMS 160572) per unit volume of the water body by flow cytometry",
+    "definition": "Number of particles resolved as the cyanobacteria Synechococcus cells in a unit volume of any body of fresh or salt water determined by flow cytometry analysis of unstained samples.",
+    "license": "CC BY 4.0",
+    "links": {
+     "S25 BE005403": {
+      "pref": "Synechococcus (ITIS: 773: WoRMS 160572)",
+      "sameAs": [
+       "https://aphia.org/id/taxname/160572",
+       "http://lsid.tdwg.org/urn:lsid:marinespecies.org:taxname:160572"
+      ]
+     },
+     "S06 S0600002": {
+      "pref": "abondance; Abundance",
+      "sameAs": []
+     },
+     "S26 MAT00640": {
+      "pref": "masse d'eau; water body",
+      "sameAs": [
+       "http://vocab.nerc.ac.uk/collection/S21/current/S21S027/"
+      ]
+     },
+     "P02 PATX": {
+      "pref": "Phytoplankton taxonomic abundance in water bodies",
+      "sameAs": []
+     },
+     "S02 S053": {
+      "pref": null,
+      "sameAs": []
+     },
+     "P06 UCML": {
+      "pref": "Number per millilitre",
+      "sameAs": [
+       "http://vocab.nerc.ac.uk/collection/P06/current/NCM3/"
+      ]
+     },
+     "S04 S045": {
+      "pref": "Cytométrie en flux; flow cytometry",
+      "sameAs": []
+     }
+    },
+    "s25": {
+     "id": "BE005403",
+     "worms": 160572
+    }
+   },
+   "wikipedia": [
+    {
+     "title": "Synechococcus",
+     "url": "https://en.wikipedia.org/wiki/Synechococcus",
+     "revision": "1369644553",
+     "timestamp": "2026-08-16T06:32:54Z",
+     "extract": "Synechococcus is a unicellular cyanobacterium that is very widespread in the marine environment. Its size varies from 0.8 to 1.5 μm. The photosynthetic coccoid cells are preferentially found in well–lit surface waters where it can be very abundant. Many freshwater species of Synechococcus have also been described.",
+     "thumb": "https://upload.wikimedia.org/wikipedia/commons/9/99/Synechococcus_PCC_7002_DIC.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+    }
+   ],
+   "eov": {
+    "name": "Microbe biomass and diversity (pilot)",
+    "doc": "https://goosocean.org/document/36264",
+    "a05": null,
+    "membership": "GOOS pilot EOV, August 2026",
+    "phenomena": [
+     "Status and trends",
+     "Role in cycling of elements"
+    ]
+   },
+   "taxon": {
+    "s25": "BE005403",
+    "worms": 160572,
+    "name": "Synechococcus",
+    "species_page": 404,
+    "size_um": [
+     0.8,
+     1.5
+    ],
+    "size_src": "Wikipedia: Synechococcus",
+    "hair_um": 70
+   }
+  },
+  "wind_speed_ms": {
+   "eov": {
+    "name": "Surface wind (GCOS ECV)",
+    "doc": "http://vocab.nerc.ac.uk/collection/A05/current/EV_WSPD/",
+    "a05": "EV_WSPD",
+    "membership": "no P01 on the key, so no link is drawn",
+    "phenomena": [
+     "Upwelling",
+     "Mixed layer",
+     "Air-sea fluxes"
+    ]
+   }
+  },
+  "est_nitrate_sta_corr": {
+   "structures": [
+    {
+     "chebi": "CHEBI:17632",
+     "name": "nitrate",
+     "formula": "NO3",
+     "charge": -1,
+     "mass": "62.004",
+     "definition": "A nitrogen oxoanion formed by loss of a proton from nitric acid. Principal species present at pH 7.3.",
+     "role": "the thing",
+     "viewBox": "23.5 15.9 172.4 147.8",
+     "svg_inner": "<path class='bond-0 atom-3 atom-0' d='M 161.5,141.7 L 115.0,114.4' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-1 atom-0 atom-1' d='M 111.4,97.1 L 111.8,43.4' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-1 atom-0 atom-1' d='M 99.8,97.0 L 100.1,43.3' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='bond-2 atom-2 atom-0' d='M 53.6,138.4 L 96.0,114.3' style='fill:none;fill-rule:evenodd;stroke:currentColor;stroke-width:2.2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' /> <path class='atom-0' d='M 101.4 99.6 L 107.5 109.4 Q 108.1 110.4, 109.0 112.1 Q 110.0 113.8, 110.0 113.9 L 110.0 99.6 L 112.5 99.6 L 112.5 118.1 L 110.0 118.1 L 103.5 107.4 Q 102.7 106.1, 101.9 104.7 Q 101.1 103.3, 100.9 102.8 L 100.9 118.1 L 98.5 118.1 L 98.5 99.6 L 101.4 99.6 ' fill='currentColor'/> <path class='atom-0' d='M 115.9 103.0 L 119.2 103.0 L 119.2 99.6 L 120.6 99.6 L 120.6 103.0 L 124.0 103.0 L 124.0 104.2 L 120.6 104.2 L 120.6 107.6 L 119.2 107.6 L 119.2 104.2 L 115.9 104.2 L 115.9 103.0 ' fill='currentColor'/> <path class='atom-1' d='M 97.6 31.2 Q 97.6 26.8, 99.8 24.4 Q 101.9 21.9, 106.0 21.9 Q 110.1 21.9, 112.3 24.4 Q 114.5 26.8, 114.5 31.2 Q 114.5 35.7, 112.3 38.3 Q 110.0 40.8, 106.0 40.8 Q 102.0 40.8, 99.8 38.3 Q 97.6 35.7, 97.6 31.2 M 106.0 38.7 Q 108.8 38.7, 110.3 36.8 Q 111.9 34.9, 111.9 31.2 Q 111.9 27.6, 110.3 25.8 Q 108.8 24.0, 106.0 24.0 Q 103.2 24.0, 101.7 25.8 Q 100.2 27.6, 100.2 31.2 Q 100.2 35.0, 101.7 36.8 Q 103.2 38.7, 106.0 38.7 ' fill='currentColor'/> <path class='atom-2' d='M 29.5 147.3 Q 29.5 142.9, 31.7 140.4 Q 33.9 137.9, 38.0 137.9 Q 42.1 137.9, 44.2 140.4 Q 46.4 142.9, 46.4 147.3 Q 46.4 151.8, 44.2 154.3 Q 42.0 156.8, 38.0 156.8 Q 33.9 156.8, 31.7 154.3 Q 29.5 151.8, 29.5 147.3 M 38.0 154.8 Q 40.8 154.8, 42.3 152.9 Q 43.8 151.0, 43.8 147.3 Q 43.8 143.7, 42.3 141.9 Q 40.8 140.0, 38.0 140.0 Q 35.2 140.0, 33.6 141.8 Q 32.1 143.7, 32.1 147.3 Q 32.1 151.0, 33.6 152.9 Q 35.2 154.8, 38.0 154.8 ' fill='currentColor'/> <path class='atom-2' d='M 49.1 140.9 L 55.4 140.9 L 55.4 142.3 L 49.1 142.3 L 49.1 140.9 ' fill='currentColor'/> <path class='atom-3' d='M 164.0 148.2 Q 164.0 143.8, 166.2 141.3 Q 168.4 138.8, 172.5 138.8 Q 176.6 138.8, 178.8 141.3 Q 180.9 143.8, 180.9 148.2 Q 180.9 152.6, 178.7 155.2 Q 176.5 157.7, 172.5 157.7 Q 168.4 157.7, 166.2 155.2 Q 164.0 152.7, 164.0 148.2 M 172.5 155.6 Q 175.3 155.6, 176.8 153.8 Q 178.3 151.9, 178.3 148.2 Q 178.3 144.6, 176.8 142.7 Q 175.3 140.9, 172.5 140.9 Q 169.7 140.9, 168.2 142.7 Q 166.6 144.5, 166.6 148.2 Q 166.6 151.9, 168.2 153.8 Q 169.7 155.6, 172.5 155.6 ' fill='currentColor'/> <path class='atom-3' d='M 183.6 141.8 L 189.9 141.8 L 189.9 143.2 L 183.6 143.2 L 183.6 141.8 ' fill='currentColor'/>",
+     "drawn_by": "RDKit 2026.03 from the ChEBI molfile",
+     "license": "CC BY 4.0 (ChEBI)",
+     "key": "nitrate"
+    }
+   ],
+   "eov": {
+    "name": "Nutrients",
+    "doc": "https://goosocean.org/document/17474",
+    "a05": null,
+    "membership": "through the face it borrows: GOOS sub-variable “Nitrate (NO3-)”",
+    "questions": [
+     "How do the eutrophication and pollution impact ocean productivity and water quality?"
+    ]
+   }
+  }
+ }
+}

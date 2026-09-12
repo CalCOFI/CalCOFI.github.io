@@ -25,6 +25,15 @@ can only pass by the layout actually being fixed:
              invisible until the grid packed, then the "hidden" tiles overlapped everything.
   url        (dataset pages) no .ds-url is taller than one line at 375 px. A URL in a right-hand
              table column wrapped to five lines on a phone.
+  faces      (a measurement page, plan 2026-09-11 § D1–D7, § Verification MF5) the face row is
+             What · How · Why in that order and its What column is never empty; every drawn
+             structure is a labelled role="img" with real shapes in it; a STAND-IN wears its chip
+             and none of the borrowed ids, and a pool, a mixture, a property or an organism never
+             claims a ChEBI or a CAS its S27 only nearly means; the sentence's marked parts and its
+             legend agree; "other ways to say why" is CLOSED on load and its count is the list's
+             own; the familiar scale is drawn wherever the payload has one with NO two mark labels
+             overlapping (bounding boxes read from the DOM); the anomaly draws exactly the record's
+             depth bands and at least its year-values; and the three sections are written in order.
   erddap     (dataset pages) each ERDDAP dataset id's tabledap page appears exactly once. It was
              listed twice: once under Download for its formats, once under Services for its page.
   species    (/species/ and one taxon page, plan 2026-09-09 § S3) the index's five counts equal the
@@ -71,7 +80,7 @@ Lighthouse is NOT run here (it needs its own Chrome and ~30 s a page); README sa
 
 Needs shot-scraper (`pipx install shot-scraper && shot-scraper install`).
 """
-import argparse, json, subprocess, sys
+import argparse, json, re, subprocess, sys
 
 DEFAULT_PATHS = [
     "/",                             # the front door: the section, the numbers, the bento (plan 2026-09-07)
@@ -94,6 +103,14 @@ DEFAULT_PATHS = [
                                      #   it was, plus the sentence's record part and D9's stat word
     "/measurements/",                # the measurements catalog: search + timeline, matrix, datasets
     "/measurements/temperature/",    # the unified key: two series, two datasets, eight ways in
+    # the faces (plan 2026-09-11 § Verification MF5) — the seven states a measurement page can be in
+    "/measurements/nitrate/",              # structure: one ion, a bounded scale, six anomaly bands
+    "/measurements/salinity/",             # composition: the sea-salt ion bar, two datasets
+    "/measurements/dic/",                  # composition: a pool, the Bjerrum plot, no scale
+    "/measurements/synechococcus/",        # organism: the species face through S25 → WoRMS
+    "/measurements/wind_speed_ms/",        # no concept: the Beaufort scale and no ids at all
+    "/measurements/est_nitrate_sta_corr/", # stands in: nitrate's face, none of nitrate's ids
+    "/measurements/ammonia/",              # structure: an equilibrium pair, a left-censored scale
 ]
 
 # ── the probe ─────────────────────────────────────────────────────────────────
@@ -663,6 +680,59 @@ PROBE = r"""
       .then(() => { q.value = ""; q.dispatchEvent(new w.Event("input", { bubbles: true })); return out; });
   }
 
+  // ── measurement faces: the row, the sentence, the collapsed why, the two charts ──────────
+  // (plan 2026-09-11 "Measurement faces …" § D1–D7, § Verification MF5). Everything is read back
+  // against the page's OWN #mm-face payload, so the check compares the drawing with the data it
+  // was drawn from and never with a number typed here.
+  const mf = d.getElementById("mm-face");
+  if (mf) {
+    let P = null;
+    try { P = JSON.parse(mf.textContent); } catch (e) {}
+    const box = el => { const b = el.getBoundingClientRect(); return { x: px(b.x), y: px(b.y), w: px(b.width), h: px(b.height) }; };
+    const det = d.querySelector("details.mmf-alts-det");
+    const scale = d.getElementById("mmf-scale"), anom = d.getElementById("mmf-anom");
+    // every mark label the familiar scale draws, with its box, so Python can look for a pair that
+    // overlaps — the greedy row assignment in measurements.js is the only thing preventing it
+    const marks = scale && scale.classList.contains("mmf-drawn")
+      ? [...scale.querySelectorAll("text.mmf-mark")].map(t => Object.assign(box(t), { t: t.textContent.trim() }))
+      : [];
+    out.mfaces = {
+      payload: P,
+      kind: P && P.kind,
+      cols: [...d.querySelectorAll(".mmf-face > .mmf-col > .mmf-k")].map(e => e.textContent.trim()),
+      mols: [...d.querySelectorAll(".mmf-face .mmf-mol")].map(s => Object.assign(box(s), {
+        label: s.getAttribute("aria-label"), role: s.getAttribute("role"),
+        paths: s.querySelectorAll("path,line,circle,polygon,text").length
+      })),
+      mini: !!(d.getElementById("mmf-mini") && d.getElementById("mmf-mini").classList.contains("mmf-drawn")),
+      stands: (d.querySelector(".mmf-stands") || {}).textContent || null,
+      // the ids row of the head: a stand-in must show none of the face it borrows
+      ids: (d.querySelector(".mm-ids") || {}).textContent || "",
+      plat: d.querySelectorAll(".mmf-face .mmf-pg svg").length,
+      pins: d.querySelectorAll(".mmf-pin").length,
+      spark: !!(d.getElementById("mmf-spark") && d.getElementById("mmf-spark").classList.contains("mmf-drawn")),
+      sentParts: [...d.querySelectorAll(".mmf-sent > span")].map(s => s.className),
+      legend: d.querySelectorAll(".mmf-legend > span").length,
+      det: det ? { open: det.open, summary: det.querySelector("summary").textContent.trim(),
+                   items: det.querySelectorAll(".mmf-alts > li").length } : null,
+      scaleDrawn: !!(scale && scale.classList.contains("mmf-drawn")),
+      marks,
+      anomDrawn: !!(anom && anom.classList.contains("mmf-drawn")),
+      // one row per band: the band label and the count beside it
+      anomRows: anom ? anom.querySelectorAll("text.mmf-lab").length : 0,
+      anomBars: anom ? anom.querySelectorAll("rect[fill]:not(.mmf-nino)").length : 0,
+      col: !!(d.getElementById("mmf-col") && d.getElementById("mmf-col").classList.contains("mmf-drawn")),
+      colRows: d.querySelectorAll("#mmf-col .mmf-dl").length,
+      eovQs: d.querySelectorAll(".mmf-eov .mmf-qs li").length,
+      // the three sections, in order
+      heads: [...d.querySelectorAll(".mm-col-main h2.cc-h3")].map(h => h.textContent.trim()),
+      // nothing on the page may be wider than the page (each chart scrolls in its OWN wrapper)
+      wide: [...d.querySelectorAll(".mmf-face, .mmf-sent, .mmf-alts, .mmf-card, .mmf-eov")]
+        .filter(e => e.scrollWidth > e.clientWidth + 1)
+        .map(e => String(e.className) + " " + e.scrollWidth + ">" + e.clientWidth)
+    };
+  }
+
   // ── the one search over the three indexes (plan 2026-09-10 § D7 (3)) ───────
   // assets/door-search.js fetches the three records on the FIRST focus, so the box has to be
   // driven, not read: focus it, type each term, and count what came back per group. The promise
@@ -1128,6 +1198,107 @@ def check(path, r, width, theme, fails, notes):
             fails.append(f"{where}: a measurement URL overflows its line rather than being elided: {u['t']}…")
         if u["full"] and u["shown"] < u["full"] and not u["elided"]:
             fails.append(f"{where}: a measurement URL is cut short without an ellipsis: {u['t']}…")
+
+    # ── measurement faces (plan 2026-09-11 § D1–D7, § Verification MF5) ───────
+    # Every assertion reads the page's OWN #mm-face payload, so it can only pass by the drawing
+    # actually matching the record and the media sidecar it was built from.
+    mfa = r.get("mfaces")
+    if mfa:
+        P = mfa.get("payload") or {}
+        kind = mfa.get("kind")
+        # the row: three columns, always in this order — a reader who has read one page has read all
+        if mfa["cols"] != ["What", "How", "Why"]:
+            fails.append(f"{where}: the face row's columns are {mfa['cols']!r}, expected What · How · Why")
+        # the WHAT column is never empty: a drawn structure, or a small figure in its place
+        if not mfa["mols"] and not mfa["mini"]:
+            fails.append(f"{where}: the What column draws neither a structure nor a figure "
+                         f"(face kind {kind!r})")
+        for s in mfa["mols"]:
+            if s["role"] != "img" or not s["label"]:
+                fails.append(f"{where}: a structure has role={s['role']!r} aria-label={s['label']!r}")
+            if s["w"] < 20 or s["h"] < 20:
+                fails.append(f"{where}: a structure is drawn {s['w']}x{s['h']}px")
+            if s["paths"] < 1:
+                fails.append(f"{where}: a structure drew {s['paths']} shapes — the SVG is empty")
+        # § D3: a stand-in says so, and NEVER wears the ids of the face it borrows
+        if kind == "standsin":
+            if not mfa["stands"]:
+                fails.append(f"{where}: a stand-in face with no 'stands in' chip")
+            for bad in ("ChEBI", "CAS", "WoRMS"):
+                if bad in mfa["ids"]:
+                    fails.append(f"{where}: a stand-in's ids row shows {bad} — the ids are not its own")
+        elif mfa["stands"]:
+            fails.append(f"{where}: a 'stands in' chip on a face of kind {kind!r}")
+        # a pool or a mixture draws components but is not any one of them (§ D2, § F3)
+        if kind in ("composition", "scale", "organism", "none"):
+            for bad in ("ChEBI", "CAS"):
+                if bad in mfa["ids"]:
+                    fails.append(f"{where}: a {kind} face claims {bad} in its ids row — its S27 is "
+                                 f"not the thing this page is about")
+        # HOW: a platform glyph and a pin per method row the payload's page carries
+        if mfa["plat"] < 1 and P.get("kind") != "none":
+            notes.append(f"{where}: the How column draws no platform glyph")
+        # the sentence and its legend agree, part for part
+        parts = [p for p in mfa["sentParts"] if p.startswith("s-")]
+        if parts and mfa["legend"] != len(parts):
+            fails.append(f"{where}: the sentence has {len(parts)} marked part(s) {parts} but "
+                         f"{mfa['legend']} legend entries")
+        # § D5: the alternatives are CLOSED on load and the summary's count is the list's own
+        det = mfa["det"]
+        if det:
+            if det["open"]:
+                fails.append(f"{where}: 'other ways to say why' is open on load")
+            m = re.search(r"·\s*(\d+)\s*$", det["summary"])
+            if not m:
+                fails.append(f"{where}: the why summary carries no count: {det['summary']!r}")
+            elif int(m.group(1)) != det["items"]:
+                fails.append(f"{where}: the why summary says {m.group(1)} but the list has "
+                             f"{det['items']} item(s)")
+            notes.append(f"{where}: face {kind} · {len(mfa['mols'])} structure(s) · "
+                         f"why + {det['items']} alternative(s), closed")
+        # the familiar scale: drawn where the payload has one, and no two mark labels overlapping
+        want_scale = bool(P.get("scale"))
+        if want_scale and not mfa["scaleDrawn"]:
+            fails.append(f"{where}: the familiar scale is not drawn though the payload carries one")
+        ms = mfa["marks"]
+        for i in range(len(ms)):
+            for j in range(i + 1, len(ms)):
+                a, b = ms[i], ms[j]
+                if (a["x"] < b["x"] + b["w"] and b["x"] < a["x"] + a["w"]
+                        and a["y"] < b["y"] + b["h"] and b["y"] < a["y"] + a["h"]):
+                    fails.append(f"{where}: scale labels overlap: {a['t']!r} and {b['t']!r}")
+        # § D6: one row per depth band the record measured in — the page's rows ARE the record's
+        an = P.get("anomaly") or {}
+        bands = an.get("bands") or []
+        if bands and not mfa["anomDrawn"]:
+            fails.append(f"{where}: the anomaly is not drawn though the record has {len(bands)} band(s)")
+        if mfa["anomDrawn"]:
+            # two labels a row (the band and its count) plus the two axis notes
+            if mfa["anomRows"] != len(bands):
+                fails.append(f"{where}: the anomaly draws {mfa['anomRows']} band label(s) for "
+                             f"{len(bands)} band(s) in the record")
+            want_bars = sum(len(b.get("series") or []) for b in bands)
+            if mfa["anomBars"] < want_bars:
+                fails.append(f"{where}: the anomaly draws {mfa['anomBars']} bar(s) for {want_bars} "
+                             f"year-values in the record")
+            notes.append(f"{where}: anomaly {len(bands)} bands, {want_bars} year-values, "
+                         f"spark band {an.get('spark_band')!r}")
+        elif not bands and mfa["scaleDrawn"] is not None:
+            notes.append(f"{where}: no anomaly — the page says why instead")
+        # Where in the water column: the record's own bands
+        if mfa["col"] and mfa["colRows"] < 1:
+            fails.append(f"{where}: the water-column figure is drawn with no bands")
+        # the three sections are written, and in this order
+        for h in ("What it is", "How it is measured", "Why it matters"):
+            if h not in mfa["heads"]:
+                fails.append(f"{where}: no '{h}' section ({mfa['heads']!r})")
+        idx = [mfa["heads"].index(h) for h in ("What it is", "How it is measured", "Why it matters")
+               if h in mfa["heads"]]
+        if idx != sorted(idx):
+            fails.append(f"{where}: the face sections are out of order: {mfa['heads']!r}")
+        # nothing in the face may be wider than its own column
+        for wtxt in mfa["wide"]:
+            fails.append(f"{where}: a face block overflows its column: {wtxt}")
 
     # ── the front door (plan 2026-09-07 § D-8) ────────────────────────────────
     fr = r.get("front")
