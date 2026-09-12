@@ -1,0 +1,168 @@
+{%- comment -%}
+  The face row, under the stats band of /measurements/{key}/ (plan 2026-09-11 "Measurement faces …"
+  § D1–D7, brief WS-MF5): WHAT the thing is · HOW it is taken · WHY it matters, then one sentence
+  whose three halves are underlined in their sources' colours, then the why's other readings under
+  a collapsed <details> — the datasets catalog's "not yet in the database" idiom.
+
+  Every value comes from `page.face`, built by _plugins/measurements.rb from the release's
+  measurements.json 1.1 and from _data/measurements_media.json. Nothing here is typed, and every
+  slot is nil-safe: a key with neither renders no face row at all (the layout does not include
+  this file), and a key with half of one draws the half it has rather than an empty column.
+
+  The STRUCTURE is written inline rather than fetched: RDKit draws it with `currentColor`, so one
+  file is navy on white and bone on navy, and the picture is on the page with JavaScript off. The
+  small figures beside it — the ion bar, the hair, the pH strip, the Beaufort row, the mini scale
+  and the spark — are drawn by assets/measurements.js into the hosts below, from #mm-face.
+
+  include measurement_face.html face=page.face
+{%- endcomment -%}
+{%- assign f = include.face -%}
+{%- assign w = f.what -%}
+<div class="mmf-face">
+
+  {%- comment -%} ── What ────────────────────────────────────────────────── {%- endcomment -%}
+  <div class="mmf-col">
+    <div class="mmf-k">What</div>
+    <div class="mmf-glyph">
+      {%- comment -%} at most two drawings fit the row; a CONJUGATE pair is joined by the
+        equilibrium arrow, because the method measures both and the key names one (NH₄⁺ ⇌ NH₃,
+        § D2). The arrow follows the registry's `role`, never the key. {%- endcomment -%}
+      {%- for s in w.structures -%}
+      {%- if forloop.index > 2 %}{% break %}{% endif -%}
+      {%- if forloop.index > 1 and s.role contains 'conjugate' %}<span class="mmf-eq" aria-hidden="true">⇌</span>{% endif -%}
+      <svg class="mmf-mol{% if w.structures.size == 1 and f.kind != 'composition' %} mmf-mol-1{% endif %}" viewBox="{{ s.viewBox }}" role="img" aria-label="{{ s.label | escape }}">{{ s.inner }}</svg>
+      {%- endfor -%}
+      {%- comment -%} an ORGANISM face is the species catalog's own: the silhouette from
+        _data/taxa_media.json, in the page's ink like a structure. It appears only once the species
+        pages hold that taxon (D9/WS-MF7); until then the line below links WoRMS alone. {%- endcomment -%}
+      {%- if w.structures.size == 0 and w.taxon.sil -%}
+      <svg class="mmf-mol mmf-mol-1" viewBox="{{ w.taxon.sil.viewBox }}" role="img" aria-label="{{ w.taxon.sil.label | escape }}">{{ w.taxon.sil.inner }}</svg>
+      {%- elsif w.structures.size == 0 -%}
+      <div class="mmf-mini" id="mmf-mini"></div>
+      {%- endif -%}
+    </div>
+
+    {%- comment -%} the one line under the picture: the thing itself, or whose face it borrows {%- endcomment -%}
+    {%- if w.stands_in -%}
+    <p class="mmf-line"><span class="mmf-stands">stands in: {% if w.stands_in.url %}<a href="{{ w.stands_in.url | relative_url }}">{{ w.stands_in.label | escape | downcase }}</a>{% else %}{{ w.stands_in.label | escape | downcase }}{% endif %}’s face{% if w.stands_in.why %}, {{ w.stands_in.why | escape }}{% endif %}</span></p>
+    {%- elsif f.kind == 'structure' and w.structures.size > 0 -%}
+    {%- comment -%} the identity line names the thing ONLY where the face IS that one substance. A
+      pool or a mixture draws its components but is not any one of them — writing "CO₂ · carbon
+      dioxide · CHEBI:16526" under DIC would say the page is about carbon dioxide (§ D2, § F3).
+    {%- endcomment -%}
+    {%- assign s0 = w.structures[0] -%}
+    <p class="mmf-line">{% if s0.formula %}<b>{{ s0.formula }}</b> · {% endif %}{{ s0.name | escape }}{% if s0.mass %} · {{ s0.mass }} g/mol{% endif %}{% if s0.chebi_url %} · <a class="mono" href="{{ s0.chebi_url }}" rel="external">{{ s0.chebi }}</a>{% endif %}</p>
+    {%- elsif w.composition and w.composition.sr_med -%}
+    {%- comment -%} a mixture: what a kilogram of CalCOFI's own seawater holds, at the record's own
+      median salinity. Which water that median is OF is the record's to say and the title's to
+      state — it is the whole series, not the surface alone — so the line says neither.
+    {%- endcomment -%}
+    <p class="mmf-line" title="{{ w.composition.med_src | escape }} · {{ w.composition.src | escape }}"><b>{{ w.composition.sr_med }} g</b> of salt in a kilogram of CalCOFI seawater, at the record’s median salinity</p>
+    {%- elsif w.taxon -%}
+    {%- comment -%} the species page is linked ONLY where the catalog holds that taxon: an internal
+      link to a page that does not exist is worse than no link (the picoplankton keys carry no
+      taxon_key until D9 lands) {%- endcomment -%}
+    <p class="mmf-line">{% if w.taxon.species_page %}<a href="{{ w.taxon.species_page | relative_url }}"><i>{{ w.taxon.name | escape }}</i></a>{% else %}<i>{{ w.taxon.name | escape }}</i>{% endif %}{% if w.taxon.worms %} · WoRMS <a class="mono" href="{{ w.taxon.url }}" rel="external">{{ w.taxon.worms }}</a>{% endif %}{% if w.taxon.size_um %} · {% if w.taxon.size_um[0] == w.taxon.size_um[1] %}{{ w.taxon.size_um[0] }}{% else %}{{ w.taxon.size_um[0] }}–{{ w.taxon.size_um[1] }}{% endif %} µm{% endif %}</p>
+    {%- if w.taxon.sil.credit -%}
+    <p class="mmf-credit">Silhouette {{ w.taxon.sil.credit | escape }}{% if w.taxon.sil.license %} · {{ w.taxon.sil.license | escape }}{% endif %} · via PhyloPic</p>
+    {%- endif -%}
+    {%- elsif w.a05_only -%}
+    <p class="mmf-line">No NERC P01 concept on the key · the nearest is A05 <span class="mono">{{ w.a05_only.code }}</span></p>
+    {%- endif -%}
+
+    {%- if w.chem.size > 1 and f.kind == 'composition' -%}
+    <p class="mmf-line mmf-comp">{% for c in w.chem %}{% if c.formula %}{{ c.formula }}{% else %}{{ c.name | escape }}{% endif %}{% if c.fraction %} <b>{{ c.fraction | times: 100.0 | round: 1 }} %</b>{% endif %}{% unless forloop.last %} · {% endunless %}{% endfor %}</p>
+    {%- endif -%}
+
+    {%- comment -%} NERC's own definition, clamped to three lines here and written whole under What {%- endcomment -%}
+    {%- if w.nerc.definition -%}
+    <p class="mmf-def" title="{{ w.nerc.definition | escape }}">{{ w.nerc.definition | escape }}</p>
+    {%- elsif w.stands_in -%}
+    <p class="mmf-def">No definition of its own: the estimate is described by its derivation, under <i>How</i>.</p>
+    {%- endif -%}
+  </div>
+
+  {%- comment -%} ── How ─────────────────────────────────────────────────── {%- endcomment -%}
+  <div class="mmf-col">
+    <div class="mmf-k">How</div>
+    {%- if f.how.size > 0 -%}
+    {%- assign h0 = f.how[0] -%}
+    <div class="mmf-plat">
+      {%- assign seen = '' -%}
+      {%- for h in f.how -%}
+      {%- unless seen contains h.platform -%}
+      {%- assign seen = seen | append: h.platform | append: '|' -%}
+      <span class="mmf-pg" data-platform="{{ h.platform }}"><span>{{ h.platform_label | escape }}</span></span>
+      {%- endunless -%}
+      {%- endfor -%}
+    </div>
+    <p class="mmf-line"><b>{{ h0.instrument | escape }}</b></p>
+    {%- if h0.nm -%}
+    <p class="mmf-line"><span class="cc-chip cc-chip-accent">{{ h0.nm }} nm</span>{% if h0.nm_note %} {{ h0.nm_note | escape }}{% endif %}</p>
+    {%- endif -%}
+    {%- if f.how.size > 1 -%}
+    <p class="mmf-line cc-muted">and {{ f.how[1].instrument | escape | downcase }}</p>
+    {%- endif -%}
+    {%- if h0.link -%}
+    <a class="mmf-pin" href="{{ h0.link }}" rel="external"><span class="mmf-disc" aria-hidden="true"></span>{{ h0.page | escape }} on calcofi.org ↗</a>
+    {%- endif -%}
+    {%- else -%}
+    <p class="mmf-none">No method row is registered for this measurement yet
+      (<span class="mono">metadata/measurement_method.csv</span>).</p>
+    {%- endif -%}
+  </div>
+
+  {%- comment -%} ── Why ─────────────────────────────────────────────────── {%- endcomment -%}
+  <div class="mmf-col">
+    <div class="mmf-k">Why</div>
+    {%- if f.anomaly_bands -%}
+    <svg class="mmf-spark" id="mmf-spark" role="img" aria-label="Yearly anomaly against the release's own normal"></svg>
+    <p class="mmf-line" id="mmf-spark-line"></p>
+    {%- elsif f.anomaly_note -%}
+    <p class="mmf-none">{{ f.anomaly_note | escape }}</p>
+    {%- endif -%}
+    {%- if f.eov.questions.size > 0 -%}
+    <p class="mmf-q">{{ f.eov.questions[0] | escape }}</p>
+    {%- elsif f.eov.name -%}
+    <p class="mmf-line"><span class="cc-muted">EOV</span> {{ f.eov.name | escape }}{% if f.eov.phenomena.size > 0 %} · {{ f.eov.phenomena | slice: 0, 3 | join: ', ' | escape }}{% endif %}</p>
+    {%- endif -%}
+  </div>
+</div>
+
+{%- comment -%} the sentence: NERC says what it is · the record says what we hold · the pick says why
+  it matters, each underlined in its own source's colour, with a legend that names exactly the
+  parts drawn (the species page's .sp-sent rule with mmf- in the place of sp-) {%- endcomment -%}
+{%- if f.sentence -%}
+<p class="mmf-sent">
+  {%- for p in f.sentence -%}
+  <span class="{{ p.cls }}">{{ p.text | escape }}</span>{% if p.cites %}<sup>{% for c in p.cites %}{% if c.url %}<a href="{{ c.url }}" rel="external" title="{{ c.label | escape }}">{{ c.label | escape }}</a>{% else %}{{ c.label | escape }}{% endif %}{% unless forloop.last %}, {% endunless %}{% endfor %}</sup>{% endif %}
+  {% endfor -%}
+</p>
+<p class="mmf-legend">
+  {%- for p in f.sentence -%}
+  <span class="l-{{ p.cls | remove: 's-' }}">{{ p.src | escape }}</span>
+  {%- endfor -%}
+</p>
+{%- endif -%}
+
+{%- comment -%} the rest of the why, one click away and CLOSED on load: `.ds-details` is the
+  datasets catalog's "not yet in the database" block (_includes/catalog_grid.html), so a reader who
+  has opened one has opened both. The count in the summary is the list's own length. {%- endcomment -%}
+{%- if f.why.alts.size > 0 -%}
+<details class="ds-details mmf-alts-det">
+  <summary>other ways to say why · {{ f.why.alts.size }}</summary>
+  <ul class="mmf-alts">
+    {%- for a in f.why.alts -%}
+    <li>
+      <span class="mmf-ak mmf-ak-{{ a.kind }}">{{ a.kind_label | escape }}</span>
+      <span>{{ a.text | escape }}
+        {%- if a.cites.size > 0 %} <span class="mmf-ac">{% for c in a.cites %}{% if c.url %}<a href="{{ c.url }}" rel="external">{{ c.label | escape }}</a>{% else %}{{ c.label | escape }}{% endif %}{% unless forloop.last %} · {% endunless %}{% endfor %}</span>
+        {%- elsif a.url %} <span class="mmf-ac"><a href="{{ a.url }}" rel="external">source</a></span>
+        {%- elsif a.needs_cite %} <span class="mmf-anc">needs a citation before it can be the pick</span>
+        {%- endif -%}
+      </span>
+    </li>
+    {%- endfor -%}
+  </ul>
+</details>
+{%- endif -%}

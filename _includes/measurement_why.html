@@ -1,0 +1,96 @@
+{%- comment -%}
+  The WHY section of /measurements/{key}/ (plan 2026-09-11 § D5–D7, brief WS-MF5): the familiar
+  scale with the flags it surfaced, the anomaly in every depth band it is measured in with the
+  strong El Niño years shaded, and the EOV card — the GOOS question quoted and linked, never
+  paraphrased, because goosocean.org reserves all rights (§ F4).
+
+  The two figures are SVG hosts, drawn by assets/measurements.js from the page's own #mm-face
+  payload; each stays `display: none` until the drawing adds `.mmf-drawn`, so a page read without
+  JavaScript shows no 300 x 150 hole (the `[viewBox]` trap the species strip hit on 2026-09-09).
+
+  include measurement_why.html face=page.face
+{%- endcomment -%}
+{%- assign f = include.face -%}
+
+{%- comment -%} ── the familiar scale ────────────────────────────────────── {%- endcomment -%}
+{%- if f.scale -%}
+<h3 class="mmf-h3">The familiar scale</h3>
+<div class="mmf-scale-wrap">
+  <svg class="mmf-chart mmf-scale" id="mmf-scale" role="img" aria-label="{{ f.what.nerc.pref | default: 'This measurement' | escape }} on a familiar scale"></svg>
+</div>
+<p class="mmf-credit" id="mmf-scale-credit"></p>
+{%- if f.scale.flags.size > 0 -%}
+<ul class="mmf-flags">
+  {%- for x in f.scale.flags -%}
+  <li>{{ x.text | escape }}</li>
+  {%- endfor -%}
+</ul>
+<p class="mm-note">The familiar scale is a quality check: a value the scale makes implausible is
+  marked here with what is known about it. A value outside a <i>declared</i> bound is a bug being
+  removed at the ingest and is counted under <i>Range &amp; quality</i>, not here.</p>
+{%- endif -%}
+{%- endif -%}
+
+{%- comment -%} ── the anomaly, band by band ─────────────────────────────── {%- endcomment -%}
+<h3 class="mmf-h3">The record’s own history</h3>
+{%- if f.anomaly_bands -%}
+<div class="mmf-anom-wrap">
+  <svg class="mmf-chart mmf-anom" id="mmf-anom" role="img" aria-label="Yearly anomaly in {{ f.anomaly_bands }} depth bands against the release's own climatology"></svg>
+</div>
+<p class="mmf-credit" id="mmf-anom-credit"></p>
+{%- if f.anomaly_deeper.size > 0 -%}
+<p class="mm-note">Deeper than the climatology reaches: {{ f.anomaly_deeper | join: ', ' }} have no
+  normal to depart from, because the release’s <span class="mono">climatology</span> stops at its
+  deepest built bin. Carrying it to the bottom is one argument of
+  <span class="mono">build_climatology()</span> and puts these bands on the page too.</p>
+{%- endif -%}
+{%- else -%}
+<p class="mmf-empty">{{ f.anomaly_note | default: 'The release builds no climatology for this measurement, so there is no normal to draw a departure from.' | escape }}</p>
+{%- endif -%}
+
+{%- comment -%} ── the EOV card and the borrowed context ─────────────────── {%- endcomment -%}
+<div class="mmf-why-row">
+  {%- if f.eov.name -%}
+  <div class="mmf-eov">
+    <div class="cc-eyebrow">Essential Ocean Variable</div>
+    <div class="mmf-eov-n">{{ f.eov.name | escape }}</div>
+    {%- if f.eov.membership %}<p class="mm-note">{{ f.eov.membership | escape }}</p>{% endif -%}
+    {%- if f.eov.questions.size > 0 -%}
+    <h4 class="mmf-h4">GOOS asks</h4>
+    <ul class="mmf-qs">
+      {%- for q in f.eov.questions -%}<li><i>{{ q | escape }}</i></li>{%- endfor -%}
+    </ul>
+    {%- endif -%}
+    {%- if f.eov.phenomena.size > 0 -%}
+    <h4 class="mmf-h4">Phenomena it captures</h4>
+    <div class="mmf-ph">
+      {%- for p in f.eov.phenomena -%}<span class="cc-chip cc-chip-accent">{{ p | escape }}</span>{%- endfor -%}
+    </div>
+    {%- endif -%}
+    {%- comment -%} the link is labelled by what it IS: most keys' `goos_doc` is a GOOS
+      specification sheet, but the wind rows point at NERC's A05 concept, which is a vocabulary
+      entry and not a sheet — calling both "the specification sheet" would be a small lie {%- endcomment -%}
+    {%- if f.eov.doc -%}
+    <p class="mmf-credit"><a href="{{ f.eov.doc }}" rel="external">{{ f.eov.doc_label | default: 'the document that names it' | escape }} ↗</a>{% if f.eov.questions.size > 0 %} · quoted, not copied{% endif %}</p>
+    {%- endif -%}
+  </div>
+  {%- endif -%}
+
+  <div>
+    {%- comment -%} the why registry's `calcofi` row is calcofi.org's sentence with a lead-in of
+      ours, so it is shown as a block with its source and NOT inside quotation marks; only the
+      fetcher's own verbatim pull is quoted {%- endcomment -%}
+    {%- if f.calcofi_quote -%}
+    <h4 class="mmf-h4">Why CalCOFI samples it, in its own words</h4>
+    {%- assign cq_url = f.calcofi_quote.url | default: f.how[0].link -%}
+    <blockquote class="mmf-quote">{% if f.calcofi_quote.quoted %}“{{ f.calcofi_quote.text | escape }}”{% else %}{{ f.calcofi_quote.text | escape }}{% endif %}{% if cq_url %} <a href="{{ cq_url }}" rel="external">calcofi.org ↗</a>{% endif %}</blockquote>
+    {%- endif -%}
+    {%- if f.wikipedia and f.wikipedia.extract -%}
+    <h4 class="mmf-h4">Borrowed context</h4>
+    <blockquote class="mmf-quote">{{ f.wikipedia.extract | escape }}
+      <span class="mmf-credit">Wikipedia, <a href="{{ f.wikipedia.url }}" rel="external">{{ f.wikipedia.title | escape }}</a>,
+        revision {{ f.wikipedia.revision }} · {{ f.wikipedia.license | escape }} — shown beside the
+        sentence, never inside it.</span></blockquote>
+    {%- endif -%}
+  </div>
+</div>

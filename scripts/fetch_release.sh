@@ -66,9 +66,10 @@
 # TAXA_RELEASE_URL takes a full http(s) URL *or* a local path (or a file:// URL) so a staging
 # record can be rendered from disk; the bridge goes away when a promoted release carries taxa.json.
 #
-# `measurements.json` is resolved by the SAME three steps with MEASUREMENTS_RELEASE_URL as its
-# bridge (plan 2026-09-10 § D4): the promoted release's own file first, then the variable, and
-# otherwise nothing at all — no measurement pages rather than an invented one.
+# `measurements.json` is resolved with MEASUREMENTS_RELEASE_URL as its bridge (plan 2026-09-10
+# § D4), but since 2026-09-12 a SET variable OVERRIDES the promoted release's own file (see the
+# note at the block) — the promoted file is read only when the variable is unset, and otherwise
+# nothing at all — no measurement pages rather than an invented one.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -214,16 +215,18 @@ fi
 # them. Resolved exactly as taxa.json is (plan 2026-09-10 § D4): the promoted release's own
 # measurements.json first, then the MEASUREMENTS_RELEASE_URL bridge, and otherwise nothing at all —
 # _plugins/measurements.rb then draws no /measurements/ pages and says so once.
+# Since 2026-09-12 a SET MEASUREMENTS_RELEASE_URL wins over the promoted record, not just fills its
+# absence: every promoted release now carries a measurements.json, so a bridge that only filled a
+# gap could never reach the site again — and the 1.1 bridge (the measurement faces, built from the
+# promoted release's own tables with the newer builder) would sit unread until the next release.
+# A set variable is a deliberate act; it is announced loudly and goes away when unset.
 rm -f "$DATA/measurements.json"
-if get "$record_dir/measurements.json" "$DATA/measurements.json"; then
-  meas_kind="promoted"; meas_url="$record_dir/measurements.json"
-elif [ -n "$MEAS_FALLBACK" ]; then
-  meas_kind="fallback"; meas_url="$MEAS_FALLBACK"
+if [ -n "$MEAS_FALLBACK" ]; then
+  meas_kind="bridge"; meas_url="$MEAS_FALLBACK"
   echo
-  echo "NOTE: measurements.json from a non-promoted release ---------------------------------"
-  echo "NOTE: the promoted release $version carries no measurements.json (it predates the catalog)."
+  echo "NOTE: measurements.json from MEASUREMENTS_RELEASE_URL, overriding the promoted release ----"
   echo "NOTE: building the measurement pages from  $meas_url"
-  echo "NOTE: MEASUREMENTS_RELEASE_URL is set; unset it to render the promoted release."
+  echo "NOTE: unset MEASUREMENTS_RELEASE_URL to render the promoted release $version's own record."
   echo "NOTE: ------------------------------------------------------------------------------"
   echo
   case "$meas_url" in
@@ -231,6 +234,8 @@ elif [ -n "$MEAS_FALLBACK" ]; then
     file://*)           cp "${meas_url#file://}" "$DATA/measurements.json" ;;
     *)                  cp "$meas_url" "$DATA/measurements.json" ;;
   esac
+elif get "$record_dir/measurements.json" "$DATA/measurements.json"; then
+  meas_kind="promoted"; meas_url="$record_dir/measurements.json"
 else
   meas_kind="none"; meas_url=""
   echo "NOTE: no measurements.json beside the record and no MEASUREMENTS_RELEASE_URL — the site builds with no measurement pages"
@@ -315,6 +320,39 @@ PYF
 else
   rm -f "$DATA/taxa_media.json"
   echo "NOTE: no taxa_media.json under $MEDIA_BASE — the species pages draw no faces"
+fi
+
+# the measurement FACES: measurements_media.json — per measurement key the NERC key ring (P01 →
+# S27/S25/S06/A05/P06/P07/P02), the ChEBI structures drawn by RDKit in the page's own ink, the
+# Wikipedia leads and NOAA CPC's ONI table (plan 2026-09-11 § D8).  It is NOT release content: the
+# vocabularies and the leads change on their own cadence, so scripts/fetch_measurement_faces.py
+# builds it into gs://calcofi-files-public/measurement-media/
+# (.github/workflows/measurement-media.yml) and the site reads it from there.  Silently absent: a
+# release with no sidecar yet renders the measurement pages exactly as it does today, with no faces
+# and no gap.
+#
+# LIKE THE SPECIES SIDECAR, IT IS NOT KEYED BY RELEASE, and neither are the structures it points
+# at.  A molecule, a NERC concept and an EOV outlive a release exactly as a taxon does; one copy
+# serves every release, and the sidecar's own `release` field says which catalog it was built
+# against.  There is no per-release fallback here because this layout never had one.
+rm -f "$DATA/measurements_media.json"
+MEAS_MEDIA_BASE="${CALCOFI_MEASUREMENT_MEDIA_BASE:-https://storage.googleapis.com/calcofi-files-public/measurement-media}"
+meas_media_url="$MEAS_MEDIA_BASE/measurements_media.json"
+if get "$meas_media_url" "$DATA/measurements_media.json" && [ -s "$DATA/measurements_media.json" ]; then
+  python3 - "$DATA/measurements_media.json" "$meas_media_url" <<'PYM2'
+import json, sys
+path, url = sys.argv[1:3]
+d = json.load(open(path))
+c = d.get("coverage", {})
+print(f"measurement media: schema {d.get('schema_version')} · release {d.get('release')} · "
+      f"fetched {d.get('fetched')} · {c.get('keys')} keys · {c.get('nerc')} NERC chains · "
+      f"{c.get('keys_with_structure')} keys with a structure ({c.get('structures')} drawings) · "
+      f"{c.get('leads')} leads · {c.get('standsin')} stand-ins")
+print(f"       {url}")
+PYM2
+else
+  rm -f "$DATA/measurements_media.json"
+  echo "NOTE: no measurements_media.json under $MEAS_MEDIA_BASE — the measurement pages draw no faces"
 fi
 
 # versions.json is release-history, kept at the prefix root, never inside a version folder

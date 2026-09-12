@@ -1,0 +1,88 @@
+name: Refresh the measurement faces (fetch the media → the public bucket)
+
+# The measurement pages' faces — the NERC key ring, the ChEBI structure drawn by RDKit in the
+# page's own ink, the Wikipedia lead and NOAA's ONI table — come from four external services that
+# change on their own cadence, so they are NOT release content (plan 2026-09-11 § D8). This
+# workflow runs scripts/fetch_measurement_faces.py against the promoted release's measurements.json
+# and rsyncs the result to gs://calcofi-files-public/measurement-media/ — ONE copy, not one per
+# release (the structures under keys/, the sidecar beside them), where scripts/fetch_release.sh
+# picks it up on the next site build. Nothing here writes to this repo.
+#
+# ── DISABLED ────────────────────────────────────────────────────────────────────────────────────
+# `if: false` on the job, because this repository has NO service-account secret: every other
+# workflow reads the release anonymously over https and never authenticates to GCS. To enable it,
+# add a repository secret GCP_SA_KEY holding the calcofi-admin service-account JSON key (the same
+# account `gcloud` already runs as on Ben's machine — the key lives on Drive under `private/`),
+# then delete the `if: false` line below. Until then the fetcher is run by hand:
+#
+#     scripts/fetch_release.sh
+#     uv venv --python 3.12 .venv-media
+#     uv pip install --python .venv-media/bin/python -r requirements-media.txt
+#     .venv-media/bin/python scripts/fetch_measurement_faces.py          # resumable, NVS ≤ 2 rps
+#     python3 scripts/check_measurement_faces.py
+#     .venv-media/bin/python scripts/fetch_measurement_faces.py --upload
+#
+# The bucket is public-read and its anonymous `list` is load-bearing elsewhere: never change the
+# bucket's IAM from here.
+
+on:
+  schedule:
+    - cron: "30 9 * * 0"         # Sundays 09:30 UTC, after species-media
+  workflow_dispatch:
+    inputs:
+      refresh:
+        description: "Ignore the cache and refetch every source"
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: measurement-media
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    if: false                    # ← delete this line once GCP_SA_KEY exists (see the note above)
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install --quiet -r requirements-media.txt
+
+      # the record the faces are keyed to: the promoted release's own measurements.json
+      - name: Fetch the release record
+        run: scripts/fetch_release.sh
+        env:
+          DATASETS_RELEASE_URL: ${{ vars.DATASETS_RELEASE_URL }}
+          TAXA_RELEASE_URL: ${{ vars.TAXA_RELEASE_URL }}
+          MEASUREMENTS_RELEASE_URL: ${{ vars.MEASUREMENTS_RELEASE_URL }}
+
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+      - uses: google-github-actions/setup-gcloud@v2
+
+      # every request carries a User-Agent with this contact; NERC is held to 2 requests a second
+      - name: Fetch the media
+        run: scripts/fetch_measurement_faces.py ${{ inputs.refresh && '--refresh' || '' }}
+        env:
+          CALCOFI_MEDIA_CONTACT: ${{ vars.CALCOFI_MEDIA_CONTACT || 'bdbest@gmail.com' }}
+
+      # the gate, BEFORE anything reaches the bucket: every structure traced to a NERC S27 or a
+      # registry row, every lead with a revision, no ChEBI role, every SVG in currentColor alone,
+      # and no release version anywhere in the layout
+      - name: Check the sidecar
+        run: python3 scripts/check_measurement_faces.py
+
+      # a second pass over a warm cache: it re-reads nothing, rsyncs keys/ and copies the sidecar
+      - name: Upload
+        run: scripts/fetch_measurement_faces.py --upload
+        env:
+          CALCOFI_MEDIA_CONTACT: ${{ vars.CALCOFI_MEDIA_CONTACT || 'bdbest@gmail.com' }}

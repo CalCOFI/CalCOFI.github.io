@@ -186,8 +186,29 @@ module CalCOFI
     # the value is fine (the bottle's 6, "Data OK but taken from CTD") is NOT flagged, so the count
     # is `n_values - qual_ok_n`, never "rows carrying any code". A series with no flag column at
     # this grain is counted separately, because a zero there means "not flagged", not "all good".
-    def flagged(s) = s["qual_ok_n"].nil? ? 0 : [s["n_values"].to_i - s["qual_ok_n"].to_i, 0].max
-    def flagged_total(m) = (m["series"] || []).sum { |s| flagged(s) }
+    #
+    # Since schema 1.1 the RECORD carries `n_flagged` per series and per key, measured at release
+    # by the same rule (plan 2026-09-11 § handoff delta 4). The record is then the source and the
+    # arithmetic below the fallback — and the two must never disagree, so a difference is collected
+    # here and warned about ONCE at the end of the build rather than silently resolved.
+    def flag_mismatches = @flag_mismatches ||= []
+
+    def reconcile(own, said, where)
+      return own if said.nil?
+      said = said.to_i
+      flag_mismatches << "#{where}: record #{said}, n_values − qual_ok_n #{own}" if !own.nil? && own != said
+      said
+    end
+
+    def flagged(s)
+      own = s["qual_ok_n"].nil? ? nil : [s["n_values"].to_i - s["qual_ok_n"].to_i, 0].max
+      reconcile(own, s["n_flagged"], "series #{s['dataset_key']} #{s['measurement_type']}").to_i
+    end
+
+    def flagged_total(m)
+      own = (m["series"] || []).sum { |s| flagged(s) }
+      reconcile(own, m["n_flagged"], "key #{m['key']}").to_i
+    end
     # a CTD average ("sensor_mean") has no flag of its own, but since v2026.09.11 it is REBUILT from its two
     # sensors with any sensor its provider flags 8 or 9 left out (the flag rule, calcofi4db::
     # combine_sensor_pair()), so it is screened even though no code sits on its rows
@@ -627,6 +648,669 @@ module CalCOFI
       end
     end
 
+    # ══ faces (WS-MF5) ═══════════════════════════════════════════════════════
+    # What the thing IS, how it is taken and why it matters, on every measurement page
+    # (plan 2026-09-11 "Measurement faces …" § D1–D7). Two sources, and neither is typed here:
+    #
+    #   the RECORD  `measurements.json` 1.1 — `face`, `chem`, `method`, `scale`, `why`, `anomaly`
+    #               and `n_flagged`, all measured or authored at release from the five registries
+    #               (metadata/measurement_{chem,method,scale,why,face}.csv)
+    #   the MEDIA   `_data/measurements_media.json` — the NERC concept and its definition, the
+    #               structures drawn by RDKit from ChEBI's molfiles, the Wikipedia leads, the GOOS
+    #               EOV sheet and the ONI table. Written by scripts/fetch_measurement_faces.py
+    #               (WS-MF4) into ONE version-free copy at
+    #               gs://calcofi-files-public/measurement-media/ — a molecule and an EOV outlive a
+    #               release exactly as a taxon does, and keying media by {release} blanked every
+    #               species page on 2026-09-11. `scripts/fetch_release.sh` pulls it into `_data/`.
+    #
+    # EVERY slot below is nil-safe: a key with neither a face block nor a media entry renders
+    # exactly as it did before this section existed, and the face row is not emitted at all.
+    #
+    # Three things this file will not do, whatever the data says:
+    #   · a ChEBI ROLE is never shown (dioxygen's include "anti-inflammatory drug", and the S27
+    #     behind DIC is the carbon ATOM, whose roles include "antidepressant" — § F3)
+    #   · a GOOS question is QUOTED and linked, never paraphrased and never more than the sheet's
+    #     own sentence (goosocean.org reserves all rights — § F4)
+    #   · a STAND-IN never wears the ids of the face it borrows (§ D3): it draws the picture, says
+    #     whose it is, and its ids row and its JSON-LD stay empty of ChEBI, CAS and WoRMS
+    MEDIA_BASE = "https://storage.googleapis.com/calcofi-files-public/measurement-media/"
+
+    PLATFORMS = { "bottle" => "rosette bottle", "ctd" => "CTD sensor", "lab" => "counted ashore",
+                  "mast" => "underway, on the mast", "underway" => "underway intake",
+                  "net" => "net tow" }.freeze
+    WHY_KIND  = { "authored" => "authored", "goos" => "GOOS asks", "wikipedia" => "Wikipedia",
+                  "calcofi" => "calcofi.org" }.freeze
+
+    def media        = @media ||= (@site.data["measurements_media"] || {})
+    def media_keys   = @media_keys ||= (media["measurements"] || {})
+    def media_of(m)  = media_keys[m["key"]] || {}
+    def media_base   = Fmt.present(media["base"]) || MEDIA_BASE
+    def oni          = media["oni"] || {}
+    def media_tables = media["tables"] || {}
+
+    # a page has a face when the release gave it one OR the fetcher found the concept behind it
+    def face_kind(m) = Fmt.present((m["face"] || {})["kind"])
+    def has_face?(m) = !face_kind(m).nil? || !media_of(m).empty?
+    def stands_in?(m) = face_kind(m) == "standsin"
+
+    # "NO3" + charge −1 → NO<sub>3</sub><sup>−</sup>. A formula is markup, not a number.
+    def formula_html(x)
+      f = Fmt.present(x["formula"])
+      return nil if f.nil?
+      out = CGI.escapeHTML(f).gsub(/(\d+)/) { "<sub>#{Regexp.last_match(1)}</sub>" }
+      q = x["charge"].to_i
+      return out if q.zero?
+      "#{out}<sup>#{q.abs > 1 ? q.abs : ''}#{q.positive? ? '+' : '−'}</sup>"
+    end
+
+    # NERC's definitions run to several sentences; the face row shows the first and the What
+    # section the whole of it. Split on the first full stop or semicolon, never on a fixed length.
+    def first_sentence(t)
+      s = Fmt.present(t.to_s.strip)
+      return nil if s.nil?
+      (s[/\A.*?[.;](?:\s|\z)/] || s).strip
+    end
+
+    CHEBI_URL = "https://www.ebi.ac.uk/chebi/searchId.do?chebiId="
+    WORMS_URL = "https://www.marinespecies.org/aphia.php?p=taxdetails&id="
+
+    # the drawn structures, in the page's own ink: RDKit writes `currentColor`, so one file is navy
+    # on white and bone on navy. `svg_inner` is emitted RAW, so the picture is there without JS.
+    def structures(m)
+      # only entries the fetcher DREW: a monatomic ion of salinity's composition (Na⁺, Cl⁻, …)
+      # is a ChEBI record with a mass fraction and no molfile picture, and belongs to the ion
+      # bar, not to an empty <svg> (check_layout: "a structure drew 0 shapes")
+      (media_of(m)["structures"] || []).select { |s| Fmt.present(s["svg_inner"]) }.each_with_index.map do |s, i|
+        { "chebi"   => Fmt.present(s["chebi"]),
+          "name"    => Fmt.present(s["name"]),
+          "formula" => formula_html(s),
+          "mass"    => Fmt.present(s["mass"].to_s),
+          "role"    => Fmt.present(s["role"]),
+          # ChEBI's own definition may be quoted (CC BY 4.0); its ROLES never are
+          "definition" => Fmt.present(s["definition"]),
+          "viewBox" => Fmt.present(s["viewBox"]) || "0 0 1 1",
+          "inner"   => s["svg_inner"].to_s,
+          "label"   => "Structure of #{s['name'] || m['key']}",
+          "drawn_by" => Fmt.present(s["drawn_by"]),
+          "license" => Fmt.present(s["license"]),
+          "chebi_url" => Fmt.present(s["chebi"]) && "#{CHEBI_URL}#{s['chebi']}",
+          # the file on the bucket, for JSON-LD's `image`: the fetcher's own URL where it gives
+          # one, else the version-free path it writes (never a {release} segment)
+          "file"    => Fmt.present(s["url"]) || (i.zero? ? "#{media_base}keys/#{m['key']}/structure.svg" : nil) }.compact
+      end
+    end
+
+    def nerc_of(m) = media_of(m)["nerc"] || {}
+
+    # An id is claimed only where it identifies THIS measurement's own thing:
+    #   · the S27's ChEBI and CAS only where the face IS that one substance (`structure`). A pool
+    #     or a mixture takes composition rows instead: DIC's S27 is "total inorganic carbon"
+    #     `sameAs` CHEBI:27594, which is the carbon ATOM, and salinity is not a molecule at all
+    #     (§ F3, § D2) — claiming either would say the page is about something it is not.
+    #   · the S25's WoRMS only where the face IS that organism (`organism`).
+    #   · nothing at all on a stand-in, which borrows a picture and not an identity (§ D3).
+    def owns_substance?(m) = face_kind(m) == "structure"
+    def owns_organism?(m)  = face_kind(m) == "organism"
+
+    # the ids a face adds beside the P01 row
+    def face_ids(m)
+      return [] if stands_in?(m)
+      n = nerc_of(m)
+      rows = []
+      st = structures(m).first
+      if owns_substance?(m) && st && st["chebi"]
+        rows << { "label" => "ChEBI", "id" => st["chebi"].to_s.sub("CHEBI:", ""), "url" => st["chebi_url"] }
+      end
+      if owns_substance?(m) && (cas = Fmt.present(n.dig("s27", "cas")))
+        rows << { "label" => "CAS", "id" => cas, "url" => "https://commonchemistry.cas.org/detail?cas_rn=#{cas}" }
+      end
+      if owns_organism?(m) && (w = Fmt.present(n.dig("s25", "worms").to_s))
+        rows << { "label" => "WoRMS", "id" => w, "url" => "#{WORMS_URL}#{w}" }
+      end
+      e = eov_of(m)
+      rows << { "label" => "EOV", "id" => e["name"], "url" => Fmt.present(e["doc"]) } if Fmt.present(e["name"])
+      rows
+    end
+
+    # ── the EOV card, derived from the record (§ D5, § F4) ───────────────────
+    # The Essential Ocean Variable is the RECORD's, not the fetcher's: `metadata/measurement_why.csv`
+    # names the variable on every row (`eov`), links the document that says so (`goos_doc`) and
+    # carries the GOOS questions themselves as `kind = goos` rows. goosocean.org reserves all
+    # rights, so the question is QUOTED and linked and never paraphrased, and the membership line
+    # is only ever the plain fact of which document lists it — which is not the same document for
+    # every key: the wind rows point at NERC's A05 concept EV_WSPD, not at a specification sheet,
+    # and the link is labelled by what it actually is.
+    GOOS_HOST = "goosocean.org"
+    A05_PATH  = "/collection/A05/"
+
+    def eov_of(m)
+      e = media_of(m)["eov"] || {}
+      whys = m["why"] || []
+      w = whys.find { |r| Fmt.present(r["eov"]) }
+      goos = whys.select { |r| r["kind"] == "goos" && Fmt.present(r["text"]) }
+      name = Fmt.present(e["name"]) || (w && Fmt.present(w["eov"]))
+      doc  = Fmt.present(e["doc"]) || (w && Fmt.present(w["goos_doc"]))
+      # quoted, never paraphrased, and each with the document it is quoted from
+      qs = (e["questions"] || []).map { |q| q.to_s.strip }
+      qs = goos.map { |r| r["text"].to_s.strip } if qs.empty?
+      { "name" => name,
+        "doc"  => doc,
+        "doc_label" => doc && eov_doc_label(doc),
+        "membership" => Fmt.present(e["membership"]) ||
+                        (name && doc && eov_membership(doc, goos.any?)),
+        "questions" => qs,
+        # the phenomena an EOV captures are the specification sheet's own list: the page shows them
+        # only where a source carried them here, never a guess at what the variable is "for"
+        "phenomena" => (e["phenomena"] || []).map { |p| p.to_s.strip } }
+    end
+
+    def eov_doc_label(doc)
+      return "GOOS specification sheet" if doc.include?(GOOS_HOST)
+      return "NERC A05 concept #{doc.split('/').reject(&:empty?).last}" if doc.include?(A05_PATH)
+      "the document that names it"
+    end
+
+    def eov_membership(doc, quoted)
+      if doc.include?(GOOS_HOST)
+        quoted ? "the GOOS specification sheet for this Essential Ocean Variable lists it, and asks"
+               : "the GOOS specification sheet for this Essential Ocean Variable lists it"
+      elsif doc.include?(A05_PATH)
+        "named an Essential Ocean Variable by NERC's A05 vocabulary — there is no GOOS " \
+        "specification sheet behind this one"
+      end
+    end
+
+    # ── the composition, derived from the record (§ D2) ──────────────────────
+    # A mixture's face is its parts: the bar and the table are built from the RECORD's `chem[]`
+    # rows — `metadata/measurement_chem.csv`, each with its mass fraction and the source that put
+    # it there — captioned with the ChEBI name the fetcher found for the same id. The grams in a
+    # kilogram are the record's OWN median salinity (the canonical series' observed p50) read as
+    # Reference Salinity by TEOS-10's definition. Nothing here is typed.
+    SR_PER_SP = 35.16504 / 35.0   # TEOS-10 (IOC, SCOR & IAPSO 2010): g/kg per PSS-78 unit
+    SUB = %w[₀ ₁ ₂ ₃ ₄ ₅ ₆ ₇ ₈ ₉].freeze
+    SUP = %w[⁰ ¹ ² ³ ⁴ ⁵ ⁶ ⁷ ⁸ ⁹].freeze
+
+    # "SO4^2-" → "SO₄²⁻", "Mg2+" → "Mg²⁺", "HCO3-" → "HCO₃⁻", "Br-" → "Br⁻": the registry's own
+    # ASCII symbol, set as a reader writes it. Which digits are the CHARGE and which are the
+    # formula is the registry's to say, and it says it three ways, so all three are read literally
+    # and none is guessed at:
+    #   · "^" marks the charge explicitly — everything after it is the charge (SO4^2-)
+    #   · a "+" ends a cation, and the digits before it are its charge (Mg2+, Na+)
+    #   · a bare "-" is a charge of one, and every digit before it stays in the formula (HCO3-)
+    CHARGE = /\^\d*[+-]\z|\d*\+\z|-\z/
+
+    def ion_symbol(row, st)
+      raw = Fmt.present(row["note"].to_s.split(" (", 2).first)
+      return Fmt.present(st["name"]) || Fmt.present(row["chebi"]) if raw.nil?
+      q = raw[CHARGE]
+      base = q ? raw[0...-q.length] : raw
+      out = base.gsub(/\d/) { SUB[Regexp.last_match(0).to_i] }
+      return out unless q
+      q.delete("^").chars.each do |c|
+        out += c == "+" ? "⁺" : c == "-" ? "⁻" : SUP[c.to_i]
+      end
+      out
+    end
+
+    # "SO4^2- (sulfate)" names the ion; "CO2(aq)" is one symbol with a state, not a name — the
+    # space before the bracket is what tells them apart
+    def ion_name(row) = Fmt.present(row["note"].to_s[/\s\(([^)]*)\)\s*\z/, 1])
+
+    def canonical_series(m)
+      ser = m["series"] || []
+      ser.find { |s| s["is_canonical"] } || ser.first
+    end
+
+    def composition_of(m)
+      c = media_of(m)["composition"]
+      return c if c.is_a?(Hash) && c["ions"]
+      rows = (m["chem"] || []).select { |x| x["mass_fraction"].to_f.positive? }
+      return nil if rows.size < 2
+      st = (media_of(m)["structures"] || []).each_with_object({}) { |s, h| h[s["chebi"]] = s }
+      ions = rows.sort_by { |x| -x["mass_fraction"].to_f }.map do |x|
+        s = st[x["chebi"]] || {}
+        # the registry's own name for the ion first ("bicarbonate"), ChEBI's systematic one second
+        # ("hydrogencarbonate", "sodium(1+)") — the bar is read, not indexed
+        [ion_symbol(x, s), ion_name(x) || Fmt.present(s["name"]) || x["chebi"].to_s,
+         x["mass_fraction"].to_f, Fmt.present(x["chebi"])]
+      end
+      # the registry's fractions are shares of the WHOLE sea salt, so whatever it does not list is
+      # the remainder — measured by subtraction, never named or counted here
+      rest = (1.0 - ions.sum { |i| i[2] }).round(7)
+      ions << ["other", "solutes this registry does not list", rest, nil] if rest.positive? && rest < 0.01
+      out = { "ions" => ions, "src" => Fmt.present(rows.first["source"]),
+              "url" => Fmt.present(rows.first["source_url"]) }
+      s = canonical_series(m)
+      sp = s && (s["observed"] || {})["p50"]
+      if sp
+        out["sp_med"] = sp
+        out["sr_med"] = (sp.to_f * SR_PER_SP).round(2)
+        out["med_src"] = "the record's own median of the #{ds_name(s['dataset_key'])} series " \
+                         "(#{Fmt.num(s['n_values'])} values), read as grams of sea salt per " \
+                         "kilogram by TEOS-10's Reference-Salinity definition"
+      end
+      out.compact
+    end
+
+    # ── the organism face, derived from the record and the species media ─────
+    # An `organism` face is the species catalog's face, not a second one: the WoRMS id comes from
+    # the key's own S25 concept (or that concept's `sameAs`), and the silhouette, photo and size
+    # come from `_data/taxa_media.json` — the same sidecar every /species/ page draws. The internal
+    # link is written ONLY where `taxa.json` actually holds that taxon: the picoplankton keys carry
+    # no `taxon_key` until D9/WS-MF7 lands, so today the page links WoRMS and nothing of ours.
+    WORMS_ID = %r{(?:aphia\.org/id/taxname/|marinespecies\.org:taxname:|id=)(\d+)}
+
+    def taxa_media = @taxa_media ||= (@site.data.dig("taxa_media", "taxa") || {})
+    def taxa_keys  = @taxa_keys ||= (@site.data.dig("taxa", "taxa") || [])
+                                    .to_h { |t| [t["taxon_key"], true] }
+    def hair_um
+      @hair_um ||= begin
+        r = (@site.data["size_reference"] || []).find { |x| x["key"].to_s == "hair" }
+        r && { "um" => (r["m"].to_f * 1e6).round, "label" => Fmt.present(r["label"]),
+               "source" => Fmt.present(r["source"]), "note" => Fmt.present(r["note"]) }
+      end
+    end
+
+    def taxon_of(m)
+      t = media_of(m)["taxon"]
+      return t if t.is_a?(Hash) && t["worms"]
+      return nil unless owns_organism?(m)
+      s25 = nerc_of(m)["s25"] || {}
+      id = Fmt.present(s25["worms"].to_s) ||
+           (s25["same_as"] || []).filter_map { |u| u.to_s[WORMS_ID, 1] }.first
+      return nil if id.nil?
+      key = "worms:#{id}"
+      f = taxa_media[key] || {}
+      out = { "s25" => Fmt.present(s25["id"]), "worms" => id.to_i,
+              # the S25's label carries the ids in a parenthetical ("Synechococcus (ITIS: 773:
+              # WoRMS 160572)") — the name is what is left of it
+              "name" => Fmt.present(s25["pref"].to_s.sub(/\s*\([^)]*\)\s*\z/, "")),
+              "url" => "#{WORMS_URL}#{id}",
+              "species_page" => (taxa_keys[key] ? "/species/worms-#{id}/" : nil) }
+      if (sil = f["silhouette"]) && Fmt.present(sil["svg_inner"])
+        out["sil"] = { "inner" => sil["svg_inner"], "viewBox" => sil["viewBox"] || "0 0 1 1",
+                       "label" => "Silhouette of #{out['name'] || key}",
+                       "credit" => Fmt.present(sil["credit"]), "license" => Fmt.present(sil["license"]),
+                       "license_url" => Fmt.present(sil["license_url"]),
+                       "page" => Fmt.present(sil["url"]) }.compact
+      end
+      if (p = f["photo"]) && (src = Fmt.present(p["cached"]) ? "#{SPECIES_BASE}#{p['cached']}" : Fmt.present(p["url"]))
+        out["photo"] = { "src" => src, "alt" => Fmt.present(p["shows"]) || "Photograph of #{out['name']}",
+                         "credit" => Fmt.present(p["credit"]), "license" => Fmt.present(p["license"]),
+                         "license_url" => Fmt.present(p["license_url"]),
+                         "page" => Fmt.present(p["page"]) }.compact
+      end
+      # the hair figure needs a measured cell size and a measured hair: the species media's own
+      # size row and `_data/size_reference.csv`. Without both, no figure is drawn.
+      if (sz = f["size"]) && sz["m"] && hair_um
+        um = (sz["m"].to_f * 1e6)
+        out["size_um"] = [um.round(2), um.round(2)]
+        out["size_src"] = [Fmt.present(sz["source"]), Fmt.present(sz["kind"])].compact.join(" · ")
+        out["hair_um"] = hair_um["um"]
+        out["hair_src"] = hair_um["source"]
+      end
+      out.compact
+    end
+
+    # the species media live beside the measurement media on the same public bucket
+    SPECIES_BASE = "https://storage.googleapis.com/calcofi-files-public/"
+
+    # CalCOFI's own words, where the why registry carries them (§ D5, `kind = calcofi`, two keys).
+    # The registry's row is the sampling page's sentence with a lead-in of ours, so it is shown as
+    # a block with its source beside it and NOT inside quotation marks — only the fetcher's own
+    # verbatim pull is quoted.
+    def calcofi_quote_of(m)
+      if (q = Fmt.present(media_of(m)["calcofi_quote"]))
+        return { "text" => q, "quoted" => true }
+      end
+      r = (m["why"] || []).find { |x| x["kind"] == "calcofi" && Fmt.present(x["text"]) }
+      r && { "text" => r["text"].to_s.strip, "url" => Fmt.present(r["source_url"]),
+             "quoted" => false }.compact
+    end
+
+    def stands_in(m)
+      return nil unless stands_in?(m)
+      of = Fmt.present((m["face"] || {})["face_of"])
+      o = of && by_key[of]
+      { "face_of" => of, "label" => o ? heading(o) : of,
+        "url" => o && page_url(o),
+        "why" => Fmt.present((m["face"] || {})["stands_in_note"]) }.compact
+    end
+
+    # ── What: the entity NERC names, reached only by identity ────────────────
+    def what_of(m)
+      n = nerc_of(m)
+      st = structures(m)
+      { "kind" => face_kind(m),
+        "note" => Fmt.present((m["face"] || {})["note"]),
+        "structures" => st,
+        "structure_ct" => st.size,
+        # the composition rows: a pool or a mixture takes components with their mass fractions,
+        # never one S27 (§ D2, § F3)
+        # the record's chem rows carry an id, a share and a source, but no caption: the symbol and
+        # the name are the registry's own `note` ("SO4^2- (sulfate)"), set as a reader writes it,
+        # with ChEBI's name from the media where the registry left the parenthetical empty
+        "chem" => (m["chem"] || []).map do |x|
+          s = st.find { |y| y["chebi"] == x["chebi"] } ||
+              (media_of(m)["structures"] || []).find { |y| y["chebi"] == x["chebi"] } || {}
+          { "chebi" => Fmt.present(x["chebi"]),
+            "name" => ion_name(x) || Fmt.present(s["name"]),
+            "formula" => Fmt.present(CGI.escapeHTML(ion_symbol(x, s).to_s)),
+            "role" => Fmt.present(x["role"]),
+            "fraction" => x["mass_fraction"], "via" => Fmt.present(x["via"]),
+            "source" => Fmt.present(x["source"]),
+            "url" => Fmt.present(x["chebi"]) && "#{CHEBI_URL}#{x['chebi']}" }.compact
+        end,
+        "nerc" => { "p01" => Fmt.present(n["p01"]), "url" => Fmt.present(n["url"]),
+                    "pref" => Fmt.present(n["pref"]),
+                    "definition" => Fmt.present(n["definition"]),
+                    "lead" => first_sentence(n["definition"]),
+                    "license" => Fmt.present(n["license"]) }.compact,
+        "a05_only" => (m["face"] || {})["a05_only"],
+        "p01_borrowed_from" => (m["face"] || {})["p01_borrowed_from"],
+        "taxon" => taxon_of(m),
+        "composition" => composition_of(m),
+        "bjerrum" => media_of(m)["bjerrum"],
+        "stands_in" => stands_in(m),
+        "ids" => face_ids(m) }.compact
+    end
+
+    # the identity chain the What section lists: P01 → its parts → the EOV. Read from the media's
+    # own `links`, so a part the vocabulary adds appears without a code change here.
+    CHAIN_PARTS = %w[S27 S25 S06 A05 P07 P02].freeze
+
+    def chain_rows(m)
+      n = nerc_of(m)
+      rows = []
+      if Fmt.present(n["p01"])
+        rows << { "c" => "P01", "title" => Fmt.present(n["pref"]) || n["p01"],
+                  "url" => Fmt.present(n["url"]),
+                  "note" => (m["face"] || {})["p01_borrowed_from"] &&
+                            "not on this key: carried by #{Array((m['face'] || {})['p01_borrowed_from']).join(' and ')}" }.compact
+        (n["links"] || {}).each do |k, v|
+          coll, id = k.to_s.split(" ", 2)
+          next unless CHAIN_PARTS.include?(coll) && Fmt.present(v["pref"])
+          same = (v["sameAs"] || []).filter_map { |u| same_as_label(u) && { "label" => same_as_label(u), "url" => u } }
+          rows << { "c" => coll, "title" => v["pref"], "id" => id, "same" => same }
+        end
+      elsif (si = stands_in(m))
+        rows << { "c" => "P01", "title" => "none on this key",
+                  "note" => "it stands in for #{si['label']}, drawn but not claimed: the ids row shows none" }
+      elsif (a = (m["face"] || {})["a05_only"])
+        rows << { "c" => "P01", "title" => "none on this key",
+                  "note" => "the nearest concept is A05 #{a['code']} — #{a['def']}" }
+      end
+      e = eov_of(m)
+      if e["name"]
+        rows << { "c" => "EOV", "title" => e["name"], "url" => e["doc"], "note" => e["membership"] }.compact
+      end
+      rows
+    end
+
+    def same_as_label(u)
+      u = u.to_s
+      return "ChEBI #{u.split('CHEBI_').last}" if u.include?("CHEBI_")
+      return "CAS #{u.split('/rn/').last}"      if u.include?("chemidplus/rn/")
+      return "WoRMS #{u.split('/').last}"       if u.include?("aphia") || u.include?("marinespecies")
+      return "QUDT #{u.split('/').last}"        if u.include?("qudt")
+      Fmt.present(u.split("/").reject(&:empty?).last)
+    end
+
+    # ── How: one card per series, from the method registry ───────────────────
+    def how_rows(m)
+      (m["method"] || []).map do |h|
+        dk = h["dataset_key"]
+        s = (m["series"] || []).find do |x|
+          x["dataset_key"] == dk &&
+            (Fmt.present(h["measurement_type"]).nil? || x["measurement_type"] == h["measurement_type"])
+        end || {}
+        nf = s.empty? ? nil : flagged(s)
+        { "dataset_key" => dk, "name" => ds_name(dk), "url" => ds_url(dk), "color" => ds_color(dk),
+          "platform" => Fmt.present(h["platform"]),
+          "platform_label" => PLATFORMS[h["platform"]] || Fmt.present(h["platform"]),
+          "instrument" => Fmt.present(h["instrument"]),
+          "principle"  => Fmt.present(h["principle"]),
+          "steps"      => h["steps"] || [],
+          "nm"         => h["wavelength_nm"],
+          "nm_note"    => Fmt.present(h["wavelength_note"]),
+          "precision"  => Fmt.present(h["precision"]),
+          "acid_figure" => h["acid_figure"] ? true : nil,
+          # linked the way the front door's pins are: the method page and the text fragment that
+          # lands on its section (calcofi.org has no stable anchors — § F5)
+          "page"       => Fmt.present(h["page"]) || "Methods",
+          "link"       => Fmt.present(h["calcofi_org"]),
+          "source"     => Fmt.present(h["source"]),
+          "type"       => Fmt.present(s["measurement_type"]),
+          "meta"       => [Fmt.num(s["n_values"]) && "#{Fmt.num(s['n_values'])} values",
+                           span(s["year_min"], s["year_max"]),
+                           Fmt.present(s["source_column"]) && "column #{s['source_column']}"].compact,
+          "qual_column" => Fmt.present(s["qual_column"]),
+          "flagged"    => nf && nf.positive? ? Fmt.num(nf) : nil }.compact
+      end
+    end
+
+    # ── Why: the pick, the alternatives, the anomaly, the EOV ────────────────
+    def why_rows_sorted(m) = (m["why"] || []).sort_by { |r| r["rank"].to_i }
+
+    def why_pick(m) = why_rows_sorted(m).find { |r| r["rank"].to_i == 1 } || why_rows_sorted(m).first
+
+    def cites_of(r)
+      (r["cites"] || []).filter_map do |c|
+        next { "label" => c["label"] || c["key"], "url" => Fmt.present(c["url"]), "key" => c["key"] } if c.is_a?(Hash)
+        { "label" => c[1] || c[0], "url" => Fmt.present(c[2]), "key" => c[0] } if c.is_a?(Array)
+      end.compact
+    end
+
+    # ranks 2… — the datasets catalog's "not yet in the database" idiom, closed on load
+    def why_alts(m)
+      why_rows_sorted(m).reject { |r| r["rank"].to_i == 1 }.map do |r|
+        cs = cites_of(r)
+        { "kind" => Fmt.present(r["kind"]) || "authored",
+          "kind_label" => WHY_KIND[r["kind"]] || Fmt.present(r["kind"]) || "authored",
+          "text" => Fmt.present(r["text"]),
+          "cites" => cs,
+          "url" => Fmt.present(r["source_url"]),
+          # § D5: an authored alternative with no citation says so rather than reading as a fact
+          "needs_cite" => (r["kind"].to_s == "authored" && cs.empty? && Fmt.present(r["source_url"]).nil?) }
+      end.select { |r| r["text"] }
+    end
+
+    # ONE rounding for a measured value written to two decimals. `format("%.2f", x)` rounds the
+    # BINARY value half-to-even, while assets/measurements.js's toLocaleString rounds half away
+    # from zero — so nitrate's +0.225 per decade read "0.22" in the sentence and "+0.23" in the
+    # spark line beside it on the same page (measured 2026-09-12). Round first, then format.
+    def dp2(v) = format("%.2f", v.to_f.round(2))
+
+    # the record's own half of the sentence, every number read from `totals` and `anomaly`
+    def rec_sentence(m)
+      t = m["totals"] || {}
+      return nil if t["n_values"].nil?
+      s = +"CalCOFI holds #{Fmt.num(t['n_values'])} values of it from #{Fmt.num(t['n_roots'])} sampling events"
+      s << " in #{t['n_datasets'].to_i == 1 ? 'one dataset' : "#{t['n_datasets']} datasets"}" if t["n_datasets"]
+      s << ", #{span(t['year_min'], t['year_max'])}" if span(t["year_min"], t["year_max"])
+      s << (t["depth_max_m"].to_f.zero? ? ", at the surface." : ", from the surface to #{Fmt.num(t['depth_max_m'].to_f.round)} m.")
+      a = m["anomaly"]
+      b = a && (a["bands"] || []).find { |x| x["band"] == a["spark_band"] }
+      if b
+        u = Fmt.present(a["units"]) ? " #{Fmt.units(a['units'])}" : ""
+        band = b["band"].to_s.tr("-", "–")
+        if (tr = b["trend"]) && !tr["per_decade"].nil?
+          v = tr["per_decade"].to_f
+          s << " At #{band} m it has #{v.negative? ? 'fallen' : 'risen'} #{dp2(v.abs)}#{u} per decade since #{tr['from']}."
+        elsif (ex = b["ext"])
+          s << " At #{band} m its high was #{ex['hi'][0]} (#{ex['hi'][1].to_f.positive? ? '+' : ''}#{dp2(ex['hi'][1])}#{u} against the #{Array(a['baseline']).join('–')} normal), its low #{ex['lo'][0]} (#{dp2(ex['lo'][1])}#{u})."
+        end
+      end
+      s
+    end
+
+    # NERC says what it is · the record says what we hold · the pick says why it matters, each
+    # underlined in its source's colour, with a legend that names exactly the parts drawn (§ D5)
+    def sentence(m)
+      pick = why_pick(m)
+      parts = []
+      lead = what_of(m).dig("nerc", "lead")
+      parts << { "cls" => "s-nerc", "text" => lead, "src" => "NERC" } if lead
+      if (r = rec_sentence(m))
+        parts << { "cls" => "s-rec", "text" => r, "src" => "record" }
+      end
+      if pick && Fmt.present(pick["text"])
+        cs = cites_of(pick)
+        parts << { "cls" => "s-why", "text" => pick["text"], "cites" => cs,
+                   "src" => cs.empty? ? "authored, needs a citation" : "authored, cited" }
+      end
+      return nil if parts.empty?
+      parts
+    end
+
+    # ── the familiar scale: the axis, the marks, the flags (§ D7) ────────────
+    # The MARKS are the record's (`metadata/measurement_scale.csv`). The AXIS a mark sits on —
+    # linear · log · Beaufort and its domain — and the quality flags the scale surfaced come from
+    # `scale_axis` / `scale_flags` where the record carries them; where it does not, a linear axis
+    # is DERIVED from the declared bounds, the observed range and the marks, so the figure is drawn
+    # from measured values either way and nothing is typed.
+    # A key whose familiar-scale marks ARE the Beaufort bands is read on the Beaufort scale, and
+    # the record says so without carrying a `scale_axis`: every mark is a numbered force with a
+    # band ("Beaufort 7: Near gale", 13.9–17.1). The ROWS the strip draws are the fetcher's copy of
+    # the published table, at a revision a reader can go back to (`tables.beaufort`, § D8); the
+    # record's own marks are the fallback where the fetcher has none. Both say the same thing —
+    # the fetcher's says where it is from.
+    BEAUFORT_MARK = /\ABeaufort\s+(\d+)\s*:\s*(.+)\z/m
+
+    def beaufort_rows_from(m)
+      rows = (m["scale"] || []).filter_map do |r|
+        md = Fmt.present(r["label"]).to_s.match(BEAUFORT_MARK)
+        md && r["lo"] && [md[1].to_i, r["lo"].to_f, r["hi"], md[2].strip]
+      end
+      rows.size > 1 ? rows.sort_by(&:first) : nil
+    end
+
+    def beaufort_of(m)
+      own = beaufort_rows_from(m)
+      return nil if own.nil?
+      t = media_tables["beaufort"] || {}
+      { "rows" => t["rows"] || own, "knots" => t["knots"],
+        "source" => Fmt.present(t["source"]) ||
+                    Fmt.present((m["scale"] || []).first["source"]),
+        "url" => Fmt.present(t["url"]) }.compact
+    end
+
+    def scale_axis(m)
+      ax = m["scale_axis"] || {}
+      bf = beaufort_of(m)
+      dom = ax["domain"]
+      if bf && !(dom.is_a?(Array) && dom.size == 2)
+        # the strip runs the length of the scale, not of a declared bound: the top band is open
+        # ("≥ 32.7 m/s"), so its top is the highest value the record actually holds
+        obs = (m["series"] || []).filter_map { |s| (s["observed"] || {})["max"] }.map(&:to_f)
+        dom = [bf["rows"].first[1].to_f,
+               ([bf["rows"].last[2]].compact.map(&:to_f) + obs + [bf["rows"].last[1].to_f]).max]
+      end
+      unless dom.is_a?(Array) && dom.size == 2
+        vals = []
+        b = m["bounds"] || {}
+        [b["valid_min"], b["valid_max"]].compact.each { |v| vals << v.to_f }
+        (m["series"] || []).each do |s|
+          o = s["observed"] || {}
+          [o["min"], o["p05"], o["p95"], o["max"]].compact.each { |v| vals << v.to_f }
+        end
+        (m["scale"] || []).each { |r| vals << r["value"].to_f unless r["value"].nil? || r["off"] }
+        return nil if vals.empty?
+        lo, hi = vals.min, vals.max
+        pad = (hi - lo).abs * 0.05
+        pad = 1.0 if pad.zero?
+        dom = [lo - pad, hi + pad]
+      end
+      out = { "type" => Fmt.present(ax["type"]) || (bf ? "beaufort" : "linear"), "domain" => dom,
+              "source" => Fmt.present(ax["source"]), "zero_pct" => ax["zero_pct"] }.compact
+      if out["type"] == "beaufort" && bf
+        out["beaufort"] = bf["rows"]
+        out["beaufort_knots"] = bf["knots"]
+        out["beaufort_source"] = bf["source"]
+        out["beaufort_url"] = bf["url"]
+      end
+      out
+    end
+
+    # The record's marks, less the ones that are not marks on THIS axis. Four of DIC's `scale`
+    # rows are a share of the carbonate pool and a saturation state, typed from the plan's probe
+    # (`computed_at_build: false`) and drawn at 0.61 and 91.4 on a µmol/kg axis, where they say
+    # nothing. Those quantities are the Bjerrum figure's, and the fetcher recomputes them from the
+    # record's own medians (§ D7, "computed marks … are recomputed at build, never typed") — so
+    # where that block exists they leave the axis and are read where they mean something. Where it
+    # does not, the record's marks stand exactly as they are.
+    def scale_marks(m)
+      rows = m["scale"] || []
+      return rows unless media_of(m)["bjerrum"].is_a?(Hash)
+      rows.reject { |r| r["how"].to_s.include?("PyCO2SYS") && !r["computed_at_build"] }
+    end
+
+    def scale_of(m)
+      marks = scale_marks(m).map do |r|
+        { "v" => r["value"], "lo" => r["lo"], "hi" => r["hi"], "label" => Fmt.present(r["label"]),
+          "kind" => Fmt.present(r["kind"]), "src" => Fmt.present(r["source"]) || Fmt.present(r["how"]),
+          "off" => r["off"] }.compact
+      end
+      ax = scale_axis(m)
+      return nil if ax.nil? && marks.empty?
+      { "axis" => ax, "marks" => marks,
+        "flags" => (m["scale_flags"] || []).map { |f| { "text" => f["text"], "v" => f["value"], "off" => f["off"] }.compact },
+        "bounds" => m["bounds"] || {},
+        "units" => Fmt.units(m["units"]),
+        "series" => (m["series"] || []).map do |s|
+          { "k" => s["dataset_key"], "s" => ds_name(s["dataset_key"]), "c" => ds_color(s["dataset_key"]),
+            "mt" => s["measurement_type"], "o" => s["observed"] || {} }
+        end }
+    end
+
+    # ── the one payload the figures are drawn from (#mm-face) ────────────────
+    def face_json(m)
+      w = what_of(m)
+      { "key" => m["key"], "kind" => face_kind(m), "units" => Fmt.units(m["units"]),
+        "label" => heading(m),
+        "scale" => scale_of(m),
+        "anomaly" => m["anomaly"],
+        "anomaly_note" => Fmt.present(m["anomaly_note"]),
+        "oni" => { "strong" => oni["strong_el_nino"] || [], "latest" => oni["latest"] },
+        "y0" => 1949, "y1" => release_year,
+        "composition" => w["composition"], "bjerrum" => w["bjerrum"], "taxon" => w["taxon"],
+        "chem" => w["chem"],
+        "ph" => (m["series"] || []).map { |s| s["observed"] }.compact.first }.compact
+    end
+
+    # everything the page's Liquid reads, or nil where the key has no face at all
+    def face_of(m)
+      return nil unless has_face?(m)
+      w = what_of(m)
+      e = eov_of(m)
+      wp = (media_of(m)["wikipedia"] || []).first
+      { "kind" => face_kind(m) || "none",
+        "kind_label" => (face_kind(m) == "standsin" ? "stands in" : face_kind(m)),
+        "what" => w,
+        "chain" => chain_rows(m),
+        "how" => how_rows(m),
+        "eov" => e,
+        "why" => { "pick" => (p = why_pick(m)) && { "text" => Fmt.present(p["text"]), "cites" => cites_of(p) },
+                   "alts" => why_alts(m) },
+        "sentence" => sentence(m),
+        "scale" => scale_of(m),
+        "anomaly_note" => Fmt.present(m["anomaly_note"]),
+        "anomaly_bands" => (m["anomaly"] || {})["bands"]&.size,
+        "anomaly_deeper" => ((m["anomaly"] || {})["deeper"] || []).map do |d|
+          "#{Fmt.num(d['n_obs'])} values at #{d['band'].to_s.tr('-', '–')} m"
+        end,
+        "calcofi_quote" => calcofi_quote_of(m),
+        "wikipedia" => wp && { "title" => Fmt.present(wp["title"]),
+                               "url" => Fmt.present(wp["url"]) && "#{wp['url']}?oldid=#{wp['revision']}",
+                               "revision" => wp["revision"].to_s,
+                               "license" => Fmt.present(wp["license"]) || "CC BY-SA 4.0",
+                               # two sentences of a CC BY-SA lead, linked to its revision — borrowed
+                               # context beside the sentence, never inside it
+                               "extract" => wp["extract"].to_s.split(/(?<=\.)\s/).first(2).join(" ") },
+        "media_release" => Fmt.present(media["release"]),
+        "json" => JSON.generate(face_json(m)).gsub("</", "<\\/") }
+    end
+
     # ── schema.org/DefinedTerm ───────────────────────────────────────────────
     # A measurement is a term in the NERC P01 term set, with one PropertyValue per series: the
     # dataset's own name for it, its units (P06 as unitCode where the record has one) and its
@@ -649,7 +1333,27 @@ module CalCOFI
       }
       node["description"] = Fmt.present(m["description"]) || heading(m)
       node["termCode"] = nerc_id(m["nerc_p01"]) if Fmt.present(m["nerc_p01"])
-      node["sameAs"] = m["nerc_p01"] if Fmt.present(m["nerc_p01"])
+      # `sameAs` is the concepts this term IS, so it grows with the face's identity chain: the P01
+      # the record carries, then the ChEBI entry, the CAS registry entry and the WoRMS record the
+      # S27/S25 reach (plan § D1, § F1). A STAND-IN never lists any of them — it borrows a picture,
+      # not an identity (§ D3) — and a key with no structure gains nothing here.
+      same = []
+      same << m["nerc_p01"] if Fmt.present(m["nerc_p01"])
+      face_ids(m).each { |r| same << r["url"] unless r["label"] == "EOV" }
+      same = same.compact.uniq
+      node["sameAs"] = same.size == 1 ? same.first : same unless same.empty?
+      # the picture, and the terms it is shown under: an ImageObject exactly where the face IS one
+      # drawn structure, and nowhere else — never on a stand-in (whose structure is another key's)
+      # and never on a pool or a mixture (whose components are not the thing)
+      # (scripts/check_jsonld.py asserts both halves)
+      if owns_substance?(m) && (st = structures(m).first) && st["file"]
+        img = { "@type" => "ImageObject", "contentUrl" => st["file"] }
+        img["license"] = "https://creativecommons.org/licenses/by/4.0/" if st["license"]
+        img["creditText"] = st["drawn_by"] if st["drawn_by"]
+        img["acquireLicensePage"] = st["chebi_url"] if st["chebi_url"]
+        img["caption"] = st["label"] if st["label"]
+        node["image"] = img
+      end
       props = (m["series"] || []).map do |s|
         { "@type" => "PropertyValue",
           "name"  => s["measurement_type"],
@@ -759,6 +1463,52 @@ module CalCOFI
                          JSON.generate({ "release" => mm.release["version"], "rows" => mm.search_rows }))
       site.pages.concat(pages)
 
+      # ── the faces (plan 2026-09-11 § D8) ────────────────────────────────────
+      # The media sidecar is the fetcher's, not the release's, and it is version-FREE: one copy at
+      # measurement-media/measurements_media.json beside measurement-media/keys/{key}/structure.svg.
+      # Its own `release` field says which record it was walked against — a mismatch is worth
+      # saying out loud, but it is never a reason to drop a face (a molecule outlives a release).
+      if mm.media_keys.empty?
+        Jekyll.logger.info "measurements:",
+                           "no _data/measurements_media.json — no measurement faces " \
+                           "(run scripts/fetch_measurement_faces.py, or fetch_release.sh)"
+      else
+        if Fmt.present(mm.media["release"]) && mm.media["release"] != mm.release["version"]
+          Jekyll.logger.info "measurements:",
+                             "measurements_media.json was fetched for release " \
+                             "#{mm.media['release']}, the record is #{mm.release['version']} " \
+                             "(the media are not keyed by release — this is a note, not a fault)"
+        end
+        faced = mm.measurements.count { |m| mm.has_face?(m) }
+        kinds = mm.measurements.filter_map { |m| mm.face_kind(m) }.tally.sort_by { |_, v| -v }
+                  .map { |k, v| "#{k} #{v}" }.join(" · ")
+        Jekyll.logger.info "measurements:",
+                           "#{faced} face(s) · #{kinds.empty? ? 'no face_kind in the record' : kinds} · " \
+                           "#{mm.media_keys.size} key(s) in the media sidecar"
+        # what the page shows BESIDE the structures, and which side each piece came from: the
+        # record's own registries (EOV, composition, CalCOFI's words, the organism's id) and the
+        # fetcher's (the carbonate curve, the Beaufort table). A zero here is the gap the
+        # 2026-09-12 integration found — every one of these vanished silently before.
+        Jekyll.logger.info "measurements:",
+                           "derived: eov #{mm.measurements.count { |m| mm.eov_of(m)['name'] }} " \
+                           "(questions #{mm.measurements.count { |m| mm.eov_of(m)['questions'].any? }}) · " \
+                           "composition #{mm.measurements.count { |m| mm.composition_of(m) }} · " \
+                           "organism #{mm.measurements.count { |m| mm.taxon_of(m) }} " \
+                           "(species page #{mm.measurements.count { |m| (mm.taxon_of(m) || {})['species_page'] }}) · " \
+                           "calcofi quote #{mm.measurements.count { |m| mm.calcofi_quote_of(m) }} · " \
+                           "bjerrum #{mm.measurements.count { |m| mm.media_of(m)['bjerrum'] }} · " \
+                           "beaufort #{mm.measurements.count { |m| mm.beaufort_of(m) }} " \
+                           "(table #{mm.media_tables.dig('beaufort', 'rows')&.size || 0} rows)"
+      end
+      # the record's `n_flagged` and this file's own `n_values − qual_ok_n` must not disagree
+      # (handoff delta 4): one warning for the build, never a silent pick
+      unless (mis = mm.flag_mismatches.uniq).empty?
+        Jekyll.logger.warn "measurements:",
+                           "n_flagged disagrees with n_values − qual_ok_n on #{mis.size} row(s); " \
+                           "the record wins, and the release must be fixed: #{mis.first(3).join('; ')}" \
+                           "#{mis.size > 3 ? " (and #{mis.size - 3} more)" : ''}"
+      end
+
       Jekyll.logger.info "measurements:",
                          "#{mm.measurements.size} pages · #{Fmt.num(mm.counts['series'])} series · " \
                          "#{mm.counts['datasets']} datasets · #{Fmt.num(mm.counts['obs_env_rows'])} values " \
@@ -797,6 +1547,10 @@ module CalCOFI
         "units_raw"   => Fmt.present(m["units"]),
         "is_unified"  => m["is_unified"],
         "ids"         => id_rows(mm, m),
+        # the face (plan 2026-09-11 § D1–D7) — nil for a key with neither a `face` block in the
+        # record nor an entry in the media sidecar, and the layout then draws the page it drew
+        # before this existed
+        "face"        => mm.face_of(m),
         "stats"       => mm.stat_rows(m),
         "flag_note"   => mm.flag_note(m),
         "ds_rows"     => mm.dataset_rows(m),

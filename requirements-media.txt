@@ -1,0 +1,30 @@
+# Python packages the media fetchers need, beyond the standard library.
+#
+#   scripts/fetch_species_media.py       Pillow (the 800 px WebP thumbnails)
+#   scripts/fetch_measurement_faces.py   RDKit  (the molfile → SVG structures)
+#
+# NEVER install these into a system Python — the R/Python libraries on this machine are shared.
+# Make a venv beside the repo and run the fetcher with it:
+#
+#   uv venv --python 3.12 .venv-media
+#   uv pip install --python .venv-media/bin/python -r requirements-media.txt
+#   .venv-media/bin/python scripts/fetch_measurement_faces.py --only nitrate
+#
+# (`python3 -m venv .venv-media && .venv-media/bin/pip install -r requirements-media.txt` does the
+# same without uv.)  `.venv-media/` is git-ignored.
+#
+# RDKit is pinned to the series the plan's probe drew with (2026.03), so a structure redrawn later
+# is byte-comparable with `measurement-faces-probe/svg/*.svg`: the eleven cast keys reproduced the
+# probe's tight viewBoxes exactly on 2026.3.6.
+rdkit==2026.3.6
+Pillow>=10.0
+
+# PyCO2SYS draws the carbonate system's Bjerrum curve for the DIC and alkalinity pages, from the
+# record's own medians (plan § D2, § D8).  It is pinned to the series the probe computed with
+# (1.8.3), so a curve redrawn later is comparable with `measurement-faces-probe/chem_calc.json`.
+# It is NOT a release dependency: the release publishes the medians, this fetcher publishes what
+# they imply, and the block it writes names the version and the constants (Lueker et al. 2000).
+PyCO2SYS==1.8.3.4
+# gsw (TEOS-10) is deliberately NOT here: the one gsw mark on a measurement page — oxygen's
+# air-saturation at the surface medians — is already recomputed by the release itself
+# (`computed_at_build: true` in the record's `scale` rows), so the fetcher would only shadow it.

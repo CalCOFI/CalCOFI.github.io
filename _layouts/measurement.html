@@ -60,6 +60,10 @@ layout: default
     {%- comment -%} the heads-up: how many values their provider flags and what leaves them out —
       the Explorer's "n flagged" count (NOT qual_ok), written where a reader of the data will see it {%- endcomment -%}
     {%- if page.flag_note %}<p class="mm-flagnote"><span class="mm-flagnote-k">Heads-up</span> {{ page.flag_note }}</p>{% endif -%}
+    {%- comment -%} the FACE (plan 2026-09-11 § D1–D7, WS-MF5): what it is, how it is taken, why it
+      matters — and then the sentence. `page.face` is nil for a key the record gives no `face` block
+      and the media sidecar no entry, and the page is then exactly what it was. {%- endcomment -%}
+    {%- if page.face %}{% include measurement_face.html face=page.face %}{% endif -%}
   </div>
 </section>
 
@@ -80,7 +84,91 @@ layout: default
           door draws per dataset and a species page draws per taxon. Each row is one dataset's own
           <span class="mono">measurement_type</span>; the label is written once, in the title above.</p>
 
-        <h2 class="cc-h3">By depth</h2>
+        {% if page.face %}{% comment %} ── the face, at length (plan 2026-09-11 § D1–D7, WS-MF5) ──
+          What it is · how it is taken · why it matters, each with the figure the mockup specifies.
+          Drawn by assets/measurements.js from ONE inline payload (#mm-face) at the host's own
+          measured width, so a chart is 1 px per unit at any column width and its labels stay
+          legible. Absent for a key with no face: the three headings are not written at all, and
+          the page is byte-for-byte the page it was — the WS-MF5 gate, so the `if` above does not
+          trim the whitespace around it.
+        {% endcomment %}
+        {%- assign f = page.face -%}
+        <h2 class="cc-h3" id="what">What it is</h2>
+        {%- if f.what.note %}<p class="mm-note mmf-kindnote"><span class="cc-chip cc-chip-quiet">{{ f.kind_label | escape }}</span> {{ f.what.note | escape }}</p>{% endif -%}
+        <div class="mmf-fig" id="mmf-what"></div>
+        {%- if f.what.structures.size > 0 -%}
+        <div class="mmf-mols">
+          {%- for s in f.what.structures -%}
+          <figure class="mmf-molcard">
+            <svg class="mmf-mol" viewBox="{{ s.viewBox }}" role="img" aria-label="{{ s.label | escape }}">{{ s.inner }}</svg>
+            <figcaption>
+              {%- if s.formula %}<b>{{ s.formula }}</b> {% endif %}{{ s.name | escape }}
+              <span class="mono">{% if s.chebi_url %}<a href="{{ s.chebi_url }}" rel="external">{{ s.chebi }}</a>{% endif %}{% if s.mass %} · {{ s.mass }} g/mol{% endif %}{% if s.role %} · {{ s.role | escape }}{% endif %}</span>
+            </figcaption>
+          </figure>
+          {%- endfor -%}
+        </div>
+        {%- assign sd = f.what.structures[0].definition -%}
+        <p class="mmf-credit">{% if sd %}ChEBI: “{{ sd | strip_html | escape }}” · {% endif %}{{ f.what.structures[0].drawn_by | default: 'Drawn from ChEBI’s own molfile' | escape }}, in the page’s ink{% if f.what.structures[0].license %} · {{ f.what.structures[0].license | escape }}{% endif %}. ChEBI’s roles are never shown.</p>
+        {%- endif -%}
+        {%- if f.what.nerc.definition -%}
+        <p class="mmf-nerc-def">{{ f.what.nerc.definition | escape }}
+          <span class="mmf-credit">NERC Vocabulary Server, <a href="{{ f.what.nerc.url }}" rel="external">{{ f.what.nerc.p01 }}</a>{% if f.what.nerc.license %} · {{ f.what.nerc.license | escape }}{% endif %}</span></p>
+        {%- endif -%}
+        {%- if f.chain.size > 0 -%}
+        <h3 class="mmf-h3">How the page reaches it</h3>
+        <ul class="mmf-chain">
+          {%- for r in f.chain -%}
+          <li><span class="mmf-cc">{{ r.c }}</span><span class="mmf-cv">
+            <b>{% if r.url %}<a href="{{ r.url }}" rel="external">{{ r.title | escape }}</a>{% else %}{{ r.title | escape }}{% endif %}</b>{% if r.id %} <span class="mono">{{ r.id }}</span>{% endif %}
+            {%- if r.same.size > 0 %}<br>{% for s in r.same %}<a class="mono" href="{{ s.url }}" rel="external">{{ s.label | escape }}</a>{% unless forloop.last %} · {% endunless %}{% endfor %}{% endif -%}
+            {%- if r.note %}<br><span class="cc-muted">{{ r.note | escape }}</span>{% endif -%}
+          </span></li>
+          {%- endfor -%}
+        </ul>
+        <p class="mm-note">Identity, never resemblance: the page draws a structure only where the
+          concept’s own parts reach it. A key with no concept borrows the face of the quantity it
+          estimates and says so, and its ids stay empty.</p>
+        {%- endif -%}
+
+        <h2 class="cc-h3" id="how">How it is measured</h2>
+        <div class="mmf-how-cards">
+          {%- for h in f.how -%}
+          <div class="mmf-card">
+            <div class="mmf-card-top">
+              <span class="mmf-pg mmf-pg-lg" data-platform="{{ h.platform }}" aria-hidden="true"></span>
+              <div>
+                <div class="mmf-ds"><i class="mm-dot" style="background:{{ h.color | default: 'var(--muted)' }}" aria-hidden="true"></i>
+                  <a href="{{ h.url | relative_url }}">{{ h.name | escape }}</a>{% if h.platform_label %} · {{ h.platform_label | escape }}{% endif %}</div>
+                <div class="mmf-ins">{{ h.instrument | escape }}</div>
+              </div>
+            </div>
+            {%- if h.principle %}<p>{{ h.principle | escape }}{% if h.source %} <span class="mmf-credit">({{ h.source | escape }})</span>{% endif %}</p>{% endif -%}
+            {%- if h.steps.size > 0 -%}
+            <ul class="mmf-steps">{% for s in h.steps %}<li>{{ s | escape }}</li>{% endfor %}</ul>
+            {%- endif -%}
+            {%- if h.nm %}<div class="mmf-spec" data-nm="{{ h.nm }}" role="img" aria-label="Read at {{ h.nm }} nanometres"></div>{% endif -%}
+            <div class="mmf-meta">
+              {%- for x in h.meta %}<span class="cc-chip">{{ x | escape }}</span>{% endfor -%}
+              {%- if h.qual_column %}<span class="cc-chip cc-chip-ok">flag {{ h.qual_column | escape }}</span>{% else %}<span class="cc-chip cc-chip-warn">no flag at this grain</span>{% endif -%}
+              {%- if h.flagged %}<span class="cc-chip cc-chip-warn">{{ h.flagged }} flagged</span>{% endif -%}
+              {%- if h.precision %}<span class="cc-chip cc-chip-accent">{{ h.precision | escape }}</span>{% endif -%}
+            </div>
+            {%- if h.link -%}
+            <a class="mmf-pin" href="{{ h.link }}" rel="external"><span class="mmf-disc" aria-hidden="true"></span>{{ h.page | escape }} on calcofi.org ↗</a>
+            {%- endif -%}
+            {%- if h.acid_figure %}<div class="mmf-fig" id="mmf-acid"></div>{% endif -%}
+          </div>
+          {%- endfor -%}
+        </div>
+        <h3 class="mmf-h3">Where in the water column</h3>
+        <div class="mmf-col-fig" id="mmf-col"></div>
+        <p class="mm-note">Every band the record counts a value in, as each series’ own share of its
+          values — the same bands the bars below count.</p>
+
+        <h2 class="cc-h3" id="why">Why it matters</h2>
+        {% include measurement_why.html face=f %}
+{% endif %}<h2 class="cc-h3">By depth</h2>
         <div class="mm-legend" id="mm-depth-legend"></div>
         <div class="mm-bars" id="mm-depth"></div>
         <p class="mm-note">Values per depth band at the release grain, one thin bar per series. The bands are the
@@ -137,7 +225,11 @@ layout: default
   </div>
 </section>
 
-<script id="mm-strip-data" type="application/json">{{ page.strip }}</script>
+{% if page.face %}{% comment %} ONE payload for every face figure (WS-MF5): the scale's axis, marks
+  and flags, the anomaly per band with the ONI years, the composition, the Bjerrum curve, the
+  taxon's size — each read, never typed. Absent where the page has no face, and the tags do not
+  trim, so a page without one is byte-for-byte what it was. {% endcomment %}<script id="mm-face" type="application/json">{{ page.face.json }}</script>
+{% endif %}<script id="mm-strip-data" type="application/json">{{ page.strip }}</script>
 <script id="mm-depth-data" type="application/json">{{ page.depth }}</script>
 <script id="mm-months-data" type="application/json">{{ page.months }}</script>
 <script defer src="{{ '/assets/measurements.js' | relative_url }}"></script>
