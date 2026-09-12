@@ -317,6 +317,39 @@ else
   echo "NOTE: no taxa_media.json under $MEDIA_BASE — the species pages draw no faces"
 fi
 
+# the measurement FACES: measurements_media.json — per measurement key the NERC key ring (P01 →
+# S27/S25/S06/A05/P06/P07/P02), the ChEBI structures drawn by RDKit in the page's own ink, the
+# Wikipedia leads and NOAA CPC's ONI table (plan 2026-09-11 § D8).  It is NOT release content: the
+# vocabularies and the leads change on their own cadence, so scripts/fetch_measurement_faces.py
+# builds it into gs://calcofi-files-public/measurement-media/
+# (.github/workflows/measurement-media.yml) and the site reads it from there.  Silently absent: a
+# release with no sidecar yet renders the measurement pages exactly as it does today, with no faces
+# and no gap.
+#
+# LIKE THE SPECIES SIDECAR, IT IS NOT KEYED BY RELEASE, and neither are the structures it points
+# at.  A molecule, a NERC concept and an EOV outlive a release exactly as a taxon does; one copy
+# serves every release, and the sidecar's own `release` field says which catalog it was built
+# against.  There is no per-release fallback here because this layout never had one.
+rm -f "$DATA/measurements_media.json"
+MEAS_MEDIA_BASE="${CALCOFI_MEASUREMENT_MEDIA_BASE:-https://storage.googleapis.com/calcofi-files-public/measurement-media}"
+meas_media_url="$MEAS_MEDIA_BASE/measurements_media.json"
+if get "$meas_media_url" "$DATA/measurements_media.json" && [ -s "$DATA/measurements_media.json" ]; then
+  python3 - "$DATA/measurements_media.json" "$meas_media_url" <<'PYM2'
+import json, sys
+path, url = sys.argv[1:3]
+d = json.load(open(path))
+c = d.get("coverage", {})
+print(f"measurement media: schema {d.get('schema_version')} · release {d.get('release')} · "
+      f"fetched {d.get('fetched')} · {c.get('keys')} keys · {c.get('nerc')} NERC chains · "
+      f"{c.get('keys_with_structure')} keys with a structure ({c.get('structures')} drawings) · "
+      f"{c.get('leads')} leads · {c.get('standsin')} stand-ins")
+print(f"       {url}")
+PYM2
+else
+  rm -f "$DATA/measurements_media.json"
+  echo "NOTE: no measurements_media.json under $MEAS_MEDIA_BASE — the measurement pages draw no faces"
+fi
+
 # versions.json is release-history, kept at the prefix root, never inside a version folder
 get "$RELEASE_BASE/versions.json" "$DATA/versions.json" ||
   echo "WARN: no versions.json at $RELEASE_BASE — the release strip will show this release only" >&2

@@ -25,3 +25,11 @@ _data/erddap_measurement_type.json
 # own working cache (thumbnails + one JSON per taxon per source) — neither is ever committed
 _data/taxa_media.json
 .cache/
+
+# the measurement faces sidecar, fetched at build time by scripts/fetch_release.sh — the fetcher's
+# own working cache and drawn SVGs live under .cache/measurement-media/ (above)
+_data/measurements_media.json
+
+# the venv requirements-media.txt is installed into: RDKit and Pillow are never installed into a
+# system Python (the R/Python libraries on this machine are shared)
+.venv-media/
