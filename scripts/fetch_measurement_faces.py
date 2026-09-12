@@ -747,7 +747,12 @@ def bjerrum(key: str, rec: "Record") -> dict | None:
 
     Every input is a p50 the record publishes (`series[].observed.p50`) — nothing here is typed —
     and every input, with the package and the constants that turned it into a curve, is named in
-    the block the page credits.  Returns None unless all four medians and PyCO2SYS are present."""
+    the block the page credits.  Returns None unless all four medians and PyCO2SYS are present.
+
+    The record's `scale` rows type four of these same quantities from the plan's probe (a share of
+    the pool, a saturation state) as marks on a µmol/kg axis, where they cannot be read.  They
+    belong to this block and to the figure it draws, and the page drops them from that axis once
+    this block exists (_plugins/measurements.rb, `scale_marks`)."""
     try:
         import PyCO2SYS as pyco2
     except ImportError:
@@ -808,19 +813,6 @@ def bjerrum(key: str, rec: "Record") -> dict | None:
         "inputs_note": "every value is the record's own observed p50 over the whole series, "
                        "at surface pressure",
         "versions": {"PyCO2SYS": pyco2.__version__, "constants": K_CARBONIC_SRC},
-        # the record's own PyCO2SYS marks were typed from the plan's probe (`computed_at_build`
-        # false).  These are the same quantities recomputed from the medians above, and the page
-        # shows THESE in their place (plan § D7, "computed marks … are recomputed at build").
-        "marks": [
-            {"value": round(f(at["saturation_aragonite"]), 2),
-             "label": "aragonite saturation Ω at the record's medians", "kind": "computed"},
-            {"value": round(co2 / tot * 100, 2), "label": "CO₂(aq) share of the pool, %",
-             "kind": "computed"},
-            {"value": round(hco3 / tot * 100, 1), "label": "HCO₃⁻ share of the pool, %",
-             "kind": "computed"},
-            {"value": round(co3 / tot * 100, 1), "label": "CO₃²⁻ share of the pool, %",
-             "kind": "computed"},
-        ],
         "src": src,
     }
 

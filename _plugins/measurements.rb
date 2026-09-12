@@ -772,16 +772,200 @@ module CalCOFI
       rows
     end
 
+    # ── the EOV card, derived from the record (§ D5, § F4) ───────────────────
+    # The Essential Ocean Variable is the RECORD's, not the fetcher's: `metadata/measurement_why.csv`
+    # names the variable on every row (`eov`), links the document that says so (`goos_doc`) and
+    # carries the GOOS questions themselves as `kind = goos` rows. goosocean.org reserves all
+    # rights, so the question is QUOTED and linked and never paraphrased, and the membership line
+    # is only ever the plain fact of which document lists it — which is not the same document for
+    # every key: the wind rows point at NERC's A05 concept EV_WSPD, not at a specification sheet,
+    # and the link is labelled by what it actually is.
+    GOOS_HOST = "goosocean.org"
+    A05_PATH  = "/collection/A05/"
+
     def eov_of(m)
       e = media_of(m)["eov"] || {}
-      # where the fetcher has no sheet, the why rows still name the variable (§ D5's `eov` column)
-      w = (m["why"] || []).find { |r| Fmt.present(r["eov"]) }
-      { "name" => Fmt.present(e["name"]) || (w && Fmt.present(w["eov"])),
-        "doc"  => Fmt.present(e["doc"]) || (w && Fmt.present(w["goos_doc"])),
-        "membership" => Fmt.present(e["membership"]),
-        # quoted, never paraphrased, and each with the sheet it is quoted from
-        "questions" => (e["questions"] || []).map { |q| q.to_s.strip },
+      whys = m["why"] || []
+      w = whys.find { |r| Fmt.present(r["eov"]) }
+      goos = whys.select { |r| r["kind"] == "goos" && Fmt.present(r["text"]) }
+      name = Fmt.present(e["name"]) || (w && Fmt.present(w["eov"]))
+      doc  = Fmt.present(e["doc"]) || (w && Fmt.present(w["goos_doc"]))
+      # quoted, never paraphrased, and each with the document it is quoted from
+      qs = (e["questions"] || []).map { |q| q.to_s.strip }
+      qs = goos.map { |r| r["text"].to_s.strip } if qs.empty?
+      { "name" => name,
+        "doc"  => doc,
+        "doc_label" => doc && eov_doc_label(doc),
+        "membership" => Fmt.present(e["membership"]) ||
+                        (name && doc && eov_membership(doc, goos.any?)),
+        "questions" => qs,
+        # the phenomena an EOV captures are the specification sheet's own list: the page shows them
+        # only where a source carried them here, never a guess at what the variable is "for"
         "phenomena" => (e["phenomena"] || []).map { |p| p.to_s.strip } }
+    end
+
+    def eov_doc_label(doc)
+      return "GOOS specification sheet" if doc.include?(GOOS_HOST)
+      return "NERC A05 concept #{doc.split('/').reject(&:empty?).last}" if doc.include?(A05_PATH)
+      "the document that names it"
+    end
+
+    def eov_membership(doc, quoted)
+      if doc.include?(GOOS_HOST)
+        quoted ? "the GOOS specification sheet for this Essential Ocean Variable lists it, and asks"
+               : "the GOOS specification sheet for this Essential Ocean Variable lists it"
+      elsif doc.include?(A05_PATH)
+        "named an Essential Ocean Variable by NERC's A05 vocabulary — there is no GOOS " \
+        "specification sheet behind this one"
+      end
+    end
+
+    # ── the composition, derived from the record (§ D2) ──────────────────────
+    # A mixture's face is its parts: the bar and the table are built from the RECORD's `chem[]`
+    # rows — `metadata/measurement_chem.csv`, each with its mass fraction and the source that put
+    # it there — captioned with the ChEBI name the fetcher found for the same id. The grams in a
+    # kilogram are the record's OWN median salinity (the canonical series' observed p50) read as
+    # Reference Salinity by TEOS-10's definition. Nothing here is typed.
+    SR_PER_SP = 35.16504 / 35.0   # TEOS-10 (IOC, SCOR & IAPSO 2010): g/kg per PSS-78 unit
+    SUB = %w[₀ ₁ ₂ ₃ ₄ ₅ ₆ ₇ ₈ ₉].freeze
+    SUP = %w[⁰ ¹ ² ³ ⁴ ⁵ ⁶ ⁷ ⁸ ⁹].freeze
+
+    # "SO4^2-" → "SO₄²⁻", "Mg2+" → "Mg²⁺", "HCO3-" → "HCO₃⁻", "Br-" → "Br⁻": the registry's own
+    # ASCII symbol, set as a reader writes it. Which digits are the CHARGE and which are the
+    # formula is the registry's to say, and it says it three ways, so all three are read literally
+    # and none is guessed at:
+    #   · "^" marks the charge explicitly — everything after it is the charge (SO4^2-)
+    #   · a "+" ends a cation, and the digits before it are its charge (Mg2+, Na+)
+    #   · a bare "-" is a charge of one, and every digit before it stays in the formula (HCO3-)
+    CHARGE = /\^\d*[+-]\z|\d*\+\z|-\z/
+
+    def ion_symbol(row, st)
+      raw = Fmt.present(row["note"].to_s.split(" (", 2).first)
+      return Fmt.present(st["name"]) || Fmt.present(row["chebi"]) if raw.nil?
+      q = raw[CHARGE]
+      base = q ? raw[0...-q.length] : raw
+      out = base.gsub(/\d/) { SUB[Regexp.last_match(0).to_i] }
+      return out unless q
+      q.delete("^").chars.each do |c|
+        out += c == "+" ? "⁺" : c == "-" ? "⁻" : SUP[c.to_i]
+      end
+      out
+    end
+
+    # "SO4^2- (sulfate)" names the ion; "CO2(aq)" is one symbol with a state, not a name — the
+    # space before the bracket is what tells them apart
+    def ion_name(row) = Fmt.present(row["note"].to_s[/\s\(([^)]*)\)\s*\z/, 1])
+
+    def canonical_series(m)
+      ser = m["series"] || []
+      ser.find { |s| s["is_canonical"] } || ser.first
+    end
+
+    def composition_of(m)
+      c = media_of(m)["composition"]
+      return c if c.is_a?(Hash) && c["ions"]
+      rows = (m["chem"] || []).select { |x| x["mass_fraction"].to_f.positive? }
+      return nil if rows.size < 2
+      st = (media_of(m)["structures"] || []).each_with_object({}) { |s, h| h[s["chebi"]] = s }
+      ions = rows.sort_by { |x| -x["mass_fraction"].to_f }.map do |x|
+        s = st[x["chebi"]] || {}
+        # the registry's own name for the ion first ("bicarbonate"), ChEBI's systematic one second
+        # ("hydrogencarbonate", "sodium(1+)") — the bar is read, not indexed
+        [ion_symbol(x, s), ion_name(x) || Fmt.present(s["name"]) || x["chebi"].to_s,
+         x["mass_fraction"].to_f, Fmt.present(x["chebi"])]
+      end
+      # the registry's fractions are shares of the WHOLE sea salt, so whatever it does not list is
+      # the remainder — measured by subtraction, never named or counted here
+      rest = (1.0 - ions.sum { |i| i[2] }).round(7)
+      ions << ["other", "solutes this registry does not list", rest, nil] if rest.positive? && rest < 0.01
+      out = { "ions" => ions, "src" => Fmt.present(rows.first["source"]),
+              "url" => Fmt.present(rows.first["source_url"]) }
+      s = canonical_series(m)
+      sp = s && (s["observed"] || {})["p50"]
+      if sp
+        out["sp_med"] = sp
+        out["sr_med"] = (sp.to_f * SR_PER_SP).round(2)
+        out["med_src"] = "the record's own median of the #{ds_name(s['dataset_key'])} series " \
+                         "(#{Fmt.num(s['n_values'])} values), read as grams of sea salt per " \
+                         "kilogram by TEOS-10's Reference-Salinity definition"
+      end
+      out.compact
+    end
+
+    # ── the organism face, derived from the record and the species media ─────
+    # An `organism` face is the species catalog's face, not a second one: the WoRMS id comes from
+    # the key's own S25 concept (or that concept's `sameAs`), and the silhouette, photo and size
+    # come from `_data/taxa_media.json` — the same sidecar every /species/ page draws. The internal
+    # link is written ONLY where `taxa.json` actually holds that taxon: the picoplankton keys carry
+    # no `taxon_key` until D9/WS-MF7 lands, so today the page links WoRMS and nothing of ours.
+    WORMS_ID = %r{(?:aphia\.org/id/taxname/|marinespecies\.org:taxname:|id=)(\d+)}
+
+    def taxa_media = @taxa_media ||= (@site.data.dig("taxa_media", "taxa") || {})
+    def taxa_keys  = @taxa_keys ||= (@site.data.dig("taxa", "taxa") || [])
+                                    .to_h { |t| [t["taxon_key"], true] }
+    def hair_um
+      @hair_um ||= begin
+        r = (@site.data["size_reference"] || []).find { |x| x["key"].to_s == "hair" }
+        r && { "um" => (r["m"].to_f * 1e6).round, "label" => Fmt.present(r["label"]),
+               "source" => Fmt.present(r["source"]), "note" => Fmt.present(r["note"]) }
+      end
+    end
+
+    def taxon_of(m)
+      t = media_of(m)["taxon"]
+      return t if t.is_a?(Hash) && t["worms"]
+      return nil unless owns_organism?(m)
+      s25 = nerc_of(m)["s25"] || {}
+      id = Fmt.present(s25["worms"].to_s) ||
+           (s25["same_as"] || []).filter_map { |u| u.to_s[WORMS_ID, 1] }.first
+      return nil if id.nil?
+      key = "worms:#{id}"
+      f = taxa_media[key] || {}
+      out = { "s25" => Fmt.present(s25["id"]), "worms" => id.to_i,
+              # the S25's label carries the ids in a parenthetical ("Synechococcus (ITIS: 773:
+              # WoRMS 160572)") — the name is what is left of it
+              "name" => Fmt.present(s25["pref"].to_s.sub(/\s*\([^)]*\)\s*\z/, "")),
+              "url" => "#{WORMS_URL}#{id}",
+              "species_page" => (taxa_keys[key] ? "/species/worms-#{id}/" : nil) }
+      if (sil = f["silhouette"]) && Fmt.present(sil["svg_inner"])
+        out["sil"] = { "inner" => sil["svg_inner"], "viewBox" => sil["viewBox"] || "0 0 1 1",
+                       "label" => "Silhouette of #{out['name'] || key}",
+                       "credit" => Fmt.present(sil["credit"]), "license" => Fmt.present(sil["license"]),
+                       "license_url" => Fmt.present(sil["license_url"]),
+                       "page" => Fmt.present(sil["url"]) }.compact
+      end
+      if (p = f["photo"]) && (src = Fmt.present(p["cached"]) ? "#{SPECIES_BASE}#{p['cached']}" : Fmt.present(p["url"]))
+        out["photo"] = { "src" => src, "alt" => Fmt.present(p["shows"]) || "Photograph of #{out['name']}",
+                         "credit" => Fmt.present(p["credit"]), "license" => Fmt.present(p["license"]),
+                         "license_url" => Fmt.present(p["license_url"]),
+                         "page" => Fmt.present(p["page"]) }.compact
+      end
+      # the hair figure needs a measured cell size and a measured hair: the species media's own
+      # size row and `_data/size_reference.csv`. Without both, no figure is drawn.
+      if (sz = f["size"]) && sz["m"] && hair_um
+        um = (sz["m"].to_f * 1e6)
+        out["size_um"] = [um.round(2), um.round(2)]
+        out["size_src"] = [Fmt.present(sz["source"]), Fmt.present(sz["kind"])].compact.join(" · ")
+        out["hair_um"] = hair_um["um"]
+        out["hair_src"] = hair_um["source"]
+      end
+      out.compact
+    end
+
+    # the species media live beside the measurement media on the same public bucket
+    SPECIES_BASE = "https://storage.googleapis.com/calcofi-files-public/"
+
+    # CalCOFI's own words, where the why registry carries them (§ D5, `kind = calcofi`, two keys).
+    # The registry's row is the sampling page's sentence with a lead-in of ours, so it is shown as
+    # a block with its source beside it and NOT inside quotation marks — only the fetcher's own
+    # verbatim pull is quoted.
+    def calcofi_quote_of(m)
+      if (q = Fmt.present(media_of(m)["calcofi_quote"]))
+        return { "text" => q, "quoted" => true }
+      end
+      r = (m["why"] || []).find { |x| x["kind"] == "calcofi" && Fmt.present(x["text"]) }
+      r && { "text" => r["text"].to_s.strip, "url" => Fmt.present(r["source_url"]),
+             "quoted" => false }.compact
     end
 
     def stands_in(m)
@@ -803,9 +987,16 @@ module CalCOFI
         "structure_ct" => st.size,
         # the composition rows: a pool or a mixture takes components with their mass fractions,
         # never one S27 (§ D2, § F3)
+        # the record's chem rows carry an id, a share and a source, but no caption: the symbol and
+        # the name are the registry's own `note` ("SO4^2- (sulfate)"), set as a reader writes it,
+        # with ChEBI's name from the media where the registry left the parenthetical empty
         "chem" => (m["chem"] || []).map do |x|
-          { "chebi" => Fmt.present(x["chebi"]), "name" => Fmt.present(x["name"]),
-            "formula" => formula_html(x), "role" => Fmt.present(x["role"]),
+          s = st.find { |y| y["chebi"] == x["chebi"] } ||
+              (media_of(m)["structures"] || []).find { |y| y["chebi"] == x["chebi"] } || {}
+          { "chebi" => Fmt.present(x["chebi"]),
+            "name" => ion_name(x) || Fmt.present(s["name"]),
+            "formula" => Fmt.present(CGI.escapeHTML(ion_symbol(x, s).to_s)),
+            "role" => Fmt.present(x["role"]),
             "fraction" => x["mass_fraction"], "via" => Fmt.present(x["via"]),
             "source" => Fmt.present(x["source"]),
             "url" => Fmt.present(x["chebi"]) && "#{CHEBI_URL}#{x['chebi']}" }.compact
@@ -817,8 +1008,8 @@ module CalCOFI
                     "license" => Fmt.present(n["license"]) }.compact,
         "a05_only" => (m["face"] || {})["a05_only"],
         "p01_borrowed_from" => (m["face"] || {})["p01_borrowed_from"],
-        "taxon" => media_of(m)["taxon"],
-        "composition" => media_of(m)["composition"],
+        "taxon" => taxon_of(m),
+        "composition" => composition_of(m),
         "bjerrum" => media_of(m)["bjerrum"],
         "stands_in" => stands_in(m),
         "ids" => face_ids(m) }.compact
@@ -978,9 +1169,43 @@ module CalCOFI
     # `scale_axis` / `scale_flags` where the record carries them; where it does not, a linear axis
     # is DERIVED from the declared bounds, the observed range and the marks, so the figure is drawn
     # from measured values either way and nothing is typed.
+    # A key whose familiar-scale marks ARE the Beaufort bands is read on the Beaufort scale, and
+    # the record says so without carrying a `scale_axis`: every mark is a numbered force with a
+    # band ("Beaufort 7: Near gale", 13.9–17.1). The ROWS the strip draws are the fetcher's copy of
+    # the published table, at a revision a reader can go back to (`tables.beaufort`, § D8); the
+    # record's own marks are the fallback where the fetcher has none. Both say the same thing —
+    # the fetcher's says where it is from.
+    BEAUFORT_MARK = /\ABeaufort\s+(\d+)\s*:\s*(.+)\z/m
+
+    def beaufort_rows_from(m)
+      rows = (m["scale"] || []).filter_map do |r|
+        md = Fmt.present(r["label"]).to_s.match(BEAUFORT_MARK)
+        md && r["lo"] && [md[1].to_i, r["lo"].to_f, r["hi"], md[2].strip]
+      end
+      rows.size > 1 ? rows.sort_by(&:first) : nil
+    end
+
+    def beaufort_of(m)
+      own = beaufort_rows_from(m)
+      return nil if own.nil?
+      t = media_tables["beaufort"] || {}
+      { "rows" => t["rows"] || own, "knots" => t["knots"],
+        "source" => Fmt.present(t["source"]) ||
+                    Fmt.present((m["scale"] || []).first["source"]),
+        "url" => Fmt.present(t["url"]) }.compact
+    end
+
     def scale_axis(m)
       ax = m["scale_axis"] || {}
+      bf = beaufort_of(m)
       dom = ax["domain"]
+      if bf && !(dom.is_a?(Array) && dom.size == 2)
+        # the strip runs the length of the scale, not of a declared bound: the top band is open
+        # ("≥ 32.7 m/s"), so its top is the highest value the record actually holds
+        obs = (m["series"] || []).filter_map { |s| (s["observed"] || {})["max"] }.map(&:to_f)
+        dom = [bf["rows"].first[1].to_f,
+               ([bf["rows"].last[2]].compact.map(&:to_f) + obs + [bf["rows"].last[1].to_f]).max]
+      end
       unless dom.is_a?(Array) && dom.size == 2
         vals = []
         b = m["bounds"] || {}
@@ -996,17 +1221,32 @@ module CalCOFI
         pad = 1.0 if pad.zero?
         dom = [lo - pad, hi + pad]
       end
-      out = { "type" => Fmt.present(ax["type"]) || "linear", "domain" => dom,
+      out = { "type" => Fmt.present(ax["type"]) || (bf ? "beaufort" : "linear"), "domain" => dom,
               "source" => Fmt.present(ax["source"]), "zero_pct" => ax["zero_pct"] }.compact
-      if out["type"] == "beaufort"
-        out["beaufort"] = media_tables.dig("beaufort", "rows")
-        out["beaufort_source"] = media_tables.dig("beaufort", "source")
+      if out["type"] == "beaufort" && bf
+        out["beaufort"] = bf["rows"]
+        out["beaufort_knots"] = bf["knots"]
+        out["beaufort_source"] = bf["source"]
+        out["beaufort_url"] = bf["url"]
       end
       out
     end
 
+    # The record's marks, less the ones that are not marks on THIS axis. Four of DIC's `scale`
+    # rows are a share of the carbonate pool and a saturation state, typed from the plan's probe
+    # (`computed_at_build: false`) and drawn at 0.61 and 91.4 on a µmol/kg axis, where they say
+    # nothing. Those quantities are the Bjerrum figure's, and the fetcher recomputes them from the
+    # record's own medians (§ D7, "computed marks … are recomputed at build, never typed") — so
+    # where that block exists they leave the axis and are read where they mean something. Where it
+    # does not, the record's marks stand exactly as they are.
+    def scale_marks(m)
+      rows = m["scale"] || []
+      return rows unless media_of(m)["bjerrum"].is_a?(Hash)
+      rows.reject { |r| r["how"].to_s.include?("PyCO2SYS") && !r["computed_at_build"] }
+    end
+
     def scale_of(m)
-      marks = (m["scale"] || []).map do |r|
+      marks = scale_marks(m).map do |r|
         { "v" => r["value"], "lo" => r["lo"], "hi" => r["hi"], "label" => Fmt.present(r["label"]),
           "kind" => Fmt.present(r["kind"]), "src" => Fmt.present(r["source"]) || Fmt.present(r["how"]),
           "off" => r["off"] }.compact
@@ -1059,7 +1299,7 @@ module CalCOFI
         "anomaly_deeper" => ((m["anomaly"] || {})["deeper"] || []).map do |d|
           "#{Fmt.num(d['n_obs'])} values at #{d['band'].to_s.tr('-', '–')} m"
         end,
-        "calcofi_quote" => Fmt.present(media_of(m)["calcofi_quote"]),
+        "calcofi_quote" => calcofi_quote_of(m),
         "wikipedia" => wp && { "title" => Fmt.present(wp["title"]),
                                "url" => Fmt.present(wp["url"]) && "#{wp['url']}?oldid=#{wp['revision']}",
                                "revision" => wp["revision"].to_s,
@@ -1245,6 +1485,20 @@ module CalCOFI
         Jekyll.logger.info "measurements:",
                            "#{faced} face(s) · #{kinds.empty? ? 'no face_kind in the record' : kinds} · " \
                            "#{mm.media_keys.size} key(s) in the media sidecar"
+        # what the page shows BESIDE the structures, and which side each piece came from: the
+        # record's own registries (EOV, composition, CalCOFI's words, the organism's id) and the
+        # fetcher's (the carbonate curve, the Beaufort table). A zero here is the gap the
+        # 2026-09-12 integration found — every one of these vanished silently before.
+        Jekyll.logger.info "measurements:",
+                           "derived: eov #{mm.measurements.count { |m| mm.eov_of(m)['name'] }} " \
+                           "(questions #{mm.measurements.count { |m| mm.eov_of(m)['questions'].any? }}) · " \
+                           "composition #{mm.measurements.count { |m| mm.composition_of(m) }} · " \
+                           "organism #{mm.measurements.count { |m| mm.taxon_of(m) }} " \
+                           "(species page #{mm.measurements.count { |m| (mm.taxon_of(m) || {})['species_page'] }}) · " \
+                           "calcofi quote #{mm.measurements.count { |m| mm.calcofi_quote_of(m) }} · " \
+                           "bjerrum #{mm.measurements.count { |m| mm.media_of(m)['bjerrum'] }} · " \
+                           "beaufort #{mm.measurements.count { |m| mm.beaufort_of(m) }} " \
+                           "(table #{mm.media_tables.dig('beaufort', 'rows')&.size || 0} rows)"
       end
       # the record's `n_flagged` and this file's own `n_values − qual_ok_n` must not disagree
       # (handoff delta 4): one warning for the build, never a silent pick

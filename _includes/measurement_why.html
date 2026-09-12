@@ -67,16 +67,23 @@
       {%- for p in f.eov.phenomena -%}<span class="cc-chip cc-chip-accent">{{ p | escape }}</span>{%- endfor -%}
     </div>
     {%- endif -%}
+    {%- comment -%} the link is labelled by what it IS: most keys' `goos_doc` is a GOOS
+      specification sheet, but the wind rows point at NERC's A05 concept, which is a vocabulary
+      entry and not a sheet — calling both "the specification sheet" would be a small lie {%- endcomment -%}
     {%- if f.eov.doc -%}
-    <p class="mmf-credit"><a href="{{ f.eov.doc }}" rel="external">GOOS specification sheet ↗</a> · quoted, not copied</p>
+    <p class="mmf-credit"><a href="{{ f.eov.doc }}" rel="external">{{ f.eov.doc_label | default: 'the document that names it' | escape }} ↗</a>{% if f.eov.questions.size > 0 %} · quoted, not copied{% endif %}</p>
     {%- endif -%}
   </div>
   {%- endif -%}
 
   <div>
+    {%- comment -%} the why registry's `calcofi` row is calcofi.org's sentence with a lead-in of
+      ours, so it is shown as a block with its source and NOT inside quotation marks; only the
+      fetcher's own verbatim pull is quoted {%- endcomment -%}
     {%- if f.calcofi_quote -%}
     <h4 class="mmf-h4">Why CalCOFI samples it, in its own words</h4>
-    <blockquote class="mmf-quote">“{{ f.calcofi_quote | escape }}”{% if f.how[0].link %} <a href="{{ f.how[0].link }}" rel="external">calcofi.org ↗</a>{% endif %}</blockquote>
+    {%- assign cq_url = f.calcofi_quote.url | default: f.how[0].link -%}
+    <blockquote class="mmf-quote">{% if f.calcofi_quote.quoted %}“{{ f.calcofi_quote.text | escape }}”{% else %}{{ f.calcofi_quote.text | escape }}{% endif %}{% if cq_url %} <a href="{{ cq_url }}" rel="external">calcofi.org ↗</a>{% endif %}</blockquote>
     {%- endif -%}
     {%- if f.wikipedia and f.wikipedia.extract -%}
     <h4 class="mmf-h4">Borrowed context</h4>

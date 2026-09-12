@@ -299,19 +299,21 @@
       var t = F.taxon;
       if (!t || !t.hair_um || !t.size_um) return "";
       var n = Math.round(t.hair_um / ((t.size_um[0] + t.size_um[1]) / 2));
+      /* a size source may give one length rather than a range: say the one it gave */
+      var sz = t.size_um[0] === t.size_um[1] ? String(t.size_um[0]) : t.size_um[0] + "–" + t.size_um[1];
       var R = 70, cx = 80, cy = 80, d = (2 * R) / n, dots = "", i;
       for (i = 0; i < n; i++) {
         dots += '<circle cx="' + (cx - R + d / 2 + i * d).toFixed(2) + '" cy="' + cy +
           '" r="' + (d * 0.42).toFixed(2) + '" fill="var(--accent)"/>';
       }
       return '<svg class="mmf-hair" viewBox="0 0 ' + (small ? 160 : 340) + ' 160" role="img" aria-label="' +
-        "A hair cut across, with " + n + " cells of " + t.size_um[0] + "–" + t.size_um[1] +
+        "A hair cut across, with " + n + " cells of " + sz +
         ' µm in a row across it"><circle cx="' + cx + '" cy="' + cy + '" r="' + R +
         '" fill="none" stroke="currentColor" stroke-width="1.5"/>' + dots +
         (small ? "" :
           '<text x="168" y="62" class="mmf-lab">a hair, cut across: ' + t.hair_um + ' µm</text>' +
           '<text x="168" y="86" class="mmf-lab" fill="var(--accent)">' + n + " cells of " +
-          t.size_um[0] + "–" + t.size_um[1] + ' µm</text>' +
+          sz + ' µm</text>' +
           '<text x="168" y="106" class="mmf-tick">size: ' + esc(t.size_src || "") + "</text>") + "</svg>";
     }
     /* the pH strip and the temperature-like strip: the record's own 5th–95th percentile, boxed on
@@ -331,17 +333,34 @@
       for (i = rows.length - 1; i >= 0; i--) if (v >= rows[i][1]) return rows[i];
       return rows[0];
     }
+    function bandText(b, unit) {
+      /* the top band is open in the source ("≥ 32.7 m/s") — say so rather than draw a blank */
+      return b[2] == null ? "≥ " + b[1] + " " + unit : b[1] + "–" + b[2] + " " + unit;
+    }
     function beaufortHTML() {
       var sc = F.scale, rows = sc && sc.axis && sc.axis.beaufort, o = F.ph;
       if (!rows || !o) return "";
+      var kn = sc.axis.beaufort_knots;
       var b50 = beaufortOf(o.p50, rows), b95 = beaufortOf(o.p95, rows);
-      return '<div class="mmf-bf">' + rows.map(function (b) {
+      var h = '<div class="mmf-bf">' + rows.map(function (b) {
         var on = b[0] === b50[0] || b[0] === b95[0];
-        return '<i class="' + (on ? "on" : "") + '" title="' + esc(b[0] + " " + b[3] + ", " + b[1] + "–" + b[2] + " m/s") +
+        return '<i class="' + (on ? "on" : "") + '" title="' + esc(b[0] + " " + b[3] + ", " + bandText(b, "m/s")) +
           '">' + b[0] + "</i>";
       }).join("") + "</div>" +
-        '<p class="mmf-line">Beaufort force at the median <b>' + b50[0] + "</b> and the 95th percentile <b>" +
-        b95[0] + "</b>" + (sc.axis.beaufort_source ? ' <span class="mmf-credit">' + esc(sc.axis.beaufort_source) + "</span>" : "") + "</p>";
+        '<p class="mmf-line">Read as m/s, Beaufort force at the median <b>' + b50[0] +
+        "</b> and the 95th percentile <b>" + b95[0] + "</b>";
+      /* the same numbers read as knots: the series is DECLARED m/s and runs high for it, which is
+         an open question on the dataset, so the page shows the force under each reading rather
+         than deciding which one the values are */
+      if (kn && kn.length === rows.length) {
+        var k50 = beaufortOf(o.p50, kn), k95 = beaufortOf(o.p95, kn);
+        h += "; read as knots, <b>" + k50[0] + "</b> and <b>" + k95[0] + "</b>";
+      }
+      return h + (sc.axis.beaufort_source
+        ? ' <span class="mmf-credit">' + (sc.axis.beaufort_url
+            ? '<a href="' + esc(sc.axis.beaufort_url) + '" rel="external">' + esc(sc.axis.beaufort_source) + "</a>"
+            : esc(sc.axis.beaufort_source)) + "</span>"
+        : "") + "</p>";
     }
     /* the mini scale: the record's 5th–95th on the declared/observed domain, with the two nearest
        marks named under it — a property's face is the scale it is read on (§ D2) */
@@ -365,7 +384,10 @@
     if (mini) {
       var h = "";
       if (F.composition) h = ionsHTML(true);
-      else if (F.taxon) h = hairHTML(true);
+      /* an organism's figure needs a measured cell size AND a measured hair; where the species
+         media carry neither, the count is still read on its own scale — a face falls back, it
+         never leaves the column empty (check_layout, 2026-09-12) */
+      else if (F.taxon) h = hairHTML(true) || miniHTML();
       else if (F.scale && F.scale.axis && F.scale.axis.type === "beaufort") h = beaufortHTML();
       else if (F.key === "ph") h = stripHTML(0, 14, PH_RAMP, "0 acid", "14 base", "This measurement’s", 2);
       else h = miniHTML();
@@ -424,7 +446,7 @@
             "</td></tr>";
         }).join("") + '</tbody></table><p class="mmf-credit">' + esc(c.src || "") + "</p>";
       } else if (F.taxon) {
-        h = hairHTML(false);
+        h = hairHTML(false) || miniHTML();
       } else if (F.key === "ph") {
         h = stripHTML(0, 14, PH_RAMP, "0 acid", "14 base", "This measurement’s", 2);
       } else if (F.scale && F.scale.axis && F.scale.axis.type === "beaufort") {
@@ -646,7 +668,11 @@
       if (cr) {
         cr.innerHTML = (log ? "Log scale · " : "") +
           "bars: the record’s 5th–95th percentile per series; line: minimum to maximum; ring: median" +
-          (refs.length ? " · marks: " + refs.map(function (r) { return esc(r.label) + (r.src ? " (" + esc(r.src) + ")" : ""); }).join("; ") : "") +
+          /* the marks the figure actually DREW: a Beaufort band has no single value and is drawn
+             as the strip above the axis, so naming all thirteen here would credit marks the
+             reader cannot see */
+          (drawn.length ? " · marks: " + refs.filter(function (r) { return r.v != null; })
+             .map(function (r) { return esc(r.label) + (r.src ? " (" + esc(r.src) + ")" : ""); }).join("; ") : "") +
           (sc.axis.source ? " · " + esc(sc.axis.source) : "");
       }
     })();

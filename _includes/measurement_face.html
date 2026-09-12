@@ -32,7 +32,12 @@
       {%- if forloop.index > 1 and s.role contains 'conjugate' %}<span class="mmf-eq" aria-hidden="true">⇌</span>{% endif -%}
       <svg class="mmf-mol{% if w.structures.size == 1 and f.kind != 'composition' %} mmf-mol-1{% endif %}" viewBox="{{ s.viewBox }}" role="img" aria-label="{{ s.label | escape }}">{{ s.inner }}</svg>
       {%- endfor -%}
-      {%- if w.structures.size == 0 -%}
+      {%- comment -%} an ORGANISM face is the species catalog's own: the silhouette from
+        _data/taxa_media.json, in the page's ink like a structure. It appears only once the species
+        pages hold that taxon (D9/WS-MF7); until then the line below links WoRMS alone. {%- endcomment -%}
+      {%- if w.structures.size == 0 and w.taxon.sil -%}
+      <svg class="mmf-mol mmf-mol-1" viewBox="{{ w.taxon.sil.viewBox }}" role="img" aria-label="{{ w.taxon.sil.label | escape }}">{{ w.taxon.sil.inner }}</svg>
+      {%- elsif w.structures.size == 0 -%}
       <div class="mmf-mini" id="mmf-mini"></div>
       {%- endif -%}
     </div>
@@ -48,12 +53,19 @@
     {%- assign s0 = w.structures[0] -%}
     <p class="mmf-line">{% if s0.formula %}<b>{{ s0.formula }}</b> · {% endif %}{{ s0.name | escape }}{% if s0.mass %} · {{ s0.mass }} g/mol{% endif %}{% if s0.chebi_url %} · <a class="mono" href="{{ s0.chebi_url }}" rel="external">{{ s0.chebi }}</a>{% endif %}</p>
     {%- elsif w.composition and w.composition.sr_med -%}
-    {%- comment -%} a mixture: what a kilogram of CalCOFI's own surface water holds, from the
-      record's own median salinity — the number and the computation both come from the sidecar
+    {%- comment -%} a mixture: what a kilogram of CalCOFI's own seawater holds, at the record's own
+      median salinity. Which water that median is OF is the record's to say and the title's to
+      state — it is the whole series, not the surface alone — so the line says neither.
     {%- endcomment -%}
-    <p class="mmf-line" title="{{ w.composition.med_src | escape }} · {{ w.composition.src | escape }}"><b>{{ w.composition.sr_med }} g</b> of salt in a kilogram of CalCOFI surface water</p>
+    <p class="mmf-line" title="{{ w.composition.med_src | escape }} · {{ w.composition.src | escape }}"><b>{{ w.composition.sr_med }} g</b> of salt in a kilogram of CalCOFI seawater, at the record’s median salinity</p>
     {%- elsif w.taxon -%}
-    <p class="mmf-line"><i>{{ w.taxon.name | escape }}</i>{% if w.taxon.worms %} · WoRMS <a class="mono" href="https://www.marinespecies.org/aphia.php?p=taxdetails&amp;id={{ w.taxon.worms }}" rel="external">{{ w.taxon.worms }}</a>{% endif %}{% if w.taxon.size_um %} · {{ w.taxon.size_um[0] }}–{{ w.taxon.size_um[1] }} µm{% endif %}</p>
+    {%- comment -%} the species page is linked ONLY where the catalog holds that taxon: an internal
+      link to a page that does not exist is worse than no link (the picoplankton keys carry no
+      taxon_key until D9 lands) {%- endcomment -%}
+    <p class="mmf-line">{% if w.taxon.species_page %}<a href="{{ w.taxon.species_page | relative_url }}"><i>{{ w.taxon.name | escape }}</i></a>{% else %}<i>{{ w.taxon.name | escape }}</i>{% endif %}{% if w.taxon.worms %} · WoRMS <a class="mono" href="{{ w.taxon.url }}" rel="external">{{ w.taxon.worms }}</a>{% endif %}{% if w.taxon.size_um %} · {% if w.taxon.size_um[0] == w.taxon.size_um[1] %}{{ w.taxon.size_um[0] }}{% else %}{{ w.taxon.size_um[0] }}–{{ w.taxon.size_um[1] }}{% endif %} µm{% endif %}</p>
+    {%- if w.taxon.sil.credit -%}
+    <p class="mmf-credit">Silhouette {{ w.taxon.sil.credit | escape }}{% if w.taxon.sil.license %} · {{ w.taxon.sil.license | escape }}{% endif %} · via PhyloPic</p>
+    {%- endif -%}
     {%- elsif w.a05_only -%}
     <p class="mmf-line">No NERC P01 concept on the key · the nearest is A05 <span class="mono">{{ w.a05_only.code }}</span></p>
     {%- endif -%}
