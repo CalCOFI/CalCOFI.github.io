@@ -717,7 +717,10 @@ module CalCOFI
     # the drawn structures, in the page's own ink: RDKit writes `currentColor`, so one file is navy
     # on white and bone on navy. `svg_inner` is emitted RAW, so the picture is there without JS.
     def structures(m)
-      (media_of(m)["structures"] || []).each_with_index.map do |s, i|
+      # only entries the fetcher DREW: a monatomic ion of salinity's composition (Na⁺, Cl⁻, …)
+      # is a ChEBI record with a mass fraction and no molfile picture, and belongs to the ion
+      # bar, not to an empty <svg> (check_layout: "a structure drew 0 shapes")
+      (media_of(m)["structures"] || []).select { |s| Fmt.present(s["svg_inner"]) }.each_with_index.map do |s, i|
         { "chebi"   => Fmt.present(s["chebi"]),
           "name"    => Fmt.present(s["name"]),
           "formula" => formula_html(s),
