@@ -351,16 +351,16 @@
     /* ramps.ts defaultRamp(), rule for rule, in its own order */
     function rampRule(v) {
       v = String(v || "").toLowerCase();
+      if (/sigma|dens/.test(v)) return "dense";   // before thermal: sigma_theta is a density (explore ws-r6 beec8cf)
       if (/temp|theta/.test(v)) return "thermal";
       if (/salin|salt/.test(v)) return "haline";
       if (/oxy/.test(v)) return "ice";   // not cmocean's oxy: its breaks assume a fixed 0–10 ml/L
       if (/chl|fluor|phyto|algae|prochl|synech/.test(v)) return "algae";
-      if (/sigma|dens/.test(v)) return "dense";
       if (/nitr|phos|silic|ammon|nutri/.test(v)) return "tempo";
       if (/par\b|light|irrad|rad/.test(v)) return "solar";
       if (/ph\b|alkal|dic|carbon|pco2/.test(v)) return "matter";
       if (/depth|bathy/.test(v)) return "deep";
-      if (/wind|speed|current/.test(v)) return "speed";
+      if (/wind|speed|current/.test(v) && !/dir/.test(v)) return "speed";   // a direction is not a speed
       return null;
     }
     function RAMP_OF(key, label) { return rampRule(key) || rampRule(label); }
