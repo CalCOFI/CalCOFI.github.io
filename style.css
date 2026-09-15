@@ -2015,13 +2015,20 @@ a.cc-chip-lic:hover { color: var(--accent); border-color: var(--accent); text-de
    Contributing rows (.ds-row-contrib) and holdings (.ds-row-holding) keep the base flex layout
    above; only the homed row (.ds-row-dataset) gets the grid. */
 .ds-row.ds-row-dataset {
-  display: grid; grid-template-columns: minmax(0, 1.25fr) auto minmax(0, 1.9fr) auto;
-  gap: 6px 12px; align-items: center;
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas: "name name lic" "prov meta meta";
+  gap: 4px 12px; align-items: center;
 }
-.ds-row.ds-row-dataset .ds-row-meta { margin-left: 0; }
+/* Ben, 2026-09-16: a long title wrapped to three lines beside its provider and sparkline. The name
+   now has the whole row but the licence (right-aligned); the provider pill, the years, the spark
+   and the counts sit on their own line below, where the spark can stretch. */
+.ds-row.ds-row-dataset .ds-row-name { grid-area: name; }
+.ds-row.ds-row-dataset > .cc-chip-lic { grid-area: lic; justify-self: end; }
+.ds-row.ds-row-dataset .ds-chip-prov { grid-area: prov; }
+.ds-row.ds-row-dataset .ds-row-meta { grid-area: meta; margin-left: 0; }
+.ds-row.ds-row-dataset .ds-spark-wrap { width: 140px; }
 @media (max-width: 720px) {
-  .ds-row.ds-row-dataset { grid-template-columns: 1fr auto; }
-  .ds-row.ds-row-dataset .ds-row-meta { grid-column: 1 / -1; }
+  .ds-row.ds-row-dataset .ds-spark-wrap { width: 90px; }
 }
 
 /* D3: the variables/taxa expander — the same inline-<details> shape as .ds-contrib-det above */
