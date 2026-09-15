@@ -419,6 +419,47 @@ module CalCOFI
       end
     end
 
+    # plain text for a title="" attribute: an ⓘ or <code> tag would show up literally in a tooltip
+    def strip_tags(s) = s.to_s.gsub(/<[^>]+>/, "").gsub(/\s+/, " ").strip
+
+    # ── M11 (WS-R3): the chip line above the details — the same four facts, scannable in one line,
+    # each hovering to the number(s) behind it. The `dd` prose these read from (bounds_row, qual_rows,
+    # baseline_row) is unchanged; the chip is a second, shorter rendering of the same measured values.
+    def bounds_chip(m)
+      b = m["bounds"] || {}
+      lo, hi = b["valid_min"], b["valid_max"]
+      units = Fmt.units(m["units"])
+      label = (lo.nil? && hi.nil?) ? "no bound declared" : "#{bounds_txt(lo, hi)}#{units ? " #{units}" : ''}"
+      { "k" => "bounds", "label" => label, "title" => strip_tags(bounds_row(m)["dd"]) }
+    end
+
+    def observed_chip(m)
+      series = (m["series"] || []).select { |s| (s["observed"] || {})["min"] && (s["observed"] || {})["max"] }
+      return nil if series.empty?
+      lo = series.map { |s| s["observed"]["min"].to_f }.min
+      hi = series.map { |s| s["observed"]["max"].to_f }.max
+      units = Fmt.units(m["units"])
+      title = series.map do |s|
+        o = s["observed"]
+        "#{ds_name(s['dataset_key'])} #{s['measurement_type']}: min #{numfmt(o['min'])} · median #{numfmt(o['p50'])} · max #{numfmt(o['max'])}"
+      end.join("; ")
+      { "k" => "observed", "label" => "#{numfmt(lo)} … #{numfmt(hi)}#{units ? " #{units}" : ''}", "title" => title }
+    end
+
+    def flagged_chip(m)
+      nf = flagged_total(m)
+      qr = qual_rows(m)
+      { "k" => "flagged", "label" => Fmt.num(nf), "warn" => nf.positive?,
+        "title" => qr.empty? ? "no series carries a quality code at the release grain" : qr.map { |s| strip_tags(s) }.join(" ") }
+    end
+
+    def baseline_chip(m)
+      { "k" => "baseline", "label" => m["climatology"] ? "climatology ✓" : "no climatology",
+        "ok" => !!m["climatology"], "title" => strip_tags(baseline_row(m)) }
+    end
+
+    def quality_chips(m) = [bounds_chip(m), observed_chip(m), flagged_chip(m), baseline_chip(m)].compact
+
     def quality_rows(m)
       rows = [bounds_row(m)]
       obs = observed_rows(m)
@@ -431,7 +472,7 @@ module CalCOFI
       if (d = Fmt.present(m["derivation"]))
         rows << { "dt" => "derivation", "dd" => CGI.escapeHTML(d) }
       end
-      rows
+      { "chips" => quality_chips(m), "rows" => rows }
     end
 
     # ── related measurements ─────────────────────────────────────────────────
@@ -488,17 +529,20 @@ module CalCOFI
       end
     end
 
-    def ways(m)
+    # the tabset group per way (plan D2, M12; the rule `ways_tabs.html` (R1) also carries as a
+    # fallback for a way with none): the apps a reader OPENS are buttons, never a tab; the code
+    # routes are one shared tabset in the fixed order erddap · parquet · r · python · json.
+    def ways_rows(m)
       key   = m["key"]
       types = series_types(m)
       known = explorer_keys.include?(key)
       out = []
-      out << { "name" => "Explorer",
+      out << { "name" => "Explorer", "group" => "app",
                "about" => known ? "maps, sections and time series of this measurement — opens prefilled"
                                 : "the Explorer's variable picker; it does not key by this series, so it opens on the release's own list",
                "url"   => known ? "#{EXPLORE}?var=#{CGI.escape(key)}" : EXPLORE }
       if known && m["climatology"]
-        out << { "name" => "Explorer · a depth section vs normal",
+        out << { "name" => "Explorer · a depth section vs normal", "group" => "app",
                  "about" => "the newest cruise's section against the climatology baseline",
                  "url"   => "#{EXPLORE}?lens=section&var=#{CGI.escape(key)}&anom=1" }
       end
@@ -506,26 +550,31 @@ module CalCOFI
       sql = types.size == 1 ?
         "SELECT * FROM __TBL:obs_env__ WHERE measurement_type = #{inlist} LIMIT 100;" :
         "SELECT * FROM __TBL:obs_env__ WHERE measurement_type IN (#{inlist}) LIMIT 100;"
-      out << { "name" => "db-query", "about" => "SQL in your browser — the shell opens with this query",
+      out << { "name" => "db-query", "group" => "app", "about" => "SQL in your browser — the shell opens with this query",
                "url"  => "#{DBQUERY}?sql=#{CGI.escape(sql)}", "sql" => sql }
       out.concat(erddap_ways(m))
-      out << { "name" => "Parquet",
+      out << { "name" => "Parquet", "group" => "parquet",
                "about" => "obs_env is partitioned by measurement_type in the content-addressed store — resolved through the release catalog, never a path built by hand",
                "code"  => (["SELECT * FROM read_json('…/#{release['version']}/catalog.json')",
                             "-- objects[] WHERE table = 'obs_env'"] +
                            types.each_with_index.map do |t, i|
                              i.zero? ? "--   AND partition_value = '#{t}'" : "--                    | '#{t}'"
                            end).join("\n") }
-      out << { "name" => "R", "code" => <<~R.strip }
+      out << { "name" => "R", "group" => "r", "code" => <<~R.strip }
         library(calcofi4r)
         con <- cc_get_db()                      # the promoted release
         tbl(con, "obs_env") |> filter(measurement_type %in% c(#{types.map { |t| "\"#{t}\"" }.join(', ')}))
       R
-      out << { "name" => "Python", "code" => <<~PY.strip }
+      out << { "name" => "Python", "group" => "python", "code" => <<~PY.strip }
         import calcofi4py as cc
         con = cc.cc_get_db()
         con.sql("SELECT * FROM obs_env WHERE measurement_type IN (#{inlist})").df()
       PY
+      # M12: "This page as data" folds into the ways-in tabset as the json group, rather than its
+      # own section below — the entry, and the words, are otherwise unchanged.
+      out << { "name" => "This page as data", "group" => "json",
+               "about" => "this measurement's entry of the release record, verbatim",
+               "url"   => abs("/measurements/#{m['slug']}.json") }
       out
     end
 
@@ -544,7 +593,7 @@ module CalCOFI
         end
         next if dist.nil?
         has = probed[dist["id"]]
-        { "name"  => "ERDDAP · #{ds_name(dk)}",
+        { "name"  => "ERDDAP · #{ds_name(dk)}", "group" => "erddap",
           "about" => has ? "CalCOFI's own server, the #{ds_name(dk)} table constrained to this series"
                          : "CalCOFI's own server: the #{ds_name(dk)} table (it carries no measurement_type column to constrain on)",
           "url"   => has ? "#{ERDDAP}#{dist['id']}.html?&measurement_type=%22#{CGI.escape(s['measurement_type'].to_s)}%22"
@@ -1600,7 +1649,7 @@ module CalCOFI
         "ds_rows"     => mm.dataset_rows(m),
         "quality"     => mm.quality_rows(m),
         "related"     => mm.related_rows(m),
-        "ways"        => mm.ways(m),
+        "ways"        => mm.ways_rows(m),
         "strip"       => JSON.generate(mm.strip_json(m)),
         "depth"       => JSON.generate(mm.depth_json(m)),
         "months"      => JSON.generate(mm.months_json(m)),

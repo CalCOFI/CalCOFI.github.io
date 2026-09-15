@@ -655,6 +655,24 @@ certain bug being removed at the ingest, never an open question; a series with *
 bound*. Then the flag counts by code — each dataset's own vocabulary, uninterpreted — with what
 `qual_ok` keeps, and whether a `climatology` baseline exists.
 
+**Round 2, the body (plan 2026-09-15 § D1–D3, D8, WS-R3).** The "Heads-up" warning paragraph is
+gone: the stats band's own `flagged` stat carries the count (0 with no ⓘ where nothing is flagged;
+otherwise the same words behind an ⓘ, `_includes/info.html`). *What it is* and *Where in the water
+column* are retired — the NERC definition and the vocabulary chain moved to the face's own What
+column (round 2's face, a sibling workstream), and *By depth* already carried the same bands as
+counts; only the big structure cards survive, retitled *The structure*. *How it is measured* is one
+`.tabset` tab per series (`ways_rows()`'s sibling in spirit, `f.how`), so a two-dataset measurement
+reads as two acts rather than one card repeating chips *Measured in* already shows; a single-series
+page draws no tab row. **Range & quality** leads with a four-chip line — bounds, observed, flagged,
+baseline, each hovering to the number(s) behind it (`quality_rows()`'s own `chips`, ` _plugins/
+measurements.rb`) — with the full definition list still there under a collapsed *details*. **Ways
+in** folds *This page as data* into the shared code-route tabset as its `json` panel
+(`_includes/ways_tabs.html`, `ways_rows()`'s `group` per way: app buttons for Explorer/db-query,
+then one tabset over erddap · parquet · r · python · json); every remaining figure caption
+(the years strip, *By depth*, *By month*, *Related measurements*) moved from a trailing `.mm-note`
+paragraph into an ⓘ on the heading it captions, text unchanged. Measured on temperature: 4,968 →
+3,729 px at 1280 px light (round-2-after-R1 baseline, before any face-row changes land).
+
 **Related measurements** are the record's `related[]`: the same quantity from another platform or
 another kind of sample, each its own page, never merged — `same_bottles` (the CTD files' own bottle
 samples, which would count the bottle dataset twice), `underway_vs_cast`, `replicate_vs_mean`,
