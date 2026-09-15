@@ -13,12 +13,16 @@
 
   include species_size.html data=page.size_data
 {%- endcomment -%}
-<h2 class="cc-h3" id="how-big">How big is it</h2>
-<div class="sp-ladder-wrap">
-  <svg class="sp-ladder" id="sp-ladder" role="img" aria-label="This taxon's lengths on a logarithmic scale, against six familiar objects"></svg>
-  <p class="sp-note">Every mark is a measured length with its own source — hover one to read it.
+<h2 class="cc-h3" id="how-big">How big is it
+  {%- capture ladder_info -%}
+  <p>Every mark is a measured length with its own source — hover one to read it.
     The reference objects are <span class="mono">_data/size_reference.csv</span>: two of them,
     the 505 µm bongo mesh and the net's ring, are CalCOFI's own sampling gear.</p>
+  {%- endcapture -%}
+  {% include info.html label="How to read the ladder" body=ladder_info %}
+</h2>
+<div class="sp-ladder-wrap">
+  <svg class="sp-ladder" id="sp-ladder" role="img" aria-label="This taxon's lengths on a logarithmic scale, against six familiar objects"></svg>
 </div>
 <div class="sp-beside-wrap">
   <svg class="sp-beside" id="sp-beside" role="img" aria-label="This taxon drawn to scale beside the nearest familiar object"></svg>

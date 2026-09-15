@@ -305,9 +305,34 @@
     return { k: n.k, s: [n.n, n.c, n.l].concat(dsOf(n.k).map(function (i) { return DS[i].s + ' ' + DS[i].k; }))
                        .filter(Boolean).join(' ').toLowerCase() };
   });
+  /* ── the Matches list (umbrella D9, I2): the same row shape as _includes/result_row.html
+     (`.cc-result` / `-n` / `-c` / `-m`), built here in JS rather than re-included per row, exactly
+     as that include's own header invites. Fed by the same `hits` the tree highlighting already
+     computes — sorted by observations, up to 50 — so the two never disagree about which taxa
+     matched. A dataset-local synthetic node (`_…`) has no page and is left out of the list, though
+     it still highlights in the tree. */
+  var matchesEl = document.getElementById('sp-matches');
+  function renderMatches(hits) {
+    if (!matchesEl) return;
+    var rows = (hits || []).filter(function (k) { return k.charAt(0) !== '_'; }).slice(0, 50);
+    if (!rows.length) { matchesEl.hidden = true; matchesEl.innerHTML = ''; return; }
+    var html = '<h3 class="sp-matches-h">' + fmt(rows.length) + (rows.length === 1 ? ' match' : ' matches') +
+               ' · the tree below is folded to them</h3><div class="sp-matches-list">';
+    rows.forEach(function (k) {
+      var n = N[k], nds = dsOf(k).length, it = ITALIC[n.r], label = nameOf(n);
+      var meta = esc(n.r || 'dataset-local class') + ' · ' + fmt(R[k].o) + ' obs · ' + fmt(nds) + ' dataset' + (nds === 1 ? '' : 's');
+      html += '<a class="cc-result" href="' + esc(BASE + slugOf(k) + '/') + '">' +
+              '<b class="cc-result-n">' + (it ? '<i>' + esc(label) + '</i>' : esc(label)) + '</b>' +
+              (n.c ? '<span class="cc-result-c">' + esc(n.c) + '</span>' : '') +
+              '<span class="cc-result-m tab">' + meta + '</span></a>';
+    });
+    matchesEl.innerHTML = html + '</div>';
+    matchesEl.hidden = false;
+  }
   function clearHits() {
     tree.querySelectorAll('.sp-tr.sp-hit').forEach(function (el) { el.classList.remove('sp-hit'); });
     qn.textContent = fmt(D.counts.tree) + ' in the tree';
+    renderMatches([]);
   }
   /* the ancestors the tree SHOWS — a folded minor rank is not a row to open */
   function ancestorsOf(k) { var a = [], p = N[k].p; while (p) { if (shown(p)) a.unshift(p); p = N[p].p; } return a; }
@@ -329,6 +354,7 @@
     var found = IDX.filter(function (x) { return x.s.indexOf(s) >= 0; }).map(function (x) { return x.k; });
     var hits = found.filter(shown).sort(function (a, b) { return R[b].o - R[a].o; }).slice(0, 250);
     var folded = found.length - found.filter(shown).length;
+    renderMatches(hits);
     tree.querySelectorAll(':scope > ul > li').forEach(collapse);
     var first = null;
     hits.forEach(function (k) {

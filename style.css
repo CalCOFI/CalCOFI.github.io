@@ -914,8 +914,6 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 /* width-driven with the vector's own ratio, capped so a near-square silhouette (a diatom, a
    copepod) cannot tower over the photo beside it while a long one (a fish) still fills the row */
 .sp-sil { display: block; width: 100%; height: auto; min-height: 72px; max-height: 240px; color: var(--fg); fill: currentColor; max-width: 100%; }
-.sp-stand { font: 11.5px var(--mono); color: var(--muted); margin: 0; }
-.sp-stand i { font-family: var(--sans); }
 
 /* the glance: two bars on one scale — the taxon and the nearest familiar object */
 .sp-glance { border-top: 1px solid var(--border); padding-top: var(--space); font-size: 13px; margin: 0; }
@@ -940,18 +938,11 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 .sp-credit { font: 11.5px/1.5 var(--mono); color: var(--muted); margin: 6px 0 0; }
 .sp-credit a { color: inherit; text-decoration: underline; text-decoration-color: var(--border); }
 .sp-credit a:hover { text-decoration-color: currentColor; }
-.sp-credits { margin-top: var(--space); }
 
-/* the sentence: borrowed prose, this release's numbers, the naming authority — each underlined in
-   its own source's colour, with a legend, so a reader can see which half is ours (§ D4) */
+/* the sentence (round 2 § P1, D6): plain prose, no per-part underline — each part's source is a
+   small `.cc-src` badge instead (style block below), so the old three-style underline + legend is
+   retired along with it. */
 .sp-sent { font-size: 16px; line-height: 1.55; margin: calc(var(--space) * 2) 0 0; max-width: 80ch; }
-.sp-sent .s-wp { text-decoration: underline; text-decoration-color: var(--accent); text-decoration-thickness: 1.5px; text-underline-offset: 3px; }
-.sp-sent .s-rec { text-decoration: underline; text-decoration-style: dotted; text-decoration-color: var(--cc-green); text-underline-offset: 3px; }
-.sp-sent .s-au { text-decoration: underline; text-decoration-style: dashed; text-decoration-color: var(--warn); text-underline-offset: 3px; }
-.sp-legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: var(--fs-sm); color: var(--muted); margin: var(--space) 0 0; }
-.sp-legend span::before { content: ""; display: inline-block; width: 18px; height: 0; border-top: 2px solid var(--accent); margin-right: 6px; vertical-align: middle; }
-.sp-legend .l-rec::before { border-top-style: dotted; border-top-color: var(--cc-green); }
-.sp-legend .l-au::before { border-top-style: dashed; border-top-color: var(--warn); }
 
 /* ── How big is it: the ladder, the beside figure, the plate ─────────────────── */
 /* Each <svg> is hidden until species.js has drawn into it — the `.sp-drawn` rule the years strip
@@ -1917,3 +1908,14 @@ a.cc-chip-lic:hover { color: var(--accent); border-color: var(--accent); text-de
   .cc-result { flex-direction: column; align-items: flex-start; gap: 2px; }
   .cc-result-m { margin-left: 0; white-space: normal; }
 }
+
+/* ── round 2 · species + indexes (WS-R5) ─────────────────────────────────────
+   P1–P3 apply R1's idioms to the species page (the sentence's badges, the ways-in tabset — no
+   layout of their own needed, styled already); this block covers what is new: an ⓘ sitting inline
+   on a heading, and the flat Matches list above the species tree (umbrella D9, I2). */
+.cc-h3 .cc-info, .cc-lede .cc-info { margin-left: 6px; vertical-align: 2px; }
+
+#sp-matches { margin: 0 0 calc(var(--space) * 1.5); }
+#sp-matches[hidden] { display: none; }
+.sp-matches-h { font: 600 13px var(--sans); color: var(--muted); margin: 0 0 4px; }
+.sp-matches-list { display: flex; flex-direction: column; }

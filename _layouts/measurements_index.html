@@ -16,24 +16,27 @@ layout: default
   <div class="cc-container">
     <div class="mm-idx-head">
       <div class="cc-eyebrow">Measurements · {{ mm.release.version | escape }} · one name per quantity across datasets</div>
-      <h1 class="cc-h1">{{ c.measurements }} measurements. {{ c.series }} series. {{ c.datasets }} datasets. {{ c.full_rows_m }} M values, {{ mm.datasets | map: 'y0' | compact | sort | first }} → {{ mm.datasets | map: 'y1' | compact | sort | last }}.</h1>
-      <p class="cc-lede cc-prose">Everything CalCOFI has measured in the water and the air above it — temperature and
-        salinity from the bottle casts of 1949 to this year's CTD profiles, nutrients, carbon, pigments and light, the
-        underway weather, the picoplankton counted by flow cytometry — keyed to one name, so the same measurement means
-        the same thing in every dataset. Start from the overview below, search, filter by category, or start from a
-        dataset; every measurement has its own page.</p>
-      {%- comment -%} how the count works, every number read from the record (Ben, 2026-09-10: the total must be
-        plain, and how a shared NERC concept is what folds two datasets' series into one measurement) {%- endcomment -%}
-      <p class="cc-prose mm-how">A <b>measurement</b> is one quantity under one name; a <b>series</b> is one dataset's
-        column for it. Two datasets' series count as one measurement only where they carry the same NERC P01 concept
-        for the same kind of sample — {{ c.n_unified }} do today:
-        {%- for u in mm.unified %} <a href="{{ u.url | relative_url }}">{{ u.label }}</a>{% unless forloop.last %},{% endunless %}{% endfor %} —
-        so {{ c.series }} series make {{ c.measurements }} measurements. {{ c.n_p01 }} of the {{ c.measurements }} carry a
-        NERC P01 concept; {{ c.n_no_p01 }} carry none and keep their own names, because an empty concept means no
-        concept says exactly this, never that nobody looked.</p>
-      <p class="cc-aside">The machine-readable form is one JSON per measurement
-        (<span class="mono">/measurements/{key}.json</span>) and
-        <a href="{{ '/measurements/sitemap.xml' | relative_url }}">sitemap.xml</a>.</p>
+      <h1 class="cc-h1">Everything measured in the water and the air above it</h1>
+      <p class="cc-lede cc-prose">Temperature and salinity from the bottle casts of 1949 to this year's CTD profiles,
+        nutrients, carbon, pigments and light, the underway weather, the picoplankton counted by flow cytometry —
+        keyed to one name, so the same measurement means the same thing in every dataset. Start from the overview
+        below, search, filter by category, or start from a dataset; every measurement has its own page.
+        {%- comment -%} how the count works, and the machine-readable form, folded into one ⓘ (§ I1): every number
+          read from the record (Ben, 2026-09-10: the total must be plain, and how a shared NERC concept is what
+          folds two datasets' series into one measurement) — said once, in the band below, not twice on this page. {%- endcomment -%}
+        {%- capture mm_idx_info -%}
+        <p>A <b>measurement</b> is one quantity under one name; a <b>series</b> is one dataset's
+          column for it. Two datasets' series count as one measurement only where they carry the same NERC P01 concept
+          for the same kind of sample — {{ c.n_unified }} do today:
+          {%- for u in mm.unified %} <a href="{{ u.url | relative_url }}">{{ u.label }}</a>{% unless forloop.last %},{% endunless %}{% endfor %} —
+          so {{ c.series }} series make {{ c.measurements }} measurements. {{ c.n_p01 }} of the {{ c.measurements }} carry a
+          NERC P01 concept; {{ c.n_no_p01 }} carry none and keep their own names, because an empty concept means no
+          concept says exactly this, never that nobody looked.</p>
+        <p>The machine-readable form is one JSON per measurement
+          (<span class="mono">/measurements/{key}.json</span>) and
+          <a href="{{ '/measurements/sitemap.xml' | relative_url }}">sitemap.xml</a>.</p>
+        {%- endcapture -%}
+        {% include info.html label="What counts as one measurement, and the machine-readable form" body=mm_idx_info align="right" %}</p>
       <dl class="mm-counts">
         <div><dd class="tab">{{ c.measurements }}</dd><dt>measurements</dt></div>
         <div><dd class="tab">{{ c.series }}</dd><dt>series</dt></div>
