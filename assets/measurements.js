@@ -415,16 +415,40 @@
          the axis end beside it (measured at 1470 px on temperature, whose −1.91 °C mark sits 6 px
          from the left edge of a −2 → 40 domain). */
       var mks = (o.marks || []).slice().sort(function (a, b) { return (a.v || 0) - (b.v || 0); });
+      /* Ben, 2026-09-16 (pH: nine marks, five of them between 6.5 and 8.1): a label is placed only
+         where it fits. Marks are tried nearest-the-window first — the two the line below names —
+         on row 0 then row 1; a label that would overlap one already placed is not drawn, and its
+         mark keeps the tick and the hover. */
+      var wc = o.win && o.win[0] != null ? (o.win[0] + o.win[1]) / 2 : (o.dom[0] + o.dom[1]) / 2;
+      var order = mks.map(function (m, i) { return i; }).sort(function (a, b) {
+        return Math.abs(mks[a].v - wc) - Math.abs(mks[b].v - wc);
+      });
+      var taken = [[], []];
+      var fits = function (r, a, b) {
+        return taken[r].every(function (t) { return b < t[0] - 6 || a > t[1] + 6; });
+      };
+      var labs = {};
+      order.forEach(function (i) {
+        var m = mks[i], mx = x(m.v);
+        var anc = mx < W * 0.2 ? "start" : mx > W * 0.8 ? "end" : "middle";
+        var lx = anc === "start" ? Math.max(mx - 4, L) : anc === "end" ? Math.min(mx + 4, W - R) : mx;
+        var probe = svgEl("text", { cls: "mmf-mklab", x: lx, y: -99, "text-anchor": anc, text: shortLab(m.label) }, host);
+        var tw = 0;
+        try { tw = probe.getComputedTextLength(); } catch (e) { tw = 0; }
+        if (!tw) tw = shortLab(m.label).length * 6.5;
+        host.removeChild(probe);
+        var a = anc === "start" ? lx : anc === "end" ? lx - tw : lx - tw / 2, b = a + tw;
+        for (var r = 0; r < 2; r++) {
+          if (fits(r, a, b)) { taken[r].push([a, b]); labs[i] = { row: r, lx: lx, anc: anc }; rows = Math.max(rows, r); break; }
+        }
+      });
       mks.forEach(function (m, i) {
         var mx = x(m.v), g = svgEl("g", { cursor: "help" }, host);
         svgEl("line", { cls: "mmf-mk", x1: mx, x2: mx, y1: y0 - 6, y2: y0 + h + 4 }, g);
         svgEl("path", { d: "M" + (mx - 4) + " " + (y0 + h + 4) + "h8l-4 5z", fill: "var(--fg)" }, g);
-        var lv = i % 2;
-        var anc = mx < W * 0.2 ? "start" : mx > W * 0.8 ? "end" : "middle";
-        var lx = anc === "start" ? Math.max(mx - 4, L) : anc === "end" ? Math.min(mx + 4, W - R) : mx;
-        rows = Math.max(rows, lv);
-        svgEl("text", { cls: "mmf-mklab", x: lx, y: y0 + h + 27 + lv * 13, "text-anchor": anc,
-                        text: shortLab(m.label) }, g);
+        var lb = labs[i];
+        if (lb) svgEl("text", { cls: "mmf-mklab", x: lb.lx, y: y0 + h + 27 + lb.row * 13, "text-anchor": lb.anc,
+                                text: shortLab(m.label) }, g);
         svgEl("rect", { cls: "mmf-hit", x: mx - 10, y: 0, width: 20, height: y0 + h + 32 }, g);
         hoverTip(g, "<b>" + esc(m.label) + "</b> " + esc(o.fmt(m.v)) + (m.src ? "<br>" + esc(m.src) : ""),
                  m.label + " " + o.fmt(m.v) + (m.src ? " \u00b7 " + m.src : ""));

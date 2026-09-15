@@ -118,7 +118,7 @@
       fragment (the site has no stable anchors). The row's `source` names the page, so a label that
       already says calcofi.org does not say it twice. {%- endcomment -%}
     {%- if h0.link -%}
-    <a class="mmf-pin" href="{{ h0.link }}" rel="external"><span class="mmf-disc" aria-hidden="true"></span>{{ h0.page | remove_first: 'calcofi.org ' | escape }} on calcofi.org ↗</a>
+    <a class="mmf-pin" href="{{ h0.link }}" rel="external"><span class="mmf-disc" aria-hidden="true"><svg><use href="#i-ext"/></svg></span>{{ h0.page | remove_first: 'calcofi.org ' | escape }} on calcofi.org ↗</a>
     {%- endif -%}
     {%- else -%}
     <p class="mmf-none">No method row is registered for this measurement yet

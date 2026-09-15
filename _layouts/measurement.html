@@ -171,7 +171,7 @@ layout: default
                 {%- if h.precision %}<span class="cc-chip cc-chip-accent">{{ h.precision | escape }}</span>{% endif -%}
               </div>
               {%- if h.link -%}
-              <a class="mmf-pin" href="{{ h.link }}" rel="external"><span class="mmf-disc" aria-hidden="true"></span>{{ h.page | escape }} on calcofi.org ↗</a>
+              <a class="mmf-pin" href="{{ h.link }}" rel="external"><span class="mmf-disc" aria-hidden="true"><svg><use href="#i-ext"/></svg></span>{{ h.page | remove_first: 'calcofi.org ' | escape }} on calcofi.org ↗</a>
               {%- endif -%}
               {%- if h.acid_figure %}<div class="mmf-fig" id="mmf-acid"></div>{% endif -%}
             </div>
