@@ -18,13 +18,16 @@ layout: default
       would otherwise leave a third of the band empty beside it {%- endcomment -%}
     <div class="sp-idx-head">
       <div class="cc-eyebrow">Species · {{ sp.release.version | escape }} · WoRMS-keyed (ITIS for birds)</div>
-      <h1 class="cc-h1">{{ c.species_observed }} species. {{ c.taxa_observed }} taxa. {{ c.datasets }} datasets, one tree.</h1>
-      <p class="cc-lede cc-prose">Every organism CalCOFI has counted, from the diatoms of the phytoplankton slides
+      <h1 class="cc-h1">Every organism CalCOFI has counted</h1>
+      <p class="cc-lede cc-prose">From the diatoms of the phytoplankton slides
         to the whales of the Farallon census, keyed to one accepted name so the same species means the same thing in
         every dataset. Search it, walk the tree, or start from a dataset — every taxon has its own page, and the
-        {{ c.taxa_observed }} observed carry {{ c.ancestors }} ancestors that roll them up.</p>
-      <p class="cc-aside">The machine-readable form is one JSON per taxon (<span class="mono">/species/{slug}.json</span>) and
-        <a href="{{ '/species/sitemap.xml' | relative_url }}">sitemap.xml</a>.</p>
+        {{ c.taxa_observed }} observed carry {{ c.ancestors }} ancestors that roll them up.
+        {%- capture sp_idx_info -%}
+        <p>The machine-readable form is one JSON per taxon (<span class="mono">/species/{slug}.json</span>) and
+          <a href="{{ '/species/sitemap.xml' | relative_url }}">sitemap.xml</a>.</p>
+        {%- endcapture -%}
+        {% include info.html label="The machine-readable form" body=sp_idx_info align="right" %}</p>
       <dl class="sp-counts">
         <div><dd class="tab">{{ c.species_observed }}</dd><dt>species</dt></div>
         <div><dd class="tab">{{ c.taxa_observed }}</dd><dt>taxa observed</dt></div>
@@ -54,6 +57,13 @@ layout: default
         <button type="button" class="sp-ranks-all" data-ranks="all" aria-pressed="false" title="Show every rank of the lineage (subphylum, superclass, subfamily …); by default the tree shows kingdom → phylum → class → order → family → genus → species and any taxon observed at another rank">all ranks</button>
       </div>
     </div>
+
+    {%- comment -%} the Matches list (umbrella D9, I2): a flat, selectable list of the search's own
+      hits — the same row shape the front door's Species/Measurements panels use (R4) — above the
+      tree, so which taxa matched is never buried among their ancestors. assets/species.js fills it
+      from the same `hits` the tree highlighting already computes; empty and hidden otherwise, and on
+      load from `?q=` exactly as the tree fold already is. {%- endcomment -%}
+    <div id="sp-matches" hidden></div>
 
     {%- comment -%} an expanded pane never removes the other: the collapsed pane is a slim vertical
       pill beside it — the Explorer's collapsed-panel idiom — and the whole pill is the button that

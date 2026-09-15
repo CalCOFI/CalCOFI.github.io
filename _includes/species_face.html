@@ -18,7 +18,12 @@
   A taxon with no sidecar entry renders nothing at all from here, and the page keeps the spacing it
   had before this include existed.
 
-  include species_face.html face=page.face glance=page.glance sentence=page.sentence credits=page.credits
+  Round 2 (§ P1, D6): the sentence's parts keep their spans (JSON-LD and check_layout.py read them)
+  but end in a small `.cc-src` badge instead of an underline + legend; the silhouette's stand-in
+  caption folds into its own one-line `.sp-credit` rather than a separate figcaption; the photo's
+  long "(c) … uploaded by …" string moves to the credit line's `title` instead of being printed.
+
+  include species_face.html face=page.face glance=page.glance sentence=page.sentence
 {%- endcomment -%}
 {%- assign f = include.face -%}
 {%- assign g = include.glance -%}
@@ -30,8 +35,8 @@
   <figure class="sp-sil-fig">
     {%- if f.sil -%}
     <svg class="sp-sil" viewBox="{{ f.sil.viewBox }}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="{{ f.sil.label | escape }}">{{ f.sil.inner }}</svg>
-    {%- if f.sil.stand_in and f.sil.shown -%}
-    <figcaption class="sp-stand">drawn from <i>{{ f.sil.shown | escape }}</i>{% if f.sil.steps_up > 0 %}, {{ f.sil.steps_up }} rank{% if f.sil.steps_up > 1 %}s{% endif %} up{% endif %}</figcaption>
+    {%- if f.sil.credit -%}
+    <figcaption class="sp-credit">{% include species_credit.html c=f.sil.credit %}</figcaption>
     {%- endif -%}
     {%- endif -%}
     {%- if g -%}
@@ -51,7 +56,7 @@
     <div class="sp-photo">
       <img src="{{ f.photo.src }}" alt="{{ f.photo.alt | escape }}"{% if f.photo.w %} width="{{ f.photo.w }}"{% endif %}{% if f.photo.h %} height="{{ f.photo.h }}"{% endif %} loading="lazy" decoding="async" style="object-position:{{ f.photo.pos }}">
     </div>
-    <figcaption class="sp-credit">
+    <figcaption class="sp-credit"{% if f.photo.credit.by_full %} title="{{ f.photo.credit.by_full | escape }}"{% endif %}>
       {%- include species_credit.html c=f.photo.credit -%}
       {%- if f.photo.nc %} <span class="cc-chip cc-chip-na" title="a non-commercial Creative Commons licence: allowed here, ranked last, and named so a re-user knows the terms">NC</span>{% endif -%}
     </figcaption>
@@ -60,30 +65,15 @@
 </div>
 {%- endif -%}
 
+{%- comment -%}
+  The sentence (§ P1, D6): each part keeps its span for JSON-LD and check_layout.py, and ends in a
+  small `.cc-src` badge whose `title` is the source the sentence used to spell out in a legend below
+  it — one badge, one hover, nothing typed twice.
+{%- endcomment -%}
 {%- if s.wp or s.rec or s.au -%}
 <p class="sp-sent">
-  {%- if s.wp %}<span class="s-wp">{{ s.wp | escape }}</span>{% if s.wp_about_genus %} <span class="cc-muted">(Wikipedia has only the genus.)</span>{% endif %} {% endif -%}
-  {%- if s.rec %}<span class="s-rec">{{ s.rec | escape }}</span>{% endif -%}
-  {%- if s.au %} <span class="s-au">{{ s.au | escape }}</span>{% endif -%}
-</p>
-<p class="sp-legend">
-  {%- if s.wp %}<span class="l-wp">borrowed prose</span>{% endif -%}
-  {%- if s.rec %}<span class="l-rec">this release's own numbers</span>{% endif -%}
-  {%- if s.au %}<span class="l-au">the naming authority</span>{% endif -%}
-</p>
-{%- endif -%}
-
-{%- comment -%}
-  The credit line under the sentence carries the slots that have no caption of their own — the
-  silhouette and the borrowed text. The photo is credited in its own <figcaption> above, so it is
-  skipped here rather than printed twice.
-{%- endcomment -%}
-{%- assign rest = include.credits | where_exp: "c", "c.kind != 'Photo'" -%}
-{%- if rest.size > 0 -%}
-<p class="sp-credit sp-credits">
-  {%- for c in rest -%}
-  {%- unless forloop.first %} <span class="sp-sep" aria-hidden="true">·</span> {% endunless -%}
-  {%- include species_credit.html c=c -%}
-  {%- endfor -%}
+  {%- if s.wp %}<span class="s-wp">{{ s.wp | escape }}</span>{% if s.wp_badge %}<span class="cc-src cc-src-wp" title="{{ s.wp_badge | escape }}">W</span>{% endif %} {% endif -%}
+  {%- if s.rec %}<span class="s-rec">{{ s.rec | escape }}</span>{% if s.rec_badge %}<span class="cc-src cc-src-rec" title="{{ s.rec_badge | escape }}">R</span>{% endif %}{% endif -%}
+  {%- if s.au %} <span class="s-au">{{ s.au | escape }}</span>{% if s.au_badge %}<span class="cc-src cc-src-nerc" title="{{ s.au_badge | escape }}">A</span>{% endif %}{% endif -%}
 </p>
 {%- endif -%}

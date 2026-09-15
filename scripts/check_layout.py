@@ -43,23 +43,27 @@ can only pass by the layout actually being fixed:
              exactly one .mmf-tip div serves every figure.
   erddap     (dataset pages) each ERDDAP dataset id's tabledap page appears exactly once. It was
              listed twice: once under Download for its formats, once under Services for its page.
-  species    (/species/ and one taxon page, plan 2026-09-09 § S3) the index's five counts equal the
-             inline record's; the matrix has exactly (rows x datasets) cells and its pane is not
-             drawn taller than its own content; the tree pane is EXACTLY the matrix pane's height
-             (the tree scrolls inside it, so no unbounded text sits beside a fixed-height figure);
-             every .sp-url is one line and elided from the middle rather than wrapped; on a taxon
-             page the "Observed in" rows are the record's datasets[] with its counts, the lineage
-             is a chain of links ending in the taxon's parent, and the Explorer link opens
-             prefilled on the taxon key.
-  faces      (a taxon page, plan 2026-09-11 § D1–D5, D9) the silhouette is a labelled role="img"
-             with real pixels; the photo has alt text, loading="lazy" and the radial mask on its
-             FRAME; the glance draws two bars or says "not on record" — never a blank slot; the
-             sentence's marked parts and its legend agree; every asset shown has a credit line; the
-             ladder draws exactly the payload's marks and the six references of size_reference.csv
-             with NO two labels overlapping (bounding boxes read from the DOM); the plate is drawn
-             exactly where the payload has one; and the stat row says "records", not
-             "observations", until the record carries n_present (§ D9 — 75.5 % of the CUFES rows
-             and 85.0 % of the phytoplankton rows are zeros, so a row is not an organism).
+  species    (/species/ and one taxon page, plan 2026-09-09 § S3; round 2 § I1, I2, P1–P3, WS-R5)
+             the index's five counts equal the inline record's and its h1 carries no digit (the
+             band is the numbers' only home); the matrix has exactly (rows x datasets) cells and
+             its pane is not drawn taller than its own content; the tree pane is EXACTLY the matrix
+             pane's height (the tree scrolls inside it, so no unbounded text sits beside a
+             fixed-height figure); a search's hits fill a flat #sp-matches list above the tree,
+             never hidden while there is at least one; every .sp-url is one line and elided from
+             the middle rather than wrapped; on a taxon page the "Observed in" rows are the
+             record's datasets[] with its counts, the lineage is a chain of links ending in the
+             taxon's parent, the Explorer link opens prefilled on the taxon key, and Ways in takes
+             the same tabset include as the measurement page.
+  faces      (a taxon page, plan 2026-09-11 § D1–D5, D9; round 2 § P1, P2, D6) the silhouette is a
+             labelled role="img" with real pixels; the photo has alt text, loading="lazy" and the
+             radial mask on its FRAME; the glance draws two bars or says "not on record" — never a
+             blank slot; the sentence's marked parts each end in exactly one .cc-src source badge
+             and carry NO .sp-legend (retired in favour of the badges); every asset shown has a
+             credit line; the ladder draws exactly the payload's marks and the six references of
+             size_reference.csv with NO two labels overlapping (bounding boxes read from the DOM);
+             the plate is drawn exactly where the payload has one; and the stat row says "records",
+             not "observations", until the record carries n_present (§ D9 — 75.5 % of the CUFES
+             rows and 85.0 % of the phytoplankton rows are zeros, so a row is not an organism).
   measurements (/measurements/ and one measurement page, plan 2026-09-10 § D5, D6) the timeline
              draws one row per measurement and one bar per series of the page's OWN inline record
              (79 and 84 on v2026.09.06), grouped into its categories; the matrix is categories ×
@@ -105,6 +109,7 @@ DEFAULT_PATHS = [
     "/species/",                     # the species catalog: search + tree, the matrix, the icicle
     "/species/?panes=matrix",        # the matrix expanded: the tree folds into a vertical pill, never gone
     "/species/?panes=matrix&q=sardine",  # …and a search with a hit shows the tree again (Ben, 2026-09-10)
+    "/species/?q=sardin",            # I2: the flat Matches list above the tree (WS-R5, umbrella D9)
     "/species/worms-217452/",        # the sardine: two datasets, twelve lineage ranks, five ways in
                                      # — and the full face: silhouette, photo, glance, five ladder
                                      #   marks and a NOAA plate (plan 2026-09-11 § Verification F3)
@@ -527,6 +532,12 @@ PROBE = r"""
     };
     out.species = {
       counts,
+      h1: (d.querySelector(".sp-idx-head h1") || {}).textContent || null,
+      matchesHidden: (d.getElementById("sp-matches") || {}).hidden,
+      matchesRows: [...d.querySelectorAll("#sp-matches .cc-result")].map(a => ({
+        n: (a.querySelector(".cc-result-n") || {}).textContent || "",
+        m: (a.querySelector(".cc-result-m") || {}).textContent || ""
+      })),
       rec: rec && rec.counts,
       rows: rec && rec.mx ? rec.mx.rows.length : null,
       cols: rec && rec.mx ? rec.mx.cols.length : null,
@@ -586,7 +597,8 @@ PROBE = r"""
       // HTML document and never matches SVG's camelCase attribute, so the strip was display:none
       // with 93 rects in it and every count still agreed (measured 2026-09-09)
       stripH: d.querySelector("#sp-strip") ? px(d.querySelector("#sp-strip").getBoundingClientRect().height) : 0,
-      stats: [...d.querySelectorAll(".sp-stat > div")].map(el => el.querySelector("dt").textContent.trim())
+      stats: [...d.querySelectorAll(".sp-stat > div")].map(el => el.querySelector("dt").textContent.trim()),
+      waysTabset: !!d.querySelector(".sp-col-ways .tabset")
     };
   }
 
@@ -613,7 +625,6 @@ PROBE = r"""
     out.faces = {
       sil: sil ? Object.assign(box(sil), { label: sil.getAttribute("aria-label"), role: sil.getAttribute("role"),
                                            fill: cs(sil).fill.replace(/\s/g, "") }) : null,
-      stand: (d.querySelector(".sp-stand") || {}).textContent || null,
       photo: ph ? Object.assign(box(ph), { alt: ph.getAttribute("alt"), w0: ph.getAttribute("width"),
                                            h0: ph.getAttribute("height"), loading: ph.getAttribute("loading"),
                                            pos: cs(ph).objectPosition,
@@ -623,7 +634,8 @@ PROBE = r"""
       bars: [...d.querySelectorAll(".sp-glance .sp-bar")].map(b => px(b.getBoundingClientRect().width)),
       glanceNone: !!d.querySelector(".sp-glance-none"),
       sentParts: [...d.querySelectorAll(".sp-sent > span")].map(s => s.className),
-      legend: d.querySelectorAll(".sp-legend > span").length,
+      badges: [...d.querySelectorAll(".sp-sent > .cc-src")].map(s => s.className),
+      legendCount: d.querySelectorAll(".sp-legend").length,
       credits: [...d.querySelectorAll(".sp-credit")].map(p => p.textContent.replace(/\s+/g, " ").trim().slice(0, 90)),
       statWords: [...d.querySelectorAll(".sp-stat > div")].map(el => el.querySelector("dt").textContent.trim()),
       size,
@@ -732,6 +744,7 @@ PROBE = r"""
       n: (d.getElementById("mm-qn") || {}).textContent
     });
     out.mm = {
+      h1: (d.querySelector(".mm-idx-head h1") || {}).textContent || null,
       rec: rec && rec.counts,
       cats: rec ? rec.cats.length : 0,
       ds: rec ? rec.ds.length : 0,
@@ -1082,6 +1095,10 @@ def check(path, r, width, theme, fails, notes):
                 fails.append(f"{where}: the species index has no {k!r} count though the record carries {v}")
             elif seen[k] != v:
                 fails.append(f"{where}: the index says {k} = {seen[k]}, the record says {v}")
+        # I1: the h1 is a name, not a sentence of numbers — the numbers live in the band above,
+        # once, and only there (checked against the record above)
+        if sp.get("h1") and any(ch.isdigit() for ch in sp["h1"]):
+            fails.append(f"{where}: the species index h1 carries a digit: {sp['h1']!r}")
         # the matrix is exactly (classes + the two rows the record makes necessary) x datasets
         if sp["rows"] and sp["cols"]:
             wantc = sp["rows"] * sp["cols"]
@@ -1137,6 +1154,21 @@ def check(path, r, width, theme, fails, notes):
                 fails.append(f"{where}: the search found {sp['hits']} hit(s) but the tree is folded — nothing to click")
             elif sp["hits"]:
                 notes.append(f"{where}: search hits {sp['hits']}, shown {sp['hitsShown']}, panes={mode}")
+            # I2 (umbrella D9): the Matches list above the tree — the same hits, selectable, never
+            # hidden while there is at least one
+            if sp["hits"]:
+                mrows = sp.get("matchesRows") or []
+                if sp.get("matchesHidden", True) or not mrows:
+                    fails.append(f"{where}: the search found {sp['hits']} hit(s) but #sp-matches is "
+                                 f"hidden or empty")
+                else:
+                    notes.append(f"{where}: #sp-matches {len(mrows)} row(s), first {mrows[0]['n']!r} {mrows[0]['m']!r}")
+                if re.search(r"[?&]q=sardin\b", path):
+                    if len(mrows) < 2:
+                        fails.append(f"{where}: #sp-matches has {len(mrows)} row(s) for 'sardin', expected >= 2")
+                    elif not mrows[0]["n"].strip().startswith("Sardinops"):
+                        fails.append(f"{where}: #sp-matches' first row is {mrows[0]['n']!r}, "
+                                     f"expected a Sardinops by observations")
 
     # ── one taxon page ────────────────────────────────────────────────────────
     spp = r.get("speciesPage")
@@ -1154,6 +1186,9 @@ def check(path, r, width, theme, fails, notes):
                                  f"the record says {wantr['n']}")
         if not spp["lineage"]:
             fails.append(f"{where}: the taxon page has no lineage")
+        # P3: Ways in takes the same tabset include as the measurement page (D2)
+        if not spp.get("waysTabset"):
+            fails.append(f"{where}: Ways in has no .tabset — the ways_tabs.html include is missing")
         for a in spp["lineage"]:
             if not str(a["href"]).startswith("/species/"):
                 fails.append(f"{where}: lineage link {a['name']!r} does not point at a species page: {a['href']!r}")
@@ -1193,19 +1228,25 @@ def check(path, r, width, theme, fails, notes):
             if ("observations" in words and "records" in words
                     and words.index("observations") > words.index("records")):
                 fails.append(f"{where}: 'records' is drawn before 'observations' in the stat row")
-        # the sentence: its parts are marked, and the legend names exactly the parts that are drawn
+        # the sentence (round 2 § P1, D6): its parts are marked, and each ends in exactly one source
+        # badge — the underline + legend idiom is retired, so a stray .sp-legend is a regression
         parts = [p for p in fa["sentParts"] if p.startswith("s-")]
-        if parts and fa["legend"] != len(parts):
+        badges = fa.get("badges", [])
+        if parts and len(badges) != len(parts):
             fails.append(f"{where}: the sentence has {len(parts)} marked part(s) {parts} but "
-                         f"{fa['legend']} legend entries")
+                         f"{len(badges)} source badge(s)")
+        if fa.get("legendCount"):
+            fails.append(f"{where}: the sentence still carries a .sp-legend "
+                         f"({fa['legendCount']}) — retired in favour of the source badges")
         if fa["sil"]:
             s = fa["sil"]
             if s["role"] != "img" or not s["label"]:
                 fails.append(f"{where}: the silhouette has role={s['role']!r} aria-label={s['label']!r}")
             if s["w"] < 20 or s["h"] < 20:
                 fails.append(f"{where}: the silhouette is drawn {s['w']}x{s['h']}px")
+            sil_credit = next((c for c in fa["credits"] if c.startswith("Silhouette")), None)
             notes.append(f"{where}: silhouette {s['w']}x{s['h']} {s['label']!r}"
-                         + (f" · {fa['stand'].strip()}" if fa["stand"] else ""))
+                         + (f" · {sil_credit}" if sil_credit else ""))
         if fa["photo"]:
             p = fa["photo"]
             if not p["alt"]:
@@ -1282,6 +1323,9 @@ def check(path, r, width, theme, fails, notes):
     mm = r.get("mm")
     if mm:
         rec = mm["rec"] or {}
+        # I1: the h1 is a name, not a sentence of numbers — the band below carries them, once
+        if mm.get("h1") and any(ch.isdigit() for ch in mm["h1"]):
+            fails.append(f"{where}: the measurements index h1 carries a digit: {mm['h1']!r}")
         notes.append(f"{where}: timeline {mm['tlRows']} rows / {mm['tlBars']} bars in {mm['tlCats']} categories, "
                      f"matrix {mm['mxRows']}x{mm['ds']} = {mm['mxCells']} cells ({mm['mxFilled']} with a series, "
                      f"summing {mm['mxSum']}), {mm['dsRows']} datasets, {len(mm['chips'])} chips")

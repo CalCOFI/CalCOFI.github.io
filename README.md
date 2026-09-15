@@ -632,6 +632,26 @@ glance draws two bars or says *not on record*, the sentence's marked parts and i
 asset shown has a credit line, the ladder draws exactly the payload's marks and the csv's references
 with **no two labels from different groups overlapping** (bounding boxes read from the DOM), the plate
 is drawn exactly where the payload has one, and the stat says *records*.
+
+**Round 2 (plan "faces round 2" § P1–P3, I1, I2, D6, D9; WS-R5).** The sentence's underline + legend
+retired in favour of R1's source badges (`.cc-src.cc-src-{wp,rec,nerc}`) — one small badge after each
+part, its `title` the article + licence + revision (and "Wikipedia has only the genus" where the
+sidecar's `about` says so), the release version, or the authority + id, so nothing is said twice. Each
+picture gets exactly one `.sp-credit` line — `Photo · {by} · {licence, linked} · {via}` and
+`Silhouette · {by} · {licence} · PhyloPic, drawn from {shown}`, the stand-in caption folded into it —
+with a photo source's long "(c) … uploaded by …" string moved to the line's `title` rather than printed
+(`_plugins/species.rb`'s `short_by()`). The strip's and the ladder's caption paragraphs are now an ⓘ on
+their heading; *Note from the crosswalk* is gone as a section and its text is an ⓘ after the `key` id
+instead. *Ways in* takes R1's `ways_tabs.html` include — *This page as data* is now the `json` tab
+rather than a section of its own, and its own paragraph is the heading's ⓘ. Both index pages (`/species/`,
+`/measurements/`) trade a numbers-sentence h1 for a name ("Every organism CalCOFI has counted" /
+"Everything measured in the water and the air above it"); the counts stay in the stat band, the only
+place they are typed, and the definitions + machine-readable line move into an ⓘ at the lede's end. On
+`/species/`, a search also renders a flat **Matches** list (`#sp-matches`, R1's `.cc-result` row shape,
+built client-side in `assets/species.js`) above the tree — up to 50 of the same `hits` the tree
+highlighting already computes, sorted by observations — so which taxa matched is never buried among
+their folded-open ancestors; the tree keeps its own fold and highlight below it.
+
 ## The measurements catalog (`/measurements/`, `/measurements/{key}/`)
 
 The species catalog's pattern with `obs_env.measurement_type` in the place of `obs_bio.taxon_key`:

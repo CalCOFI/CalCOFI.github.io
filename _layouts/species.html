@@ -51,12 +51,16 @@ layout: default
         <span><span class="cc-muted">{{ i.label }}</span> <a href="{{ i.url }}" rel="external">{{ i.id }}</a></span>
         {%- endfor -%}
         <span><span class="cc-muted">key</span> <span class="mono">{{ page.taxon_key | escape }}</span></span>
+        {%- if t.notes -%}
+        {%- capture crosswalk_info -%}<p>{{ t.notes | escape }}</p>{%- endcapture -%}
+        {% include info.html label="Note from the crosswalk" body=crosswalk_info %}
+        {%- endif -%}
       </div>
     </div>
 
     {%- comment -%} the face row, the sentence and the credit line (plan 2026-09-11 § D1–D4, D8).
       Absent in full for a taxon the media sidecar has no entry for. {%- endcomment -%}
-    {% include species_face.html face=page.face glance=page.glance sentence=page.sentence credits=page.credits %}
+    {% include species_face.html face=page.face glance=page.glance sentence=page.sentence %}
 
     {%- if page.stats.size > 0 -%}
     <dl class="sp-stat">
@@ -73,12 +77,16 @@ layout: default
     <div class="sp-cols2">
       <div class="sp-col-obs">
         {%- if page.ds_rows.size > 0 -%}
-        <h2 class="cc-h3">Observed in</h2>
+        <h2 class="cc-h3">Observed in
+          {%- capture obs_info -%}
+          <p>One row per dataset, one cell per year, darker with more observations — the same strip the front
+            door draws per dataset. Each row ends with the name that dataset uses (<span class="mono">dataset_taxon</span>);
+            the accepted name is written once, in the title above. A quiet pill marks a name the authority does not accept.</p>
+          {%- endcapture -%}
+          {% include info.html label="How to read the rows" body=obs_info %}
+        </h2>
         {% include species_rows.html rows=page.ds_rows %}
         <svg class="sp-strip" id="sp-strip" role="img" aria-label="Observations per year in each dataset"></svg>
-        <p class="sp-note">One row per dataset, one cell per year, darker with more observations — the same strip the front
-          door draws per dataset. Each row ends with the name that dataset uses (<span class="mono">dataset_taxon</span>);
-          the accepted name is written once, in the title above. A quiet pill marks a name the authority does not accept.</p>
         {%- else -%}
         <h2 class="cc-h3">Observed in</h2>
         <p class="sp-note">Nothing is keyed to this taxon directly — every observation under it belongs to one of the
@@ -119,27 +127,19 @@ layout: default
         <h2 class="cc-h3">Groups</h2>
         <p class="sp-chips">{% for g in page.groups %}<span class="cc-chip cc-chip-na mono" title="a taxon_group of the release's taxon_group table">{{ g | escape }}</span>{% endfor %}</p>
         {%- endif -%}
-
-        {%- if t.notes -%}
-        <h2 class="cc-h3">Note from the crosswalk</h2>
-        <p class="sp-note">{{ t.notes | escape }}</p>
-        {%- endif -%}
       </div>
 
       <div class="sp-col-ways">
-        <h2 class="cc-h3">Ways in</h2>
-        {% include species_ways.html ways=page.ways %}
-        <h2 class="cc-h3">This page as data</h2>
-        <ul class="sp-ways">
-          <li class="sp-way">
-            <div class="sp-l1"><b>JSON</b><span>this taxon's entry of the release record, verbatim</span></div>
-            <a class="sp-url" href="{{ '/species/' | append: t.slug | append: '.json' | relative_url }}">https://calcofi.io/species/{{ t.slug }}.json</a>
-          </li>
-        </ul>
-        <p class="sp-note">Read from <span class="mono">taxa.json</span> of release
-          <a href="{{ '/datasets/release/' | relative_url }}">{{ site.data.species.release.version }}</a>, written at release
-          by <span class="mono">calcofi4db::build_taxa_catalog()</span>. The catalog's index is
-          <a href="{{ '/species/' | relative_url }}">/species/</a>.</p>
+        <h2 class="cc-h3">Ways in
+          {%- capture ways_info -%}
+          <p>Read from <span class="mono">taxa.json</span> of release
+            <a href="{{ '/datasets/release/' | relative_url }}">{{ site.data.species.release.version }}</a>, written at release
+            by <span class="mono">calcofi4db::build_taxa_catalog()</span>. The catalog's index is
+            <a href="{{ '/species/' | relative_url }}">/species/</a>.</p>
+          {%- endcapture -%}
+          {% include info.html label="About these ways in" body=ways_info %}
+        </h2>
+        {% include ways_tabs.html ways=page.ways %}
       </div>
     </div>
   </div>
