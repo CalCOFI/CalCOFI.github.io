@@ -27,15 +27,26 @@
       {%- comment -%} at most two drawings fit the row; a CONJUGATE pair is joined by the
         equilibrium arrow, because the method measures both and the key names one (NH₄⁺ ⇌ NH₃,
         § D2). The arrow follows the registry's `role`, never the key. {%- endcomment -%}
+      {%- comment -%} M6 (round 2, WS-R2): a COMPOSITION whose record carries the shares draws
+        the ion bar in the face row and leaves its molecules to the What section — salinity drew
+        two of its eight ions as structures and wrote the shares as prose. A composition with no
+        shares to draw (DIC, whose fractions are pH-dependent and belong to the Bjerrum figure)
+        keeps its components here. {%- endcomment -%}
+      {%- assign ionbar = false -%}
+      {%- if f.kind == 'composition' and w.composition -%}{%- assign ionbar = true -%}{%- endif -%}
+      {%- unless ionbar -%}
       {%- for s in w.structures -%}
       {%- if forloop.index > 2 %}{% break %}{% endif -%}
       {%- if forloop.index > 1 and s.role contains 'conjugate' %}<span class="mmf-eq" aria-hidden="true">⇌</span>{% endif -%}
       <svg class="mmf-mol{% if w.structures.size == 1 and f.kind != 'composition' %} mmf-mol-1{% endif %}" viewBox="{{ s.viewBox }}" role="img" aria-label="{{ s.label | escape }}">{{ s.inner }}</svg>
       {%- endfor -%}
+      {%- endunless -%}
       {%- comment -%} an ORGANISM face is the species catalog's own: the silhouette from
         _data/taxa_media.json, in the page's ink like a structure. It appears only once the species
         pages hold that taxon (D9/WS-MF7); until then the line below links WoRMS alone. {%- endcomment -%}
-      {%- if w.structures.size == 0 and w.taxon.sil -%}
+      {%- if ionbar -%}
+      <div class="mmf-mini" id="mmf-mini"></div>
+      {%- elsif w.structures.size == 0 and w.taxon.sil -%}
       <svg class="mmf-mol mmf-mol-1" viewBox="{{ w.taxon.sil.viewBox }}" role="img" aria-label="{{ w.taxon.sil.label | escape }}">{{ w.taxon.sil.inner }}</svg>
       {%- elsif w.structures.size == 0 -%}
       <div class="mmf-mini" id="mmf-mini"></div>
@@ -84,7 +95,7 @@
 
   {%- comment -%} ── How ─────────────────────────────────────────────────── {%- endcomment -%}
   <div class="mmf-col">
-    <div class="mmf-k">How</div>
+    <div class="mmf-k">How{% if f.how.size > 1 %} <a class="mmf-rt" href="#how">{{ f.how.size }} methods ↓</a>{% endif %}</div>
     {%- if f.how.size > 0 -%}
     {%- assign h0 = f.how[0] -%}
     <div class="mmf-plat">
@@ -103,8 +114,11 @@
     {%- if f.how.size > 1 -%}
     <p class="mmf-line cc-muted">and {{ f.how[1].instrument | escape | downcase }}</p>
     {%- endif -%}
+    {%- comment -%} the pin: calcofi.org's own method page, landed on its section by a text
+      fragment (the site has no stable anchors). The row's `source` names the page, so a label that
+      already says calcofi.org does not say it twice. {%- endcomment -%}
     {%- if h0.link -%}
-    <a class="mmf-pin" href="{{ h0.link }}" rel="external"><span class="mmf-disc" aria-hidden="true"></span>{{ h0.page | escape }} on calcofi.org ↗</a>
+    <a class="mmf-pin" href="{{ h0.link }}" rel="external"><span class="mmf-disc" aria-hidden="true"></span>{{ h0.page | remove_first: 'calcofi.org ' | escape }} on calcofi.org ↗</a>
     {%- endif -%}
     {%- else -%}
     <p class="mmf-none">No method row is registered for this measurement yet
@@ -114,7 +128,7 @@
 
   {%- comment -%} ── Why ─────────────────────────────────────────────────── {%- endcomment -%}
   <div class="mmf-col">
-    <div class="mmf-k">Why</div>
+    <div class="mmf-k">Why{% if f.anomaly_bands and f.anomaly_bands > 1 %} <a class="mmf-rt" href="#why">{{ f.anomaly_bands }} bands ↓</a>{% endif %}</div>
     {%- if f.anomaly_bands -%}
     <svg class="mmf-spark" id="mmf-spark" role="img" aria-label="Yearly anomaly against the release's own normal"></svg>
     <p class="mmf-line" id="mmf-spark-line"></p>
@@ -129,19 +143,17 @@
   </div>
 </div>
 
-{%- comment -%} the sentence: NERC says what it is · the record says what we hold · the pick says why
-  it matters, each underlined in its own source's colour, with a legend that names exactly the
-  parts drawn (the species page's .sp-sent rule with mmf- in the place of sp-) {%- endcomment -%}
+{%- comment -%} the sentence (M5, round 2 · D3 say it once, D6 one rule on every page): the record
+  says what we hold · the pick says why it matters, as PROSE. The NERC clause is gone — the What
+  column carries the definition and its ⓘ. Each part ends in a `.cc-src` badge (WS-R1's class) whose
+  hover is the legend the page used to print in full; the citation links stay in the `sup`. The
+  `s-rec` / `s-why` classes stay on the spans: the JSON-LD and check_layout.py read them.
+{%- endcomment -%}
 {%- if f.sentence -%}
 <p class="mmf-sent">
   {%- for p in f.sentence -%}
-  <span class="{{ p.cls }}">{{ p.text | escape }}</span>{% if p.cites %}<sup>{% for c in p.cites %}{% if c.url %}<a href="{{ c.url }}" rel="external" title="{{ c.label | escape }}">{{ c.label | escape }}</a>{% else %}{{ c.label | escape }}{% endif %}{% unless forloop.last %}, {% endunless %}{% endfor %}</sup>{% endif %}
+  <span class="{{ p.cls }}">{{ p.text | escape }}</span>{% if p.badge %}<span class="cc-src {{ p.badge_cls }}" title="{{ p.badge_title | escape }}">{{ p.badge }}</span>{% endif %}{% if p.cites %}<sup>{% for c in p.cites %}{% if c.url %}<a href="{{ c.url }}" rel="external" title="{{ c.label | escape }}">{{ c.label | escape }}</a>{% else %}{{ c.label | escape }}{% endif %}{% unless forloop.last %}, {% endunless %}{% endfor %}</sup>{% endif %}
   {% endfor -%}
-</p>
-<p class="mmf-legend">
-  {%- for p in f.sentence -%}
-  <span class="l-{{ p.cls | remove: 's-' }}">{{ p.src | escape }}</span>
-  {%- endfor -%}
 </p>
 {%- endif -%}
 

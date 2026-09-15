@@ -785,6 +785,28 @@ empty ids, the sentence's parts against its legend, the details closed with a ma
 familiar scale with **no two mark labels overlapping** (boxes read back from the DOM), the anomaly's
 rows against the record's own bands, and that nothing in the face is wider than its column.
 
+**Round 2 — drawn to a scale (WS-R2).** The plan `2026-09-15 faces round 2 …` § D4 gave every face
+figure a scale, labels on it and a hover. The What column of a **scale** kind is now the variable's
+own cmocean ramp over its **declared bounds** (the observed minimum to maximum, said so in a
+`title`, where the record declares none), with the record's 5th–95th as an open frame in the page's
+ink and `metadata/measurement_scale.csv`'s marks labelled short on it and in full on hover — the
+ramp is never the only encoding of either. `RAMP_OF` in `assets/measurements.js` is the Explorer's
+`defaultRamp()` **copied verbatim** from `../explore/src/ramps.ts` (cited with its commit); pH keeps
+its acid→base strip, wind its Beaufort cells (shaded on its own ramp, the median and the 95th
+outlined), a composition its ion bar in the row and its molecules under *What*, and an unmatched
+variable the plain strip. The **spark** is 100 px on its own band's maximum with `+x / 0 / −x` on a
+left axis, four year ticks, the trend and a per-year hover, and its line ends *drawn to ±x*; the
+**history** defaults to **own scale per band** with the ± written beside each band and its count,
+a radio pair for one shared scale (not in the URL), a per-bar hover and a one-line `.cc-legend1` —
+its four-line mono legend, its computation and the climatology-depth note now live in the
+heading's ⓘ. Every figure reads on ONE `.mmf-tip` div on the body, and every hover is also the
+mark's `<title>`. The **sentence** dropped its NERC clause (the What column has it) and its
+underline legend for a `.cc-src` badge per part; the Wikipedia lead left *Borrowed context* to
+become one of the *other ways to say why*. Two bugs went with it: `how_rows()` read
+`calcofi_org`/`page` for the record's `calcofi_org_url`/`source`, so **no page linked calcofi.org**
+(81 of 89 now do), and the anomaly credit read `oni.latest[3]`, printing *"JJA 2026 is undefined"*
+on every page with an anomaly.
+
 **The checks.** `check_jsonld.py`: exactly one `DefinedTerm` node per page with `name`, `identifier`
 (the key), the page's own `url` and the NERC P01 collection as its `inDefinedTermSet`; `termCode`
 exactly where the record's entry carries a `nerc_p01` and nowhere else (23 series carry none, and an

@@ -1917,3 +1917,71 @@ a.cc-chip-lic:hover { color: var(--accent); border-color: var(--accent); text-de
   .cc-result { flex-direction: column; align-items: flex-start; gap: 2px; }
   .cc-result-m { margin-left: 0; white-space: normal; }
 }
+
+
+/* ── round 2 · face drawn to scale (WS-R2) ────────────────────────────────────
+   APPEND-ONLY. The measurement face's figures after plan 2026-09-15 § D4 ("a figure has a ramp or
+   an axis, labels on it, and a hover"): the What column's ramp, the 100 px spark on its own scale,
+   the history's per-row ± and its scale toggle, and the one tooltip they all read on. Every rule
+   is under an `mmf-` class, so a page with no `page.face` is untouched. The four idiom classes the
+   face now wears — `.cc-src`, `.cc-legend1`, `.cc-info`/`.cc-pop` — are WS-R1's block above and
+   are NOT redefined here; what is below either did not exist or is this block's own override of
+   the WS-MF5 rule it replaces (the sentence's underlines, the spark's fixed 58 px). */
+
+/* the What column's ramp: hidden until it is drawn, like every other face figure */
+.mmf-ramp { display: none; width: 100%; height: auto; overflow: visible; }
+.mmf-ramp.mmf-drawn { display: block; }
+.mmf-ramp text { font-family: var(--sans); }
+.mmf-ramp .mmf-tick { font: 11px var(--mono); fill: var(--muted); }
+/* a mark's short label: the page's ink, never the ramp's colour — the ramp is a scale, the mark
+   is a fact ON it (§ D4: a ramp is never the only encoding of a window or a mark) */
+.mmf-ramp .mmf-mklab { font-size: 11px; fill: var(--fg); }
+.mmf-ramp .mmf-mk, .mmf-chart .mmf-mk { stroke: var(--fg); stroke-width: 1.5; }
+/* the record's 5th–95th: an OPEN frame in the page's ink over the ramp */
+.mmf-ramp .mmf-win, .mmf-chart .mmf-win { fill: none; stroke: var(--fg); stroke-width: 2; }
+.mmf-ramp .mmf-hit, .mmf-chart .mmf-hit, .mmf-spark .mmf-hit { fill: transparent; cursor: crosshair; }
+.mmf-chart .mmf-hover, .mmf-spark .mmf-hover { stroke: var(--fg); stroke-width: 1; opacity: 0.5; pointer-events: none; }
+.mmf-mini .mmf-line { margin-top: 6px; }
+
+/* the spark: 100 px on its band's OWN scale, so a deep band is a shape and not a line. The WS-MF5
+   rule fixed it at 58 px and stretched it with preserveAspectRatio="none"; both are gone — the
+   viewBox is the host's own width, one unit per pixel, and the height follows it. */
+.mmf-spark { display: none; width: 100%; height: auto; overflow: visible; }
+.mmf-spark.mmf-drawn { display: block; }
+.mmf-spark text { font-family: var(--sans); }
+.mmf-spark .mmf-tick { font: 11px var(--mono); fill: var(--muted); }
+.mmf-spark .mmf-gr { stroke: var(--border); stroke-width: 1; }
+.mmf-spark .mmf-trend { stroke: var(--fg); stroke-width: 1.5; stroke-dasharray: 6 4; fill: none; }
+
+/* the one tooltip every face figure reads on (plan D4). On the body, so a figure scrolling inside
+   its own wrapper cannot clip it; `pointer-events: none`, so it never eats the hover it describes.
+   The same words are always on the mark's <title> too, for a reader without a mouse. */
+.mmf-tip {
+  position: fixed; z-index: 60; display: none; pointer-events: none; max-width: min(320px, 86vw);
+  background: var(--fg); color: var(--bg); font: 12px/1.35 var(--sans);
+  padding: 5px 8px; border-radius: 5px;
+}
+.mmf-tip b { font-weight: 700; }
+
+/* the history's heading row: the ⓘ beside the words, the scale choice at the end of the line */
+.mmf-h3-i { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.mmf-scale-pick { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-left: auto; font-size: 12.5px; color: var(--muted); }
+.mmf-scale-pick label { display: inline-flex; align-items: center; gap: 5px; cursor: pointer; }
+.mmf-scale-pick input { accent-color: var(--accent); margin: 0; }
+
+/* the way down: "6 bands ↓", "2 methods ↓" — the second place links rather than repeating (§ D3) */
+.mmf-rt { font-size: 10.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.mmf-rt:hover { color: var(--accent); }
+
+/* M5: the sentence is prose. The three underlines and the legend they needed are retired; the
+   spans keep their classes (the JSON-LD and check_layout.py read them) and wear a `.cc-src` badge
+   instead, whose hover is what the legend used to spell out. */
+.mmf-sent .s-nerc, .mmf-sent .s-rec, .mmf-sent .s-why { text-decoration: none; }
+.mmf-legend { display: none; }
+
+@media (max-width: 640px) {
+  .mmf-scale-pick { margin-left: 0; width: 100%; }
+  /* a tooltip that follows the pointer has no pointer on a phone: the <title> and the figure's
+     own labels carry the fact, so the tip is simply not shown */
+  .mmf-tip { display: none !important; }
+}
