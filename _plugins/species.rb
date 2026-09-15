@@ -510,6 +510,17 @@ module CalCOFI
     def license_url_of(a) = Fmt.present(a["license_url"])
     def nc?(a) = a && a["license"].to_s.match?(/\bNC\b|NonCommercial/i)
 
+    # a photo credit's long form reads "(c) NAME, some rights reserved (…), uploaded by NAME2"
+    # (iNaturalist's own string): the short by-line names the photographer once; the whole string
+    # is never dropped — it becomes the credit line's `title` (round 2 § P1, D6) so nothing said
+    # once is said three times. A string that does not match the pattern is used whole rather than
+    # guessed at, so a source this site has not seen yet still shows something.
+    def short_by(s)
+      return nil if s.nil?
+      m = /\A\(c\)\s*([^,]+),/.match(s)
+      m ? m[1].strip : s
+    end
+
     # 0.395 → "39.5 cm". The page's one length formatter; assets/species.js mirrors it for the
     # figures it draws.
     def fmt_len(m)
@@ -565,18 +576,19 @@ module CalCOFI
           "shown" => shown, "steps_up" => steps,
           "credit" => { "kind" => "Silhouette", "by" => Fmt.present(s["credit"]),
                         "license" => Fmt.present(s["license"]), "license_url" => license_url_of(s),
-                        "via" => "PhyloPic", "page" => Fmt.present(s["url"]) }
+                        "via" => "PhyloPic", "page" => Fmt.present(s["url"]), "shown" => shown }
         }.compact
       end
       if (p = f["photo"]) && (src = media_url(p))
         focal = p["focal"].is_a?(Array) ? p["focal"] : [0.5, 0.5]
+        by_full = Fmt.present(p["credit"])
         out["photo"] = {
           "src" => src, "alt" => Fmt.present(p["shows"]) || "Photograph of #{name_of(t)}",
           "w" => p["w"], "h" => p["h"],
           "pos" => "#{(focal[0].to_f * 100).round(1)}% #{(focal[1].to_f * 100).round(1)}%",
           "nc" => nc?(p), "license" => Fmt.present(p["license"]),
           "license_url" => license_url_of(p), "page" => Fmt.present(p["page"]),
-          "credit" => { "kind" => "Photo", "by" => Fmt.present(p["credit"]),
+          "credit" => { "kind" => "Photo", "by" => by_full && short_by(by_full), "by_full" => by_full,
                         "license" => Fmt.present(p["license"]), "license_url" => license_url_of(p),
                         "via" => Fmt.present(p["via"]) || Fmt.present(p["source"]),
                         "page" => Fmt.present(p["page"]), "shows" => Fmt.present(p["shows"]) }
@@ -650,6 +662,17 @@ module CalCOFI
         out["wp_title"] = Fmt.present(x["title"])
         out["wp_url"] = Fmt.present(x["url"])
         out["wp_revision"] = Fmt.present(x["revision"].to_s)
+        # the badge's title (§ P1): the article, its licence, its revision + date, and the genus
+        # note where this taxon's own page borrows the genus's Wikipedia lead — said once, on the
+        # badge, instead of the sentence and a separate legend entry.
+        bits = []
+        bits << "Wikipedia, “#{out['wp_title']}”" if out["wp_title"]
+        bits << Fmt.present(x["license"]) if Fmt.present(x["license"])
+        rev = out["wp_revision"]
+        bits << (Fmt.present(x["timestamp"]) ? "rev. #{rev} (#{x['timestamp']})" : "rev. #{rev}") if rev
+        badge = bits.join(" · ")
+        badge = "#{badge}; Wikipedia has only the genus" if out["wp_about_genus"] && !badge.empty?
+        out["wp_badge"] = badge unless badge.empty?
       end
 
       present = roll["n_present"] || direct["n_present"]
@@ -666,21 +689,17 @@ module CalCOFI
         rec << ", across #{Fmt.num(roll['n_taxa'])} taxa under it" if roll["n_taxa"].to_i > 1
         out["rec"] = "#{rec}."
         out["rec_word"] = word
+        out["rec_badge"] = "the release record, measured at #{release['version']}"
       end
 
       if (au = authority_of(t))
         g = glance(t)
         au = "#{au}; grows to #{g['org_len']} (#{g['kind']})" if g && g["kind"]
         out["au"] = "#{au}."
+        ids = id_rows(t)
+        out["au_badge"] = "#{ids.first['label']} #{ids.first['id']}" if ids.any?
       end
       out.compact.empty? ? nil : out
-    end
-
-    # ── the credit line under the face row ───────────────────────────────────
-    def credits(t)
-      f = face(t)
-      return [] if f.nil?
-      [f.dig("sil", "credit"), f.dig("photo", "credit"), f["text"]].compact
     end
 
     # ── How big: the ladder, the beside figure and the plate, as ONE payload ─
@@ -764,30 +783,38 @@ module CalCOFI
     DBQUERY = "https://calcofi.io/db-query/"
     ERDDAP  = "https://erddap.calcofi.io/erddap/tabledap/"
 
+    # `group` rides on every way explicitly (plan D2, P3): app · erddap · parquet · r · python ·
+    # json — _includes/ways_tabs.html's own name-sniffing is the fallback for a page that has not
+    # been converted yet, never the rule here.
     def ways(t)
       key = t["taxon_key"]
       authority = key.start_with?("worms:") || key.start_with?("itis:")
       out = []
-      out << { "name" => "Explorer",
+      out << { "name" => "Explorer", "group" => "app",
                "about" => authority ? "maps, sections and time series of this taxon — opens prefilled"
                                     : "a dataset-local class the Explorer does not key by; the organism picker opens on its dataset",
                "url"   => authority ? "#{EXPLORE}?taxon=#{key}" : EXPLORE }
       sql = "SELECT * FROM __TBL:obs_bio__ WHERE taxon_key = '#{key}' LIMIT 100;"
-      out << { "name" => "db-query", "about" => "SQL in your browser — the shell opens with this query",
+      out << { "name" => "db-query", "group" => "app", "about" => "SQL in your browser — the shell opens with this query",
                "url"  => "#{DBQUERY}?sql=#{CGI.escape(sql)}", "sql" => sql }
       if (e = erddap_way(t))
-        out << e
+        out << e.merge("group" => "erddap")
       end
-      out << { "name" => "R", "code" => <<~R.strip }
+      out << { "name" => "R", "group" => "r", "code" => <<~R.strip }
         library(calcofi4r)
         con <- cc_get_db()                      # the promoted release
         tbl(con, "obs_bio") |> filter(taxon_key == "#{key}")
       R
-      out << { "name" => "Python", "code" => <<~PY.strip }
+      out << { "name" => "Python", "group" => "python", "code" => <<~PY.strip }
         import calcofi4py as cc
         con = cc.cc_get_db()
         con.sql("SELECT * FROM obs_bio WHERE taxon_key = '#{key}'").df()
       PY
+      # "This page as data" (§ P3): a way like any other, in the json tab rather than a section of
+      # its own; the taxa.json paragraph that used to sit under it is now the Ways in ⓘ.
+      out << { "name" => "JSON", "group" => "json",
+               "about" => "this taxon's entry of the release record, verbatim",
+               "url"   => abs("/species/#{t['slug']}.json") }
       out
     end
 
@@ -987,7 +1014,6 @@ module CalCOFI
         "face"       => tx.face(t),
         "glance"     => tx.glance(t),
         "sentence"   => tx.sentence(t),
-        "credits"    => tx.credits(t),
         "has_size"   => tx.has_size_section?(t),
         "size_data"  => JSON.generate(tx.size_json(t)).gsub("</", "<\\/"),
         "stats"      => tx.stat_row(t),

@@ -6,7 +6,14 @@
    Every filter is reflected in the URL query so a filtered grid is a link you can share.
    The reference frame is a band below the grid (plan D-2), not a tile inside it, so it is outside
    #ds-grid and the filters never see it — which is what they always did, by a special case that is
-   now unnecessary. */
+   now unnecessary.
+
+   D4/D5 (round 2, WS-R4, umbrella D9): the catalog's own #ds-q is gone — the query comes from the
+   front door's #door-q, which lives OUTSIDE this form (#ds-filters), possibly on a different part
+   of the page (index.html's #door-search, above the tabset) or not at all (the standalone
+   /datasets/ page, which renders this filter row with no door search). `qState` is the fallback
+   when there is no #door-q to read from, so a shared `?q=` link still filters once on load even
+   without a visible box. */
 (function () {
   "use strict";
   var form = document.getElementById("ds-filters");
@@ -15,7 +22,8 @@
 
   var rows   = Array.prototype.slice.call(grid.querySelectorAll(".ds-row[data-key]"));
   var tiles  = Array.prototype.slice.call(grid.querySelectorAll(".ds-tile"));
-  var q      = document.getElementById("ds-q");
+  var q      = document.getElementById("door-q");
+  var qState = "";
   var count  = document.getElementById("ds-count");
   var empty  = document.getElementById("ds-empty");
   var selects = Array.prototype.slice.call(form.querySelectorAll("select[data-facet]"));
@@ -33,6 +41,10 @@
       })
       .catch(function () { index = {}; return index; });
   }
+
+  // the query text, wherever it lives: #door-q's value when the element exists, else the state
+  // read from ?q= on load (restore()) — the standalone /datasets/ page has no visible box
+  function currentQ() { return q ? q.value.trim().toLowerCase() : qState; }
 
   // a row matches when every set filter matches; data-fmt is space-separated
   function matches(row, state) {
@@ -52,7 +64,7 @@
   }
 
   function read() {
-    var s = { q: (q.value || "").trim().toLowerCase() };
+    var s = { q: currentQ() };
     selects.forEach(function (el) { s[el.dataset.facet] = el.value; });
     return s;
   }
@@ -80,6 +92,14 @@
       det.parentNode.hidden = !live;
       if (filtered && live) det.open = true;
     });
+    // D3: a search hit inside a homed row's own variables/taxa expander opens it — the names stay
+    // in the DOM whether the <details> is open or closed, so the hit is real; this only ever
+    // opens (never force-closes), the same one-way rule as the holdings block above
+    if (state.q) {
+      Array.prototype.forEach.call(grid.querySelectorAll(".ds-vars"), function (det) {
+        if (det.textContent.toLowerCase().indexOf(state.q) >= 0) det.open = true;
+      });
+    }
     if (count) count.textContent = shown + " dataset" + (shown === 1 ? "" : "s") + " shown";
     if (empty) empty.hidden = shown > 0;
     sync(state);
@@ -96,21 +116,22 @@
 
   function restore() {
     var p = new URLSearchParams(location.search);
-    if (p.get("q")) q.value = p.get("q");
+    var got = p.get("q");
+    if (got) { if (q) q.value = got; else qState = got.trim().toLowerCase(); }
     selects.forEach(function (el) {
       var v = p.get(el.dataset.facet);
       if (v) el.value = v;
     });
   }
 
-  form.addEventListener("input", function (e) {
-    if (e.target === q) { loadIndex().then(apply); return; }
-    apply();
-  });
+  // the selects live in this form; #door-q (when present) does not — it is outside #ds-filters,
+  // shared with assets/door-search.js, so it gets its own listener rather than relying on bubbling
+  form.addEventListener("input", apply);
   form.addEventListener("change", apply);
+  if (q) q.addEventListener("input", function () { loadIndex().then(apply); });
 
   function clear() {
-    q.value = "";
+    if (q) q.value = ""; else qState = "";
     selects.forEach(function (el) { el.value = ""; });
     apply();
   }
@@ -120,5 +141,5 @@
   });
 
   restore();
-  if (q.value) loadIndex().then(apply); else apply();
+  if (currentQ()) loadIndex().then(apply); else apply();
 })();

@@ -1,0 +1,19 @@
+{%- comment -%}
+  The pill + ⓘ idiom (plan D1): a count or a state is a pill; the paragraph that explains it opens
+  on demand, so nothing leaves the DOM — a reader who opens it, and a search engine, get the same
+  words a warning bar or a caption used to force on every reader.
+
+  Params:
+    label — the aria-label on the ⓘ button (what it explains, not "info")
+    body  — HTML, captured by the caller with a `capture` block; may contain <p>, <code>, links
+    align — optional "right": the pop opens right-aligned instead of left (near a right edge)
+
+  assets/info.js keeps one <details class="cc-info"> open at a time, closes on a click outside or
+  Escape, and turns the pop into a bottom sheet under 640 px (this include's CSS: style.css block
+  "round 2 · idioms (WS-R1)").
+
+  {% capture body %}<p>…</p>{% endcapture %}
+  {% include info.html label="What flagged means" body=body %}
+  {% include info.html label="Where the definition comes from" body=body align="right" %}
+{%- endcomment -%}
+<details class="cc-info"><summary aria-label="{{ include.label | escape }}">i</summary><div class="cc-pop{% if include.align == 'right' %} cc-pop-r{% endif %}">{{ include.body }}</div></details>

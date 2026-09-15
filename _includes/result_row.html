@@ -1,0 +1,23 @@
+{%- comment -%}
+  The one result-row shape (plan D9, D5/I2): the front door's Species/Measurements search panels
+  (R4) and /species/'s Matches list (R5) both render this. It is exactly what `assets/door-search.js`
+  `rowsFrom()` already normalises a hit to — `{n, c, it, m, u}` — so R4 may render it straight from
+  JS by building the SAME markup/classes client-side (`cc-result`, `cc-result-n`, `cc-result-c`,
+  `cc-result-m`) rather than re-including this file per row; this .html is the canonical shape and
+  the styling source (style.css block "round 2 · idioms (WS-R1)").
+
+  Params:
+    n  — the name (escaped)
+    it — truthy: render `n` in <i> (a scientific name)
+    c  — optional qualifier / common name, after the name
+    m  — the meta string, already composed: "rank or category · N obs · M datasets"
+    u  — the href the row opens
+
+  Layout: one line at 1470 px, two at 375 px; the name is NEVER truncated (it wraps); `m` elides
+  from its own end if the line is too tight (`text-overflow: ellipsis` right-aligned via
+  `direction: rtl` is wrong for numbers, so `m` instead gets `white-space: nowrap` and yields the
+  line first — style.css).
+
+  include result_row.html n=r.n it=r.it c=r.c m=r.m u=r.u
+{%- endcomment -%}
+<a class="cc-result" href="{{ include.u }}">{% if include.it %}<b class="cc-result-n"><i>{{ include.n | escape }}</i></b>{% else %}<b class="cc-result-n">{{ include.n | escape }}</b>{% endif %}{% if include.c %} <span class="cc-result-c">{{ include.c | escape }}</span>{% endif %}<span class="cc-result-m tab">{{ include.m }}</span></a>

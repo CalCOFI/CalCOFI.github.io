@@ -914,8 +914,6 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 /* width-driven with the vector's own ratio, capped so a near-square silhouette (a diatom, a
    copepod) cannot tower over the photo beside it while a long one (a fish) still fills the row */
 .sp-sil { display: block; width: 100%; height: auto; min-height: 72px; max-height: 240px; color: var(--fg); fill: currentColor; max-width: 100%; }
-.sp-stand { font: 11.5px var(--mono); color: var(--muted); margin: 0; }
-.sp-stand i { font-family: var(--sans); }
 
 /* the glance: two bars on one scale — the taxon and the nearest familiar object */
 .sp-glance { border-top: 1px solid var(--border); padding-top: var(--space); font-size: 13px; margin: 0; }
@@ -940,18 +938,11 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 .sp-credit { font: 11.5px/1.5 var(--mono); color: var(--muted); margin: 6px 0 0; }
 .sp-credit a { color: inherit; text-decoration: underline; text-decoration-color: var(--border); }
 .sp-credit a:hover { text-decoration-color: currentColor; }
-.sp-credits { margin-top: var(--space); }
 
-/* the sentence: borrowed prose, this release's numbers, the naming authority — each underlined in
-   its own source's colour, with a legend, so a reader can see which half is ours (§ D4) */
+/* the sentence (round 2 § P1, D6): plain prose, no per-part underline — each part's source is a
+   small `.cc-src` badge instead (style block below), so the old three-style underline + legend is
+   retired along with it. */
 .sp-sent { font-size: 16px; line-height: 1.55; margin: calc(var(--space) * 2) 0 0; max-width: 80ch; }
-.sp-sent .s-wp { text-decoration: underline; text-decoration-color: var(--accent); text-decoration-thickness: 1.5px; text-underline-offset: 3px; }
-.sp-sent .s-rec { text-decoration: underline; text-decoration-style: dotted; text-decoration-color: var(--cc-green); text-underline-offset: 3px; }
-.sp-sent .s-au { text-decoration: underline; text-decoration-style: dashed; text-decoration-color: var(--warn); text-underline-offset: 3px; }
-.sp-legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: var(--fs-sm); color: var(--muted); margin: var(--space) 0 0; }
-.sp-legend span::before { content: ""; display: inline-block; width: 18px; height: 0; border-top: 2px solid var(--accent); margin-right: 6px; vertical-align: middle; }
-.sp-legend .l-rec::before { border-top-style: dotted; border-top-color: var(--cc-green); }
-.sp-legend .l-au::before { border-top-style: dashed; border-top-color: var(--warn); }
 
 /* ── How big is it: the ladder, the beside figure, the plate ─────────────────── */
 /* Each <svg> is hidden until species.js has drawn into it — the `.sp-drawn` rule the years strip
@@ -1816,3 +1807,254 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
   .mmf-col-fig { grid-template-columns: 74px minmax(0, 1fr); }
   .mmf-sent { font-size: 15px; }
 }
+
+/* ── round 2 · idioms (WS-R1) ─────────────────────────────────────────────────
+   Six idioms every other round-2 workstream reuses (plan 2026-09-15 § Decisions D1, D2, D5, D6):
+   the ⓘ pop, the source badges, the one-line legend, the licence chip, the ways-in row, the
+   search-result row. `.tabset`/`.tabrow`/`.tabpanel` already exist above (the front door's three
+   indexes) and are reused as-is; only what they lack (panel top padding) is added here. */
+
+/* the pill + ⓘ idiom (D1): assets/info.js keeps one open, closes on outside click / Escape */
+.cc-info { display: inline-block; position: relative; }
+.cc-info > summary {
+  list-style: none; display: inline-grid; place-items: center; width: 18px; height: 18px;
+  border-radius: 50%; border: 1.5px solid var(--muted); color: var(--muted);
+  font: 700 11px/1 var(--sans); cursor: pointer; vertical-align: -3px; user-select: none;
+}
+.cc-info > summary::-webkit-details-marker { display: none; }
+.cc-info > summary:hover, .cc-info[open] > summary { border-color: var(--accent); color: var(--accent); }
+.cc-info .cc-pop {
+  position: absolute; z-index: 30; left: 0; top: 24px; width: min(360px, 84vw);
+  background: var(--panel-2); color: var(--fg); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 12px 14px; font: 13.5px/1.45 var(--sans); box-shadow: 0 6px 24px rgba(0, 0, 0, 0.14);
+  text-transform: none; letter-spacing: 0; font-weight: 400;
+}
+.cc-info .cc-pop.cc-pop-r { left: auto; right: 0; }
+.cc-info .cc-pop code { font-family: var(--mono); font-size: 0.92em; }
+.cc-info .cc-pop p { margin: 0 0 0.6em; max-width: none; }
+.cc-info .cc-pop p:last-child { margin: 0; }
+@media (max-width: 640px) {
+  /* a bottom sheet: the pop is easier to reach and read than a small floating card on a phone */
+  .cc-info .cc-pop {
+    position: fixed; left: 8px; right: 8px; bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+    top: auto; width: auto; max-height: 60vh; overflow: auto;
+  }
+  .cc-info .cc-pop.cc-pop-r { right: 8px; }
+}
+
+/* the tabset idiom (D2): assets/tabs.js's contract, unchanged. The front door's .tabset/.tabrow/
+   .tabpanel[hidden] above already carry the look; the ways tabset (_includes/ways_tabs.html) and
+   every other round-2 tabset reuse them as-is. Only a shown panel's own top space was missing. */
+.tabpanel { padding: 10px 0 0; }
+
+/* the ways-in row (D2, _includes/ways_tabs.html): one row per endpoint, its URL elided from the
+   middle rather than wrapped, a copy button on assets/copy.js's contract */
+.way { display: flex; flex-direction: column; gap: 6px; font-size: 14px; margin: 0 0 14px; }
+.way:last-child { margin-bottom: 0; }
+.way .l1 { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: baseline; }
+.way .l1 b { font-weight: 700; }
+.way .l1 span { color: var(--muted); font-size: 13px; }
+.way .url { display: flex; align-items: center; gap: 8px; font: 12.5px var(--mono); color: var(--accent); min-width: 0; }
+.way .url span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.way pre { margin: 0; overflow-x: auto; font: 12.5px var(--mono); background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 12px; }
+.way .cc-copy { flex: none; }
+.way .cc-copy svg { width: 13px; height: 13px; fill: currentColor; }
+
+/* the source badges (D6, M5/P1): a superscript letter after a sentence part, its hover the legend
+   the sentence used to spell out in full every time */
+.cc-src {
+  display: inline-grid; place-items: center; min-width: 15px; height: 15px; padding: 0 3px;
+  border-radius: 3px; font: 700 9.5px/1 var(--sans); letter-spacing: 0.04em; vertical-align: super;
+  margin-left: 1px; cursor: help;
+}
+.cc-src-nerc { background: var(--accent-bg); color: var(--accent); }
+.cc-src-rec  { background: var(--ok-bg);     color: var(--cc-green); }
+.cc-src-why  { background: var(--warn-bg);   color: var(--warn); }
+.cc-src-wp   { background: var(--na-bg);     color: var(--muted); }
+
+/* the one-line legend (D6): swatches only, no paragraph beside them */
+.cc-legend1 { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12.5px; color: var(--muted); align-items: center; margin-top: 6px; }
+.cc-legend1 .sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; vertical-align: -1px; margin-right: 5px; }
+.cc-legend1 .ln { display: inline-block; width: 16px; border-top: 2px dashed var(--fg); vertical-align: middle; margin-right: 5px; }
+
+/* the licence chip (D5, Ben Q2 revision — _includes/licence_chip.html): ONE glyph, ONE colour on
+   every chip (the base .cc-chip ink IS that colour — brand/v2/theme.css); only the shade and the
+   text vary. Never a status colour, never a second glyph, never the raw id. */
+.cc-chip-lic { display: inline-flex; align-items: center; gap: 5px; }
+.cc-chip-lic svg { width: 13px; height: 13px; flex: none; fill: currentColor; }
+.cc-lic-unstated { opacity: 0.6; border-style: dashed; }
+.cc-chip-lic-md { font-size: 0.85em; padding: 0.15em 0.8em; }
+a.cc-chip-lic:hover { color: var(--accent); border-color: var(--accent); text-decoration: none; }
+
+/* the search-result row (D9, plan D5/I2 — _includes/result_row.html): the one shape the front
+   door's Species/Measurements panels (R4) and /species/'s Matches list (R5) both render; also
+   what assets/door-search.js's rowsFrom() already normalises a hit to. One line at 1470 px, two
+   at 375; the name never truncates, the meta (`.cc-result-m`) yields the line first. */
+.tab { font-variant-numeric: tabular-nums; }
+.cc-result {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; padding: 7px 0;
+  color: var(--fg);
+}
+/* a border BETWEEN rows, never on the first — `+` rather than `:first-child`, since a caller's
+   result list is rarely the first element inside its own container (a search panel's blurb, a
+   heading) */
+.cc-result + .cc-result { border-top: 1px solid var(--border); }
+.cc-result:hover { text-decoration: none; }
+.cc-result:hover .cc-result-n { color: var(--accent); }
+.cc-result-n { font-weight: 700; min-width: 0; }
+.cc-result-c { color: var(--muted); font-size: 0.92em; }
+.cc-result-m { color: var(--muted); font-size: 12.5px; font-family: var(--mono); margin-left: auto; white-space: nowrap; }
+@media (max-width: 480px) {
+  .cc-result { flex-direction: column; align-items: flex-start; gap: 2px; }
+  .cc-result-m { margin-left: 0; white-space: normal; }
+}
+
+
+/* ── round 2 · face drawn to scale (WS-R2) ────────────────────────────────────
+   APPEND-ONLY. The measurement face's figures after plan 2026-09-15 § D4 ("a figure has a ramp or
+   an axis, labels on it, and a hover"): the What column's ramp, the 100 px spark on its own scale,
+   the history's per-row ± and its scale toggle, and the one tooltip they all read on. Every rule
+   is under an `mmf-` class, so a page with no `page.face` is untouched. The four idiom classes the
+   face now wears — `.cc-src`, `.cc-legend1`, `.cc-info`/`.cc-pop` — are WS-R1's block above and
+   are NOT redefined here; what is below either did not exist or is this block's own override of
+   the WS-MF5 rule it replaces (the sentence's underlines, the spark's fixed 58 px). */
+
+/* the What column's ramp: hidden until it is drawn, like every other face figure */
+.mmf-ramp { display: none; width: 100%; height: auto; overflow: visible; }
+.mmf-ramp.mmf-drawn { display: block; }
+.mmf-ramp text { font-family: var(--sans); }
+.mmf-ramp .mmf-tick { font: 11px var(--mono); fill: var(--muted); }
+/* a mark's short label: the page's ink, never the ramp's colour — the ramp is a scale, the mark
+   is a fact ON it (§ D4: a ramp is never the only encoding of a window or a mark) */
+.mmf-ramp .mmf-mklab { font-size: 11px; fill: var(--fg); }
+.mmf-ramp .mmf-mk, .mmf-chart .mmf-mk { stroke: var(--fg); stroke-width: 1.5; }
+/* the record's 5th–95th: an OPEN frame in the page's ink over the ramp */
+.mmf-ramp .mmf-win, .mmf-chart .mmf-win { fill: none; stroke: var(--fg); stroke-width: 2; }
+.mmf-ramp .mmf-hit, .mmf-chart .mmf-hit, .mmf-spark .mmf-hit { fill: transparent; cursor: crosshair; }
+.mmf-chart .mmf-hover, .mmf-spark .mmf-hover { stroke: var(--fg); stroke-width: 1; opacity: 0.5; pointer-events: none; }
+.mmf-mini .mmf-line { margin-top: 6px; }
+
+/* the spark: 100 px on its band's OWN scale, so a deep band is a shape and not a line. The WS-MF5
+   rule fixed it at 58 px and stretched it with preserveAspectRatio="none"; both are gone — the
+   viewBox is the host's own width, one unit per pixel, and the height follows it. */
+.mmf-spark { display: none; width: 100%; height: auto; overflow: visible; }
+.mmf-spark.mmf-drawn { display: block; }
+.mmf-spark text { font-family: var(--sans); }
+.mmf-spark .mmf-tick { font: 11px var(--mono); fill: var(--muted); }
+.mmf-spark .mmf-gr { stroke: var(--border); stroke-width: 1; }
+.mmf-spark .mmf-trend { stroke: var(--fg); stroke-width: 1.5; stroke-dasharray: 6 4; fill: none; }
+
+/* the one tooltip every face figure reads on (plan D4). On the body, so a figure scrolling inside
+   its own wrapper cannot clip it; `pointer-events: none`, so it never eats the hover it describes.
+   The same words are always on the mark's <title> too, for a reader without a mouse. */
+.mmf-tip {
+  position: fixed; z-index: 60; display: none; pointer-events: none; max-width: min(320px, 86vw);
+  background: var(--fg); color: var(--bg); font: 12px/1.35 var(--sans);
+  padding: 5px 8px; border-radius: 5px;
+}
+.mmf-tip b { font-weight: 700; }
+
+/* the history's heading row: the ⓘ beside the words, the scale choice at the end of the line */
+.mmf-h3-i { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.mmf-scale-pick { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-left: auto; font-size: 12.5px; color: var(--muted); }
+.mmf-scale-pick label { display: inline-flex; align-items: center; gap: 5px; cursor: pointer; }
+.mmf-scale-pick input { accent-color: var(--accent); margin: 0; }
+
+/* the way down: "6 bands ↓", "2 methods ↓" — the second place links rather than repeating (§ D3) */
+.mmf-rt { font-size: 10.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.mmf-rt:hover { color: var(--accent); }
+
+/* M5: the sentence is prose. The three underlines and the legend they needed are retired; the
+   spans keep their classes (the JSON-LD and check_layout.py read them) and wear a `.cc-src` badge
+   instead, whose hover is what the legend used to spell out. */
+.mmf-sent .s-nerc, .mmf-sent .s-rec, .mmf-sent .s-why { text-decoration: none; }
+.mmf-legend { display: none; }
+
+@media (max-width: 640px) {
+  .mmf-scale-pick { margin-left: 0; width: 100%; }
+  /* a tooltip that follows the pointer has no pointer on a phone: the <title> and the figure's
+     own labels carry the fact, so the tip is simply not shown */
+  .mmf-tip { display: none !important; }
+}
+
+/* ── round 2 · measurement body (WS-R3) ──────────────────────────────────────
+   M1, M7–M9, M11–M13 (plan 2026-09-15 § D1–D3, D8): the flagged stat, the methods tabset, the
+   quality chip line, the ways-in tabset, and the ⓘ that now carries every figure caption below the
+   fold. `.mm-flagnote`/`.mm-flagnote-k` (above) are retired code, left in place rather than edited
+   out of a block this file does not own. */
+
+/* the flagged stat (M1): same size as its neighbours in .mm-stat, tinted --warn so it reads as the
+   one number here worth a second look even before the ⓘ is opened */
+.mm-stat dd.mm-stat-flag { color: var(--warn); }
+
+/* an ⓘ inside an UPPERCASE .cc-h3 heading (M1, M13): `font` shorthand on .cc-info > summary (WS-R1)
+   does not carry text-transform, so the "i" inherits the heading's and renders as "I" without this */
+.cc-h3 .cc-info { text-transform: none; vertical-align: -1px; }
+.cc-h3 .cc-info > summary { text-transform: none; }
+
+/* the methods tabset (M8): #ts-how reuses .tabset/.tabrow/.tabpanel as-is; only the card that used
+   to sit directly under a heading now sits inside a panel needs no extra rule beyond that */
+.mmf-how-cards + .tabset,
+#ts-how { margin-top: calc(var(--space) * 0.5); }
+
+/* the quality chip line (M11): four scannable facts above the collapsed definition list */
+.qline { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin: var(--space) 0 0; }
+.qline .k { font-size: 11.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.mm-qual .ds-details { margin-top: calc(var(--space) * 0.85); }
+
+/* the "structure" figure (M7): the What section's own big cards, kept and retitled — no rule of
+   their own; `.mmf-mols`/`.mmf-credit` (above) already carry the look */
+
+/* ── round 2 · front door (WS-R4) ─────────────────────────────────────────────
+   D1–D5, D9 (plan 2026-09-15): the homed row's own 4-column grid, its variables/taxa expander,
+   the one search box at full width, and the Access tabset's group spacing. The shared .ds-row /
+   .ds-filters / .tabset rules above (and WS-R1's block) are untouched — every selector here is
+   either scoped to .ds-row-dataset or a new class. */
+
+/* D1 D2 D4: the homed row is a grid — name · provider · (years/spark/obs/expander) · licence.
+   Contributing rows (.ds-row-contrib) and holdings (.ds-row-holding) keep the base flex layout
+   above; only the homed row (.ds-row-dataset) gets the grid. */
+.ds-row.ds-row-dataset {
+  display: grid; grid-template-columns: minmax(0, 1.25fr) auto minmax(0, 1.9fr) auto;
+  gap: 6px 12px; align-items: center;
+}
+.ds-row.ds-row-dataset .ds-row-meta { margin-left: 0; }
+@media (max-width: 720px) {
+  .ds-row.ds-row-dataset { grid-template-columns: 1fr auto; }
+  .ds-row.ds-row-dataset .ds-row-meta { grid-column: 1 / -1; }
+}
+
+/* D3: the variables/taxa expander — the same inline-<details> shape as .ds-contrib-det above */
+.ds-vars { display: inline; font: 12.5px var(--sans); color: var(--muted); }
+.ds-vars summary { display: inline; cursor: pointer; color: var(--accent); font-weight: 600; list-style: none; }
+.ds-vars summary::-webkit-details-marker { display: none; }
+.ds-vars summary::after { content: " ▸"; font-size: 10px; }
+.ds-vars[open] summary::after { content: " ▾"; }
+.ds-vars .chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; width: 100%; }
+.ds-vars .chips .cc-chip { margin: 2px 2px 0 0; }
+
+/* D4 D5 (umbrella D9): the catalog's own search box is gone (#ds-q) — the six selects that are
+   left share the width it used to take, and the front door's #door-search is the one box, full
+   width of its container. */
+.ds-filter { flex: 1 1 0; min-width: 130px; }
+#door-search { max-width: none; }
+
+/* D9: the two result panels the Species and Measurements tabs render a query's hits into
+   (assets/door-search.js) — R1's .cc-result rows, a small eyebrow head, one "all n in …" link */
+.cc-results { margin-top: calc(var(--space) * 2); }
+.cc-results .cc-eyebrow { margin-bottom: 6px; }
+
+/* S2: Access is now a tabset — one group visible at a time, so its own bottom margin (set for the
+   old stacked layout) would only add blank space under the last panel */
+.ds-access-group.tabpanel { margin-bottom: 0; }
+
+/* ── round 2 · species + indexes (WS-R5) ─────────────────────────────────────
+   P1–P3 apply R1's idioms to the species page (the sentence's badges, the ways-in tabset — no
+   layout of their own needed, styled already); this block covers what is new: an ⓘ sitting inline
+   on a heading, and the flat Matches list above the species tree (umbrella D9, I2). */
+.cc-h3 .cc-info, .cc-lede .cc-info { margin-left: 6px; vertical-align: 2px; }
+
+#sp-matches { margin: 0 0 calc(var(--space) * 1.5); }
+#sp-matches[hidden] { display: none; }
+.sp-matches-h { font: 600 13px var(--sans); color: var(--muted); margin: 0 0 4px; }
+.sp-matches-list { display: flex; flex-direction: column; }

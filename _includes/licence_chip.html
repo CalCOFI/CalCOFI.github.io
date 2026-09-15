@@ -1,0 +1,55 @@
+{%- comment -%}
+  A licence wears its own chip (plan D5, Ben's 2026-09-15 revision, Q2): ONE glyph (#i-licence) and
+  ONE colour on every chip, whatever the licence — the base `.cc-chip` ink (`--muted` on
+  `--panel-2`, the `--border` edge, brand/v2/theme.css) already IS that one colour. Only the TEXT
+  and the SHADE change: a stated licence at full ink, `unstated` at 60% opacity with a dashed edge
+  (style.css `.cc-lic-unstated`). Never a second glyph, never a status colour, never the raw id.
+
+  Params:
+    license     — the raw id: "CC-BY-4.0", "CC0-1.0", "custom", or blank/absent
+    license_url — the deed (CC), the provider's terms (custom); ignored for "unstated"
+    name        — optional, the record's OWN license_name (metadata/license.csv's `name`); wins
+                  over this include's fallback table for any id the table does not carry
+    chip_size   — "sm" (default) or "md"
+
+  Text: CC-BY-4.0 -> "CC BY 4.0" · CC0-1.0 -> "CC0 · public domain" · any other stated id -> `name`
+  if given, else the id with hyphens loosened to spaces (never the bare id) · custom -> "provider
+  terms ↗", linking license_url · blank -> "unstated", no link, title explains why.
+
+  include licence_chip.html license=d.license license_url=d.license_url name=d.license_name
+
+  Found while placing this include on 16 rows + the dataset head (round 2, WS-R4): the param CANNOT
+  be named `size` — Liquid's dot lookup special-cases the literal key "size" on anything Hash-like
+  (`include.size` always returns the include tag's OWN param count, e.g. 3 for a 3-param call,
+  never a param actually named "size"), so every chip silently grew a bogus "cc-chip-lic-3" class.
+  No caller in the repo passed `size=` before this was found, so renaming to `chip_size` is the fix,
+  not a breaking change.
+{%- endcomment -%}
+{%- assign lic  = include.license | default: "" -%}
+{%- assign url  = include.license_url -%}
+{%- assign size = include.chip_size | default: "sm" -%}
+{%- assign cls  = "cc-chip cc-chip-lic" -%}
+{%- unless size == "sm" -%}{%- assign cls = cls | append: " cc-chip-lic-" | append: size -%}{%- endunless -%}
+{%- assign glyph = '<svg aria-hidden="true"><use href="#i-licence"/></svg>' -%}
+{%- if lic == "" -%}
+<span class="{{ cls }} cc-lic-unstated" title="the record carries no licence">{{ glyph }}unstated</span>
+{%- elsif lic == "custom" -%}
+{%- if url -%}
+<a class="{{ cls }}" href="{{ url }}" rel="external" title="the provider's own terms">{{ glyph }}provider terms ↗</a>
+{%- else -%}
+<span class="{{ cls }}" title="the provider's own terms (no URL on record)">{{ glyph }}provider terms ↗</span>
+{%- endif -%}
+{%- else -%}
+{%- case lic -%}
+  {%- when "CC-BY-4.0" -%}{%- assign txt = "CC BY 4.0" -%}
+  {%- when "CC0-1.0"   -%}{%- assign txt = "CC0 · public domain" -%}
+  {%- else -%}
+    {%- if include.name -%}{%- assign txt = include.name -%}
+    {%- else -%}{%- assign txt = lic | replace: "-", " " -%}{%- endif -%}
+{%- endcase -%}
+{%- if url -%}
+<a class="{{ cls }}" href="{{ url }}" rel="license external" title="{{ lic | escape }}">{{ glyph }}{{ txt | escape }}</a>
+{%- else -%}
+<span class="{{ cls }}" title="{{ lic | escape }}">{{ glyph }}{{ txt | escape }}</span>
+{%- endif -%}
+{%- endif -%}

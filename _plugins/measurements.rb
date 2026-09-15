@@ -419,6 +419,47 @@ module CalCOFI
       end
     end
 
+    # plain text for a title="" attribute: an ⓘ or <code> tag would show up literally in a tooltip
+    def strip_tags(s) = s.to_s.gsub(/<[^>]+>/, "").gsub(/\s+/, " ").strip
+
+    # ── M11 (WS-R3): the chip line above the details — the same four facts, scannable in one line,
+    # each hovering to the number(s) behind it. The `dd` prose these read from (bounds_row, qual_rows,
+    # baseline_row) is unchanged; the chip is a second, shorter rendering of the same measured values.
+    def bounds_chip(m)
+      b = m["bounds"] || {}
+      lo, hi = b["valid_min"], b["valid_max"]
+      units = Fmt.units(m["units"])
+      label = (lo.nil? && hi.nil?) ? "no bound declared" : "#{bounds_txt(lo, hi)}#{units ? " #{units}" : ''}"
+      { "k" => "bounds", "label" => label, "title" => strip_tags(bounds_row(m)["dd"]) }
+    end
+
+    def observed_chip(m)
+      series = (m["series"] || []).select { |s| (s["observed"] || {})["min"] && (s["observed"] || {})["max"] }
+      return nil if series.empty?
+      lo = series.map { |s| s["observed"]["min"].to_f }.min
+      hi = series.map { |s| s["observed"]["max"].to_f }.max
+      units = Fmt.units(m["units"])
+      title = series.map do |s|
+        o = s["observed"]
+        "#{ds_name(s['dataset_key'])} #{s['measurement_type']}: min #{numfmt(o['min'])} · median #{numfmt(o['p50'])} · max #{numfmt(o['max'])}"
+      end.join("; ")
+      { "k" => "observed", "label" => "#{numfmt(lo)} … #{numfmt(hi)}#{units ? " #{units}" : ''}", "title" => title }
+    end
+
+    def flagged_chip(m)
+      nf = flagged_total(m)
+      qr = qual_rows(m)
+      { "k" => "flagged", "label" => Fmt.num(nf), "warn" => nf.positive?,
+        "title" => qr.empty? ? "no series carries a quality code at the release grain" : qr.map { |s| strip_tags(s) }.join(" ") }
+    end
+
+    def baseline_chip(m)
+      { "k" => "baseline", "label" => m["climatology"] ? "climatology ✓" : "no climatology",
+        "ok" => !!m["climatology"], "title" => strip_tags(baseline_row(m)) }
+    end
+
+    def quality_chips(m) = [bounds_chip(m), observed_chip(m), flagged_chip(m), baseline_chip(m)].compact
+
     def quality_rows(m)
       rows = [bounds_row(m)]
       obs = observed_rows(m)
@@ -431,7 +472,7 @@ module CalCOFI
       if (d = Fmt.present(m["derivation"]))
         rows << { "dt" => "derivation", "dd" => CGI.escapeHTML(d) }
       end
-      rows
+      { "chips" => quality_chips(m), "rows" => rows }
     end
 
     # ── related measurements ─────────────────────────────────────────────────
@@ -488,17 +529,20 @@ module CalCOFI
       end
     end
 
-    def ways(m)
+    # the tabset group per way (plan D2, M12; the rule `ways_tabs.html` (R1) also carries as a
+    # fallback for a way with none): the apps a reader OPENS are buttons, never a tab; the code
+    # routes are one shared tabset in the fixed order erddap · parquet · r · python · json.
+    def ways_rows(m)
       key   = m["key"]
       types = series_types(m)
       known = explorer_keys.include?(key)
       out = []
-      out << { "name" => "Explorer",
+      out << { "name" => "Explorer", "group" => "app",
                "about" => known ? "maps, sections and time series of this measurement — opens prefilled"
                                 : "the Explorer's variable picker; it does not key by this series, so it opens on the release's own list",
                "url"   => known ? "#{EXPLORE}?var=#{CGI.escape(key)}" : EXPLORE }
       if known && m["climatology"]
-        out << { "name" => "Explorer · a depth section vs normal",
+        out << { "name" => "Explorer · a depth section vs normal", "group" => "app",
                  "about" => "the newest cruise's section against the climatology baseline",
                  "url"   => "#{EXPLORE}?lens=section&var=#{CGI.escape(key)}&anom=1" }
       end
@@ -506,26 +550,31 @@ module CalCOFI
       sql = types.size == 1 ?
         "SELECT * FROM __TBL:obs_env__ WHERE measurement_type = #{inlist} LIMIT 100;" :
         "SELECT * FROM __TBL:obs_env__ WHERE measurement_type IN (#{inlist}) LIMIT 100;"
-      out << { "name" => "db-query", "about" => "SQL in your browser — the shell opens with this query",
+      out << { "name" => "db-query", "group" => "app", "about" => "SQL in your browser — the shell opens with this query",
                "url"  => "#{DBQUERY}?sql=#{CGI.escape(sql)}", "sql" => sql }
       out.concat(erddap_ways(m))
-      out << { "name" => "Parquet",
+      out << { "name" => "Parquet", "group" => "parquet",
                "about" => "obs_env is partitioned by measurement_type in the content-addressed store — resolved through the release catalog, never a path built by hand",
                "code"  => (["SELECT * FROM read_json('…/#{release['version']}/catalog.json')",
                             "-- objects[] WHERE table = 'obs_env'"] +
                            types.each_with_index.map do |t, i|
                              i.zero? ? "--   AND partition_value = '#{t}'" : "--                    | '#{t}'"
                            end).join("\n") }
-      out << { "name" => "R", "code" => <<~R.strip }
+      out << { "name" => "R", "group" => "r", "code" => <<~R.strip }
         library(calcofi4r)
         con <- cc_get_db()                      # the promoted release
         tbl(con, "obs_env") |> filter(measurement_type %in% c(#{types.map { |t| "\"#{t}\"" }.join(', ')}))
       R
-      out << { "name" => "Python", "code" => <<~PY.strip }
+      out << { "name" => "Python", "group" => "python", "code" => <<~PY.strip }
         import calcofi4py as cc
         con = cc.cc_get_db()
         con.sql("SELECT * FROM obs_env WHERE measurement_type IN (#{inlist})").df()
       PY
+      # M12: "This page as data" folds into the ways-in tabset as the json group, rather than its
+      # own section below — the entry, and the words, are otherwise unchanged.
+      out << { "name" => "This page as data", "group" => "json",
+               "about" => "this measurement's entry of the release record, verbatim",
+               "url"   => abs("/measurements/#{m['slug']}.json") }
       out
     end
 
@@ -544,7 +593,7 @@ module CalCOFI
         end
         next if dist.nil?
         has = probed[dist["id"]]
-        { "name"  => "ERDDAP · #{ds_name(dk)}",
+        { "name"  => "ERDDAP · #{ds_name(dk)}", "group" => "erddap",
           "about" => has ? "CalCOFI's own server, the #{ds_name(dk)} table constrained to this series"
                          : "CalCOFI's own server: the #{ds_name(dk)} table (it carries no measurement_type column to constrain on)",
           "url"   => has ? "#{ERDDAP}#{dist['id']}.html?&measurement_type=%22#{CGI.escape(s['measurement_type'].to_s)}%22"
@@ -1077,8 +1126,13 @@ module CalCOFI
           "acid_figure" => h["acid_figure"] ? true : nil,
           # linked the way the front door's pins are: the method page and the text fragment that
           # lands on its section (calcofi.org has no stable anchors — § F5)
-          "page"       => Fmt.present(h["page"]) || "Methods",
-          "link"       => Fmt.present(h["calcofi_org"]),
+          # M3 (round 2, WS-R2): the record's column is `calcofi_org_url`, not `calcofi_org`, and
+          # the row's own `source` is the page's name — reading the two names that do not exist
+          # left the pin off all 89 pages. The link carries calcofi.org's text fragment, because
+          # the site has no stable anchors (§ F5); the fragment rides only a URL that exists.
+          "page"       => Fmt.present(h["source"]) || "Methods",
+          "link"       => (u = Fmt.present(h["calcofi_org_url"])) &&
+                          [u, Fmt.present(h["text_fragment"]) && "#:~:text=#{h['text_fragment']}"].compact.join,
           "source"     => Fmt.present(h["source"]),
           "type"       => Fmt.present(s["measurement_type"]),
           "meta"       => [Fmt.num(s["n_values"]) && "#{Fmt.num(s['n_values'])} values",
@@ -1101,9 +1155,32 @@ module CalCOFI
       end.compact
     end
 
+    # M14 (round 2, WS-R2): the Wikipedia lead is an ALTERNATIVE reading, not a block beside the
+    # EOV card — it said the same thing in a second place, in someone else's words. Two sentences
+    # of the CC BY-SA lead, credited to the revision it was fetched at, exactly as the "Borrowed
+    # context" block credited it.
+    def wikipedia_title(m)
+      wp = (media_of(m)["wikipedia"] || []).first
+      wp && Fmt.present(wp["title"])
+    end
+
+    def wikipedia_alt(m)
+      wp = (media_of(m)["wikipedia"] || []).first
+      txt = wp && Fmt.present(wp["extract"].to_s.split(/(?<=\.)\s/).first(2).join(" "))
+      return nil unless txt
+      { "kind" => "wikipedia",
+        "kind_label" => WHY_KIND["wikipedia"] || "Wikipedia",
+        "text" => txt,
+        "cites" => [{ "label" => [Fmt.present(wp["title"]),
+                                  Fmt.present(wp["license"]) || "CC BY-SA 4.0",
+                                  Fmt.present(wp["revision"]) && "rev. #{wp['revision']}"].compact.join(" \u00b7 "),
+                      "url" => Fmt.present(wp["url"]) && "#{wp['url']}?oldid=#{wp['revision']}" }.compact],
+        "needs_cite" => false }
+    end
+
     # ranks 2… — the datasets catalog's "not yet in the database" idiom, closed on load
     def why_alts(m)
-      why_rows_sorted(m).reject { |r| r["rank"].to_i == 1 }.map do |r|
+      rows = why_rows_sorted(m).reject { |r| r["rank"].to_i == 1 }.map do |r|
         cs = cites_of(r)
         { "kind" => Fmt.present(r["kind"]) || "authored",
           "kind_label" => WHY_KIND[r["kind"]] || Fmt.present(r["kind"]) || "authored",
@@ -1113,6 +1190,14 @@ module CalCOFI
           # § D5: an authored alternative with no citation says so rather than reading as a fact
           "needs_cite" => (r["kind"].to_s == "authored" && cs.empty? && Fmt.present(r["source_url"]).nil?) }
       end.select { |r| r["text"] }
+      wa = wikipedia_alt(m)
+      return rows unless wa
+      return rows if rows.any? { |r| r["text"] == wa["text"] }
+      # the record's own `wikipedia` why-row is the ARTICLE TITLE with a link; the media's lead
+      # says the same article in its own words and carries the same link, so the title-only row
+      # would be the same thing said twice (\u00a7 D3)
+      t = wikipedia_title(m)
+      rows.reject { |r| r["kind"] == "wikipedia" && t && r["text"].to_s.strip == t } + [wa]
     end
 
     # ONE rounding for a measured value written to two decimals. `format("%.2f", x)` rounds the
@@ -1144,20 +1229,28 @@ module CalCOFI
       s
     end
 
-    # NERC says what it is · the record says what we hold · the pick says why it matters, each
-    # underlined in its source's colour, with a legend that names exactly the parts drawn (§ D5)
+    # M5 (round 2, WS-R2): the record says what we hold · the pick says why it matters. The NERC
+    # clause is GONE from here — the What column carries the definition and its \u24d8 (\u00a7 D3, say it
+    # once), and the sentence read as a proof rather than as prose. What is left is plain text with
+    # a small source BADGE after each part (`.cc-src`, WS-R1's include contract): the hover is the
+    # legend the page used to spell out under every sentence. The `s-rec` / `s-why` classes stay on
+    # the spans — the JSON-LD and check_layout.py read them.
     def sentence(m)
       pick = why_pick(m)
       parts = []
-      lead = what_of(m).dig("nerc", "lead")
-      parts << { "cls" => "s-nerc", "text" => lead, "src" => "NERC" } if lead
       if (r = rec_sentence(m))
-        parts << { "cls" => "s-rec", "text" => r, "src" => "record" }
+        parts << { "cls" => "s-rec", "text" => r, "src" => "record",
+                   "badge" => "R", "badge_cls" => "cc-src-rec",
+                   "badge_title" => "the release record, measured at #{release['version']}" }
       end
       if pick && Fmt.present(pick["text"])
         cs = cites_of(pick)
+        labs = cs.map { |c| Fmt.present(c["label"]) }.compact
         parts << { "cls" => "s-why", "text" => pick["text"], "cites" => cs,
-                   "src" => cs.empty? ? "authored, needs a citation" : "authored, cited" }
+                   "src" => cs.empty? ? "authored, needs a citation" : "authored, cited",
+                   "badge" => "C", "badge_cls" => "cc-src-why",
+                   "badge_title" => labs.empty? ? "authored, needs a citation"
+                                                : "authored, cited: #{labs.join(', ')}" }
       end
       return nil if parts.empty?
       parts
@@ -1556,7 +1649,7 @@ module CalCOFI
         "ds_rows"     => mm.dataset_rows(m),
         "quality"     => mm.quality_rows(m),
         "related"     => mm.related_rows(m),
-        "ways"        => mm.ways(m),
+        "ways"        => mm.ways_rows(m),
         "strip"       => JSON.generate(mm.strip_json(m)),
         "depth"       => JSON.generate(mm.depth_json(m)),
         "months"      => JSON.generate(mm.months_json(m)),

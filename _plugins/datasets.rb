@@ -405,6 +405,24 @@ module CalCOFI
       shown.join(", ")
     end
 
+    # a dataset's own taxa, commonest-observed first (plan D3, the homed row's expander) — the
+    # SAME coverage.taxa[] the band and taxa_by_dataset read, filtered to this dataset_key and
+    # sorted by its own n_obs (never the release-wide total), scientific_name only (the row
+    # italicises it; a taxon with no scientific_name is skipped rather than guessed).
+    def dataset_taxa_names(key)
+      @dataset_taxa_names ||= {}
+      @dataset_taxa_names[key] ||= begin
+        rows = []
+        coverage_taxa.each do |t|
+          name = Fmt.present(t["scientific_name"])
+          next unless name
+          ds = (t["datasets"] || []).find { |x| x["dataset_key"] == key }
+          rows << [ds["n_obs"].to_i, name] if ds
+        end
+        rows.sort_by { |n_obs, _| -n_obs }.map { |_, name| name }
+      end
+    end
+
     # ── the release's OBSERVED environmental measurements (coverage.json) ──────
     # THE ONE ACCESSOR WS-M0 ADDED (plan 2026-09-10 § D7, brief WS-M0 step 3): `variables[]` is one
     # row per dataset × measurement_type the release actually carries — a SERIES. A measurement KEY
@@ -596,6 +614,20 @@ module CalCOFI
     # (plan Decision 4); a record with no colour falls back to the accent in CSS.
     def dot_color(d) = Fmt.present(d["color"])
 
+    # S1 (round 2, WS-R4): a keyword's leaf — the text after its last ">" where the record IS a
+    # GCMD path (the record's own paths are shouted caps, "WATER TEMPERATURE"; the reader wanted
+    # the last word, not the shouting, so a shouting leaf is sentence-cased). A holding's own
+    # keywords are plain human-written phrases with no ">" and ordinary casing (e.g. "Dissolved
+    # Nutrients") — "title-cased as the record has it" means exactly that: left alone, never
+    # re-cased. data.json and the JSON-LD keep the full strings untouched (they read
+    # r["keywords"] directly, never this).
+    def kw_leaf(path)
+      leaf = path.to_s.split(">").last.to_s.strip
+      return path if leaf.empty?
+      return leaf unless leaf == leaf.upcase && leaf =~ /[A-Z]/
+      leaf[0].upcase + leaf[1..].to_s.downcase
+    end
+
     # the format chips were three chips and a wrap; D-1 makes them one mono phrase
     def formats_phrase(d)
       f = formats(d)
@@ -603,26 +635,38 @@ module CalCOFI
     end
 
     # ── one dataset as a tile row in the category grid ───────────────────────
+    # D3 (round 2, WS-R4): the homed row's own variables/taxa expander needs a realm to pick
+    # between coverage.variables[] (env) and coverage.taxa[] (bio) — the same "realm" this method
+    # already computes — and the first eight names, commonest-observed first for taxa. Never both:
+    # a dataset is one realm's row (plan D3's row grid), so n_var and n_taxa are mutually exclusive
+    # in practice, but both are read from the record rather than assumed.
     def tile_row(d)
-      cov = d["coverage"] || {}
+      cov   = d["coverage"] || {}
+      realm = cov["realm"] || d.dig("category", "realm")
       {
         "key"        => d["dataset_key"],
         "name"       => d["dataset_name_short"] || d["dataset_name"] || d["dataset_key"],
         "full_name"  => d["dataset_name"],
         "url"        => page_url(d),
         "provider"   => d.dig("provider", "short") || d.dig("provider", "key"),
-        "realm"      => cov["realm"] || d.dig("category", "realm"),
+        "realm"      => realm,
         "year_min"   => cov["year_min"],
         "year_max"   => cov["year_max"],
         "years"      => year_span(cov),
         "n_obs"      => cov["n_obs"],
         "n_obs_fmt"  => Fmt.num(cov["n_obs"]),
-        "license"    => d.dig("attribution", "license"),
+        "license"     => d.dig("attribution", "license"),
+        "license_url"  => d.dig("attribution", "license_url"),
+        "license_name" => d.dig("attribution", "license_name"),
         "doi"        => d.dig("attribution", "doi"),
         "formats"    => formats(d),
         "formats_phrase" => formats_phrase(d),
         "color"      => dot_color(d),
         "n_variables" => cov["n_variables"] || normalize_variables(cov).size,
+        "n_var"      => realm == "env" ? (cov["n_variables"] || normalize_variables(cov).size) : nil,
+        "var_names"  => realm == "env" ? variable_names(cov).first(8) : [],
+        "n_taxa"     => realm != "env" ? cov["n_taxa"] : nil,
+        "taxa_names" => realm != "env" ? dataset_taxa_names(d["dataset_key"]).first(8) : [],
         "stage"      => d.dig("status", "stage"),
         "years_bar"  => years_bar(cov["years"], cov["year_min"], cov["year_max"])
       }
@@ -1926,6 +1970,10 @@ module CalCOFI
       h1    = short || full || key
       lede  = (short && full && short != full) ? full : nil
       access = is_holding ? cat.holding_access(r) : cat.access_groups(r)
+      # S2 (round 2, WS-R4): the Access tabset's own pill is the group's row count — the same sum
+      # n_endpoints below totals across every group, so the pills and the sub-nav's "Access n"
+      # can never disagree.
+      access.each { |g| g["n"] = (g["blocks"] || []).sum { |b| (b["rows"] || []).size + (b["matrix"] || []).size } }
       if (lost = cat.unlisted_endpoints(r, access)).any?
         Jekyll.logger.warn "datasets:", "#{key}: #{lost.size} endpoint(s) in the record reach no " \
                                         "Access row — #{lost.join(', ')}"
@@ -1960,6 +2008,9 @@ module CalCOFI
         "related"     => related(cat, r),
         # normalised once here so a template never asks whether a variable is a string or an object
         "variables"   => cat.normalize_variables(cov),
+        # S1: the leaf of each GCMD path, the full path kept as the chip's title (data.json and the
+        # JSON-LD read r["keywords"] directly — untouched)
+        "keyword_chips" => (r["keywords"] || []).map { |k| { "leaf" => cat.kw_leaf(k), "full" => k } },
         "n_obs_fmt"   => Fmt.num(cov["n_obs"]),
         "n_roots_fmt" => Fmt.num(cov["n_roots"]),
         # this dataset's own species count, from the release's coverage.json (plan 2026-09-09 § D3):

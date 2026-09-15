@@ -34,25 +34,36 @@ can only pass by the layout actually being fixed:
              own; the familiar scale is drawn wherever the payload has one with NO two mark labels
              overlapping (bounding boxes read from the DOM); the anomaly draws exactly the record's
              depth bands and at least its year-values; and the three sections are written in order.
+             Round 2 (plan 2026-09-15 § D3, D4, § Verification R2): the sentence has NO .s-nerc and
+             one .cc-src badge per remaining part and no legend paragraph; a scale kind's What
+             column draws an svg.mmf-ramp with a <linearGradient> and the record's marks labelled
+             on it; every .mmf-pin points at calcofi.org; the spark draws at least three axis ticks
+             and is never stretched with preserveAspectRatio=none; the history writes a ± label per
+             band (own scale per row), carries the two scale radios and a one-line legend; and
+             exactly one .mmf-tip div serves every figure.
   erddap     (dataset pages) each ERDDAP dataset id's tabledap page appears exactly once. It was
              listed twice: once under Download for its formats, once under Services for its page.
-  species    (/species/ and one taxon page, plan 2026-09-09 § S3) the index's five counts equal the
-             inline record's; the matrix has exactly (rows x datasets) cells and its pane is not
-             drawn taller than its own content; the tree pane is EXACTLY the matrix pane's height
-             (the tree scrolls inside it, so no unbounded text sits beside a fixed-height figure);
-             every .sp-url is one line and elided from the middle rather than wrapped; on a taxon
-             page the "Observed in" rows are the record's datasets[] with its counts, the lineage
-             is a chain of links ending in the taxon's parent, and the Explorer link opens
-             prefilled on the taxon key.
-  faces      (a taxon page, plan 2026-09-11 § D1–D5, D9) the silhouette is a labelled role="img"
-             with real pixels; the photo has alt text, loading="lazy" and the radial mask on its
-             FRAME; the glance draws two bars or says "not on record" — never a blank slot; the
-             sentence's marked parts and its legend agree; every asset shown has a credit line; the
-             ladder draws exactly the payload's marks and the six references of size_reference.csv
-             with NO two labels overlapping (bounding boxes read from the DOM); the plate is drawn
-             exactly where the payload has one; and the stat row says "records", not
-             "observations", until the record carries n_present (§ D9 — 75.5 % of the CUFES rows
-             and 85.0 % of the phytoplankton rows are zeros, so a row is not an organism).
+  species    (/species/ and one taxon page, plan 2026-09-09 § S3; round 2 § I1, I2, P1–P3, WS-R5)
+             the index's five counts equal the inline record's and its h1 carries no digit (the
+             band is the numbers' only home); the matrix has exactly (rows x datasets) cells and
+             its pane is not drawn taller than its own content; the tree pane is EXACTLY the matrix
+             pane's height (the tree scrolls inside it, so no unbounded text sits beside a
+             fixed-height figure); a search's hits fill a flat #sp-matches list above the tree,
+             never hidden while there is at least one; every .sp-url is one line and elided from
+             the middle rather than wrapped; on a taxon page the "Observed in" rows are the
+             record's datasets[] with its counts, the lineage is a chain of links ending in the
+             taxon's parent, the Explorer link opens prefilled on the taxon key, and Ways in takes
+             the same tabset include as the measurement page.
+  faces      (a taxon page, plan 2026-09-11 § D1–D5, D9; round 2 § P1, P2, D6) the silhouette is a
+             labelled role="img" with real pixels; the photo has alt text, loading="lazy" and the
+             radial mask on its FRAME; the glance draws two bars or says "not on record" — never a
+             blank slot; the sentence's marked parts each end in exactly one .cc-src source badge
+             and carry NO .sp-legend (retired in favour of the badges); every asset shown has a
+             credit line; the ladder draws exactly the payload's marks and the six references of
+             size_reference.csv with NO two labels overlapping (bounding boxes read from the DOM);
+             the plate is drawn exactly where the payload has one; and the stat row says "records",
+             not "observations", until the record carries n_present (§ D9 — 75.5 % of the CUFES
+             rows and 85.0 % of the phytoplankton rows are zeros, so a row is not an organism).
   measurements (/measurements/ and one measurement page, plan 2026-09-10 § D5, D6) the timeline
              draws one row per measurement and one bar per series of the page's OWN inline record
              (79 and 84 on v2026.09.06), grouped into its categories; the matrix is categories ×
@@ -84,13 +95,21 @@ import argparse, json, re, subprocess, sys
 
 DEFAULT_PATHS = [
     "/",                             # the front door: the section, the numbers, the bento (plan 2026-09-07)
+    "/?q=sardine&tab=species",       # D9 (round 2, WS-R4): a shared link lands on the Species tab
+                                     #   with the box filled and >= 1 .cc-result already rendered
+    "/?q=krill",                     # …and on the Datasets tab, the same box still filters the grid
+                                     #   to the euphausiid row (Ben, 2026-09-15, umbrella D9)
     "/datasets/",
     "/datasets/calcofi_ctd-cast/",   # the big one: 3 ERDDAP ids, 33 variables, a long abstract
     "/datasets/swfsc_ichthyo/",      # 29 distributions, 6 registrations, a bbox beyond the frame
     "/datasets/calcofi_prodo/",      # a holding: no map, no Access-from-the-release, a long name
+    "/datasets/calcofi_bottle/",     # D2/S1/S2 (round 2, WS-R4): an unstated licence chip, GCMD
+                                     #   keyword leaves, the Access tabset (5 groups, 30 endpoints)
+    "/datasets/cce-lter_euphausiids/",  # D3: the bio row's own taxa expander (37 taxa, custom licence)
     "/species/",                     # the species catalog: search + tree, the matrix, the icicle
     "/species/?panes=matrix",        # the matrix expanded: the tree folds into a vertical pill, never gone
     "/species/?panes=matrix&q=sardine",  # …and a search with a hit shows the tree again (Ben, 2026-09-10)
+    "/species/?q=sardin",            # I2: the flat Matches list above the tree (WS-R5, umbrella D9)
     "/species/worms-217452/",        # the sardine: two datasets, twelve lineage ranks, five ways in
                                      # — and the full face: silhouette, photo, glance, five ladder
                                      #   marks and a NOAA plate (plan 2026-09-11 § Verification F3)
@@ -170,6 +189,13 @@ PROBE = r"""
     };
   }
 
+  // D4/D5 (round 2, WS-R4): the six facet selects, once #ds-q is gone — measured, never asserted
+  // (there is no "right" width), so a future change to the row can see whether they moved
+  const filterSelects = [...d.querySelectorAll(".ds-filter select")];
+  if (filterSelects.length) {
+    out.filterSelectWidths = filterSelects.map(s => ({ id: s.id, w: px(s.getBoundingClientRect().width) }));
+  }
+
   // ── the filter actually hides ───────────────────────────────────────────────
   // `el.hidden` is a UA-stylesheet rule, so ANY author rule that sets `display` beats it — and
   // .cc-card and .ds-row both set `display: flex`. The filter row hid nothing for as long as it
@@ -214,6 +240,29 @@ PROBE = r"""
   if (hero) {
     const kids = [...hero.children].filter(c => c.getBoundingClientRect().height > 0);
     out.hero = { columns: kids.length, heights: kids.map(c => px(c.getBoundingClientRect().height)) };
+  }
+
+  // D2 (round 2, WS-R4): the head wears the same licence chip as a homed row
+  const headLic = d.querySelector(".ds-chips .cc-chip-lic");
+  if (headLic) {
+    out.headLicence = { present: true, text: headLic.textContent.replace(/\s+/g, " ").trim() };
+  }
+
+  // S1: a keyword chip's title is the full GCMD path, its text the leaf after the last ">" — scoped
+  // to the Keywords row specifically (.ds-kw is reused for the Coverage variables list too, whose
+  // chips carry their OWN, unrelated title)
+  const kwChips = [...d.querySelectorAll(".ds-kw-keywords .cc-chip[title]")];
+  if (kwChips.length) {
+    out.keywordChips = kwChips.map(c => ({ text: c.textContent.trim(), title: c.getAttribute("title") }));
+  }
+
+  // S2: Access as a tabset — one panel per group, exactly one shown
+  const dsAccess = d.getElementById("ts-ds-access");
+  if (dsAccess) {
+    const tabs = dsAccess.querySelectorAll(".tabrow > button").length;
+    const panels = dsAccess.querySelectorAll(".tabpanel").length;
+    const shown = [...dsAccess.querySelectorAll(".tabpanel")].filter(p => !p.hidden).length;
+    out.dsAccessTabset = { tabs, panels, shown };
   }
   // any two-column region between the head band and Cite
   const cite = d.getElementById("cite");
@@ -391,13 +440,44 @@ PROBE = r"""
           drawn: !!panel && cs(panel).display !== "none",
           cards: panel ? panel.querySelectorAll(".prod-card").length : 0
         };
-      })
+      }),
+      // a tabset with ONE group/row draws no .tabrow at all (D2: "a single group renders no tab
+      // row"; M8/M12, WS-R3) — carry the panels themselves so Python can tell that apart from a
+      // real zero-selected bug rather than reading an empty `tabs` list either way
+      panels: [...ts.querySelectorAll(".tabpanel")].map(p => ({ id: p.getAttribute("data-panel"), hidden: p.hidden }))
     }));
   }
 
   // the DATA section's height, so the front door cannot quietly grow (plan § Risks)
   const dataSec = d.getElementById("datasets");
   if (dataSec) out.dataSectionH = px(dataSec.getBoundingClientRect().height);
+
+  // ── D1–D5, D9 (round 2, WS-R4): the homed row, the one search box ──────────
+  if (dataSec) {
+    const homed = [...dataSec.querySelectorAll(".ds-row-dataset")];
+    out.homedRows = {
+      n: homed.length,
+      // D1: the format phrase is gone from every homed row (the Format filter and the dataset
+      // page keep it — data-fmt stays on the <li> for the select, checked separately below)
+      dsFmt: dataSec.querySelectorAll(".ds-row-dataset .ds-fmt").length,
+      // D2: the licence chip is the row's LAST element, and its text is never the raw "custom" id
+      licMissing: homed.filter(row => !row.lastElementChild || !row.lastElementChild.classList.contains("cc-chip-lic")).length,
+      licCustomText: homed.filter(row => (row.lastElementChild || {}).textContent === "custom").length,
+      // D3: a drawn expander is never empty (self-consistent with n_var/n_taxa > 0 gating the
+      // template; the source record is cross-checked in Python from the SAME datasets.json)
+      varsTotal: dataSec.querySelectorAll(".ds-vars").length,
+      varsEmpty: [...dataSec.querySelectorAll(".ds-vars")].filter(v => !v.querySelector(".chips .cc-chip")).length
+    };
+    // D4/D5 (umbrella D9): exactly one input[type=search] in the whole data section, full width
+    const searches = [...dataSec.querySelectorAll('input[type="search"]')];
+    const doorBox = d.getElementById("door-search");
+    out.doorSearch = {
+      n: searches.length,
+      hasDsQ: !!d.getElementById("ds-q"),
+      boxW: doorBox ? px(doorBox.getBoundingClientRect().width) : null,
+      containerW: doorBox ? px(doorBox.closest(".cc-container").getBoundingClientRect().width) : null
+    };
+  }
 
   // the band's two counted things are doors now
   out.bandLinks = [...d.querySelectorAll(".nums > div")]
@@ -452,6 +532,12 @@ PROBE = r"""
     };
     out.species = {
       counts,
+      h1: (d.querySelector(".sp-idx-head h1") || {}).textContent || null,
+      matchesHidden: (d.getElementById("sp-matches") || {}).hidden,
+      matchesRows: [...d.querySelectorAll("#sp-matches .cc-result")].map(a => ({
+        n: (a.querySelector(".cc-result-n") || {}).textContent || "",
+        m: (a.querySelector(".cc-result-m") || {}).textContent || ""
+      })),
       rec: rec && rec.counts,
       rows: rec && rec.mx ? rec.mx.rows.length : null,
       cols: rec && rec.mx ? rec.mx.cols.length : null,
@@ -511,7 +597,8 @@ PROBE = r"""
       // HTML document and never matches SVG's camelCase attribute, so the strip was display:none
       // with 93 rects in it and every count still agreed (measured 2026-09-09)
       stripH: d.querySelector("#sp-strip") ? px(d.querySelector("#sp-strip").getBoundingClientRect().height) : 0,
-      stats: [...d.querySelectorAll(".sp-stat > div")].map(el => el.querySelector("dt").textContent.trim())
+      stats: [...d.querySelectorAll(".sp-stat > div")].map(el => el.querySelector("dt").textContent.trim()),
+      waysTabset: !!d.querySelector(".sp-col-ways .tabset")
     };
   }
 
@@ -538,7 +625,6 @@ PROBE = r"""
     out.faces = {
       sil: sil ? Object.assign(box(sil), { label: sil.getAttribute("aria-label"), role: sil.getAttribute("role"),
                                            fill: cs(sil).fill.replace(/\s/g, "") }) : null,
-      stand: (d.querySelector(".sp-stand") || {}).textContent || null,
       photo: ph ? Object.assign(box(ph), { alt: ph.getAttribute("alt"), w0: ph.getAttribute("width"),
                                            h0: ph.getAttribute("height"), loading: ph.getAttribute("loading"),
                                            pos: cs(ph).objectPosition,
@@ -548,7 +634,8 @@ PROBE = r"""
       bars: [...d.querySelectorAll(".sp-glance .sp-bar")].map(b => px(b.getBoundingClientRect().width)),
       glanceNone: !!d.querySelector(".sp-glance-none"),
       sentParts: [...d.querySelectorAll(".sp-sent > span")].map(s => s.className),
-      legend: d.querySelectorAll(".sp-legend > span").length,
+      badges: [...d.querySelectorAll(".sp-sent > .cc-src")].map(s => s.className),
+      legendCount: d.querySelectorAll(".sp-legend").length,
       credits: [...d.querySelectorAll(".sp-credit")].map(p => p.textContent.replace(/\s+/g, " ").trim().slice(0, 90)),
       statWords: [...d.querySelectorAll(".sp-stat > div")].map(el => el.querySelector("dt").textContent.trim()),
       size,
@@ -619,7 +706,22 @@ PROBE = r"""
         name: (li.querySelector(".mm-l1 a") || {}).textContent || "",
         dot: !!li.querySelector(".mm-dot")
       })),
-      explore: [...d.querySelectorAll('a[href*="/explore/"]')].map(a => a.getAttribute("href"))
+      explore: [...d.querySelectorAll('a[href*="/explore/"]')].map(a => a.getAttribute("href")),
+      // ── WS-R3 (plan 2026-09-15 § M1, M7–M9, M11–M13, § D8) ──────────────────
+      noFlagnote: !d.querySelector(".mm-flagnote"),
+      statFlag: !!d.querySelector(".mm-stat-flag"),
+      noWhat: !d.getElementById("what"),
+      noCol: !d.getElementById("mmf-col"),
+      howPanels: (() => {
+        const how = d.getElementById("how"), ts = how && how.nextElementSibling;
+        if (!ts || !ts.classList.contains("tabset")) return null;
+        const row = ts.querySelector(".tabrow");
+        return { panels: ts.querySelectorAll(".tabpanel").length,
+                 buttons: row ? row.querySelectorAll("button").length : 0, tabrow: !!row };
+      })(),
+      qualChips: d.querySelectorAll(".mm-qual .qline .cc-chip").length,
+      waysTabset: !!d.querySelector(".mm-col-ways .tabset"),
+      waysAppButtons: d.querySelectorAll(".mm-col-ways .cc-btn").length
     };
   }
   // every .mm-url is ONE line, elided from the middle rather than wrapped or cut
@@ -642,6 +744,7 @@ PROBE = r"""
       n: (d.getElementById("mm-qn") || {}).textContent
     });
     out.mm = {
+      h1: (d.querySelector(".mm-idx-head h1") || {}).textContent || null,
       rec: rec && rec.counts,
       cats: rec ? rec.cats.length : 0,
       ds: rec ? rec.ds.length : 0,
@@ -699,7 +802,13 @@ PROBE = r"""
     out.mfaces = {
       payload: P,
       kind: P && P.kind,
-      cols: [...d.querySelectorAll(".mmf-face > .mmf-col > .mmf-k")].map(e => e.textContent.trim()),
+      // the column's NAME only: round 2 hangs a way down ("6 bands \u2193", "2 methods \u2193") off the
+      // same line, and that link is not part of what the column is called
+      cols: [...d.querySelectorAll(".mmf-face > .mmf-col > .mmf-k")].map(e => {
+        const c = e.cloneNode(true);
+        [...c.querySelectorAll(".mmf-rt")].forEach(x => x.remove());
+        return c.textContent.trim();
+      }),
       mols: [...d.querySelectorAll(".mmf-face .mmf-mol")].map(s => Object.assign(box(s), {
         label: s.getAttribute("aria-label"), role: s.getAttribute("role"),
         paths: s.querySelectorAll("path,line,circle,polygon,text").length
@@ -711,7 +820,23 @@ PROBE = r"""
       plat: d.querySelectorAll(".mmf-face .mmf-pg svg").length,
       pins: d.querySelectorAll(".mmf-pin").length,
       spark: !!(d.getElementById("mmf-spark") && d.getElementById("mmf-spark").classList.contains("mmf-drawn")),
-      sentParts: [...d.querySelectorAll(".mmf-sent > span")].map(s => s.className),
+      // round 2 (WS-R2, plan § D4): a figure has a ramp or an axis, labels on it, and a hover
+      sparkTicks: d.querySelectorAll("#mmf-spark text.mmf-tick").length,
+      sparkStretch: (d.getElementById("mmf-spark") || {}).getAttribute
+        ? d.getElementById("mmf-spark").getAttribute("preserveAspectRatio") : null,
+      ramp: d.querySelectorAll(".mmf-face svg.mmf-ramp").length,
+      rampGrad: d.querySelectorAll(".mmf-face svg.mmf-ramp linearGradient").length,
+      rampMarks: d.querySelectorAll(".mmf-face svg.mmf-ramp text.mmf-mklab").length,
+      // the pin's href, so the check can see it reaches calcofi.org and not a column that is not there
+      pinHrefs: [...d.querySelectorAll(".mmf-face a.mmf-pin")].map(a => a.getAttribute("href")),
+      tip: d.querySelectorAll("body > .mmf-tip").length,
+      // the history's own scale per row: a ± label beside every band, and the toggle above it
+      anomPm: anom ? [...anom.querySelectorAll("text.mmf-tick")].filter(t => t.textContent.trim().startsWith("\u00b1")).length : 0,
+      anomToggle: d.querySelectorAll('input[name="mmf-hsc"]').length,
+      anomLegend: d.querySelectorAll("#mmf-anom-legend > span").length,
+      // the sentence: prose with a badge per part, and NO NERC clause (the What column has it)
+      sentParts: [...d.querySelectorAll(".mmf-sent > span[class^='s-']")].map(s => s.className),
+      sentBadges: d.querySelectorAll(".mmf-sent .cc-src").length,
       legend: d.querySelectorAll(".mmf-legend > span").length,
       det: det ? { open: det.open, summary: det.querySelector("summary").textContent.trim(),
                    items: det.querySelectorAll(".mmf-alts > li").length } : null,
@@ -760,7 +885,23 @@ PROBE = r"""
       const search = {};
       TERMS.reduce((p, t) => p.then(() => type(t)).then(() => { search[t] = readOut(); }),
                    Promise.resolve())
-        .then(() => { dq.value = ""; out.search = search; resolve(out); })
+        // D9: "sardine" also renders into the Species tab's own result panel (assets/door-search.js
+        // keeps both panels in sync regardless of which tab is currently showing)
+        .then(() => type("sardine"))
+        .then(() => {
+          const sp = d.getElementById("door-species-results");
+          out.doorPanels = { sardineSpeciesResults: sp ? sp.querySelectorAll(".cc-result").length : null };
+        })
+        // D4/D5: "krill" still filters the Datasets grid exactly as #ds-q used to, now driven by
+        // the same #door-q
+        .then(() => type("krill"))
+        .then(() => {
+          const grid = d.getElementById("ds-grid");
+          out.doorPanels.krillRowsShown = grid
+            ? [...grid.querySelectorAll(".ds-row-dataset")].filter(row => !row.hidden).map(row => row.getAttribute("data-key"))
+            : null;
+        })
+        .then(() => { dq.value = ""; dq.dispatchEvent(new w.Event("input", { bubbles: true })); out.search = search; resolve(out); })
         .catch(e => { out.search = { error: String(e) }; resolve(out); });
     }, 1200);
   });
@@ -824,7 +965,12 @@ CARD_TABSETS = ("ts-explore", "ts-access")
 # dark at 1470 (3,100 on unmodified main): D7's accepted +104 plus 21 px from what main and the
 # record have gained since, not a screen. Every PR since the release had failed here on main's own
 # height, which is the drift this number exists to catch in a PR, not in main.
-DATA_SECTION_BASE = 3099
+# Re-measured 2026-09-15 (round 2, WS-R4, D1–D5/D9) on round-2's own tip (ea5e385, v2026.09.11
+# record) before this workstream's changes: 3,117 px light at 1470. After (this branch): 2,948 px —
+# a 169 px DECREASE, not a growth: D1 drops the format phrase from every homed row, D4/D5 drop the
+# catalog's own #ds-q field and both per-tab search boxes on the front door (their own idxtab-form
+# input + link row), more than the D3 variables/taxa expander (closed by default) adds back.
+DATA_SECTION_BASE = 2948
 DATA_SECTION_GROWTH = 120
 
 _PROBED = {}          # pin hrefs answered once per run, not per width and theme
@@ -843,6 +989,11 @@ def url_ok(url):
         code = getattr(e, "code", None)
         _PROBED[url] = code in (200, 206) if code else None   # None: unreachable, a warning not a failure
     return _PROBED[url]
+
+
+def bands_r2(P):
+    """the record's own anomaly bands, as both the M10 assertions read them"""
+    return (P.get("anomaly") or {}).get("bands") or []
 
 
 def check(path, r, width, theme, fails, notes):
@@ -864,6 +1015,11 @@ def check(path, r, width, theme, fails, notes):
             fails.append(f"{where}: grid {g['height']}px > {MAX_GRID_H}px")
         if width <= 400 and g["columns"] != 1:
             fails.append(f"{where}: grid is {g['columns']} columns, expected 1")
+
+    fsw = r.get("filterSelectWidths")
+    if fsw:
+        notes.append(f"{where}: filter selects " +
+                     " · ".join(f"{s['id']}={s['w']}px" for s in fsw))
 
     f = r.get("filter")
     if f:
@@ -887,6 +1043,32 @@ def check(path, r, width, theme, fails, notes):
             fails.append(f"{where}: hero columns end {gap}px apart ({hero['heights']}), max {MAX_HERO_GAP}")
     if r.get("twoCol"):
         fails.append(f"{where}: two-column region(s) between the head and Cite: {r['twoCol']}")
+
+    # D2 S1 S2 (round 2, WS-R4): the dataset page's own licence chip, keyword leaves, Access tabset
+    hl = r.get("headLicence")
+    if hl:
+        notes.append(f"{where}: head licence chip {hl['text']!r}")
+        if hl["text"] == "custom":
+            fails.append(f"{where}: the head licence chip reads the raw 'custom' id (D5)")
+
+    kw = r.get("keywordChips")
+    if kw:
+        notes.append(f"{where}: {len(kw)} keyword leaf chip(s)")
+        for c in kw:
+            if not c["title"]:
+                fails.append(f"{where}: keyword chip {c['text']!r} has no title (S1)")
+            # a holding's own keywords are flat phrases, no ">" — leaf == full path there by
+            # construction, never re-cased (kw_leaf); only a real GCMD path must shorten
+            elif ">" in c["title"] and c["text"] == c["title"]:
+                fails.append(f"{where}: keyword chip {c['text']!r} shows the full GCMD path, not the leaf (S1)")
+
+    at = r.get("dsAccessTabset")
+    if at:
+        notes.append(f"{where}: Access tabset {at['tabs']} tab(s), {at['panels']} panel(s), {at['shown']} shown")
+        if at["tabs"] != at["panels"]:
+            fails.append(f"{where}: Access has {at['tabs']} tab(s) but {at['panels']} panel(s) (S2)")
+        if at["shown"] != 1:
+            fails.append(f"{where}: Access shows {at['shown']} panel(s) at once, expected 1 (S2)")
 
     if width <= 400:
         for u in r.get("urls", []):
@@ -913,6 +1095,10 @@ def check(path, r, width, theme, fails, notes):
                 fails.append(f"{where}: the species index has no {k!r} count though the record carries {v}")
             elif seen[k] != v:
                 fails.append(f"{where}: the index says {k} = {seen[k]}, the record says {v}")
+        # I1: the h1 is a name, not a sentence of numbers — the numbers live in the band above,
+        # once, and only there (checked against the record above)
+        if sp.get("h1") and any(ch.isdigit() for ch in sp["h1"]):
+            fails.append(f"{where}: the species index h1 carries a digit: {sp['h1']!r}")
         # the matrix is exactly (classes + the two rows the record makes necessary) x datasets
         if sp["rows"] and sp["cols"]:
             wantc = sp["rows"] * sp["cols"]
@@ -968,6 +1154,21 @@ def check(path, r, width, theme, fails, notes):
                 fails.append(f"{where}: the search found {sp['hits']} hit(s) but the tree is folded — nothing to click")
             elif sp["hits"]:
                 notes.append(f"{where}: search hits {sp['hits']}, shown {sp['hitsShown']}, panes={mode}")
+            # I2 (umbrella D9): the Matches list above the tree — the same hits, selectable, never
+            # hidden while there is at least one
+            if sp["hits"]:
+                mrows = sp.get("matchesRows") or []
+                if sp.get("matchesHidden", True) or not mrows:
+                    fails.append(f"{where}: the search found {sp['hits']} hit(s) but #sp-matches is "
+                                 f"hidden or empty")
+                else:
+                    notes.append(f"{where}: #sp-matches {len(mrows)} row(s), first {mrows[0]['n']!r} {mrows[0]['m']!r}")
+                if re.search(r"[?&]q=sardin\b", path):
+                    if len(mrows) < 2:
+                        fails.append(f"{where}: #sp-matches has {len(mrows)} row(s) for 'sardin', expected >= 2")
+                    elif not mrows[0]["n"].strip().startswith("Sardinops"):
+                        fails.append(f"{where}: #sp-matches' first row is {mrows[0]['n']!r}, "
+                                     f"expected a Sardinops by observations")
 
     # ── one taxon page ────────────────────────────────────────────────────────
     spp = r.get("speciesPage")
@@ -985,6 +1186,9 @@ def check(path, r, width, theme, fails, notes):
                                  f"the record says {wantr['n']}")
         if not spp["lineage"]:
             fails.append(f"{where}: the taxon page has no lineage")
+        # P3: Ways in takes the same tabset include as the measurement page (D2)
+        if not spp.get("waysTabset"):
+            fails.append(f"{where}: Ways in has no .tabset — the ways_tabs.html include is missing")
         for a in spp["lineage"]:
             if not str(a["href"]).startswith("/species/"):
                 fails.append(f"{where}: lineage link {a['name']!r} does not point at a species page: {a['href']!r}")
@@ -1024,19 +1228,25 @@ def check(path, r, width, theme, fails, notes):
             if ("observations" in words and "records" in words
                     and words.index("observations") > words.index("records")):
                 fails.append(f"{where}: 'records' is drawn before 'observations' in the stat row")
-        # the sentence: its parts are marked, and the legend names exactly the parts that are drawn
+        # the sentence (round 2 § P1, D6): its parts are marked, and each ends in exactly one source
+        # badge — the underline + legend idiom is retired, so a stray .sp-legend is a regression
         parts = [p for p in fa["sentParts"] if p.startswith("s-")]
-        if parts and fa["legend"] != len(parts):
+        badges = fa.get("badges", [])
+        if parts and len(badges) != len(parts):
             fails.append(f"{where}: the sentence has {len(parts)} marked part(s) {parts} but "
-                         f"{fa['legend']} legend entries")
+                         f"{len(badges)} source badge(s)")
+        if fa.get("legendCount"):
+            fails.append(f"{where}: the sentence still carries a .sp-legend "
+                         f"({fa['legendCount']}) — retired in favour of the source badges")
         if fa["sil"]:
             s = fa["sil"]
             if s["role"] != "img" or not s["label"]:
                 fails.append(f"{where}: the silhouette has role={s['role']!r} aria-label={s['label']!r}")
             if s["w"] < 20 or s["h"] < 20:
                 fails.append(f"{where}: the silhouette is drawn {s['w']}x{s['h']}px")
+            sil_credit = next((c for c in fa["credits"] if c.startswith("Silhouette")), None)
             notes.append(f"{where}: silhouette {s['w']}x{s['h']} {s['label']!r}"
-                         + (f" · {fa['stand'].strip()}" if fa["stand"] else ""))
+                         + (f" · {sil_credit}" if sil_credit else ""))
         if fa["photo"]:
             p = fa["photo"]
             if not p["alt"]:
@@ -1113,6 +1323,9 @@ def check(path, r, width, theme, fails, notes):
     mm = r.get("mm")
     if mm:
         rec = mm["rec"] or {}
+        # I1: the h1 is a name, not a sentence of numbers — the band below carries them, once
+        if mm.get("h1") and any(ch.isdigit() for ch in mm["h1"]):
+            fails.append(f"{where}: the measurements index h1 carries a digit: {mm['h1']!r}")
         notes.append(f"{where}: timeline {mm['tlRows']} rows / {mm['tlBars']} bars in {mm['tlCats']} categories, "
                      f"matrix {mm['mxRows']}x{mm['ds']} = {mm['mxCells']} cells ({mm['mxFilled']} with a series, "
                      f"summing {mm['mxSum']}), {mm['dsRows']} datasets, {len(mm['chips'])} chips")
@@ -1191,6 +1404,31 @@ def check(path, r, width, theme, fails, notes):
         if mp["key"] == "temperature" and f"/explore/?var=temperature" not in " ".join(mp["explore"]):
             fails.append(f"{where}: the Explorer link does not open prefilled on the key: {mp['explore']!r}")
 
+        # ── WS-R3 (plan 2026-09-15 § M1, M7–M9, M11–M13, § D8) ──────────────────
+        if not mp["noFlagnote"]:
+            fails.append(f"{where}: .mm-flagnote is still on the page (M1 retired it)")
+        if not mp["statFlag"]:
+            fails.append(f"{where}: no .mm-stat-flag in the stats band")
+        if not mp["noWhat"]:
+            fails.append(f"{where}: #what is still on the page (M7 retired 'What it is')")
+        if not mp["noCol"]:
+            fails.append(f"{where}: #mmf-col is still on the page (M9 retired 'Where in the water column')")
+        hp = mp["howPanels"]
+        if hp:
+            if hp["panels"] < 1:
+                fails.append(f"{where}: the methods tabset (#ts-how) has no panels")
+            if hp["tabrow"] and hp["buttons"] != hp["panels"]:
+                fails.append(f"{where}: the methods tabset has {hp['buttons']} tab(s) for {hp['panels']} panel(s)")
+            if hp["panels"] == 1 and hp["tabrow"]:
+                fails.append(f"{where}: a single method still draws a tab row")
+            notes.append(f"{where}: methods tabset {hp['panels']} panel(s), tabrow={hp['tabrow']}")
+        if mp["qualChips"] != 4:
+            fails.append(f"{where}: the quality chip line has {mp['qualChips']} chip(s), expected 4")
+        if not mp["waysTabset"]:
+            fails.append(f"{where}: no ways-in tabset (M12)")
+        elif mp["waysAppButtons"] < 1:
+            fails.append(f"{where}: the ways-in tabset has no app button (Explorer/db-query)")
+
     for u in r.get("mmUrls", []):
         if u["lh"] and u["h"] > u["lh"] * 1.6:
             fails.append(f"{where}: a measurement URL wraps ({u['h']}px over a {u['lh']}px line): {u['t']}…")
@@ -1199,7 +1437,7 @@ def check(path, r, width, theme, fails, notes):
         if u["full"] and u["shown"] < u["full"] and not u["elided"]:
             fails.append(f"{where}: a measurement URL is cut short without an ellipsis: {u['t']}…")
 
-    # ── measurement faces (plan 2026-09-11 § D1–D7, § Verification MF5) ───────
+    # ── measurement faces (plan 2026-09-11 § D1–D7, § Verification MF5; round 2 D3/D4) ───
     # Every assertion reads the page's OWN #mm-face payload, so it can only pass by the drawing
     # actually matching the record and the media sidecar it was built from.
     mfa = r.get("mfaces")
@@ -1238,11 +1476,64 @@ def check(path, r, width, theme, fails, notes):
         # HOW: a platform glyph and a pin per method row the payload's page carries
         if mfa["plat"] < 1 and P.get("kind") != "none":
             notes.append(f"{where}: the How column draws no platform glyph")
-        # the sentence and its legend agree, part for part
+        # ── round 2 (plan 2026-09-15 § D3, D4, § Verification R2) ─────────────────
+        # M5: the sentence is PROSE — no NERC clause (the What column carries the definition,
+        # § D3 say it once), one source badge per remaining part, and no legend paragraph.
         parts = [p for p in mfa["sentParts"] if p.startswith("s-")]
-        if parts and mfa["legend"] != len(parts):
+        if "s-nerc" in parts:
+            fails.append(f"{where}: the sentence still carries the NERC clause (.s-nerc) — the "
+                         f"What column is the one place the definition is written")
+        if parts and mfa["sentBadges"] != len(parts):
             fails.append(f"{where}: the sentence has {len(parts)} marked part(s) {parts} but "
-                         f"{mfa['legend']} legend entries")
+                         f"{mfa['sentBadges']} source badge(s)")
+        if mfa["legend"]:
+            fails.append(f"{where}: the sentence still prints a .mmf-legend ({mfa['legend']} entries) "
+                         f"— the badge's hover is the legend now")
+        # M2/M6: a SCALE kind's What column is the variable's own ramp over its bounds, with the
+        # record's window and the registry's marks on it. A Beaufort key reads on its cells and an
+        # organism, a structure, a composition or a stand-in on its own glyph — none of them here.
+        ax = ((P.get("scale") or {}).get("axis") or {})
+        if kind == "scale" and ax.get("type") not in ("beaufort",) and P.get("key") != "ph" \
+                and not mfa["ramp"]:
+            notes.append(f"{where}: a scale face draws no ramp (no rule in the Explorer's "
+                         f"defaultRamp() matches {P.get('key')!r}) — the plain strip stands")
+        if mfa["ramp"]:
+            if not mfa["rampGrad"]:
+                fails.append(f"{where}: the What column's ramp has no <linearGradient>")
+            n_marks = len([r for r in ((P.get("scale") or {}).get("marks") or []) if r.get("v") is not None])
+            if n_marks and not mfa["rampMarks"]:
+                fails.append(f"{where}: the ramp draws none of the record's {n_marks} mark(s)")
+            notes.append(f"{where}: ramp drawn with {mfa['rampMarks']} labelled mark(s)")
+        # M3: the pin. The registry column is `calcofi_org_url`; reading a name that does not
+        # exist left the pin off all 89 pages, so the two keys the plan names must carry one.
+        if P.get("key") in ("temperature", "nitrate") and not mfa["pinHrefs"]:
+            fails.append(f"{where}: no .mmf-pin — {P.get('key')}'s method row carries a "
+                         f"calcofi.org URL in the record")
+        if mfa["pinHrefs"]:
+            for href in mfa["pinHrefs"]:
+                if "calcofi.org" not in (href or ""):
+                    fails.append(f"{where}: the How column's pin points at {href!r}, not calcofi.org")
+            notes.append(f"{where}: pin \u2192 {mfa['pinHrefs'][0]}")
+        # M4: the spark is drawn to ITS band's scale and says so — +top / 0 / \u2212top and the years
+        if mfa["spark"]:
+            if mfa["sparkTicks"] < 3:
+                fails.append(f"{where}: the spark draws {mfa['sparkTicks']} axis tick(s), expected "
+                             f"at least 3 (+top \u00b7 0 \u00b7 \u2212top)")
+            if mfa["sparkStretch"] == "none":
+                fails.append(f"{where}: the spark is drawn with preserveAspectRatio=none — its "
+                             f"labels are stretched with it")
+        # M10: the history carries its own scale per row (a \u00b1 beside every band) and the toggle
+        if mfa["anomDrawn"]:
+            if mfa["anomPm"] != len(bands_r2(P)):
+                fails.append(f"{where}: the history writes {mfa['anomPm']} \u00b1 label(s) for "
+                             f"{len(bands_r2(P))} band(s) \u2014 own scale per row is the default")
+            if mfa["anomToggle"] != 2:
+                fails.append(f"{where}: the history has {mfa['anomToggle']} scale radio(s), expected 2")
+            if mfa["anomLegend"] < 3:
+                fails.append(f"{where}: the history's one-line legend has {mfa['anomLegend']} entries")
+        # one tooltip div for every face figure, never one per chart
+        if mfa["tip"] > 1:
+            fails.append(f"{where}: {mfa['tip']} .mmf-tip divs on the page, expected one")
         # § D5: the alternatives are CLOSED on load and the summary's count is the list's own
         det = mfa["det"]
         if det:
@@ -1285,14 +1576,19 @@ def check(path, r, width, theme, fails, notes):
                          f"spark band {an.get('spark_band')!r}")
         elif not bands and mfa["scaleDrawn"] is not None:
             notes.append(f"{where}: no anomaly — the page says why instead")
-        # Where in the water column: the record's own bands
+        # § M9 (WS-R3, plan 2026-09-15): "Where in the water column" is retired — #mmf-col no
+        # longer exists on the page (its bands are "By depth"'s, unchanged); mfa["col"] is always
+        # falsy now, kept only so an older record replayed through this probe stays harmless.
         if mfa["col"] and mfa["colRows"] < 1:
             fails.append(f"{where}: the water-column figure is drawn with no bands")
-        # the three sections are written, and in this order
-        for h in ("What it is", "How it is measured", "Why it matters"):
+        # § M7: "What it is" is retired (the definition and the chain moved to the face's own What
+        # column, R2); "How it is measured" and "Why it matters" remain, in order
+        if "What it is" in mfa["heads"]:
+            fails.append(f"{where}: 'What it is' section still present ({mfa['heads']!r})")
+        for h in ("How it is measured", "Why it matters"):
             if h not in mfa["heads"]:
                 fails.append(f"{where}: no '{h}' section ({mfa['heads']!r})")
-        idx = [mfa["heads"].index(h) for h in ("What it is", "How it is measured", "Why it matters")
+        idx = [mfa["heads"].index(h) for h in ("How it is measured", "Why it matters")
                if h in mfa["heads"]]
         if idx != sorted(idx):
             fails.append(f"{where}: the face sections are out of order: {mfa['heads']!r}")
@@ -1470,6 +1766,18 @@ def check(path, r, width, theme, fails, notes):
 
     # ── the tabsets: one selected tab, one drawn panel, and a pill that is the panel's own count ─
     for ts in r.get("tabsets") or []:
+        # WS-R3: a tabset with one group/row draws NO .tabrow (D2's own rule — the methods tabset
+        # on a single-series page, e.g. ph, and the ways-in tabset would hit this too were it ever
+        # down to one code route) — that is not "zero selected", it is "nothing to select"
+        if not ts["tabs"]:
+            panels = ts.get("panels") or []
+            if len(panels) != 1:
+                fails.append(f"{where}: {ts['id'] or '(tabset)'} has no tab row but {len(panels)} panel(s), expected exactly one")
+            elif panels[0]["hidden"]:
+                fails.append(f"{where}: {ts['id'] or '(tabset)'} has no tab row and its one panel is hidden")
+            else:
+                notes.append(f"{where}: {ts['id'] or '(tabset)'} no tab row, one panel shown")
+            continue
         sel = [t for t in ts["tabs"] if t["selected"]]
         drawn = [t for t in ts["tabs"] if not t["hidden"]]
         notes.append(f"{where}: {ts['id']} " + " · ".join(f"{t['title']}" + (f" [{t['cards']} cards]" if t["cards"] else "")
@@ -1485,6 +1793,12 @@ def check(path, r, width, theme, fails, notes):
                 pill = int(str(t["pill"] or "0").replace(",", ""))
                 if pill != t["cards"]:
                     fails.append(f"{where}: {ts['id']} tab {t['id']!r} says {pill} but its panel holds {t['cards']} cards")
+        # D9: a `?tab=` on the URL lands with THAT tab already selected (tabs.js's data-url-tab
+        # restore) — checked wherever a probed path names one
+        if ts["id"] == "ts-datasets":
+            m = re.search(r"[?&]tab=([^&]+)", path)
+            if m and sel and sel[0]["id"] != m.group(1):
+                fails.append(f"{where}: ?tab={m.group(1)!r} on the URL but {sel[0]['id']!r} is selected")
 
     # ── the one search over the three indexes ──────────────────────────────────────────────────
     # "sardine" is a species, "nitrate" a measurement AND a dataset's variables, "CUFES" a dataset;
@@ -1510,6 +1824,46 @@ def check(path, r, width, theme, fails, notes):
                          f"NERC ids and no release has one yet (WS-M2/M3)")
     elif se:
         fails.append(f"{where}: the door search errored: {se['error']}")
+
+    # ── D1–D5 (round 2, WS-R4): the homed row and the one search box ─────────────────────────────
+    hr = r.get("homedRows")
+    if hr:
+        notes.append(f"{where}: {hr['n']} homed row(s), {hr['varsTotal']} with a variables/taxa "
+                     f"expander")
+        if hr["dsFmt"]:
+            fails.append(f"{where}: {hr['dsFmt']} homed row(s) still draw .ds-fmt (D1)")
+        if hr["licMissing"]:
+            fails.append(f"{where}: {hr['licMissing']} homed row(s) have no .cc-chip-lic as their "
+                         f"last column (D2)")
+        if hr["licCustomText"]:
+            fails.append(f"{where}: {hr['licCustomText']} homed row(s) show the raw 'custom' id — "
+                         f"never on a page (D5)")
+        if hr["varsEmpty"]:
+            fails.append(f"{where}: {hr['varsEmpty']} .ds-vars expander(s) draw no chips (D3)")
+        if hr["n"] and not hr["varsTotal"]:
+            fails.append(f"{where}: {hr['n']} homed row(s) and none has a variables/taxa expander (D3)")
+
+    ds = r.get("doorSearch")
+    if ds:
+        notes.append(f"{where}: {ds['n']} input[type=search] in #datasets "
+                     f"({ds['boxW']}px of {ds['containerW']}px container)")
+        if ds["n"] != 1:
+            fails.append(f"{where}: {ds['n']} input[type=search] inside #datasets, expected exactly 1 (D4/D5)")
+        if ds["hasDsQ"]:
+            fails.append(f"{where}: #ds-q still exists — the catalog's own search box was supposed to go (D4/D5)")
+
+    dp = r.get("doorPanels")
+    if dp:
+        notes.append(f"{where}: 'sardine'→{dp['sardineSpeciesResults']} .cc-result(s) in the Species "
+                     f"panel; 'krill' grid rows shown: {dp['krillRowsShown']}")
+        if not dp["sardineSpeciesResults"]:
+            fails.append(f"{where}: '?q=sardine' on the Species tab rendered no .cc-result (D9)")
+        if dp["krillRowsShown"] is not None:
+            if not dp["krillRowsShown"]:
+                fails.append(f"{where}: 'krill' filtered the grid to zero rows (D4/D5)")
+            elif not any("euphausi" in k for k in dp["krillRowsShown"]):
+                fails.append(f"{where}: 'krill' did not filter the grid to the euphausiid row(s) "
+                             f"(shown: {dp['krillRowsShown']})")
 
 
 def main():
