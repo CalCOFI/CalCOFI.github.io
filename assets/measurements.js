@@ -255,7 +255,204 @@
       return bs[0] || null;
     }
     function bandTxt(b) { return String(b).replace("-", "–"); }
+    /* a band's OWN scale: its largest departure, rounded UP to a tenth (never to the observed
+       value itself — an axis a reader can hold). Below 0.1 the tenth would be 0.1 for everything,
+       so the rounding follows the magnitude and `tdp` writes the matching decimals. */
+    function bandTop(b) {
+      var mx = 0;
+      (b.series || []).forEach(function (r) { mx = Math.max(mx, Math.abs(r[1])); });
+      if (!(mx > 0)) return 1;
+      var step = Math.pow(10, Math.floor(Math.log10(mx)) - 1);
+      return Math.ceil(mx / step) * step;
+    }
+    function tdp(v) { return v >= 10 ? 0 : v >= 1 ? 1 : v >= 0.1 ? 2 : 3; }
+    /* one hover per chart row: the nearest year's own numbers, on the shared .mmf-tip */
+    function yearHover(host, b, o) {
+      var byYear = {};
+      (b.series || []).forEach(function (r) { byYear[r[0]] = r; });
+      var rule = svgEl("line", { cls: "mmf-hover", x1: 0, x2: 0, y1: o.top, y2: o.bottom, opacity: 0 }, host);
+      var hit = svgEl("rect", { cls: "mmf-hit", x: o.L, y: o.top, width: o.W - o.L - o.R,
+                                height: o.bottom - o.top }, host);
+      hit.addEventListener("mousemove", function (ev) {
+        var svg = host.ownerSVGElement || host, pt = svg.createSVGPoint();
+        pt.x = ev.clientX; pt.y = ev.clientY;
+        var p = pt.matrixTransform(svg.getScreenCTM().inverse());
+        var yr = Math.floor(o.y0 + (p.x - o.L) / (o.W - o.L - o.R) * o.ny), r = byYear[yr];
+        rule.setAttribute("x1", o.L + (yr - o.y0) / o.ny * (o.W - o.L - o.R) + o.bw / 2);
+        rule.setAttribute("x2", rule.getAttribute("x1"));
+        rule.setAttribute("opacity", 1);
+        showTip(ev, "<b>" + esc(o.label) + " \u00b7 " + yr + "</b> " + (r
+          ? (r[1] > 0 ? "+" : "") + fmtN(r[1], 2) + esc(units()) + " \u00b7 " + r[2] + " cruise" +
+            (r[2] === 1 ? "" : "s") + " \u00b7 " + fmt(r[3]) + " values"
+          : "no cruise with a normal"));
+      });
+      hit.addEventListener("mouseleave", function () { rule.setAttribute("opacity", 0); hideFaceTip(); });
+    }
     function units() { return F.units ? " " + F.units : ""; }
+
+    /* ── one tooltip for every face figure (round 2, WS-R2 · plan D4) ────────────────────────
+       A mark, a window, a spark bar and a history bar all read on the SAME div, appended to the
+       body once: a figure that scrolls inside `.mmf-scale-wrap` cannot clip it, and a page with
+       no face never creates it. Every hover is ALSO written as a `<title>` on the mark it belongs
+       to, so the fact is reachable without a mouse (the rule this file has kept since WS-M4). */
+    var TIP = null;
+    function tipDiv() {
+      if (!TIP) { TIP = el("div", "mmf-tip"); TIP.setAttribute("aria-hidden", "true"); document.body.appendChild(TIP); }
+      return TIP;
+    }
+    function moveTip(ev) {
+      var t = tipDiv(), x = ev.clientX + 12, y = ev.clientY - 30;
+      if (x + t.offsetWidth > window.innerWidth - 8) x = Math.max(4, ev.clientX - t.offsetWidth - 12);
+      t.style.left = x + "px";
+      t.style.top = Math.max(4, y) + "px";
+    }
+    function showTip(ev, html) {
+      var t = tipDiv();
+      t.innerHTML = html;
+      t.style.display = "block";
+      moveTip(ev);
+    }
+    function hideFaceTip() { if (TIP) TIP.style.display = "none"; }
+    /* the hover contract: the tip on the move, gone on the leave, and the same words in a title */
+    function hoverTip(node, html, plain) {
+      if (plain) node.appendChild(svgEl("title", { text: plain }));
+      node.addEventListener("mousemove", function (ev) { showTip(ev, html); });
+      node.addEventListener("mouseleave", hideFaceTip);
+    }
+
+    /* ── the ramps: the Explorer's rule, COPIED VERBATIM ─────────────────────────────────────
+       ../explore/src/ramps.ts @ e39e0bcf69a72e8c130b7b8ec1dd8d7757eb0c63 (`RAMPS` and
+       `defaultRamp()`; unchanged by the WS-R6 audit, explore `ws-r6` 36f0022, which added
+       lensRamp()/seriesRamp() AROUND it and left the per-variable rules alone). cmocean 0.3.2
+       (Thyng et al. 2016, MIT) via the R package; viridis from viridisLite. Eleven stops each.
+
+       The rules are the Explorer's, not this file's: a variable is matched on its KEY first and
+       then on its label, exactly as the Explorer matches its variable name. Two deliberate
+       differences, both of them the plan's (§ D4):
+         · an unmatched variable gets NO ramp here (the plain strip), where the Explorer falls
+           back to viridis — a map needs a colour, a 16 px strip does not;
+         · `ph` keeps the page's own acid→base strip and a Beaufort key keeps its cells, so those
+           two dispatches run BEFORE this one is consulted.
+       An anomaly is `balance` in the Explorer; the spark and the history draw that ramp's two
+       poles as --mmf-warm / --mmf-cool about the zero line, which is what they have always been. */
+    var RAMPS = {
+      viridis: "#440154,#482576,#414487,#35608D,#2A788E,#21908C,#22A884,#43BF71,#7AD151,#BBDF27,#FDE725",
+      thermal: "#042333,#0F326B,#40349F,#684396,#8B538D,#B05F82,#D66C6B,#F2814D,#FCA63C,#F7CF45,#E8FA5B",
+      haline:  "#2A186C,#2828A2,#0D4E96,#18668C,#2D7C89,#3B9287,#4AAA81,#64C072,#94D35D,#CFE06C,#FDEF9A",
+      solar:   "#331418,#531E22,#732724,#8F341E,#A54A17,#B66313,#C47F15,#CF9B1D,#D8BA2A,#DEDA39,#E1FD4B",
+      ice:     "#040613,#1B1B37,#302F5F,#3D4389,#3E5EA9,#427AB7,#5296C1,#6AB0CB,#8CCBD6,#BBE3E6,#EAFDFD",
+      deep:    "#FDFECC,#C9EAB1,#92D8A4,#65C2A4,#52A8A3,#488E9E,#407498,#3E5A92,#41407B,#382D51,#281A2C",
+      dense:   "#E6F1F1,#BBDBE5,#96C5E2,#7BACE4,#7390E3,#7771D5,#7953BA,#743A98,#682471,#531547,#360E24",
+      algae:   "#D7F9D0,#B7E2AB,#96CD8A,#71BA6B,#44A855,#129450,#097C4A,#156641,#1A5034,#183A25,#122414",
+      matter:  "#FEEDB0,#FAC98F,#F5A773,#EE835D,#E26253,#CE4356,#B22D5F,#932063,#721A60,#501652,#2F0F3E",
+      tempo:   "#FFF6F4,#DBDECF,#B6CBAF,#8BB896,#5DA786,#2B937F,#117C79,#18656E,#1C4D61,#1A3651,#151D44",
+      speed:   "#FFFDCD,#EDDE97,#D8C55F,#B7B12D,#8EA20B,#60920B,#317F1F,#0F6B2B,#10542C,#193B23,#172313"
+    };
+    /* ramps.ts defaultRamp(), rule for rule, in its own order */
+    function rampRule(v) {
+      v = String(v || "").toLowerCase();
+      if (/temp|theta/.test(v)) return "thermal";
+      if (/salin|salt/.test(v)) return "haline";
+      if (/oxy/.test(v)) return "ice";   // not cmocean's oxy: its breaks assume a fixed 0–10 ml/L
+      if (/chl|fluor|phyto|algae|prochl|synech/.test(v)) return "algae";
+      if (/sigma|dens/.test(v)) return "dense";
+      if (/nitr|phos|silic|ammon|nutri/.test(v)) return "tempo";
+      if (/par\b|light|irrad|rad/.test(v)) return "solar";
+      if (/ph\b|alkal|dic|carbon|pco2/.test(v)) return "matter";
+      if (/depth|bathy/.test(v)) return "deep";
+      if (/wind|speed|current/.test(v)) return "speed";
+      return null;
+    }
+    function RAMP_OF(key, label) { return rampRule(key) || rampRule(label); }
+
+    /* a mark's label on the ramp is short (the full one is the hover); ~12 characters is what the
+       narrowest column (375 px) fits without two of them touching */
+    function shortLab(s) {
+      s = String(s || "").replace(/\s*\(.*?\)\s*/g, " ").trim();
+      return s.length > 12 ? s.slice(0, 11).replace(/[\s,;:·-]+$/, "") + "…" : s;
+    }
+
+    /* ── the What glyph of a scale kind: the variable's ramp, drawn to its declared bounds ──────
+       The GRADIENT is the ramp over the domain; the WINDOW is the record's own 5th–95th, drawn as
+       an open frame in the page's ink (never colour alone — § D4's gate); the ENDS are the axis;
+       each registry MARK is a rule in the page's ink with a short label, and the full label plus
+       its source on hover. Nothing here is typed: the domain is the declared bound, or, where the
+       record declares none, the observed minimum to maximum with a title that says so. */
+    function ramp(host, o) {
+      if (!host || !o || !o.dom || o.dom[0] == null || o.dom[1] == null || o.dom[1] <= o.dom[0]) return false;
+      var W = Math.max(Math.round(host.getBoundingClientRect().width) || 0, 220);
+      var L = 6, R = 6, y0 = 9, h = 16, rows = 0;
+      var gid = "mmf-ramp-" + (o.id || "g");
+      var x = function (v) {
+        return L + (Math.min(Math.max(v, o.dom[0]), o.dom[1]) - o.dom[0]) / (o.dom[1] - o.dom[0]) * (W - L - R);
+      };
+      host.innerHTML = "";
+      var defs = svgEl("defs", {}, host);
+      var lg = svgEl("linearGradient", { id: gid, x1: 0, x2: 1, y1: 0, y2: 0 }, defs);
+      /* a stop is a colour (evenly spaced, as the Explorer carries them) or a [colour, percent]
+         pair (the pH strip, whose stops are anchored to the pH scale itself) */
+      o.stops.forEach(function (c, i) {
+        var col = c, off = i / (o.stops.length - 1) * 100;
+        if (c && c.length === 2 && typeof c[0] === "string") { col = c[0]; off = c[1]; }
+        svgEl("stop", { offset: Number(off).toFixed(2) + "%", "stop-color": col }, lg);
+      });
+      var bar = svgEl("rect", { x: L, y: y0, width: W - L - R, height: h, rx: 3, fill: "url(#" + gid + ")" }, host);
+      if (o.domNote) bar.appendChild(svgEl("title", { text: o.domNote }));
+      if (o.win && o.win[0] != null && o.win[1] != null) {
+        var wx = x(o.win[0]), ww = Math.max(2, x(o.win[1]) - wx);
+        svgEl("rect", { cls: "mmf-win", x: wx.toFixed(1), y: y0 - 3, width: ww.toFixed(1), height: h + 6, rx: 2 }, host);
+        var hit = svgEl("rect", { cls: "mmf-hit", x: wx.toFixed(1), y: y0 - 3, width: ww.toFixed(1), height: h + 6 }, host);
+        hoverTip(hit, "<b>the record</b> 5th–95th " + esc(o.fmt(o.win[0])) + " – " + esc(o.fmt(o.win[1])) +
+                      (o.winsrc ? "<br>" + esc(o.winsrc) : ""),
+                 "the record's 5th–95th percentile " + o.fmt(o.win[0]) + " – " + o.fmt(o.win[1]) +
+                 (o.winsrc ? " · " + o.winsrc : ""));
+      }
+      svgEl("text", { cls: "mmf-tick", x: L, y: y0 + h + 13, text: o.fmt(o.dom[0]) }, host);
+      svgEl("text", { cls: "mmf-tick", x: W - R, y: y0 + h + 13, "text-anchor": "end", text: o.fmt(o.dom[1]) }, host);
+      /* the marks, left to right, staggered onto two rows so no two labels can touch. A label
+         near an end ANCHORS to that end rather than being clamped: a centred label at x = 26 has
+         half of itself outside the figure, and `.mmf-ramp` overflows visibly, so it painted over
+         the axis end beside it (measured at 1470 px on temperature, whose −1.91 °C mark sits 6 px
+         from the left edge of a −2 → 40 domain). */
+      var mks = (o.marks || []).slice().sort(function (a, b) { return (a.v || 0) - (b.v || 0); });
+      mks.forEach(function (m, i) {
+        var mx = x(m.v), g = svgEl("g", { cursor: "help" }, host);
+        svgEl("line", { cls: "mmf-mk", x1: mx, x2: mx, y1: y0 - 6, y2: y0 + h + 4 }, g);
+        svgEl("path", { d: "M" + (mx - 4) + " " + (y0 + h + 4) + "h8l-4 5z", fill: "var(--fg)" }, g);
+        var lv = i % 2;
+        var anc = mx < W * 0.2 ? "start" : mx > W * 0.8 ? "end" : "middle";
+        var lx = anc === "start" ? Math.max(mx - 4, L) : anc === "end" ? Math.min(mx + 4, W - R) : mx;
+        rows = Math.max(rows, lv);
+        svgEl("text", { cls: "mmf-mklab", x: lx, y: y0 + h + 27 + lv * 13, "text-anchor": anc,
+                        text: shortLab(m.label) }, g);
+        svgEl("rect", { cls: "mmf-hit", x: mx - 10, y: 0, width: 20, height: y0 + h + 32 }, g);
+        hoverTip(g, "<b>" + esc(m.label) + "</b> " + esc(o.fmt(m.v)) + (m.src ? "<br>" + esc(m.src) : ""),
+                 m.label + " " + o.fmt(m.v) + (m.src ? " \u00b7 " + m.src : ""));
+      });
+      host.setAttribute("viewBox", "0 0 " + W + " " + (y0 + h + 32 + rows * 13));
+      host.classList.add("mmf-drawn");
+      return true;
+    }
+
+    /* the ramp's own domain: the DECLARED bound, else the observed minimum to maximum with a
+       title that says which it is (§ D7 — a number is in the record or it is not drawn) */
+    function rampDomain(sc) {
+      var b = sc.bounds || {};
+      if (b.valid_min != null && b.valid_max != null && b.valid_max > b.valid_min) {
+        return { dom: [b.valid_min, b.valid_max],
+                 note: "the declared bounds " + b.valid_min + " to " + b.valid_max + (F.units ? " " + F.units : "") };
+      }
+      var lo = null, hi = null;
+      (sc.series || []).forEach(function (s) {
+        var o = s.o || {};
+        if (o.min != null) lo = lo == null ? o.min : Math.min(lo, o.min);
+        if (o.max != null) hi = hi == null ? o.max : Math.max(hi, o.max);
+      });
+      if (lo == null || hi == null || hi <= lo) return null;
+      return { dom: [lo, hi],
+               note: "no declared bound: drawn over the record's own minimum to maximum, " +
+                     fmtN(lo, 2) + " to " + fmtN(hi, 2) + (F.units ? " " + F.units : "") };
+    }
 
     /* ── the platform glyphs, on the brand icons' own 24-unit grid ───────────────────────── */
     var PG = {
@@ -287,6 +484,13 @@
     /* ── the small figures of the face row's What column ─────────────────────────────────── */
     function ionsHTML(small) {
       var c = F.composition;
+      /* a composition face whose record carries mass fractions on `chem[]` but no composition
+         block draws the same bar from those rows (§ D4: the ion bar is the face row's glyph for
+         EVERY composition kind that has shares to draw) */
+      if (!c || !c.ions) {
+        var ch = (F.chem || []).filter(function (x) { return x.fraction != null; });
+        if (ch.length) c = { ions: ch.map(function (x) { return [x.formula || x.name, x.name, x.fraction, x.chebi]; }) };
+      }
       if (!c || !c.ions) return "";
       return '<div class="mmf-ions' + (small ? " mmf-ions-sm" : "") + '">' + c.ions.map(function (x, i) {
         var p = x[2] * 100;
@@ -342,10 +546,15 @@
       if (!rows || !o) return "";
       var kn = sc.axis.beaufort_knots;
       var b50 = beaufortOf(o.p50, rows), b95 = beaufortOf(o.p95, rows);
-      var h = '<div class="mmf-bf">' + rows.map(function (b) {
+      /* the cells carry the variable's own ramp (wind → speed by the Explorer's rule, § D4) so
+         the row reads as a scale rather than as thirteen boxes; the two the record lands on are
+         OUTLINED in the page's ink, never distinguished by colour alone */
+      var rid = RAMP_OF(F.key, F.label), stops = RAMPS[rid] ? RAMPS[rid].split(",") : null;
+      var h = '<div class="mmf-bf">' + rows.map(function (b, i) {
         var on = b[0] === b50[0] || b[0] === b95[0];
-        return '<i class="' + (on ? "on" : "") + '" title="' + esc(b[0] + " " + b[3] + ", " + bandText(b, "m/s")) +
-          '">' + b[0] + "</i>";
+        var c = stops ? stops[Math.round(i / (rows.length - 1) * (stops.length - 1))] : "";
+        return '<i class="' + (on ? "on" : "") + '"' + (c ? ' style="background:' + c + '"' : "") +
+          ' title="' + esc(b[0] + " " + b[3] + ", " + bandText(b, "m/s")) + '">' + b[0] + "</i>";
       }).join("") + "</div>" +
         '<p class="mmf-line">Read as m/s, Beaufort force at the median <b>' + b50[0] +
         "</b> and the 95th percentile <b>" + b95[0] + "</b>";
@@ -378,57 +587,129 @@
         "</b> (5th–95th percentile)" + (marks.length ? ", against " + marks.slice(0, 2).map(function (r) { return esc(r.label); }).join(" and ") : "") + "</p>";
     }
     var PH_RAMP = "linear-gradient(90deg,#d7263d 0%,#f46036 14%,#f5b700 29%,#c5d86d 43%,#3fa34d 50%,#1b998b 60%,#2e86ab 72%,#3c4f9c 86%,#5b2a86 100%)";
+    /* the same strip as a stop list, so the marks can be drawn ON it (M6: pH already had the
+       ramp; its nine registry marks were not on it). The percentages are the pH scale's own. */
+    var PH_STOPS = [["#d7263d", 0], ["#f46036", 14], ["#f5b700", 29], ["#c5d86d", 43], ["#3fa34d", 50],
+                    ["#1b998b", 60], ["#2e86ab", 72], ["#3c4f9c", 86], ["#5b2a86", 100]];
 
-    /* what the face row's What column shows when there is no structure to draw */
+    /* the line under a ramp: the record's own window, and the two marks nearest it named — the
+       plain strip's own sentence, kept word for word so every kind reads the same way */
+    function rampLine(marks, dp) {
+      var o = F.ph;
+      return '<p class="mmf-line">This measurement’s <b>' + fmtN(o.p05, dp) + "–" + fmtN(o.p95, dp) +
+        esc(units()) + "</b> (5th–95th percentile)" +
+        (marks.length ? ", against " + marks.slice(0, 2).map(function (r) { return esc(r.label); }).join(" and ") : "") +
+        "</p>";
+    }
+    /* draw a ramp into the What column: an <svg> host and the line under it */
+    function rampWhat(host, stops, dom, note, dp, aria) {
+      var sc = F.scale, o = F.ph;
+      if (!sc || !o || o.p05 == null || o.p95 == null || !dom) return false;
+      var marks = (sc.marks || []).filter(function (r) {
+        return !r.off && r.v != null && r.v >= dom[0] && r.v <= dom[1];
+      });
+      host.innerHTML = "";
+      var svg = svgEl("svg", { cls: "mmf-ramp", role: "img", "aria-label": aria }, host);
+      var ok = ramp(svg, { id: F.key, stops: stops, dom: dom, domNote: note,
+                           win: [o.p05, o.p95],
+                           winsrc: "the release record, 5th–95th percentile",
+                           marks: marks,
+                           fmt: function (v) { return fmtN(v, dp) + (F.units ? " " + F.units : ""); } });
+      if (!ok) return false;
+      host.insertAdjacentHTML("beforeend", rampLine(marks, dp));
+      return true;
+    }
+
+    /* what the face row's What column shows when there is no structure to draw (§ D4: a figure has
+       a ramp or an axis, labels on it, and a hover — one rule per face kind, in this order) */
     var mini = document.getElementById("mmf-mini");
     if (mini) {
-      var h = "";
-      if (F.composition) h = ionsHTML(true);
+      var h = "", drew = false;
+      if (F.composition || (F.chem || []).some(function (x) { return x.fraction != null; })) h = ionsHTML(true);
       /* an organism's figure needs a measured cell size AND a measured hair; where the species
          media carry neither, the count is still read on its own scale — a face falls back, it
          never leaves the column empty (check_layout, 2026-09-12) */
       else if (F.taxon) h = hairHTML(true) || miniHTML();
       else if (F.scale && F.scale.axis && F.scale.axis.type === "beaufort") h = beaufortHTML();
-      else if (F.key === "ph") h = stripHTML(0, 14, PH_RAMP, "0 acid", "14 base", "This measurement’s", 2);
-      else h = miniHTML();
-      if (h) { mini.innerHTML = h; mini.classList.add("mmf-drawn"); }
+      else if (F.key === "ph") {
+        drew = rampWhat(mini, PH_STOPS, [0, 14], "the pH scale, 0 acid to 14 base", 2,
+                        "pH from 0 to 14 with the record’s 5th–95th percentile and its familiar marks");
+      } else {
+        var rid = F.scale && RAMP_OF(F.key, F.label), dm = F.scale && rampDomain(F.scale);
+        if (rid && dm) {
+          drew = rampWhat(mini, RAMPS[rid].split(","), dm.dom, dm.note, 2,
+                          (F.label || F.key) + " on the cmocean " + rid + " ramp, " +
+                          fmtN(dm.dom[0], 2) + " to " + fmtN(dm.dom[1], 2) + (F.units ? " " + F.units : "") +
+                          ", with the record’s 5th–95th percentile and its familiar marks");
+        }
+        if (!drew) h = miniHTML();
+      }
+      if (h) { mini.innerHTML = h; drew = true; }
+      if (drew) mini.classList.add("mmf-drawn");
     }
 
-    /* ── the face row's Why spark: the band with the most values, ONI shaded ─────────────── */
+    /* ── the face row's Why spark: the band with the most values, on ITS OWN scale ──────────
+       (round 2, M4.) 100 px rather than 58, drawn to the SPARK BAND's own maximum rather than to
+       the page-wide `anomaly.ymax` — at 200–500 m temperature departs by 0.6 °C where the page's
+       scale is ±2.2 °C, and the row read as a line. The left axis says which scale it is on
+       (+top · 0 · −top), four year ticks put the bars in time, the trend is drawn where the record
+       has one, strong El Niño years are shaded, and every year hovers to its own numbers. */
+    var SPARK_TOP = null;
     (function spark() {
       var host = document.getElementById("mmf-spark");
       if (!host || !F.anomaly) return;
       var b = band(F.anomaly.spark_band);
-      if (!b) return;
-      var W = width(host, 240), H = 58, y0 = F.y0, y1 = F.y1, ny = y1 - y0 + 1;
-      var bw = W / ny, top = F.anomaly.ymax;
-      var x = function (yr) { return (yr - y0) / ny * W; };
-      var y = function (v) { v = Math.max(-top, Math.min(top, v)); return 3 + (top - v) / (2 * top) * (H - 6); };
+      if (!b || !(b.series || []).length) return;
+      var W = width(host, 240), H = 100, L = 30, R = 4, Tm = 8, B = 16;
+      var y0 = F.y0, y1 = F.y1, ny = y1 - y0 + 1;
+      /* the band's own maximum, rounded UP to a tenth: the axis label is a number the reader can
+         hold, and no bar is ever clipped by its own scale */
+      var top = bandTop(b);
+      SPARK_TOP = top;
+      var x = function (yr) { return L + (yr - y0) / ny * (W - L - R); }, bw = (W - L - R) / ny;
+      var y = function (v) { v = Math.max(-top, Math.min(top, v)); return Tm + (top - v) / (2 * top) * (H - Tm - B); };
       host.setAttribute("viewBox", "0 0 " + W + " " + H);
-      host.setAttribute("preserveAspectRatio", "none");
+      host.removeAttribute("preserveAspectRatio");
       host.innerHTML = "";
       (F.oni.strong || []).forEach(function (yr) {
-        svgEl("rect", { cls: "mmf-nino", x: x(yr).toFixed(1), y: 0, width: bw.toFixed(1), height: H }, host);
+        if (yr < y0 || yr > y1) return;
+        svgEl("rect", { cls: "mmf-nino", x: x(yr).toFixed(1), y: Tm, width: bw.toFixed(1), height: H - Tm - B }, host);
       });
+      svgEl("line", { cls: "mmf-gr", x1: L, x2: W - R, y1: y(top), y2: y(top) }, host);
+      svgEl("line", { cls: "mmf-gr", x1: L, x2: W - R, y1: y(-top), y2: y(-top) }, host);
       b.series.forEach(function (r) {
         svgEl("rect", { x: (x(r[0]) + bw * 0.12).toFixed(1), y: Math.min(y(r[1]), y(0)).toFixed(1),
-                        width: (bw * 0.76).toFixed(1),
-                        height: Math.max(Math.abs(y(r[1]) - y(0)), 0.6).toFixed(1),
+                        width: Math.max(bw * 0.76, 0.8).toFixed(1),
+                        height: Math.max(Math.abs(y(r[1]) - y(0)), 0.8).toFixed(1),
                         fill: r[1] >= 0 ? WARM : COOL, opacity: r[2] >= 2 ? 1 : 0.35 }, host);
       });
-      svgEl("line", { cls: "mmf-zero", x1: 0, x2: W, y1: y(0), y2: y(0) }, host);
+      svgEl("line", { cls: "mmf-zero", x1: L, x2: W - R, y1: y(0), y2: y(0) }, host);
+      if (b.trend && b.trend.per_decade != null && b.trend.intercept != null) {
+        var t = b.trend, f = function (yr) { return t.intercept + (t.per_decade / 10) * yr; };
+        svgEl("line", { cls: "mmf-trend", x1: x(t.from) + bw / 2, x2: x(t.to) + bw / 2,
+                        y1: y(f(t.from)), y2: y(f(t.to)) }, host);
+      }
+      /* the axis: the scale this band is drawn to, said in numbers */
+      svgEl("text", { cls: "mmf-tick", x: L - 4, y: y(top) + 4, "text-anchor": "end", text: "+" + fmtN(top, tdp(top)) }, host);
+      svgEl("text", { cls: "mmf-tick", x: L - 4, y: y(0) + 4, "text-anchor": "end", text: "0" }, host);
+      svgEl("text", { cls: "mmf-tick", x: L - 4, y: y(-top) + 4, "text-anchor": "end", text: "\u2212" + fmtN(top, tdp(top)) }, host);
+      var yr;
+      for (yr = Math.ceil(y0 / 20) * 20; yr <= y1; yr += 20) {
+        svgEl("text", { cls: "mmf-tick", x: x(yr) + bw / 2, y: H - 3, "text-anchor": "middle", text: String(yr) }, host);
+      }
+      yearHover(host, b, { L: L, R: R, W: W, y0: y0, ny: ny, bw: bw, top: Tm, bottom: H - B, label: bandTxt(b.band) + " m" });
       host.classList.add("mmf-drawn");
       var line = document.getElementById("mmf-spark-line");
       if (line) {
         var tr = b.trend, txt;
         if (tr && tr.per_decade != null) {
-          txt = "<b>" + (tr.per_decade >= 0 ? "+" : "−") + fmtN(Math.abs(tr.per_decade), 2) + esc(units()) +
+          txt = "<b>" + (tr.per_decade >= 0 ? "+" : "\u2212") + fmtN(Math.abs(tr.per_decade), 2) + esc(units()) +
             "</b> per decade at " + bandTxt(b.band) + " m since " + tr.from;
         } else if (b.ext) {
           txt = "Highest year at " + bandTxt(b.band) + " m <b>" + b.ext.hi[0] + "</b>, " +
             (b.ext.hi[1] > 0 ? "+" : "") + fmtN(b.ext.hi[1], 2) + esc(units());
         } else { txt = bandTxt(b.band) + " m"; }
-        line.innerHTML = txt + ' <span class="cc-muted">· ' + F.anomaly.bands.length + " bands below</span>";
+        line.innerHTML = txt + ' <span class="cc-muted">\u00b7 drawn to \u00b1' + fmtN(top, tdp(top)) + esc(units()) + "</span>";
       }
     })();
 
@@ -677,40 +958,46 @@
       }
     })();
 
-    /* ── Why: the anomaly, one row per depth band, on one shared scale (§ D6) ────────────── */
-    (function anomalyBands() {
+    /* ── Why: the record's own history, one row per depth band (round 2, M10) ───────────────
+       OWN SCALE PER ROW by default — the ± is written at the left of each row beside its band and
+       its count, so a deep band shows its structure and the axis says how much it was stretched.
+       A radio pair above the chart switches every row onto the page-wide `anomaly.ymax`; the
+       choice does NOT ride the URL (it is a reading aid, not a state a link should carry). The
+       four-line mono legend is now one `.cc-legend1` line; the computation and the depth note
+       live in the heading's ⓘ (_includes/measurement_why.html). */
+    function drawHistory(shared) {
       var host = document.getElementById("mmf-anom"), a = F.anomaly;
       if (!host || !a || !(a.bands || []).length) return;
       var W = width(host, 340), nb = a.bands.length;
-      var L = Math.min(84, Math.max(68, W * 0.12)), R = Math.min(124, Math.max(88, W * 0.17));
-      var T = 22, rowH = 46, gap = 9, B = 26;
+      var L = Math.min(92, Math.max(76, W * 0.13)), R = Math.min(124, Math.max(88, W * 0.17));
+      var T = 10, rowH = 46, gap = 10, B = 22;
       var H = T + nb * rowH + (nb - 1) * gap + B, y0 = F.y0, y1 = F.y1, ny = y1 - y0 + 1;
       var x = function (yr) { return L + (yr - y0) / ny * (W - L - R); }, bw = (W - L - R) / ny;
-      var top = a.ymax;
       host.innerHTML = "";
       host.setAttribute("viewBox", "0 0 " + W + " " + H);
       var g = svgEl("g", {}, host);
       (F.oni.strong || []).forEach(function (yr) {
+        if (yr < y0 || yr > y1) return;
         svgEl("rect", { cls: "mmf-nino", x: x(yr).toFixed(1), y: T, width: bw.toFixed(1), height: H - T - B }, g);
       });
       a.bands.forEach(function (b, i) {
         var r0 = T + i * (rowH + gap);
+        var top = shared ? a.ymax : bandTop(b);
         var y = function (v) { return r0 + (top - Math.max(-top, Math.min(top, v))) / (2 * top) * rowH; };
         svgEl("line", { cls: "mmf-gr", x1: L, x2: W - R, y1: r0, y2: r0 }, g);
         svgEl("line", { cls: "mmf-gr", x1: L, x2: W - R, y1: r0 + rowH, y2: r0 + rowH }, g);
-        svgEl("text", { cls: "mmf-lab", x: L - 8, y: r0 + rowH / 2 - 1, "text-anchor": "end",
+        svgEl("text", { cls: "mmf-lab", x: L - 8, y: r0 + 13, "text-anchor": "end",
                         style: "font-weight:600", text: bandTxt(b.band) + " m" }, g);
-        svgEl("text", { cls: "mmf-tick", x: L - 8, y: r0 + rowH / 2 + 13, "text-anchor": "end",
-                        text: fmtK(b.n_values) }, g);
+        /* the row's own scale, written where the row is read */
+        svgEl("text", { cls: "mmf-tick", x: L - 8, y: r0 + 27, "text-anchor": "end",
+                        text: "\u00b1" + fmtN(top, tdp(top)) + units() }, g);
+        svgEl("text", { cls: "mmf-tick", x: L - 8, y: r0 + 40, "text-anchor": "end", text: fmtK(b.n_values) }, g);
         b.series.forEach(function (r) {
           var v = r[1], clip = Math.abs(v) > top;
-          var rect = svgEl("rect", { x: (x(r[0]) + bw * 0.12).toFixed(1), y: Math.min(y(v), y(0)).toFixed(1),
-                                     width: (bw * 0.76).toFixed(1),
-                                     height: Math.max(Math.abs(y(v) - y(0)), 0.6).toFixed(1),
-                                     fill: v >= 0 ? WARM : COOL, opacity: r[2] >= 2 ? 1 : 0.35 }, g);
-          rect.appendChild(svgEl("title", { text: bandTxt(b.band) + " m, " + r[0] + ": " + (v > 0 ? "+" : "") +
-                                                  fmtN(v, 2) + units() + " · " + r[2] + " cruise" + (r[2] > 1 ? "s" : "") +
-                                                  ", " + fmt(r[3]) + " values" + (clip ? " · off this scale" : "") }));
+          svgEl("rect", { x: (x(r[0]) + bw * 0.12).toFixed(1), y: Math.min(y(v), y(0)).toFixed(1),
+                          width: Math.max(bw * 0.76, 0.8).toFixed(1),
+                          height: Math.max(Math.abs(y(v) - y(0)), 0.8).toFixed(1),
+                          fill: v >= 0 ? WARM : COOL, opacity: r[2] >= 2 ? 1 : 0.35 }, g);
           if (clip) {
             svgEl("path", { d: "M" + (x(r[0]) + bw / 2) + " " + (v > 0 ? r0 - 1 : r0 + rowH + 1) +
                                "l-3 " + (v > 0 ? 5 : -5) + "h6z", fill: "var(--muted)" }, g);
@@ -723,29 +1010,59 @@
           svgEl("line", { cls: "mmf-trend", x1: x(tr.from) + bw / 2, x2: x(tr.to) + bw / 2,
                           y1: ty(tr.from), y2: ty(tr.to) }, g);
           svgEl("text", { cls: "mmf-lab-m", x: W - R + 8, y: r0 + rowH / 2 + 4,
-                          text: (tr.per_decade >= 0 ? "+" : "−") +
+                          text: (tr.per_decade >= 0 ? "+" : "\u2212") +
                                 fmtN(Math.abs(tr.per_decade), Math.abs(tr.per_decade) < 0.1 ? 3 : 2) + " / decade" }, g);
         }
+        yearHover(g, b, { L: L, R: R, W: W, y0: y0, ny: ny, bw: bw, top: r0, bottom: r0 + rowH,
+                          label: bandTxt(b.band) + " m", shared: shared, rowTop: top });
       });
       var yr;
       for (yr = Math.ceil(y0 / 10) * 10; yr <= y1; yr += 10) {
         svgEl("text", { cls: "mmf-tick", x: x(yr) + bw / 2, y: H - 6, "text-anchor": "middle", text: String(yr) }, g);
       }
-      svgEl("text", { cls: "mmf-tick", x: 0, y: T - 8, text: "depth · values" }, g);
-      svgEl("text", { cls: "mmf-tick", x: (L + W - R) / 2, y: T - 8, "text-anchor": "middle",
-                      text: "each row ±" + fmtN(top, top < 1 ? 2 : 1) + units() + ", one scale for every band" }, g);
       host.classList.add("mmf-drawn");
-      var cr = document.getElementById("mmf-anom-credit");
-      if (cr) {
+    }
+
+    (function history() {
+      var host = document.getElementById("mmf-anom"), a = F.anomaly;
+      if (!host || !a || !(a.bands || []).length) return;
+      var radios = [].slice.call(document.querySelectorAll('input[name="mmf-hsc"]'));
+      var read = function () {
+        var on = radios.filter(function (r) { return r.checked; })[0];
+        return !!on && on.value === "shared";
+      };
+      drawHistory(read());
+      radios.forEach(function (r) { r.addEventListener("change", function () { drawHistory(read()); }); });
+
+      /* the legend: one line of swatches, and the computation sentence in the heading's ⓘ — both
+         written from the payload, never typed (§ D7) */
+      var leg = document.getElementById("mmf-anom-legend");
+      if (leg) {
+        var since = a.bands.reduce(function (m, b) {
+          return b.trend && b.trend.from != null ? (m == null ? b.trend.from : Math.min(m, b.trend.from)) : m;
+        }, null);
         var o = F.oni.latest;
-        cr.innerHTML = '<i class="mmf-sw mmf-sw-nino"></i>strong El Niño (NOAA ONI ≥ +1.5' +
-          (o ? "; " + esc(o[0]) + " " + o[1] + " is " + (o[3] >= 0 ? "+" : "") + o[3] : "") + ") · " +
-          '<i class="mmf-sw" style="background:' + WARM + '"></i>above the ' +
-          (a.baseline ? a.baseline.join("–") : "") + " normal · " +
-          '<i class="mmf-sw" style="background:' + COOL + '"></i>below · faded: one cruise that year, ' +
-          "marked ▲ at the row edge when off the shared scale (set by the years with two or more cruises)" +
-          (a.bands.some(function (b) { return b.trend && b.trend.intercept != null; })
-            ? " · dashed: least-squares trend over years with two or more cruises" : "");
+        leg.innerHTML =
+          '<span><i class="sw" style="background:' + WARM + '"></i>above the ' +
+            (a.baseline ? esc(a.baseline.join("\u2013")) : "") + " normal</span>" +
+          '<span><i class="sw" style="background:' + COOL + '"></i>below</span>' +
+          /* `oni.latest` is [season, year, value] \u2014 the WS-MF5 credit read o[3] and printed
+             "is undefined" on every page carrying an anomaly (measured 2026-09-15) */
+          '<span><i class="sw mmf-sw-nino"></i>strong El Ni\u00f1o (NOAA ONI \u2265 +1.5' +
+            (o && o[2] != null ? "; " + esc(o[0]) + " " + o[1] + " is " + (o[2] >= 0 ? "+" : "") + o[2] : "") +
+            ")</span>" +
+          (since != null ? '<span><i class="ln"></i>trend since ' + since + "</span>" : "");
+      }
+      var how = document.getElementById("mmf-anom-how");
+      if (how) {
+        var since2 = a.bands.reduce(function (m, b) {
+          return b.trend && b.trend.from != null ? (m == null ? b.trend.from : Math.min(m, b.trend.from)) : m;
+        }, null);
+        how.innerHTML = "Each year\u2019s departure from the " + (a.baseline ? esc(a.baseline.join("\u2013")) : "") +
+          " normal for the same station, month and 10 m depth, from the release\u2019s <code>climatology</code> " +
+          "table; per cruise, then per year. A faded bar is one cruise that year" +
+          (since2 != null ? "; the dashed line is the least-squares trend over years with two or more cruises, since " +
+            since2 : "") + ". A bar off its row\u2019s scale is marked \u25b2 at the row edge.";
       }
     })();
   })();

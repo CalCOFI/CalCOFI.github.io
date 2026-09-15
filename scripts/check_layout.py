@@ -34,6 +34,13 @@ can only pass by the layout actually being fixed:
              own; the familiar scale is drawn wherever the payload has one with NO two mark labels
              overlapping (bounding boxes read from the DOM); the anomaly draws exactly the record's
              depth bands and at least its year-values; and the three sections are written in order.
+             Round 2 (plan 2026-09-15 § D3, D4, § Verification R2): the sentence has NO .s-nerc and
+             one .cc-src badge per remaining part and no legend paragraph; a scale kind's What
+             column draws an svg.mmf-ramp with a <linearGradient> and the record's marks labelled
+             on it; every .mmf-pin points at calcofi.org; the spark draws at least three axis ticks
+             and is never stretched with preserveAspectRatio=none; the history writes a ± label per
+             band (own scale per row), carries the two scale radios and a one-line legend; and
+             exactly one .mmf-tip div serves every figure.
   erddap     (dataset pages) each ERDDAP dataset id's tabledap page appears exactly once. It was
              listed twice: once under Download for its formats, once under Services for its page.
   species    (/species/ and one taxon page, plan 2026-09-09 § S3) the index's five counts equal the
@@ -699,7 +706,13 @@ PROBE = r"""
     out.mfaces = {
       payload: P,
       kind: P && P.kind,
-      cols: [...d.querySelectorAll(".mmf-face > .mmf-col > .mmf-k")].map(e => e.textContent.trim()),
+      // the column's NAME only: round 2 hangs a way down ("6 bands \u2193", "2 methods \u2193") off the
+      // same line, and that link is not part of what the column is called
+      cols: [...d.querySelectorAll(".mmf-face > .mmf-col > .mmf-k")].map(e => {
+        const c = e.cloneNode(true);
+        [...c.querySelectorAll(".mmf-rt")].forEach(x => x.remove());
+        return c.textContent.trim();
+      }),
       mols: [...d.querySelectorAll(".mmf-face .mmf-mol")].map(s => Object.assign(box(s), {
         label: s.getAttribute("aria-label"), role: s.getAttribute("role"),
         paths: s.querySelectorAll("path,line,circle,polygon,text").length
@@ -711,7 +724,23 @@ PROBE = r"""
       plat: d.querySelectorAll(".mmf-face .mmf-pg svg").length,
       pins: d.querySelectorAll(".mmf-pin").length,
       spark: !!(d.getElementById("mmf-spark") && d.getElementById("mmf-spark").classList.contains("mmf-drawn")),
-      sentParts: [...d.querySelectorAll(".mmf-sent > span")].map(s => s.className),
+      // round 2 (WS-R2, plan § D4): a figure has a ramp or an axis, labels on it, and a hover
+      sparkTicks: d.querySelectorAll("#mmf-spark text.mmf-tick").length,
+      sparkStretch: (d.getElementById("mmf-spark") || {}).getAttribute
+        ? d.getElementById("mmf-spark").getAttribute("preserveAspectRatio") : null,
+      ramp: d.querySelectorAll(".mmf-face svg.mmf-ramp").length,
+      rampGrad: d.querySelectorAll(".mmf-face svg.mmf-ramp linearGradient").length,
+      rampMarks: d.querySelectorAll(".mmf-face svg.mmf-ramp text.mmf-mklab").length,
+      // the pin's href, so the check can see it reaches calcofi.org and not a column that is not there
+      pinHrefs: [...d.querySelectorAll(".mmf-face a.mmf-pin")].map(a => a.getAttribute("href")),
+      tip: d.querySelectorAll("body > .mmf-tip").length,
+      // the history's own scale per row: a ± label beside every band, and the toggle above it
+      anomPm: anom ? [...anom.querySelectorAll("text.mmf-tick")].filter(t => t.textContent.trim().startsWith("\u00b1")).length : 0,
+      anomToggle: d.querySelectorAll('input[name="mmf-hsc"]').length,
+      anomLegend: d.querySelectorAll("#mmf-anom-legend > span").length,
+      // the sentence: prose with a badge per part, and NO NERC clause (the What column has it)
+      sentParts: [...d.querySelectorAll(".mmf-sent > span[class^='s-']")].map(s => s.className),
+      sentBadges: d.querySelectorAll(".mmf-sent .cc-src").length,
       legend: d.querySelectorAll(".mmf-legend > span").length,
       det: det ? { open: det.open, summary: det.querySelector("summary").textContent.trim(),
                    items: det.querySelectorAll(".mmf-alts > li").length } : null,
@@ -843,6 +872,11 @@ def url_ok(url):
         code = getattr(e, "code", None)
         _PROBED[url] = code in (200, 206) if code else None   # None: unreachable, a warning not a failure
     return _PROBED[url]
+
+
+def bands_r2(P):
+    """the record's own anomaly bands, as both the M10 assertions read them"""
+    return (P.get("anomaly") or {}).get("bands") or []
 
 
 def check(path, r, width, theme, fails, notes):
@@ -1199,7 +1233,7 @@ def check(path, r, width, theme, fails, notes):
         if u["full"] and u["shown"] < u["full"] and not u["elided"]:
             fails.append(f"{where}: a measurement URL is cut short without an ellipsis: {u['t']}…")
 
-    # ── measurement faces (plan 2026-09-11 § D1–D7, § Verification MF5) ───────
+    # ── measurement faces (plan 2026-09-11 § D1–D7, § Verification MF5; round 2 D3/D4) ───
     # Every assertion reads the page's OWN #mm-face payload, so it can only pass by the drawing
     # actually matching the record and the media sidecar it was built from.
     mfa = r.get("mfaces")
@@ -1238,11 +1272,64 @@ def check(path, r, width, theme, fails, notes):
         # HOW: a platform glyph and a pin per method row the payload's page carries
         if mfa["plat"] < 1 and P.get("kind") != "none":
             notes.append(f"{where}: the How column draws no platform glyph")
-        # the sentence and its legend agree, part for part
+        # ── round 2 (plan 2026-09-15 § D3, D4, § Verification R2) ─────────────────
+        # M5: the sentence is PROSE — no NERC clause (the What column carries the definition,
+        # § D3 say it once), one source badge per remaining part, and no legend paragraph.
         parts = [p for p in mfa["sentParts"] if p.startswith("s-")]
-        if parts and mfa["legend"] != len(parts):
+        if "s-nerc" in parts:
+            fails.append(f"{where}: the sentence still carries the NERC clause (.s-nerc) — the "
+                         f"What column is the one place the definition is written")
+        if parts and mfa["sentBadges"] != len(parts):
             fails.append(f"{where}: the sentence has {len(parts)} marked part(s) {parts} but "
-                         f"{mfa['legend']} legend entries")
+                         f"{mfa['sentBadges']} source badge(s)")
+        if mfa["legend"]:
+            fails.append(f"{where}: the sentence still prints a .mmf-legend ({mfa['legend']} entries) "
+                         f"— the badge's hover is the legend now")
+        # M2/M6: a SCALE kind's What column is the variable's own ramp over its bounds, with the
+        # record's window and the registry's marks on it. A Beaufort key reads on its cells and an
+        # organism, a structure, a composition or a stand-in on its own glyph — none of them here.
+        ax = ((P.get("scale") or {}).get("axis") or {})
+        if kind == "scale" and ax.get("type") not in ("beaufort",) and P.get("key") != "ph" \
+                and not mfa["ramp"]:
+            notes.append(f"{where}: a scale face draws no ramp (no rule in the Explorer's "
+                         f"defaultRamp() matches {P.get('key')!r}) — the plain strip stands")
+        if mfa["ramp"]:
+            if not mfa["rampGrad"]:
+                fails.append(f"{where}: the What column's ramp has no <linearGradient>")
+            n_marks = len([r for r in ((P.get("scale") or {}).get("marks") or []) if r.get("v") is not None])
+            if n_marks and not mfa["rampMarks"]:
+                fails.append(f"{where}: the ramp draws none of the record's {n_marks} mark(s)")
+            notes.append(f"{where}: ramp drawn with {mfa['rampMarks']} labelled mark(s)")
+        # M3: the pin. The registry column is `calcofi_org_url`; reading a name that does not
+        # exist left the pin off all 89 pages, so the two keys the plan names must carry one.
+        if P.get("key") in ("temperature", "nitrate") and not mfa["pinHrefs"]:
+            fails.append(f"{where}: no .mmf-pin — {P.get('key')}'s method row carries a "
+                         f"calcofi.org URL in the record")
+        if mfa["pinHrefs"]:
+            for href in mfa["pinHrefs"]:
+                if "calcofi.org" not in (href or ""):
+                    fails.append(f"{where}: the How column's pin points at {href!r}, not calcofi.org")
+            notes.append(f"{where}: pin \u2192 {mfa['pinHrefs'][0]}")
+        # M4: the spark is drawn to ITS band's scale and says so — +top / 0 / \u2212top and the years
+        if mfa["spark"]:
+            if mfa["sparkTicks"] < 3:
+                fails.append(f"{where}: the spark draws {mfa['sparkTicks']} axis tick(s), expected "
+                             f"at least 3 (+top \u00b7 0 \u00b7 \u2212top)")
+            if mfa["sparkStretch"] == "none":
+                fails.append(f"{where}: the spark is drawn with preserveAspectRatio=none — its "
+                             f"labels are stretched with it")
+        # M10: the history carries its own scale per row (a \u00b1 beside every band) and the toggle
+        if mfa["anomDrawn"]:
+            if mfa["anomPm"] != len(bands_r2(P)):
+                fails.append(f"{where}: the history writes {mfa['anomPm']} \u00b1 label(s) for "
+                             f"{len(bands_r2(P))} band(s) \u2014 own scale per row is the default")
+            if mfa["anomToggle"] != 2:
+                fails.append(f"{where}: the history has {mfa['anomToggle']} scale radio(s), expected 2")
+            if mfa["anomLegend"] < 3:
+                fails.append(f"{where}: the history's one-line legend has {mfa['anomLegend']} entries")
+        # one tooltip div for every face figure, never one per chart
+        if mfa["tip"] > 1:
+            fails.append(f"{where}: {mfa['tip']} .mmf-tip divs on the page, expected one")
         # § D5: the alternatives are CLOSED on load and the summary's count is the list's own
         det = mfa["det"]
         if det:

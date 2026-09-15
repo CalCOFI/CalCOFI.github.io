@@ -1077,8 +1077,13 @@ module CalCOFI
           "acid_figure" => h["acid_figure"] ? true : nil,
           # linked the way the front door's pins are: the method page and the text fragment that
           # lands on its section (calcofi.org has no stable anchors — § F5)
-          "page"       => Fmt.present(h["page"]) || "Methods",
-          "link"       => Fmt.present(h["calcofi_org"]),
+          # M3 (round 2, WS-R2): the record's column is `calcofi_org_url`, not `calcofi_org`, and
+          # the row's own `source` is the page's name — reading the two names that do not exist
+          # left the pin off all 89 pages. The link carries calcofi.org's text fragment, because
+          # the site has no stable anchors (§ F5); the fragment rides only a URL that exists.
+          "page"       => Fmt.present(h["source"]) || "Methods",
+          "link"       => (u = Fmt.present(h["calcofi_org_url"])) &&
+                          [u, Fmt.present(h["text_fragment"]) && "#:~:text=#{h['text_fragment']}"].compact.join,
           "source"     => Fmt.present(h["source"]),
           "type"       => Fmt.present(s["measurement_type"]),
           "meta"       => [Fmt.num(s["n_values"]) && "#{Fmt.num(s['n_values'])} values",
@@ -1101,9 +1106,32 @@ module CalCOFI
       end.compact
     end
 
+    # M14 (round 2, WS-R2): the Wikipedia lead is an ALTERNATIVE reading, not a block beside the
+    # EOV card — it said the same thing in a second place, in someone else's words. Two sentences
+    # of the CC BY-SA lead, credited to the revision it was fetched at, exactly as the "Borrowed
+    # context" block credited it.
+    def wikipedia_title(m)
+      wp = (media_of(m)["wikipedia"] || []).first
+      wp && Fmt.present(wp["title"])
+    end
+
+    def wikipedia_alt(m)
+      wp = (media_of(m)["wikipedia"] || []).first
+      txt = wp && Fmt.present(wp["extract"].to_s.split(/(?<=\.)\s/).first(2).join(" "))
+      return nil unless txt
+      { "kind" => "wikipedia",
+        "kind_label" => WHY_KIND["wikipedia"] || "Wikipedia",
+        "text" => txt,
+        "cites" => [{ "label" => [Fmt.present(wp["title"]),
+                                  Fmt.present(wp["license"]) || "CC BY-SA 4.0",
+                                  Fmt.present(wp["revision"]) && "rev. #{wp['revision']}"].compact.join(" \u00b7 "),
+                      "url" => Fmt.present(wp["url"]) && "#{wp['url']}?oldid=#{wp['revision']}" }.compact],
+        "needs_cite" => false }
+    end
+
     # ranks 2… — the datasets catalog's "not yet in the database" idiom, closed on load
     def why_alts(m)
-      why_rows_sorted(m).reject { |r| r["rank"].to_i == 1 }.map do |r|
+      rows = why_rows_sorted(m).reject { |r| r["rank"].to_i == 1 }.map do |r|
         cs = cites_of(r)
         { "kind" => Fmt.present(r["kind"]) || "authored",
           "kind_label" => WHY_KIND[r["kind"]] || Fmt.present(r["kind"]) || "authored",
@@ -1113,6 +1141,14 @@ module CalCOFI
           # § D5: an authored alternative with no citation says so rather than reading as a fact
           "needs_cite" => (r["kind"].to_s == "authored" && cs.empty? && Fmt.present(r["source_url"]).nil?) }
       end.select { |r| r["text"] }
+      wa = wikipedia_alt(m)
+      return rows unless wa
+      return rows if rows.any? { |r| r["text"] == wa["text"] }
+      # the record's own `wikipedia` why-row is the ARTICLE TITLE with a link; the media's lead
+      # says the same article in its own words and carries the same link, so the title-only row
+      # would be the same thing said twice (\u00a7 D3)
+      t = wikipedia_title(m)
+      rows.reject { |r| r["kind"] == "wikipedia" && t && r["text"].to_s.strip == t } + [wa]
     end
 
     # ONE rounding for a measured value written to two decimals. `format("%.2f", x)` rounds the
@@ -1144,20 +1180,28 @@ module CalCOFI
       s
     end
 
-    # NERC says what it is · the record says what we hold · the pick says why it matters, each
-    # underlined in its source's colour, with a legend that names exactly the parts drawn (§ D5)
+    # M5 (round 2, WS-R2): the record says what we hold · the pick says why it matters. The NERC
+    # clause is GONE from here — the What column carries the definition and its \u24d8 (\u00a7 D3, say it
+    # once), and the sentence read as a proof rather than as prose. What is left is plain text with
+    # a small source BADGE after each part (`.cc-src`, WS-R1's include contract): the hover is the
+    # legend the page used to spell out under every sentence. The `s-rec` / `s-why` classes stay on
+    # the spans — the JSON-LD and check_layout.py read them.
     def sentence(m)
       pick = why_pick(m)
       parts = []
-      lead = what_of(m).dig("nerc", "lead")
-      parts << { "cls" => "s-nerc", "text" => lead, "src" => "NERC" } if lead
       if (r = rec_sentence(m))
-        parts << { "cls" => "s-rec", "text" => r, "src" => "record" }
+        parts << { "cls" => "s-rec", "text" => r, "src" => "record",
+                   "badge" => "R", "badge_cls" => "cc-src-rec",
+                   "badge_title" => "the release record, measured at #{release['version']}" }
       end
       if pick && Fmt.present(pick["text"])
         cs = cites_of(pick)
+        labs = cs.map { |c| Fmt.present(c["label"]) }.compact
         parts << { "cls" => "s-why", "text" => pick["text"], "cites" => cs,
-                   "src" => cs.empty? ? "authored, needs a citation" : "authored, cited" }
+                   "src" => cs.empty? ? "authored, needs a citation" : "authored, cited",
+                   "badge" => "C", "badge_cls" => "cc-src-why",
+                   "badge_title" => labs.empty? ? "authored, needs a citation"
+                                                : "authored, cited: #{labs.join(', ')}" }
       end
       return nil if parts.empty?
       parts

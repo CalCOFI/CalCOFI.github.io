@@ -14,11 +14,15 @@
 
 {%- comment -%} ── the familiar scale ────────────────────────────────────── {%- endcomment -%}
 {%- if f.scale -%}
-<h3 class="mmf-h3">The familiar scale</h3>
+{%- capture scale_info -%}
+<p>Bars are each series' 5th–95th percentile, the line its minimum to maximum, the ring its median;
+the marks are <code>metadata/measurement_scale.csv</code>'s, each hovering to its own source.</p>
+<p class="mmf-credit" id="mmf-scale-credit"></p>
+{%- endcapture -%}
+<h3 class="mmf-h3 mmf-h3-i">The familiar scale {% include info.html label="How the familiar scale is drawn" body=scale_info %}</h3>
 <div class="mmf-scale-wrap">
   <svg class="mmf-chart mmf-scale" id="mmf-scale" role="img" aria-label="{{ f.what.nerc.pref | default: 'This measurement' | escape }} on a familiar scale"></svg>
 </div>
-<p class="mmf-credit" id="mmf-scale-credit"></p>
 {%- if f.scale.flags.size > 0 -%}
 <ul class="mmf-flags">
   {%- for x in f.scale.flags -%}
@@ -32,18 +36,33 @@
 {%- endif -%}
 
 {%- comment -%} ── the anomaly, band by band ─────────────────────────────── {%- endcomment -%}
-<h3 class="mmf-h3">The record’s own history</h3>
+{%- comment -%} M10 (round 2, WS-R2): the four-line mono legend and the depth paragraph move into
+  an ⓘ on the heading (D1), the scale becomes a choice the reader makes (own scale per band is the
+  default, D4), and the legend is one line of swatches. The computation sentence and the credit are
+  written by assets/measurements.js out of the page's own payload — nothing here is typed (D7).
+{%- endcomment -%}
+{%- capture anom_info -%}
+<p id="mmf-anom-how"></p>
+{%- if f.anomaly_deeper.size > 0 -%}
+<p>Deeper than the climatology reaches: {{ f.anomaly_deeper | join: ', ' }} have no
+  normal to depart from, because the release’s <code>climatology</code> stops at its
+  deepest built bin. Carrying it to the bottom is one argument of
+  <code>build_climatology()</code> and puts these bands on the page too.</p>
+{%- endif -%}
+{%- endcapture -%}
+<h3 class="mmf-h3 mmf-h3-i" id="mmf-anom-h">The record’s own history {% include info.html label="How the anomaly is computed" body=anom_info %}
+  {%- if f.anomaly_bands -%}
+  <span class="mmf-scale-pick">
+    <label><input type="radio" name="mmf-hsc" value="own" checked> own scale per band</label>
+    <label><input type="radio" name="mmf-hsc" value="shared"> one shared scale</label>
+  </span>
+  {%- endif -%}
+</h3>
 {%- if f.anomaly_bands -%}
 <div class="mmf-anom-wrap">
   <svg class="mmf-chart mmf-anom" id="mmf-anom" role="img" aria-label="Yearly anomaly in {{ f.anomaly_bands }} depth bands against the release's own climatology"></svg>
 </div>
-<p class="mmf-credit" id="mmf-anom-credit"></p>
-{%- if f.anomaly_deeper.size > 0 -%}
-<p class="mm-note">Deeper than the climatology reaches: {{ f.anomaly_deeper | join: ', ' }} have no
-  normal to depart from, because the release’s <span class="mono">climatology</span> stops at its
-  deepest built bin. Carrying it to the bottom is one argument of
-  <span class="mono">build_climatology()</span> and puts these bands on the page too.</p>
-{%- endif -%}
+<div class="cc-legend1" id="mmf-anom-legend"></div>
 {%- else -%}
 <p class="mmf-empty">{{ f.anomaly_note | default: 'The release builds no climatology for this measurement, so there is no normal to draw a departure from.' | escape }}</p>
 {%- endif -%}
@@ -85,12 +104,8 @@
     {%- assign cq_url = f.calcofi_quote.url | default: f.how[0].link -%}
     <blockquote class="mmf-quote">{% if f.calcofi_quote.quoted %}“{{ f.calcofi_quote.text | escape }}”{% else %}{{ f.calcofi_quote.text | escape }}{% endif %}{% if cq_url %} <a href="{{ cq_url }}" rel="external">calcofi.org ↗</a>{% endif %}</blockquote>
     {%- endif -%}
-    {%- if f.wikipedia and f.wikipedia.extract -%}
-    <h4 class="mmf-h4">Borrowed context</h4>
-    <blockquote class="mmf-quote">{{ f.wikipedia.extract | escape }}
-      <span class="mmf-credit">Wikipedia, <a href="{{ f.wikipedia.url }}" rel="external">{{ f.wikipedia.title | escape }}</a>,
-        revision {{ f.wikipedia.revision }} · {{ f.wikipedia.license | escape }} — shown beside the
-        sentence, never inside it.</span></blockquote>
-    {%- endif -%}
+    {%- comment -%} M14: the Wikipedia lead is no longer drawn here — it said the same thing in a
+      second place. It is one of the sentence's "other ways to say why" (why_alts), credited to the
+      revision it was fetched at. {%- endcomment -%}
   </div>
 </div>
