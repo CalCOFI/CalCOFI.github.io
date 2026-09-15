@@ -427,9 +427,12 @@
       var fits = function (r, a, b) {
         return taken[r].every(function (t) { return b < t[0] - 6 || a > t[1] + 6; });
       };
-      var labs = {};
+      var labs = {}, drawnX = [];
       order.forEach(function (i) {
         var m = mks[i], mx = x(m.v);
+        /* a tick within 14 px of one already drawn is not drawn at all — the ramp's hover and the
+           line below still name it; a mark is drawn only with its label (Ben, 2026-09-16, pH) */
+        if (drawnX.some(function (dx) { return Math.abs(dx - mx) < 14; })) return;
         var anc = mx < W * 0.2 ? "start" : mx > W * 0.8 ? "end" : "middle";
         var lx = anc === "start" ? Math.max(mx - 4, L) : anc === "end" ? Math.min(mx + 4, W - R) : mx;
         var probe = svgEl("text", { cls: "mmf-mklab", x: lx, y: -99, "text-anchor": anc, text: shortLab(m.label) }, host);
@@ -439,16 +442,17 @@
         host.removeChild(probe);
         var a = anc === "start" ? lx : anc === "end" ? lx - tw : lx - tw / 2, b = a + tw;
         for (var r = 0; r < 2; r++) {
-          if (fits(r, a, b)) { taken[r].push([a, b]); labs[i] = { row: r, lx: lx, anc: anc }; rows = Math.max(rows, r); break; }
+          if (fits(r, a, b)) { taken[r].push([a, b]); labs[i] = { row: r, lx: lx, anc: anc }; rows = Math.max(rows, r); drawnX.push(mx); break; }
         }
       });
       mks.forEach(function (m, i) {
+        if (!labs[i]) return;
         var mx = x(m.v), g = svgEl("g", { cursor: "help" }, host);
         svgEl("line", { cls: "mmf-mk", x1: mx, x2: mx, y1: y0 - 6, y2: y0 + h + 4 }, g);
         svgEl("path", { d: "M" + (mx - 4) + " " + (y0 + h + 4) + "h8l-4 5z", fill: "var(--fg)" }, g);
         var lb = labs[i];
-        if (lb) svgEl("text", { cls: "mmf-mklab", x: lb.lx, y: y0 + h + 27 + lb.row * 13, "text-anchor": lb.anc,
-                                text: shortLab(m.label) }, g);
+        svgEl("text", { cls: "mmf-mklab", x: lb.lx, y: y0 + h + 27 + lb.row * 13, "text-anchor": lb.anc,
+                        text: shortLab(m.label) }, g);
         svgEl("rect", { cls: "mmf-hit", x: mx - 10, y: 0, width: 20, height: y0 + h + 32 }, g);
         hoverTip(g, "<b>" + esc(m.label) + "</b> " + esc(o.fmt(m.v)) + (m.src ? "<br>" + esc(m.src) : ""),
                  m.label + " " + o.fmt(m.v) + (m.src ? " \u00b7 " + m.src : ""));
@@ -619,10 +623,12 @@
     /* the line under a ramp: the record's own window, and the two marks nearest it named — the
        plain strip's own sentence, kept word for word so every kind reads the same way */
     function rampLine(marks, dp) {
-      var o = F.ph;
+      var o = F.ph, wc = (o.p05 + o.p95) / 2;
+      /* the two marks nearest the record's window — the same two the ramp draws first */
+      var nearest = marks.slice().sort(function (a, b) { return Math.abs(a.v - wc) - Math.abs(b.v - wc); }).slice(0, 2);
       return '<p class="mmf-line">This measurement’s <b>' + fmtN(o.p05, dp) + "–" + fmtN(o.p95, dp) +
         esc(units()) + "</b> (5th–95th percentile)" +
-        (marks.length ? ", against " + marks.slice(0, 2).map(function (r) { return esc(r.label); }).join(" and ") : "") +
+        (marks.length ? ", against " + nearest.map(function (r) { return esc(r.label); }).join(" and ") : "") +
         "</p>";
     }
     /* draw a ramp into the What column: an <svg> host and the line under it */

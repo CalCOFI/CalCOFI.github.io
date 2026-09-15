@@ -37,11 +37,8 @@ layout: default
         </div>
         <h1 class="cc-h1">{{ page.h1 | escape }}</h1>
         {%- if page.sub %}<p class="mm-sub">{{ page.sub | escape }}</p>{% endif -%}
-        {%- if page.no_label -%}
-        <p class="mm-note mm-nolabel">The registry carries no authored label for this measurement, so the name above is
-          the canonical series' own description in <span class="mono">metadata/measurement_type.csv</span>
-          (<span class="mono">variable.csv</span> holds the authored labels, five today).</p>
-        {%- endif -%}
+        {%- comment -%} page.no_label (the registry has no authored label; the h1 is the canonical series'
+          description) is an engineering fact — README.md, never a paragraph on the page (Ben, 2026-09-16) {%- endcomment -%}
       </div>
       <div class="mm-ids">
         {%- for i in page.ids -%}
