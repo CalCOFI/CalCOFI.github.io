@@ -4,8 +4,10 @@
 
   Inside a tile the emphasis ladder runs top to bottom (plan D-1), and it is a ladder so that the
   datasets read first:
-    rung 1 · a dataset homed here — the accent at 700, its own colour as a 9 px dot, and one line
-             of meta: provider · years · sparkline · n obs · the formats as ONE mono phrase
+    rung 1 · a dataset homed here — the accent at 700, its own colour as a 9 px dot, a 4-column
+             grid: name · provider · (years · sparkline · n obs · a variables/taxa expander) ·
+             the licence chip (round 2 D1–D4, WS-R4; the format phrase moved to the Format filter
+             and the dataset page)
     rung 2 · a dataset homed elsewhere that CONTRIBUTES variables here — --fg at 400 with an
              italic lead, a hollow dot in its colour, the variables collapsed behind "n variables"
              (a <details>, so the names stay in the DOM and the search box still matches them)
@@ -76,19 +78,44 @@
     </header>
     <ul class="ds-rows">
       {%- for d in c.datasets -%}
+      {%- comment -%}
+        D1 D2 D3 D4 (round 2, WS-R4): the emphasis ladder's rung 1 is a 4-column grid — name ·
+        provider · (years · spark · obs · a variables/taxa expander) · licence — so the licence
+        sits in the same place on every homed row. `data-fmt` stays on the <li> for the Format
+        filter; the formats phrase itself is gone (D1 — the filter and the dataset page keep it).
+        The expander's chip names stay in the DOM whether open or closed, so the search box still
+        matches them (assets/catalog.js opens a hit's expander, the way it already opens a hit
+        inside the holdings <details> below).
+      {%- endcomment -%}
       <li class="ds-row ds-row-dataset" data-kind="dataset" data-key="{{ d.key | escape }}" data-cat="{{ c.name | escape }}"
           data-realm="{{ d.realm | escape }}" data-prov="{{ d.provider | escape }}"
           data-lic="{{ d.license | default: 'unstated' | escape }}" data-fmt="{{ d.formats | join: ' ' | escape }}"
           data-stage="{{ d.stage | default: 'published' | escape }}">
         <a class="ds-row-name" href="{{ d.url | relative_url }}"{% if d.color %} style="--dot: {{ d.color | escape }}"{% endif %}><i class="ds-dot" aria-hidden="true"></i>{{ d.name | escape }}</a>
+        <span class="cc-chip ds-chip-prov">{{ d.provider | escape }}</span>
         <span class="ds-row-meta">
-          <span class="cc-chip ds-chip-prov">{{ d.provider | escape }}</span>
           {%- if d.years %}<span class="ds-years">{{ d.years | escape }}</span>{% endif -%}
           {%- if d.years_bar %}<span class="ds-spark-wrap">{{ d.years_bar }}</span>{% endif -%}
           {%- if d.n_obs_fmt %}<span class="ds-n">{{ d.n_obs_fmt | escape }} obs</span>{% endif -%}
-          {%- if d.formats_phrase %}<span class="ds-fmt">{{ d.formats_phrase | escape }}</span>{% endif -%}
-          {%- if d.license %}<span class="cc-chip ds-chip-lic">{{ d.license | escape }}</span>{% endif -%}
+          {%- if d.n_taxa and d.n_taxa > 0 -%}
+          <details class="ds-vars">
+            <summary>{{ d.n_taxa | escape }} taxa</summary>
+            <span class="chips">
+              {%- for t in d.taxa_names %}<span class="cc-chip"><i>{{ t | escape }}</i></span>{% endfor -%}
+              {%- if d.n_taxa > d.taxa_names.size %}<a class="cc-chip cc-chip-quiet" href="{{ d.url | relative_url }}#coverage">… all {{ d.n_taxa | escape }} on the dataset page</a>{% endif -%}
+            </span>
+          </details>
+          {%- elsif d.n_var and d.n_var > 0 -%}
+          <details class="ds-vars">
+            <summary>{{ d.n_var | escape }} variable{% if d.n_var != 1 %}s{% endif %}</summary>
+            <span class="chips">
+              {%- for v in d.var_names %}<span class="cc-chip">{{ v | escape }}</span>{% endfor -%}
+              {%- if d.n_var > d.var_names.size %}<a class="cc-chip cc-chip-quiet" href="{{ d.url | relative_url }}#coverage">… all {{ d.n_var | escape }} on the dataset page</a>{% endif -%}
+            </span>
+          </details>
+          {%- endif -%}
         </span>
+        {% include licence_chip.html license=d.license license_url=d.license_url name=d.license_name %}
       </li>
       {%- endfor -%}
 

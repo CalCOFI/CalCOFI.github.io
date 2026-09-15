@@ -13,9 +13,10 @@ layout: default
     2 sub-nav     the sticky uppercase tab row, now brand v2's .cc-tabs
     3 Overview    ONE COLUMN. Nothing below the head is two columns.
     4 Coverage    the variables, species and taxa, life stages and what this dataset contributes elsewhere
-    5 Access      compact one-line rows, no URL line (the copy button carries it); the release
-                  tables as a table; Metadata records beside Archives & portals. Inner grids only —
-                  the .cc-container stays one column (check_layout.py's assertion is on it)
+    5 Access      a tabset, one tab per group (round 2 S2, WS-R4); compact one-line rows inside a
+                  panel, no URL line (the copy button carries it), the release tables as a table.
+                  Inner grids only — the .cc-container stays one column (check_layout.py's
+                  assertion is on it)
     6 Cite · Provenance · Related   Cite and Provenance keep two columns: both are short and
                   bounded (a citation block beside a definition list), with align-items: start
 
@@ -49,7 +50,9 @@ layout: default
         {%- if r.provider.short -%}
         <a class="cc-chip" href="{{ r.provider.url }}">{{ r.provider.short | escape }}</a>
         {%- endif -%}
-        {%- if a.license %}<span class="cc-chip">{{ a.license_name | default: a.license | escape }}</span>{% endif -%}
+        {%- comment -%} D2 (round 2, WS-R4): the head wears the same licence chip as a homed row —
+          one glyph, one colour, "unstated" dimmed rather than dropped {%- endcomment -%}
+        {% include licence_chip.html license=a.license license_url=a.license_url name=a.license_name %}
         {%- if a.doi %}<a class="cc-chip" href="https://doi.org/{{ a.doi | escape }}">doi:{{ a.doi | escape }}</a>{% endif -%}
         {%- unless page.is_holding -%}
         <a class="cc-chip ds-chip-rel" href="{{ '/datasets/release/' | relative_url }}">{{ site.data.catalog.release.version | escape }}</a>
@@ -142,8 +145,10 @@ layout: default
       <div><dt>Contact</dt><dd><a href="mailto:{{ a.contact | escape }}">{{ a.contact | escape }}</a></dd></div>
       {%- endif -%}
       {%- if a.funding -%}<div><dt>Funding</dt><dd>{{ a.funding | escape }}</dd></div>{%- endif -%}
-      {%- if r.keywords.size > 0 -%}
-      <div><dt>Keywords</dt><dd class="ds-kw">{% for k in r.keywords %}<span class="cc-chip">{{ k | escape }}</span>{% endfor %}</dd></div>
+      {%- if page.keyword_chips.size > 0 -%}
+      {%- comment -%} S1 (round 2, WS-R4): the leaf, not the full GCMD path — the path is the
+        chip's title. data.json and the JSON-LD keep r.keywords, the full strings, untouched. {%- endcomment -%}
+      <div><dt>Keywords</dt><dd class="ds-kw ds-kw-keywords">{% for k in page.keyword_chips %}<span class="cc-chip" title="{{ k.full | escape }}">{{ k.leaf | escape }}</span>{% endfor %}</dd></div>
       {%- endif -%}
     </dl>
     {%- if r.status.questions_dataset.size > 0 -%}
@@ -256,7 +261,12 @@ layout: default
 </section>
 {%- endif -%}
 
-{%- comment -%} ── Access: compact rows; the tables as a table; short groups paired ── {%- endcomment -%}
+{%- comment -%} ── Access: a tabset, one tab per group (S2, round 2 WS-R4). Each panel is the
+  group's blocks exactly as before; the pair left/right wrapper that used to sit Metadata records
+  beside Archives & portals is gone — a tab panel is one group, and the tab row itself already
+  says the group's name, so it is not repeated inside the panel (D3, "say it once"). The sub-nav's
+  "Access n" total (page.n_endpoints) and each tab's own pill (g.n) are the same sum, computed
+  once in _plugins/datasets.rb. {%- endcomment -%}
 {%- if page.access.size > 0 -%}
 <section class="cc-band ds-section ds-one" id="access">
   <div class="cc-container">
@@ -267,35 +277,38 @@ layout: default
       the link; the copy button beside it copies the address. Everything is in the release record and
       was answered when the release was cut.{% endif %}</p>
 
-    {%- comment -%}
-      A group marked pair: "left" opens a two-up region that the next group (pair: "right") closes,
-      so Metadata records and Archives & portals sit side by side — two short lists that used to
-      stack into a page of their own. The region is an inner grid, never the .cc-container.
-    {%- endcomment -%}
-    {%- for g in page.access -%}
-    {%- if g.pair == "left" %}<div class="ds-access-pair">{% endif -%}
-    <div class="ds-access-group" id="access-{{ g.id | escape }}">
-      <h3 class="cc-h3 ds-access-h">{{ g.title | escape }}</h3>
-      {%- if g.lede %}<p class="ds-access-lede cc-muted cc-prose">{{ g.lede | markdownify | remove: "<p>" | remove: "</p>" }}</p>{% endif -%}
-      {%- if g.policy %}<p class="ds-policy cc-prose"><span class="ds-policy-k">Policy</span> {{ g.policy | escape }}</p>{% endif -%}
-      {%- for b in g.blocks -%}
-      {%- if b.title %}<h4 class="ds-access-sub">{{ b.title | escape }}</h4>{% endif -%}
-      {%- if b.lede %}<p class="ds-access-lede cc-muted cc-prose">{{ b.lede | markdownify | remove: "<p>" | remove: "</p>" }}</p>{% endif -%}
-      {%- if b.layout == "table" -%}
-      {% include access_table.html block=b %}
-      {%- elsif b.layout == "portals" -%}
-      {% include access_portals.html block=b %}
-      {%- elsif b.layout == "pair" -%}
-      <div class="ds-arows-pair">{% for row in b.rows %}{% include access_row.html row=row %}{% endfor %}</div>
-      {%- else -%}
-      {%- for row in b.rows %}{% include access_row.html row=row %}{% endfor -%}
-      {%- endif -%}
-      {%- if b.matrix %}{% include access_matrix.html block=b %}{% endif -%}
+    <div class="tabset" id="ts-ds-access">
+      <div class="tabrow" role="tablist" aria-label="Access, by group">
+        {%- for g in page.access -%}
+        <button type="button" role="tab" id="access-tab-{{ g.id | escape }}" aria-controls="access-{{ g.id | escape }}"
+                data-tab="{{ g.id | escape }}" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
+                tabindex="{% if forloop.first %}0{% else %}-1{% endif %}">{{ g.title | escape }}
+          {%- if g.n %}<span class="pill">{{ g.n | escape }}</span>{% endif -%}
+        </button>
+        {%- endfor -%}
+      </div>
+      {%- for g in page.access -%}
+      <div class="tabpanel ds-access-group" id="access-{{ g.id | escape }}" data-panel="{{ g.id | escape }}"
+           role="tabpanel" aria-labelledby="access-tab-{{ g.id | escape }}"{% unless forloop.first %} hidden{% endunless %}>
+        {%- if g.lede %}<p class="ds-access-lede cc-muted cc-prose">{{ g.lede | markdownify | remove: "<p>" | remove: "</p>" }}</p>{% endif -%}
+        {%- if g.policy %}<p class="ds-policy cc-prose"><span class="ds-policy-k">Policy</span> {{ g.policy | escape }}</p>{% endif -%}
+        {%- for b in g.blocks -%}
+        {%- if b.title %}<h4 class="ds-access-sub">{{ b.title | escape }}</h4>{% endif -%}
+        {%- if b.lede %}<p class="ds-access-lede cc-muted cc-prose">{{ b.lede | markdownify | remove: "<p>" | remove: "</p>" }}</p>{% endif -%}
+        {%- if b.layout == "table" -%}
+        {% include access_table.html block=b %}
+        {%- elsif b.layout == "portals" -%}
+        {% include access_portals.html block=b %}
+        {%- elsif b.layout == "pair" -%}
+        <div class="ds-arows-pair">{% for row in b.rows %}{% include access_row.html row=row %}{% endfor %}</div>
+        {%- else -%}
+        {%- for row in b.rows %}{% include access_row.html row=row %}{% endfor -%}
+        {%- endif -%}
+        {%- if b.matrix %}{% include access_matrix.html block=b %}{% endif -%}
+        {%- endfor -%}
+      </div>
       {%- endfor -%}
     </div>
-    {%- if g.pair == "right" %}</div>{% endif -%}
-    {%- if g.pair == "left" and forloop.last %}</div>{% endif -%}
-    {%- endfor -%}
 
     <p class="ds-access-foot cc-prose">
       Everything here is open — nothing on calcofi.io asks you to register first. If this dataset ends up

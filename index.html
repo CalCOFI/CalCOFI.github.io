@@ -370,8 +370,13 @@ SELECT * FROM read_json('{{ rel.catalog_url }}')</pre>
       </div>
 
       {%- comment -%} Species: the /species/ index's own head, read from site.data.species — never
-        re-counted here, so this tab and the catalog page can never disagree {%- endcomment -%}
+        re-counted here, so this tab and the catalog page can never disagree.
+        D9 (round 2, WS-R4): the tab's own search box is gone — #door-q is the one box, and
+        assets/door-search.js renders a query's hits into #door-species-results, hiding this
+        body (#door-species-body) while a query is non-empty and restoring it when the box
+        clears. {%- endcomment -%}
       <div class="tabpanel" id="panel-species" data-panel="species" role="tabpanel" aria-labelledby="tab-species" hidden>
+        <div class="idxtab-body" id="door-species-body">
         {%- assign sp = site.data.species -%}
         {%- if sp -%}
         {%- assign spc = sp.counts_fmt -%}
@@ -381,7 +386,7 @@ SELECT * FROM read_json('{{ rel.catalog_url }}')</pre>
             <h3 class="cc-h2">{{ spc.species_observed }} species. {{ spc.taxa_observed }} taxa. {{ spc.datasets }} datasets, one tree.</h3>
             <p class="blurb">Every organism CalCOFI has counted, from the diatoms of the phytoplankton slides to the
               whales of the Farallon census, keyed to one accepted name so the same species means the same thing in
-              every dataset. Search it, walk the tree, or start from a dataset — every taxon has its own page.</p>
+              every dataset. Search it above, walk the tree, or start from a dataset — every taxon has its own page.</p>
           </div>
           <dl class="idxtab-counts">
             <div><dd class="tab">{{ spc.species_observed }}</dd><dt>species</dt></div>
@@ -390,26 +395,26 @@ SELECT * FROM read_json('{{ rel.catalog_url }}')</pre>
             <div><dd class="tab">{{ spc.obs_bio_rows }}</dd><dt>observations</dt></div>
             <div><dd class="tab">{{ spc.pages }}</dd><dt>pages</dt></div>
           </dl>
-          <form class="idxtab-form" action="{{ '/species/' | relative_url }}" method="get">
-            <label class="dsearch-box">
-              <span class="cc-muted" aria-hidden="true">⌕</span>
-              <input type="search" name="q" placeholder="sardine · Sardinops · Alosidae · Aves · cufes …"
-                     aria-label="Search the species catalog">
-            </label>
-            <a class="cc-text-link" href="{{ '/species/' | relative_url }}">Open the species catalog →</a>
-          </form>
+          <p class="idxtab-form"><a class="cc-text-link" href="{{ '/species/' | relative_url }}">Open the species catalog →</a></p>
         </div>
         {%- else -%}
         <p class="blurb cc-muted">This release carries no species record, so there is no species catalog to open.
           <a class="cc-text-link" href="https://calcofi.io/explore/">Browse the organisms in the Explorer →</a></p>
+        {%- endif -%}
+        </div>
+        {%- if sp -%}
+        <div class="cc-results" id="door-species-results" hidden></div>
         {%- endif -%}
       </div>
 
       {%- comment -%} Measurements: the same shape. Until a release carries measurements.json
         (WS-M3 · WS-M2) the head is built from the release's own coverage — the keys, the series,
         the datasets, the rows at the release grain, the years — and the door is the Explorer
-        prefilled on temperature. Not one number is typed either way. {%- endcomment -%}
+        prefilled on temperature. Not one number is typed either way.
+        D9 (round 2, WS-R4): same as Species — one shared box, results into
+        #door-measurements-results, this body hides while a query is non-empty. {%- endcomment -%}
       <div class="tabpanel" id="panel-measurements" data-panel="measurements" role="tabpanel" aria-labelledby="tab-measurements" hidden>
+        <div class="idxtab-body" id="door-measurements-body">
         {%- if nums.measurements_keys -%}
         <div class="idxtab">
           <div class="idxtab-copy">
@@ -418,7 +423,7 @@ SELECT * FROM read_json('{{ rel.catalog_url }}')</pre>
             <p class="blurb">Everything CalCOFI has measured in the water and the air above it — temperature and
               salinity from the bottle casts of 1949 to this year's CTD profiles, nutrients, carbon, pigments and
               light, the underway weather, the picoplankton counted by flow cytometry — keyed to one name across its
-              datasets. Search it, filter by category, or start from a dataset.</p>
+              datasets. Search it above, filter by category, or start from a dataset.</p>
           </div>
           <dl class="idxtab-counts">
             <div><dd class="tab">{{ nums.measurements_keys_fmt }}</dd><dt>measurements</dt></div>
@@ -427,24 +432,21 @@ SELECT * FROM read_json('{{ rel.catalog_url }}')</pre>
             {%- if nums.measurements_env_m %}<div><dd class="tab">{{ nums.measurements_env_m }} M</dd><dt>values · release grain</dt></div>{% endif -%}
             <div><dd class="tab">{{ nums.measurements_m }} M</dd><dt>with full resolution</dt></div>
           </dl>
-          <form class="idxtab-form" action="{{ meas_url }}" method="get">
-            {%- if site.data.measurements -%}
-            <label class="dsearch-box">
-              <span class="cc-muted" aria-hidden="true">⌕</span>
-              <input type="search" name="q" placeholder="temperature · nitrate · chlorophyll · CTD · TEMPPR01 …"
-                     aria-label="Search the measurements catalog">
-            </label>
-            <a class="cc-text-link" href="{{ meas_url }}">Open the measurements catalog →</a>
-            {%- else -%}
-            <p class="blurb cc-muted">The measurements catalog is not in this release yet: these counts come from the
-              release's own coverage. Until it ships, the Explorer is the way in.</p>
-            <a class="cc-text-link" href="{{ meas_url }}">Open the Explorer on temperature →</a>
-            {%- endif -%}
-          </form>
+          {%- if site.data.measurements -%}
+          <p class="idxtab-form"><a class="cc-text-link" href="{{ meas_url }}">Open the measurements catalog →</a></p>
+          {%- else -%}
+          <p class="blurb cc-muted">The measurements catalog is not in this release yet: these counts come from the
+            release's own coverage. Until it ships, the Explorer is the way in.</p>
+          <a class="cc-text-link" href="{{ meas_url }}">Open the Explorer on temperature →</a>
+          {%- endif -%}
         </div>
         {%- else -%}
         <p class="blurb cc-muted">This release carries no measured coverage, so there is nothing to index.
           <a class="cc-text-link" href="https://calcofi.io/explore/">Browse the variables in the Explorer →</a></p>
+        {%- endif -%}
+        </div>
+        {%- if site.data.measurements -%}
+        <div class="cc-results" id="door-measurements-results" hidden></div>
         {%- endif -%}
       </div>
     </div>

@@ -1,17 +1,17 @@
 {%- comment -%}
-  The filter row + search box over the grid. Every option is a value that actually occurs in the
-  record (site.data.catalog.facets, computed in _plugins/datasets.rb) — there is no option that
-  matches nothing. The search runs client-side over /datasets/search.json (names, descriptions,
-  keywords and variables); assets/catalog.js is plain JS, no framework.
+  The filter row over the grid. Every option is a value that actually occurs in the record
+  (site.data.catalog.facets, computed in _plugins/datasets.rb) — there is no option that matches
+  nothing. D4/D5 (round 2, WS-R4, umbrella D9): the catalog's OWN search box is gone — the front
+  door keeps one box (#door-q, in index.html's #door-search) and the six selects below share the
+  width it used to take. assets/catalog.js still runs a free-text search client-side over
+  /datasets/search.json (names, descriptions, keywords and variables); it now reads the query from
+  #door-q (and from ?q= on load) wherever that element exists, and simply has no live text search
+  on a page that renders this filter row without a #door-search (e.g. the standalone /datasets/
+  page) — the six selects still work there, and a ?q= on the URL still filters once on load.
 {%- endcomment -%}
 {%- assign f = site.data.catalog.facets -%}
 <form class="ds-filters" id="ds-filters" role="search" aria-label="Filter datasets"
       onsubmit="return false">
-  <div class="ds-filter ds-filter-q">
-    <label for="ds-q">Search</label>
-    <input type="search" id="ds-q" name="q" placeholder="name, description, variable, taxon…"
-           autocomplete="off" spellcheck="false">
-  </div>
   <div class="ds-filter">
     <label for="ds-cat">Category</label>
     <select id="ds-cat" data-facet="cat">

@@ -2013,3 +2013,46 @@ a.cc-chip-lic:hover { color: var(--accent); border-color: var(--accent); text-de
 
 /* the "structure" figure (M7): the What section's own big cards, kept and retitled — no rule of
    their own; `.mmf-mols`/`.mmf-credit` (above) already carry the look */
+
+/* ── round 2 · front door (WS-R4) ─────────────────────────────────────────────
+   D1–D5, D9 (plan 2026-09-15): the homed row's own 4-column grid, its variables/taxa expander,
+   the one search box at full width, and the Access tabset's group spacing. The shared .ds-row /
+   .ds-filters / .tabset rules above (and WS-R1's block) are untouched — every selector here is
+   either scoped to .ds-row-dataset or a new class. */
+
+/* D1 D2 D4: the homed row is a grid — name · provider · (years/spark/obs/expander) · licence.
+   Contributing rows (.ds-row-contrib) and holdings (.ds-row-holding) keep the base flex layout
+   above; only the homed row (.ds-row-dataset) gets the grid. */
+.ds-row.ds-row-dataset {
+  display: grid; grid-template-columns: minmax(0, 1.25fr) auto minmax(0, 1.9fr) auto;
+  gap: 6px 12px; align-items: center;
+}
+.ds-row.ds-row-dataset .ds-row-meta { margin-left: 0; }
+@media (max-width: 720px) {
+  .ds-row.ds-row-dataset { grid-template-columns: 1fr auto; }
+  .ds-row.ds-row-dataset .ds-row-meta { grid-column: 1 / -1; }
+}
+
+/* D3: the variables/taxa expander — the same inline-<details> shape as .ds-contrib-det above */
+.ds-vars { display: inline; font: 12.5px var(--sans); color: var(--muted); }
+.ds-vars summary { display: inline; cursor: pointer; color: var(--accent); font-weight: 600; list-style: none; }
+.ds-vars summary::-webkit-details-marker { display: none; }
+.ds-vars summary::after { content: " ▸"; font-size: 10px; }
+.ds-vars[open] summary::after { content: " ▾"; }
+.ds-vars .chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; width: 100%; }
+.ds-vars .chips .cc-chip { margin: 2px 2px 0 0; }
+
+/* D4 D5 (umbrella D9): the catalog's own search box is gone (#ds-q) — the six selects that are
+   left share the width it used to take, and the front door's #door-search is the one box, full
+   width of its container. */
+.ds-filter { flex: 1 1 0; min-width: 130px; }
+#door-search { max-width: none; }
+
+/* D9: the two result panels the Species and Measurements tabs render a query's hits into
+   (assets/door-search.js) — R1's .cc-result rows, a small eyebrow head, one "all n in …" link */
+.cc-results { margin-top: calc(var(--space) * 2); }
+.cc-results .cc-eyebrow { margin-bottom: 6px; }
+
+/* S2: Access is now a tabset — one group visible at a time, so its own bottom margin (set for the
+   old stacked layout) would only add blank space under the last panel */
+.ds-access-group.tabpanel { margin-bottom: 0; }

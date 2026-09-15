@@ -10,17 +10,24 @@
     license_url — the deed (CC), the provider's terms (custom); ignored for "unstated"
     name        — optional, the record's OWN license_name (metadata/license.csv's `name`); wins
                   over this include's fallback table for any id the table does not carry
-    size        — "sm" (default) or "md"
+    chip_size   — "sm" (default) or "md"
 
   Text: CC-BY-4.0 -> "CC BY 4.0" · CC0-1.0 -> "CC0 · public domain" · any other stated id -> `name`
   if given, else the id with hyphens loosened to spaces (never the bare id) · custom -> "provider
   terms ↗", linking license_url · blank -> "unstated", no link, title explains why.
 
   include licence_chip.html license=d.license license_url=d.license_url name=d.license_name
+
+  Found while placing this include on 16 rows + the dataset head (round 2, WS-R4): the param CANNOT
+  be named `size` — Liquid's dot lookup special-cases the literal key "size" on anything Hash-like
+  (`include.size` always returns the include tag's OWN param count, e.g. 3 for a 3-param call,
+  never a param actually named "size"), so every chip silently grew a bogus "cc-chip-lic-3" class.
+  No caller in the repo passed `size=` before this was found, so renaming to `chip_size` is the fix,
+  not a breaking change.
 {%- endcomment -%}
 {%- assign lic  = include.license | default: "" -%}
 {%- assign url  = include.license_url -%}
-{%- assign size = include.size | default: "sm" -%}
+{%- assign size = include.chip_size | default: "sm" -%}
 {%- assign cls  = "cc-chip cc-chip-lic" -%}
 {%- unless size == "sm" -%}{%- assign cls = cls | append: " cc-chip-lic-" | append: size -%}{%- endunless -%}
 {%- assign glyph = '<svg aria-hidden="true"><use href="#i-licence"/></svg>' -%}
