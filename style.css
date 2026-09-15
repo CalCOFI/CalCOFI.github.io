@@ -2030,6 +2030,10 @@ a.cc-chip-lic:hover { color: var(--accent); border-color: var(--accent); text-de
 .ds-row.ds-row-dataset .ds-chip-prov { grid-area: prov; }
 .ds-row.ds-row-dataset .ds-row-meta { grid-area: meta; margin-left: 0; }
 .ds-row.ds-row-dataset .ds-spark-wrap { width: 140px; }
+/* the years · spark · obs group sits centred between the provider pill and the expander, which
+   is right-aligned: two auto margins share the free space equally (Ben, 2026-09-16) */
+.ds-row.ds-row-dataset .ds-row-meta > .ds-years { margin-left: auto; }
+.ds-row.ds-row-dataset .ds-row-meta > .ds-vars { margin-left: auto; }
 @media (max-width: 720px) {
   .ds-row.ds-row-dataset .ds-spark-wrap { width: 90px; }
 }
