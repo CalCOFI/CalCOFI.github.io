@@ -1636,6 +1636,7 @@ module CalCOFI
         "sub"         => mm.subtitle(m),
         "no_label"    => mm.no_label?(m),
         "category"    => m.dig("category", "name"),
+        "cat_icon"    => (m.dig("category", "icon") || "cat-other"),   # the hero's own glyph for the pin's disc (Ben, 2026-09-16)
         "units"       => Fmt.units(m["units"]),
         "units_raw"   => Fmt.present(m["units"]),
         "is_unified"  => m["is_unified"],
