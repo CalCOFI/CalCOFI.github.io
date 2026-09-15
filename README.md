@@ -144,14 +144,29 @@ one that shows: the panels are rendered with `hidden` already set by Liquid.
 
 **One search, three indexes.** The box above the DATA tabs searches datasets, species and
 measurements at once. `assets/door-search.js` fetches `/datasets/search.json`, `/species/search.json`
-and `/measurements/search.json` **once, on the first focus** — never at load, so the first paint is
-untouched — and a record that 404s simply contributes no group. Results are grouped, four per group,
-with an "all *n* in …" row to that group's catalog; Enter opens the first hit, Escape closes, arrow
-keys walk the list. `species/search.json` is built by Liquid straight from the release's own
-`taxa.json`, so it is the same record `/species/` is drawn from. `measurements/search.json` is a
+and `/measurements/search.json` **once, on the first focus** (or on load, if `?q=` is already on the
+URL) — never at load otherwise, so the first paint is untouched — and a record that 404s simply
+contributes no group. The dropdown listbox (`#door-res`) stays for keyboard users: results grouped,
+four per group, with an "all *n* in …" row to that group's catalog; Enter opens the first hit, Escape
+closes, arrow keys walk the list. `species/search.json` is built by Liquid straight from the release's
+own `taxa.json`, so it is the same record `/species/` is drawn from. `measurements/search.json` is a
 **bridge stub** built from the release's own `coverage.json` (`variables[realm == "env"]`) until a
 release carries `measurements.json`; when `_plugins/measurements.rb` ships it writes that URL and
 the stub file must be deleted — a generated page and a source page of one permalink collide.
+
+**Round 2 (D4/D5/D9, WS-R4, 2026-09-15): one box, not two.** The catalog's own `#ds-q` field is gone
+from `catalog_filters.html` — the six facet selects share the width it used to take (`flex: 1 1 0`
+each) — and `assets/catalog.js` now reads its query from `#door-q` (and from `?q=` on the URL on
+load) wherever that element exists; the standalone `/datasets/` page, which has no door search, keeps
+only the facet selects and a `?q=` still filters once on load. The query also writes into the OPEN
+tab's own panel: on Datasets it filters the grid exactly as before; on Species and Measurements,
+`door-search.js` renders up to 50 hits sorted by observations into `#door-species-results` /
+`#door-measurements-results` (R1's `result_row.html` shape, built here in JS), hiding that tab's own
+headline/counts/link (`#door-<key>-body`) while the box is non-empty and restoring it when cleared —
+so typing on the Species tab is never a dead end. Both result panels stay in sync on every keystroke
+regardless of which tab is showing, so switching tabs needs no re-render of its own. A shared link —
+`/?q=sardine&tab=species` — lands with the box filled, the right tab selected (`tabs.js`'s own
+`?tab=` restore) and the results already drawn.
 
 **The two catalogs' counts, and where each comes from.** Nothing on the door is typed:
 
@@ -292,12 +307,19 @@ row and no search row.
 The catalog's layout follows four rules, and `scripts/check_layout.py` is what keeps them true
 (plan `2026-09-05 CalCOFI.io UI refresh …` § D-1 to D-3, D-10):
 
-1. **Emphasis is a ladder.** A dataset in the release is `--accent` at 700 with its own colour as a
-   9 px dot and one line of meta (provider · years · sparkline · n obs · the formats as ONE mono
-   phrase). A dataset homed elsewhere that *contributes* variables here is `--fg` at 400 with a
-   hollow dot and its variables collapsed behind "n variables ▸". A **holding** — something CalCOFI
-   has that is not in the database — is `--muted` at 400 on one line with quiet chips. A reference
-   row is `--fg` at 400 with its count in mono.
+1. **Emphasis is a ladder.** A dataset in the release (rung 1) is a 4-column grid — name · provider
+   · (years · sparkline · n obs · a variables/taxa expander) · licence — `--accent` at 700 with its
+   own colour as a 9 px dot; the format phrase that used to sit in the meta is gone (round 2 D1,
+   WS-R4: the Format filter and the dataset page keep it). The expander (`.ds-vars`, D3) is a closed
+   `<details>` reading "*n* variables" (env) or "*n* taxa" (bio, `<i>`talic scientific names,
+   commonest-observed first) — the names stay in the DOM either way, so the door search still
+   matches them, and a hit inside one opens it (`assets/catalog.js`, the same one-way rule as the
+   holdings block below). The licence is `_includes/licence_chip.html` (D5) — one glyph, one colour,
+   only the shade and text vary; the dataset head wears the same chip. A dataset homed elsewhere that
+   *contributes* variables here (rung 2) is `--fg` at 400 with a hollow dot and its variables
+   collapsed behind "n variables ▸". A **holding** — something CalCOFI has that is not in the
+   database — is `--muted` at 400 on one line with quiet chips. A reference row is `--fg` at 400 with
+   its count in mono.
 2. **Yellow is reserved.** `--warn` marks a state that needs attention, never a kind of thing. A
    pipeline stage (`ingested`, `validated`, `metadata`, `published`; `external`, `archived`) is
    information: a neutral or quiet chip. Before this, the 17 holdings each wore the page's only
@@ -345,15 +367,20 @@ search index and `page.variables` all read one shape; a build against either ren
      the same way: its `taxa[]` gives the front door its species count and each dataset page its
      own — the taxa it observed at rank Species, with every taxon it observed in the tooltip
      (plan 2026-09-09 § D3/D4). Without it a page says "taxa" from the record, as it did before.
-3. **Access is full-width rows, not a table.** Each row is two lines: label · chips · meta · copy,
-   and no URL line (2026-09-06): the label is the link, the chips and identifier say which endpoint
-   it is, and the copy button beside every row copies the address. *Tables from the release* is a
-   table (table · holds · rows · size · since · sha256); *Code* follows it, so "DuckDB, anywhere"
-   reads one of the objects just listed and explains the content-hashed path; ERDDAP is listed
-   **once**, as a matrix of id × (CSV · JSON · page · info · graph — no netCDF, the CF file is the
-   netCDF) with the grain glossary under it; *Metadata records* and *Archives & portals* sit side
-   by side. Explore rows and product cards carry each app's **lenses** (products.yml `lenses:`) as
-   suffix icons, with a key under the landing page's Explore heading.
+3. **Access is a tabset, one tab per group (round 2 S2, WS-R4).** Each row is two lines: label ·
+   chips · meta · copy, and no URL line (2026-09-06): the label is the link, the chips and
+   identifier say which endpoint it is, and the copy button beside every row copies the address.
+   *Tables from the release* is a table (table · holds · rows · size · since · sha256); *Code*
+   follows it, so "DuckDB, anywhere" reads one of the objects just listed and explains the
+   content-hashed path; ERDDAP is listed **once**, as a matrix of id × (CSV · JSON · page · info ·
+   graph — no netCDF, the CF file is the netCDF) with the grain glossary under it. The tab row IS
+   the group's name (`_plugins/datasets.rb Catalog#access_groups` / `#holding_access`, each group's
+   `g["n"]` its pill — the same sum `page.n_endpoints` totals for the sub-nav's "Access *n*"), so a
+   group's own heading is not repeated inside its panel (D3, "say it once"); the pair left/right
+   wrapper that used to sit *Metadata records* beside *Archives & portals* is gone — a tab panel is
+   one group, `assets/tabs.js`'s ordinary contract (its own `id="ts-ds-access"`, distinct from the
+   front door's product tabsets). Explore rows and product cards carry each app's **lenses**
+   (products.yml `lenses:`) as suffix icons, with a key under the landing page's Explore heading.
 4. **The generator checks its own output.** `Catalog#unlisted_endpoints` compares every URL in the
    record's `distributions[]` and `registrations[]` against the rows actually rendered and warns at
    build on any that reach no Access row. It caught two legacy ERDDAP ids that carry no `format`
@@ -937,7 +964,10 @@ measurement or a dataset page all reuse rather than each spelling out its own ve
   plugin sets it, else derives it from the way's `name`.
 - **`_includes/licence_chip.html` (D5, Ben's 2026-09-15 revision)** — one glyph (`#i-licence`), one
   colour, on every chip; only the text and the shade vary (`unstated` dimmed, dashed). Never prints
-  a raw license id.
+  a raw license id. Its size param is `chip_size`, not `size` — found while WS-R4 placed it on 16
+  rows + the dataset head: Liquid's dot lookup special-cases the literal key `size` on anything
+  Hash-like, so `include.size` always returned the include tag's own param COUNT (every chip grew a
+  bogus `cc-chip-lic-3` class), never a param actually named `size`.
 - **`_includes/icons_round2.html`** — the round 2 sprite (`#i-licence`, `#i-copy`), included once at
   the top of `<body>`; `brand/v2/icons.css` stays frozen.
 - **`_includes/result_row.html` (D9)** — the one search-result row shape a Species/Measurements

@@ -84,10 +84,17 @@ import argparse, json, re, subprocess, sys
 
 DEFAULT_PATHS = [
     "/",                             # the front door: the section, the numbers, the bento (plan 2026-09-07)
+    "/?q=sardine&tab=species",       # D9 (round 2, WS-R4): a shared link lands on the Species tab
+                                     #   with the box filled and >= 1 .cc-result already rendered
+    "/?q=krill",                     # …and on the Datasets tab, the same box still filters the grid
+                                     #   to the euphausiid row (Ben, 2026-09-15, umbrella D9)
     "/datasets/",
     "/datasets/calcofi_ctd-cast/",   # the big one: 3 ERDDAP ids, 33 variables, a long abstract
     "/datasets/swfsc_ichthyo/",      # 29 distributions, 6 registrations, a bbox beyond the frame
     "/datasets/calcofi_prodo/",      # a holding: no map, no Access-from-the-release, a long name
+    "/datasets/calcofi_bottle/",     # D2/S1/S2 (round 2, WS-R4): an unstated licence chip, GCMD
+                                     #   keyword leaves, the Access tabset (5 groups, 30 endpoints)
+    "/datasets/cce-lter_euphausiids/",  # D3: the bio row's own taxa expander (37 taxa, custom licence)
     "/species/",                     # the species catalog: search + tree, the matrix, the icicle
     "/species/?panes=matrix",        # the matrix expanded: the tree folds into a vertical pill, never gone
     "/species/?panes=matrix&q=sardine",  # …and a search with a hit shows the tree again (Ben, 2026-09-10)
@@ -170,6 +177,13 @@ PROBE = r"""
     };
   }
 
+  // D4/D5 (round 2, WS-R4): the six facet selects, once #ds-q is gone — measured, never asserted
+  // (there is no "right" width), so a future change to the row can see whether they moved
+  const filterSelects = [...d.querySelectorAll(".ds-filter select")];
+  if (filterSelects.length) {
+    out.filterSelectWidths = filterSelects.map(s => ({ id: s.id, w: px(s.getBoundingClientRect().width) }));
+  }
+
   // ── the filter actually hides ───────────────────────────────────────────────
   // `el.hidden` is a UA-stylesheet rule, so ANY author rule that sets `display` beats it — and
   // .cc-card and .ds-row both set `display: flex`. The filter row hid nothing for as long as it
@@ -214,6 +228,29 @@ PROBE = r"""
   if (hero) {
     const kids = [...hero.children].filter(c => c.getBoundingClientRect().height > 0);
     out.hero = { columns: kids.length, heights: kids.map(c => px(c.getBoundingClientRect().height)) };
+  }
+
+  // D2 (round 2, WS-R4): the head wears the same licence chip as a homed row
+  const headLic = d.querySelector(".ds-chips .cc-chip-lic");
+  if (headLic) {
+    out.headLicence = { present: true, text: headLic.textContent.replace(/\s+/g, " ").trim() };
+  }
+
+  // S1: a keyword chip's title is the full GCMD path, its text the leaf after the last ">" — scoped
+  // to the Keywords row specifically (.ds-kw is reused for the Coverage variables list too, whose
+  // chips carry their OWN, unrelated title)
+  const kwChips = [...d.querySelectorAll(".ds-kw-keywords .cc-chip[title]")];
+  if (kwChips.length) {
+    out.keywordChips = kwChips.map(c => ({ text: c.textContent.trim(), title: c.getAttribute("title") }));
+  }
+
+  // S2: Access as a tabset — one panel per group, exactly one shown
+  const dsAccess = d.getElementById("ts-ds-access");
+  if (dsAccess) {
+    const tabs = dsAccess.querySelectorAll(".tabrow > button").length;
+    const panels = dsAccess.querySelectorAll(".tabpanel").length;
+    const shown = [...dsAccess.querySelectorAll(".tabpanel")].filter(p => !p.hidden).length;
+    out.dsAccessTabset = { tabs, panels, shown };
   }
   // any two-column region between the head band and Cite
   const cite = d.getElementById("cite");
@@ -398,6 +435,33 @@ PROBE = r"""
   // the DATA section's height, so the front door cannot quietly grow (plan § Risks)
   const dataSec = d.getElementById("datasets");
   if (dataSec) out.dataSectionH = px(dataSec.getBoundingClientRect().height);
+
+  // ── D1–D5, D9 (round 2, WS-R4): the homed row, the one search box ──────────
+  if (dataSec) {
+    const homed = [...dataSec.querySelectorAll(".ds-row-dataset")];
+    out.homedRows = {
+      n: homed.length,
+      // D1: the format phrase is gone from every homed row (the Format filter and the dataset
+      // page keep it — data-fmt stays on the <li> for the select, checked separately below)
+      dsFmt: dataSec.querySelectorAll(".ds-row-dataset .ds-fmt").length,
+      // D2: the licence chip is the row's LAST element, and its text is never the raw "custom" id
+      licMissing: homed.filter(row => !row.lastElementChild || !row.lastElementChild.classList.contains("cc-chip-lic")).length,
+      licCustomText: homed.filter(row => (row.lastElementChild || {}).textContent === "custom").length,
+      // D3: a drawn expander is never empty (self-consistent with n_var/n_taxa > 0 gating the
+      // template; the source record is cross-checked in Python from the SAME datasets.json)
+      varsTotal: dataSec.querySelectorAll(".ds-vars").length,
+      varsEmpty: [...dataSec.querySelectorAll(".ds-vars")].filter(v => !v.querySelector(".chips .cc-chip")).length
+    };
+    // D4/D5 (umbrella D9): exactly one input[type=search] in the whole data section, full width
+    const searches = [...dataSec.querySelectorAll('input[type="search"]')];
+    const doorBox = d.getElementById("door-search");
+    out.doorSearch = {
+      n: searches.length,
+      hasDsQ: !!d.getElementById("ds-q"),
+      boxW: doorBox ? px(doorBox.getBoundingClientRect().width) : null,
+      containerW: doorBox ? px(doorBox.closest(".cc-container").getBoundingClientRect().width) : null
+    };
+  }
 
   // the band's two counted things are doors now
   out.bandLinks = [...d.querySelectorAll(".nums > div")]
@@ -760,7 +824,23 @@ PROBE = r"""
       const search = {};
       TERMS.reduce((p, t) => p.then(() => type(t)).then(() => { search[t] = readOut(); }),
                    Promise.resolve())
-        .then(() => { dq.value = ""; out.search = search; resolve(out); })
+        // D9: "sardine" also renders into the Species tab's own result panel (assets/door-search.js
+        // keeps both panels in sync regardless of which tab is currently showing)
+        .then(() => type("sardine"))
+        .then(() => {
+          const sp = d.getElementById("door-species-results");
+          out.doorPanels = { sardineSpeciesResults: sp ? sp.querySelectorAll(".cc-result").length : null };
+        })
+        // D4/D5: "krill" still filters the Datasets grid exactly as #ds-q used to, now driven by
+        // the same #door-q
+        .then(() => type("krill"))
+        .then(() => {
+          const grid = d.getElementById("ds-grid");
+          out.doorPanels.krillRowsShown = grid
+            ? [...grid.querySelectorAll(".ds-row-dataset")].filter(row => !row.hidden).map(row => row.getAttribute("data-key"))
+            : null;
+        })
+        .then(() => { dq.value = ""; dq.dispatchEvent(new w.Event("input", { bubbles: true })); out.search = search; resolve(out); })
         .catch(e => { out.search = { error: String(e) }; resolve(out); });
     }, 1200);
   });
@@ -824,7 +904,12 @@ CARD_TABSETS = ("ts-explore", "ts-access")
 # dark at 1470 (3,100 on unmodified main): D7's accepted +104 plus 21 px from what main and the
 # record have gained since, not a screen. Every PR since the release had failed here on main's own
 # height, which is the drift this number exists to catch in a PR, not in main.
-DATA_SECTION_BASE = 3099
+# Re-measured 2026-09-15 (round 2, WS-R4, D1–D5/D9) on round-2's own tip (ea5e385, v2026.09.11
+# record) before this workstream's changes: 3,117 px light at 1470. After (this branch): 2,948 px —
+# a 169 px DECREASE, not a growth: D1 drops the format phrase from every homed row, D4/D5 drop the
+# catalog's own #ds-q field and both per-tab search boxes on the front door (their own idxtab-form
+# input + link row), more than the D3 variables/taxa expander (closed by default) adds back.
+DATA_SECTION_BASE = 2948
 DATA_SECTION_GROWTH = 120
 
 _PROBED = {}          # pin hrefs answered once per run, not per width and theme
@@ -865,6 +950,11 @@ def check(path, r, width, theme, fails, notes):
         if width <= 400 and g["columns"] != 1:
             fails.append(f"{where}: grid is {g['columns']} columns, expected 1")
 
+    fsw = r.get("filterSelectWidths")
+    if fsw:
+        notes.append(f"{where}: filter selects " +
+                     " · ".join(f"{s['id']}={s['w']}px" for s in fsw))
+
     f = r.get("filter")
     if f:
         notes.append(f"{where}: filter {f['category']!r} -> {f['tilesShown']} tile(s) shown")
@@ -887,6 +977,32 @@ def check(path, r, width, theme, fails, notes):
             fails.append(f"{where}: hero columns end {gap}px apart ({hero['heights']}), max {MAX_HERO_GAP}")
     if r.get("twoCol"):
         fails.append(f"{where}: two-column region(s) between the head and Cite: {r['twoCol']}")
+
+    # D2 S1 S2 (round 2, WS-R4): the dataset page's own licence chip, keyword leaves, Access tabset
+    hl = r.get("headLicence")
+    if hl:
+        notes.append(f"{where}: head licence chip {hl['text']!r}")
+        if hl["text"] == "custom":
+            fails.append(f"{where}: the head licence chip reads the raw 'custom' id (D5)")
+
+    kw = r.get("keywordChips")
+    if kw:
+        notes.append(f"{where}: {len(kw)} keyword leaf chip(s)")
+        for c in kw:
+            if not c["title"]:
+                fails.append(f"{where}: keyword chip {c['text']!r} has no title (S1)")
+            # a holding's own keywords are flat phrases, no ">" — leaf == full path there by
+            # construction, never re-cased (kw_leaf); only a real GCMD path must shorten
+            elif ">" in c["title"] and c["text"] == c["title"]:
+                fails.append(f"{where}: keyword chip {c['text']!r} shows the full GCMD path, not the leaf (S1)")
+
+    at = r.get("dsAccessTabset")
+    if at:
+        notes.append(f"{where}: Access tabset {at['tabs']} tab(s), {at['panels']} panel(s), {at['shown']} shown")
+        if at["tabs"] != at["panels"]:
+            fails.append(f"{where}: Access has {at['tabs']} tab(s) but {at['panels']} panel(s) (S2)")
+        if at["shown"] != 1:
+            fails.append(f"{where}: Access shows {at['shown']} panel(s) at once, expected 1 (S2)")
 
     if width <= 400:
         for u in r.get("urls", []):
@@ -1485,6 +1601,12 @@ def check(path, r, width, theme, fails, notes):
                 pill = int(str(t["pill"] or "0").replace(",", ""))
                 if pill != t["cards"]:
                     fails.append(f"{where}: {ts['id']} tab {t['id']!r} says {pill} but its panel holds {t['cards']} cards")
+        # D9: a `?tab=` on the URL lands with THAT tab already selected (tabs.js's data-url-tab
+        # restore) — checked wherever a probed path names one
+        if ts["id"] == "ts-datasets":
+            m = re.search(r"[?&]tab=([^&]+)", path)
+            if m and sel and sel[0]["id"] != m.group(1):
+                fails.append(f"{where}: ?tab={m.group(1)!r} on the URL but {sel[0]['id']!r} is selected")
 
     # ── the one search over the three indexes ──────────────────────────────────────────────────
     # "sardine" is a species, "nitrate" a measurement AND a dataset's variables, "CUFES" a dataset;
@@ -1510,6 +1632,46 @@ def check(path, r, width, theme, fails, notes):
                          f"NERC ids and no release has one yet (WS-M2/M3)")
     elif se:
         fails.append(f"{where}: the door search errored: {se['error']}")
+
+    # ── D1–D5 (round 2, WS-R4): the homed row and the one search box ─────────────────────────────
+    hr = r.get("homedRows")
+    if hr:
+        notes.append(f"{where}: {hr['n']} homed row(s), {hr['varsTotal']} with a variables/taxa "
+                     f"expander")
+        if hr["dsFmt"]:
+            fails.append(f"{where}: {hr['dsFmt']} homed row(s) still draw .ds-fmt (D1)")
+        if hr["licMissing"]:
+            fails.append(f"{where}: {hr['licMissing']} homed row(s) have no .cc-chip-lic as their "
+                         f"last column (D2)")
+        if hr["licCustomText"]:
+            fails.append(f"{where}: {hr['licCustomText']} homed row(s) show the raw 'custom' id — "
+                         f"never on a page (D5)")
+        if hr["varsEmpty"]:
+            fails.append(f"{where}: {hr['varsEmpty']} .ds-vars expander(s) draw no chips (D3)")
+        if hr["n"] and not hr["varsTotal"]:
+            fails.append(f"{where}: {hr['n']} homed row(s) and none has a variables/taxa expander (D3)")
+
+    ds = r.get("doorSearch")
+    if ds:
+        notes.append(f"{where}: {ds['n']} input[type=search] in #datasets "
+                     f"({ds['boxW']}px of {ds['containerW']}px container)")
+        if ds["n"] != 1:
+            fails.append(f"{where}: {ds['n']} input[type=search] inside #datasets, expected exactly 1 (D4/D5)")
+        if ds["hasDsQ"]:
+            fails.append(f"{where}: #ds-q still exists — the catalog's own search box was supposed to go (D4/D5)")
+
+    dp = r.get("doorPanels")
+    if dp:
+        notes.append(f"{where}: 'sardine'→{dp['sardineSpeciesResults']} .cc-result(s) in the Species "
+                     f"panel; 'krill' grid rows shown: {dp['krillRowsShown']}")
+        if not dp["sardineSpeciesResults"]:
+            fails.append(f"{where}: '?q=sardine' on the Species tab rendered no .cc-result (D9)")
+        if dp["krillRowsShown"] is not None:
+            if not dp["krillRowsShown"]:
+                fails.append(f"{where}: 'krill' filtered the grid to zero rows (D4/D5)")
+            elif not any("euphausi" in k for k in dp["krillRowsShown"]):
+                fails.append(f"{where}: 'krill' did not filter the grid to the euphausiid row(s) "
+                             f"(shown: {dp['krillRowsShown']})")
 
 
 def main():
