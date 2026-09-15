@@ -45,6 +45,9 @@ include:
   - stac/assets/_commonjsHelpers-CE1G-McA.js
   - stac/assets/__vite-browser-external-B1O5LaIO.js
   - "stac/assets/_*"
+  # the round-2 idioms contract page (plan D1/D2/D5/D6, WS-R1) — the rest of _test/ (fixtures,
+  # the .py/.rb test tooling) stays excluded; only this one page needs to be served
+  - _test/round2_idioms.html
 exclude:
   - README.md
   - LICENSE

@@ -1,0 +1,119 @@
+{%- comment -%}
+  The ways-in tabset (plan D2, applies M12/S2/P3): the app ways (Explorer, db-query — tools you
+  OPEN, so they are buttons, the first solid the rest ghost) then ONE shared tabset over the code
+  routes, in the fixed order erddap · parquet · r · python · json, one panel per group PRESENT. A
+  single group renders no tab row — the one panel shows with nothing to switch. No `data-url-tab`:
+  assets/tabs.js's `?tab=` memory belongs to the page's FIRST tabset that carries that attribute
+  only (R1's gate), and a page can carry this tabset alongside another (R3's methods tabset) that
+  does own the URL.
+
+  `group` rides on each way once R3/R5's plugins compute it (`page.ways[].group`). Until then this
+  include derives it from `w.name` — today's `ways()` (_plugins/measurements.rb) names:
+      "Explorer" / "Explorer · …" / "db-query"  -> app     (button, not a tab)
+      "ERDDAP · …"                                -> erddap
+      "Parquet"                                   -> parquet
+      "R"                                          -> r
+      "Python"                                     -> python
+      "…JSON…" (a future "this page as data" way)  -> json
+  A way whose name matches none of these and carries no explicit `group` is dropped rather than
+  guessed into the wrong tab.
+
+  Each row is the mockup's `.way`: name + about on one line, the URL on its own mono line elided
+  from the middle by `text-overflow` (style.css), with a copy button on `assets/copy.js`'s
+  `data-copy` contract (class `cc-copy`, icon `#i-copy` from icons_round2.html). A `code` way (R,
+  Python, Parquet) renders a `<pre>` instead of a URL line.
+
+  include ways_tabs.html ways=page.ways
+{%- endcomment -%}
+{%- assign has_erddap  = false -%}
+{%- assign has_parquet = false -%}
+{%- assign has_r       = false -%}
+{%- assign has_python  = false -%}
+{%- assign has_json    = false -%}
+{%- for w in include.ways -%}
+  {%- assign g = w.group -%}
+  {%- unless g -%}
+    {%- if w.name contains "Explorer" or w.name == "db-query" -%}{%- assign g = "app" -%}
+    {%- elsif w.name contains "ERDDAP" -%}{%- assign g = "erddap" -%}
+    {%- elsif w.name contains "Parquet" -%}{%- assign g = "parquet" -%}
+    {%- elsif w.name contains "Python" -%}{%- assign g = "python" -%}
+    {%- elsif w.name contains "JSON" -%}{%- assign g = "json" -%}
+    {%- elsif w.name == "R" -%}{%- assign g = "r" -%}
+    {%- endif -%}
+  {%- endunless -%}
+  {%- if g == "erddap" -%}{%- assign has_erddap = true -%}
+  {%- elsif g == "parquet" -%}{%- assign has_parquet = true -%}
+  {%- elsif g == "r" -%}{%- assign has_r = true -%}
+  {%- elsif g == "python" -%}{%- assign has_python = true -%}
+  {%- elsif g == "json" -%}{%- assign has_json = true -%}
+  {%- endif -%}
+{%- endfor -%}
+{%- assign group_count = 0 -%}
+{%- if has_erddap  -%}{%- assign group_count = group_count | plus: 1 -%}{%- endif -%}
+{%- if has_parquet -%}{%- assign group_count = group_count | plus: 1 -%}{%- endif -%}
+{%- if has_r       -%}{%- assign group_count = group_count | plus: 1 -%}{%- endif -%}
+{%- if has_python  -%}{%- assign group_count = group_count | plus: 1 -%}{%- endif -%}
+{%- if has_json    -%}{%- assign group_count = group_count | plus: 1 -%}{%- endif -%}
+
+{%- assign app_i = 0 -%}
+{%- for w in include.ways -%}
+  {%- assign g = w.group -%}
+  {%- unless g -%}{%- if w.name contains "Explorer" or w.name == "db-query" -%}{%- assign g = "app" -%}{%- endif -%}{%- endunless -%}
+  {%- if g == "app" -%}
+    {%- assign app_i = app_i | plus: 1 -%}
+    <a class="cc-btn {% if app_i == 1 %}cc-btn-primary{% else %}cc-btn-ghost{% endif %}" href="{{ w.url }}" rel="external">{{ w.name | escape }}</a>
+  {%- endif -%}
+{%- endfor -%}
+
+{%- if group_count > 0 -%}
+<div class="tabset">
+  {%- if group_count > 1 -%}
+  <div class="tabrow" role="tablist">
+    {%- assign shown = false -%}
+    {%- if has_erddap -%}<button type="button" role="tab" data-tab="erddap" aria-selected="{% unless shown %}true{% assign shown = true %}{% else %}false{% endunless %}">ERDDAP</button>{%- endif -%}
+    {%- if has_parquet -%}<button type="button" role="tab" data-tab="parquet" aria-selected="{% unless shown %}true{% assign shown = true %}{% else %}false{% endunless %}">Parquet</button>{%- endif -%}
+    {%- if has_r -%}<button type="button" role="tab" data-tab="r" aria-selected="{% unless shown %}true{% assign shown = true %}{% else %}false{% endunless %}">R</button>{%- endif -%}
+    {%- if has_python -%}<button type="button" role="tab" data-tab="python" aria-selected="{% unless shown %}true{% assign shown = true %}{% else %}false{% endunless %}">Python</button>{%- endif -%}
+    {%- if has_json -%}<button type="button" role="tab" data-tab="json" aria-selected="{% unless shown %}true{% assign shown = true %}{% else %}false{% endunless %}">JSON</button>{%- endif -%}
+  </div>
+  {%- endif -%}
+  {%- assign drawn = false -%}
+  {%- assign gids = "erddap,parquet,r,python,json" | split: "," -%}
+  {%- for gid in gids -%}
+    {%- assign want = false -%}
+    {%- if gid == "erddap" and has_erddap -%}{%- assign want = true -%}
+    {%- elsif gid == "parquet" and has_parquet -%}{%- assign want = true -%}
+    {%- elsif gid == "r" and has_r -%}{%- assign want = true -%}
+    {%- elsif gid == "python" and has_python -%}{%- assign want = true -%}
+    {%- elsif gid == "json" and has_json -%}{%- assign want = true -%}
+    {%- endif -%}
+    {%- if want -%}
+    <div class="tabpanel" data-panel="{{ gid }}"{% if drawn %} hidden{% endif %}>
+      {%- assign drawn = true -%}
+      {%- for w in include.ways -%}
+        {%- assign g = w.group -%}
+        {%- unless g -%}
+          {%- if w.name contains "ERDDAP" -%}{%- assign g = "erddap" -%}
+          {%- elsif w.name contains "Parquet" -%}{%- assign g = "parquet" -%}
+          {%- elsif w.name contains "Python" -%}{%- assign g = "python" -%}
+          {%- elsif w.name contains "JSON" -%}{%- assign g = "json" -%}
+          {%- elsif w.name == "R" -%}{%- assign g = "r" -%}
+          {%- endif -%}
+        {%- endunless -%}
+        {%- if g == gid -%}
+        <div class="way">
+          <div class="l1"><b>{{ w.name | escape }}</b>{% if w.about %}<span>{{ w.about | escape }}</span>{% endif %}</div>
+          {%- if w.url -%}
+          <div class="url"><span>{{ w.url }}</span><button class="cc-copy" type="button" data-copy="{{ w.url | escape }}" aria-label="Copy the URL of {{ w.name | escape }}"><svg aria-hidden="true"><use href="#i-copy"/></svg></button></div>
+          {%- endif -%}
+          {%- if w.code -%}
+          <pre>{{ w.code | escape }}</pre>
+          {%- endif -%}
+        </div>
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+    {%- endif -%}
+  {%- endfor -%}
+</div>
+{%- endif -%}

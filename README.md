@@ -918,3 +918,36 @@ map apps render H3/WebGL hexagon layers that Playwright's bundled Chromium
 leaves blank (override with `SHOT_BROWSER=chromium`). After capture it checks
 that a `_dark` image is actually dark and a `_light` one light: a failure means
 the product ignored `?theme=` — fix the product, do not commit the image.
+
+## Round 2 idioms
+
+Six shared components (plan "faces round 2", § Decisions D1, D2, D5, D6) that a species, a
+measurement or a dataset page all reuse rather than each spelling out its own version:
+
+- **`_includes/info.html` + `assets/info.js`** — the pill + ⓘ idiom (D1): `<details class="cc-info">`
+  holding a popover (`.cc-pop`, a bottom sheet under 640 px); `info.js` keeps one open at a time,
+  closes on an outside click or Escape. `defer`-loaded on every page from `_layouts/default.html`.
+- **`assets/tabs.js`'s `data-url-tab` gate (D2)** — the `?tab=` URL memory belongs to ONE tabset per
+  page, the one carrying `data-url-tab` (today: the front door's). Every other tabset (the ways-in
+  tabset, a future methods tabset) switches locally and never touches the URL, on write **or**
+  restore.
+- **`_includes/ways_tabs.html` (D2)** — the ways-in tabset: app ways (Explorer, db-query) as
+  buttons, then one shared tabset over the code routes (erddap · parquet · r · python · json, one
+  panel per group present, no tab row for a single group). Reads `page.ways[].group` where a
+  plugin sets it, else derives it from the way's `name`.
+- **`_includes/licence_chip.html` (D5, Ben's 2026-09-15 revision)** — one glyph (`#i-licence`), one
+  colour, on every chip; only the text and the shade vary (`unstated` dimmed, dashed). Never prints
+  a raw license id.
+- **`_includes/icons_round2.html`** — the round 2 sprite (`#i-licence`, `#i-copy`), included once at
+  the top of `<body>`; `brand/v2/icons.css` stays frozen.
+- **`_includes/result_row.html` (D9)** — the one search-result row shape a Species/Measurements
+  search panel and `/species/`'s Matches list both render (`{n, c, it, m, u}`, the same shape
+  `assets/door-search.js`'s `rowsFrom()` already normalises a hit to).
+- **The source badges + legend (D6)** — `.cc-src.cc-src-{nerc,rec,why,wp}` (a superscript letter
+  after a sentence part, `title` the source) and `.cc-legend1` (one line of swatches), replacing a
+  page's own underline-and-legend idiom.
+
+All six render once on `_test/round2_idioms.html` (`sitemap: false`, `robots: noindex`; whitelisted
+in `_config.yml`'s `include:` since `_test/` is otherwise dropped like every `_`-prefixed path) —
+`scripts/check_layout.py --url http://localhost:4000/_test/round2_idioms.html` and
+`scripts/check_brand.py --url` the same run against it.

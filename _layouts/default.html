@@ -29,8 +29,16 @@
     every parameter it does not own. `?tab=` has to be read before that happens.
   {%- endcomment -%}
   <script defer src="{{ '/assets/tabs.js' | relative_url }}"></script>
+  {%- comment -%}
+    The pill + ⓘ idiom (plan D1, WS-R1): one <details class="cc-info"> open at a time, closed by
+    an outside click or Escape. 2 KB, no dependency — deferred like tabs.js, on every page.
+  {%- endcomment -%}
+  <script defer src="{{ '/assets/info.js' | relative_url }}"></script>
   <link rel="stylesheet" href="{{ '/style.css' | relative_url }}">
   <link rel="stylesheet" href="{{ '/assets/feedback.css' | relative_url }}">
+  {%- if page.robots %}
+  <meta name="robots" content="{{ page.robots }}">
+  {%- endif %}
 
   {% if jekyll.environment == "production" %}
   <!-- Google tag (gtag.js) -->
@@ -49,6 +57,12 @@
   {% endif %}
 </head>
 <body>
+
+{%- comment -%}
+  Round 2's own two-symbol sprite (plan D5, D2, WS-R1): #i-licence, #i-copy. Inline, included
+  once, at the top of <body> — brand/v2/icons.css stays frozen (the round-2 gate).
+{%- endcomment -%}
+{%- include icons_round2.html %}
 
 <div id="layout">
 
