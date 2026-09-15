@@ -84,11 +84,16 @@
     });
   });
 
-  // restore ?tab= on load — the first tabset that owns a panel of that id wins
+  // restore ?tab= on load — ONLY a .tabset[data-url-tab] may be restored from the URL (today: the
+  // front door's first tabset). A second tabset on a page (the ways-in tabset, a methods tabset)
+  // never carries data-url-tab, so it is never a candidate here even if one of its own panel ids
+  // happens to match the URL's ?tab= value — the memory belongs to one tabset, not to whichever
+  // happens to have a matching panel (plan D2; WS-R1's gate).
   try {
     var want = new URL(window.location.href).searchParams.get(PARAM);
     if (want) {
       for (var i = 0; i < sets.length; i++) {
+        if (!sets[i].hasAttribute("data-url-tab")) continue;
         if (sets[i].querySelector('.tabpanel[data-panel="' + window.CSS.escape(want) + '"]')) {
           select(sets[i], want);
           break;

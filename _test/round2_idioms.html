@@ -1,0 +1,101 @@
+---
+layout: default
+title: "Round 2 idioms — contract page"
+description: "Not a real page: renders every round-2 idiom (D1, D2, D5, D6) once, for scripts/check_layout.py and scripts/check_brand.py."
+permalink: /_test/round2_idioms.html
+sitemap: false
+robots: noindex
+ways:
+  - name: "Explorer"
+    about: "maps, sections and time series — opens prefilled"
+    url: "https://calcofi.io/explore/?var=temperature"
+  - name: "db-query"
+    about: "SQL in your browser — the shell opens with this query"
+    url: "https://calcofi.io/db-query/?sql=SELECT+1"
+    sql: "SELECT 1"
+  - name: "ERDDAP · Hydrographic Bottle"
+    about: "CalCOFI's own server, this series constrained"
+    url: "https://erddap.calcofi.io/erddap/tabledap/calcofi_bottle.html?&measurement_type=%22temperature%22"
+  - name: "ERDDAP · CTD Cast Files"
+    about: "the CTD table, constrained to this series"
+    url: "https://erddap.calcofi.io/erddap/tabledap/calcofi_ctd.html?&measurement_type=%22temperature_ave%22"
+  - name: "Parquet"
+    about: "obs_env, partitioned by measurement_type"
+    code: "SELECT * FROM read_json('…/v2026.09.11/catalog.json')\n-- objects[] WHERE table = 'obs_env'"
+  - name: "R"
+    code: "library(calcofi4r)\ncon <- cc_get_db()\ntbl(con, \"obs_env\") |> filter(measurement_type == \"temperature\")"
+  - name: "Python"
+    code: "import calcofi4py as cc\ncon = cc.cc_get_db()\ncon.sql(\"SELECT * FROM obs_env WHERE measurement_type = 'temperature'\").df()"
+---
+{%- comment -%}
+  _test/round2_idioms.html — NOT a real page (front matter `sitemap: false`, `robots: noindex`;
+  `_config.yml`'s `include:` whitelists this one file so Jekyll serves it, since `_test/` is
+  otherwise dropped like every `_`-prefixed path). Renders each WS-R1 idiom once, so
+  `scripts/check_layout.py --url http://localhost:4000/_test/round2_idioms.html` and
+  `scripts/check_brand.py` have one page to check them all on (plan § Verification R1).
+{%- endcomment -%}
+<section class="cc-band round2-idioms-page">
+  <div class="cc-container">
+    <div class="cc-eyebrow">WS-R1 · contract page, not a real page</div>
+    <h1 class="cc-h1">Round 2 idioms</h1>
+    <p class="blurb">Every idiom D1, D2, D5 and D6 build, rendered once: the ⓘ (open and closed), two tabsets, the
+      four licence chip states, the four source badges in a sentence, the one-line legend, the ways-in tabset fed
+      by a literal array, and three search-result rows.</p>
+
+    <h2 class="cc-h2">Pill + ⓘ (D1)</h2>
+    <p>A closed one:
+      {%- capture closed_body -%}
+      <p>The popover holds the whole paragraph, verbatim — nothing a reader who opens it loses versus a bar that
+        was always on screen.</p>
+      {%- endcapture -%}
+      {%- include info.html label="What flagged means" body=closed_body -%}
+      and an open one (for the screenshot only — a real page never pre-opens one):
+      <details class="cc-info" open><summary aria-label="Where the definition comes from">i</summary><div class="cc-pop cc-pop-r"><p>NERC Vocabulary Server, P01 <a href="http://vocab.nerc.ac.uk/collection/P01/current/TEMPPR01/" rel="external">TEMPPR01</a> · CC BY 4.0.</p></div></details>
+    </p>
+
+    <h2 class="cc-h2">Two tabsets (D2)</h2>
+    <p class="blurb">The first carries <code>data-url-tab</code> (today: the front door's contract); the second —
+      the ways-in tabset below — never does, so clicking its tabs never rewrites <code>?tab=</code>
+      (assets/tabs.js's gate). Switching one never moves the other, and arrow keys stay inside whichever
+      tablist has focus.</p>
+    <div class="tabset" id="ts-demo" data-url-tab>
+      <div class="tabrow" role="tablist">
+        <button type="button" role="tab" data-tab="a" aria-selected="true">Panel A</button>
+        <button type="button" role="tab" data-tab="b" aria-selected="false">Panel B</button>
+      </div>
+      <div class="tabpanel" data-panel="a">Panel A's content — this tabset owns <code>?tab=</code>.</div>
+      <div class="tabpanel" data-panel="b" hidden>Panel B's content.</div>
+    </div>
+
+    <h2 class="cc-h2">Licence chips (D5) — one glyph, one colour</h2>
+    <p class="blurb">Same <code>#i-licence</code> glyph, same ink on every chip; only the shade changes for
+      <code>unstated</code> (dimmed, dashed).</p>
+    <p>
+      {%- include licence_chip.html license="CC-BY-4.0" license_url="https://creativecommons.org/licenses/by/4.0/" -%}
+      {%- include licence_chip.html license="CC0-1.0" license_url="https://creativecommons.org/publicdomain/zero/1.0/" -%}
+      {%- include licence_chip.html license="custom" license_url="https://example.org/terms" -%}
+      {%- include licence_chip.html license="" -%}
+    </p>
+
+    <h2 class="cc-h2">Source badges + legend (D6)</h2>
+    <p>Temperature<span class="cc-src cc-src-nerc" title="NERC Vocabulary Server, P01 TEMPPR01">N</span> sets the
+      water's density.<span class="cc-src cc-src-rec" title="the release record, measured at v2026.09.11">R</span>
+      Off California the warm years are El Niño years.<span class="cc-src cc-src-why" title="authored, cited: Bond et al. 2015">C</span>
+      <i>Sardinops</i> is a genus of sardines.<span class="cc-src cc-src-wp" title="Wikipedia, “Sardinops” · CC BY-SA 4.0">W</span></p>
+    <div class="cc-legend1">
+      <span><i class="sw" style="background:var(--accent-bg)"></i>N · NERC</span>
+      <span><i class="sw" style="background:var(--ok-bg)"></i>R · the record</span>
+      <span><i class="sw" style="background:var(--warn-bg)"></i>C · cited</span>
+      <span><i class="sw" style="background:var(--na-bg)"></i>W · Wikipedia</span>
+      <span><i class="ln"></i>trend</span>
+    </div>
+
+    <h2 class="cc-h2">Ways-in tabset (D2), fed by a literal array</h2>
+    {%- include ways_tabs.html ways=page.ways -%}
+
+    <h2 class="cc-h2">Result rows (D9)</h2>
+    {%- include result_row.html n="Sardinops sagax" it=true c="Pacific sardine (pilchard)" m="Species · 23,969 obs · 2 datasets" u="/species/worms-217452/" -%}
+    {%- include result_row.html n="Sardinops" it=true m="Genus · 23,969 obs · 2 datasets" u="/species/worms-125599/" -%}
+    {%- include result_row.html n="Alosidae" m="Family · 24,412 obs · 3 datasets" u="/species/worms-125596/" -%}
+  </div>
+</section>

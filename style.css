@@ -1816,3 +1816,104 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
   .mmf-col-fig { grid-template-columns: 74px minmax(0, 1fr); }
   .mmf-sent { font-size: 15px; }
 }
+
+/* ── round 2 · idioms (WS-R1) ─────────────────────────────────────────────────
+   Six idioms every other round-2 workstream reuses (plan 2026-09-15 § Decisions D1, D2, D5, D6):
+   the ⓘ pop, the source badges, the one-line legend, the licence chip, the ways-in row, the
+   search-result row. `.tabset`/`.tabrow`/`.tabpanel` already exist above (the front door's three
+   indexes) and are reused as-is; only what they lack (panel top padding) is added here. */
+
+/* the pill + ⓘ idiom (D1): assets/info.js keeps one open, closes on outside click / Escape */
+.cc-info { display: inline-block; position: relative; }
+.cc-info > summary {
+  list-style: none; display: inline-grid; place-items: center; width: 18px; height: 18px;
+  border-radius: 50%; border: 1.5px solid var(--muted); color: var(--muted);
+  font: 700 11px/1 var(--sans); cursor: pointer; vertical-align: -3px; user-select: none;
+}
+.cc-info > summary::-webkit-details-marker { display: none; }
+.cc-info > summary:hover, .cc-info[open] > summary { border-color: var(--accent); color: var(--accent); }
+.cc-info .cc-pop {
+  position: absolute; z-index: 30; left: 0; top: 24px; width: min(360px, 84vw);
+  background: var(--panel-2); color: var(--fg); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 12px 14px; font: 13.5px/1.45 var(--sans); box-shadow: 0 6px 24px rgba(0, 0, 0, 0.14);
+  text-transform: none; letter-spacing: 0; font-weight: 400;
+}
+.cc-info .cc-pop.cc-pop-r { left: auto; right: 0; }
+.cc-info .cc-pop code { font-family: var(--mono); font-size: 0.92em; }
+.cc-info .cc-pop p { margin: 0 0 0.6em; max-width: none; }
+.cc-info .cc-pop p:last-child { margin: 0; }
+@media (max-width: 640px) {
+  /* a bottom sheet: the pop is easier to reach and read than a small floating card on a phone */
+  .cc-info .cc-pop {
+    position: fixed; left: 8px; right: 8px; bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+    top: auto; width: auto; max-height: 60vh; overflow: auto;
+  }
+  .cc-info .cc-pop.cc-pop-r { right: 8px; }
+}
+
+/* the tabset idiom (D2): assets/tabs.js's contract, unchanged. The front door's .tabset/.tabrow/
+   .tabpanel[hidden] above already carry the look; the ways tabset (_includes/ways_tabs.html) and
+   every other round-2 tabset reuse them as-is. Only a shown panel's own top space was missing. */
+.tabpanel { padding: 10px 0 0; }
+
+/* the ways-in row (D2, _includes/ways_tabs.html): one row per endpoint, its URL elided from the
+   middle rather than wrapped, a copy button on assets/copy.js's contract */
+.way { display: flex; flex-direction: column; gap: 6px; font-size: 14px; margin: 0 0 14px; }
+.way:last-child { margin-bottom: 0; }
+.way .l1 { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: baseline; }
+.way .l1 b { font-weight: 700; }
+.way .l1 span { color: var(--muted); font-size: 13px; }
+.way .url { display: flex; align-items: center; gap: 8px; font: 12.5px var(--mono); color: var(--accent); min-width: 0; }
+.way .url span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.way pre { margin: 0; overflow-x: auto; font: 12.5px var(--mono); background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 12px; }
+.way .cc-copy { flex: none; }
+.way .cc-copy svg { width: 13px; height: 13px; fill: currentColor; }
+
+/* the source badges (D6, M5/P1): a superscript letter after a sentence part, its hover the legend
+   the sentence used to spell out in full every time */
+.cc-src {
+  display: inline-grid; place-items: center; min-width: 15px; height: 15px; padding: 0 3px;
+  border-radius: 3px; font: 700 9.5px/1 var(--sans); letter-spacing: 0.04em; vertical-align: super;
+  margin-left: 1px; cursor: help;
+}
+.cc-src-nerc { background: var(--accent-bg); color: var(--accent); }
+.cc-src-rec  { background: var(--ok-bg);     color: var(--cc-green); }
+.cc-src-why  { background: var(--warn-bg);   color: var(--warn); }
+.cc-src-wp   { background: var(--na-bg);     color: var(--muted); }
+
+/* the one-line legend (D6): swatches only, no paragraph beside them */
+.cc-legend1 { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12.5px; color: var(--muted); align-items: center; margin-top: 6px; }
+.cc-legend1 .sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; vertical-align: -1px; margin-right: 5px; }
+.cc-legend1 .ln { display: inline-block; width: 16px; border-top: 2px dashed var(--fg); vertical-align: middle; margin-right: 5px; }
+
+/* the licence chip (D5, Ben Q2 revision — _includes/licence_chip.html): ONE glyph, ONE colour on
+   every chip (the base .cc-chip ink IS that colour — brand/v2/theme.css); only the shade and the
+   text vary. Never a status colour, never a second glyph, never the raw id. */
+.cc-chip-lic { display: inline-flex; align-items: center; gap: 5px; }
+.cc-chip-lic svg { width: 13px; height: 13px; flex: none; fill: currentColor; }
+.cc-lic-unstated { opacity: 0.6; border-style: dashed; }
+.cc-chip-lic-md { font-size: 0.85em; padding: 0.15em 0.8em; }
+a.cc-chip-lic:hover { color: var(--accent); border-color: var(--accent); text-decoration: none; }
+
+/* the search-result row (D9, plan D5/I2 — _includes/result_row.html): the one shape the front
+   door's Species/Measurements panels (R4) and /species/'s Matches list (R5) both render; also
+   what assets/door-search.js's rowsFrom() already normalises a hit to. One line at 1470 px, two
+   at 375; the name never truncates, the meta (`.cc-result-m`) yields the line first. */
+.tab { font-variant-numeric: tabular-nums; }
+.cc-result {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; padding: 7px 0;
+  color: var(--fg);
+}
+/* a border BETWEEN rows, never on the first — `+` rather than `:first-child`, since a caller's
+   result list is rarely the first element inside its own container (a search panel's blurb, a
+   heading) */
+.cc-result + .cc-result { border-top: 1px solid var(--border); }
+.cc-result:hover { text-decoration: none; }
+.cc-result:hover .cc-result-n { color: var(--accent); }
+.cc-result-n { font-weight: 700; min-width: 0; }
+.cc-result-c { color: var(--muted); font-size: 0.92em; }
+.cc-result-m { color: var(--muted); font-size: 12.5px; font-family: var(--mono); margin-left: auto; white-space: nowrap; }
+@media (max-width: 480px) {
+  .cc-result { flex-direction: column; align-items: flex-start; gap: 2px; }
+  .cc-result-m { margin-left: 0; white-space: normal; }
+}
