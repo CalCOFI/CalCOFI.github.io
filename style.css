@@ -2072,3 +2072,7 @@ a.cc-chip-lic:hover { color: var(--accent); border-color: var(--accent); text-de
 #sp-matches[hidden] { display: none; }
 .sp-matches-h { font: 600 13px var(--sans); color: var(--muted); margin: 0 0 4px; }
 .sp-matches-list { display: flex; flex-direction: column; }
+
+/* ── round 2 · measurement columns as concepts (Ben, 2026-09-16) ─────────────────────────────
+   left "The measurement", right "The record": one eyebrow each, above the first heading */
+.mm-col-eyebrow { font: 700 11px var(--sans); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin: 0 0 -6px; }

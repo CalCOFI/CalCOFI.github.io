@@ -81,6 +81,7 @@ layout: default
   <div class="cc-container">
     <div class="mm-cols2">
       <div class="mm-col-main">
+        <p class="cc-eyebrow mm-col-eyebrow">The measurement</p>
         {%- comment -%} M13 (WS-R3): the strip's caption paragraph (.mm-note) becomes an ⓘ on the
           heading it captions, text verbatim {%- endcomment -%}
         {%- capture c_measured -%}<p>One row per series, one cell per year, darker with more values — the same strip the front
@@ -181,7 +182,30 @@ layout: default
 
         <h2 class="cc-h3" id="why">Why it matters</h2>
         {% include measurement_why.html face=f %}
-{% endif %}{%- capture c_depth -%}<p>Values per depth band at the release grain, one thin bar per series. The bands are the
+{% endif %}
+      </div>
+
+      <div class="mm-col-ways">
+        <p class="cc-eyebrow mm-col-eyebrow">The record</p>
+        {%- comment -%} M12 (WS-R3): the apps (Explorer, db-query) are buttons because they open
+          something; the code routes are ONE shared tabset (erddap · parquet · r · python · json),
+          fed by `page.ways`'s own `group` (`ways_rows()`). "This page as data" is the json way; the
+          JSON-LD paragraph that used to sit under it moves into an ⓘ on this heading. {%- endcomment -%}
+        {%- capture c_ways -%}<p>Read from <span class="mono">measurements.json</span> of release
+          <a href="{{ '/datasets/release/' | relative_url }}">{{ mm.release.version }}</a>, written at release by
+          <span class="mono">calcofi4db::build_measurements_catalog()</span> beside
+          <span class="mono">taxa.json</span>. The catalog's index is
+          <a href="{{ '/measurements/' | relative_url }}">/measurements/</a>; the JSON-LD on this page is a
+          <span class="mono">schema.org/DefinedTerm</span> in the NERC P01 term set with a
+          <span class="mono">PropertyValue</span> per series.</p>{%- endcapture -%}
+        <h2 class="cc-h3">Ways in {% include info.html label="About this page as data" body=c_ways %}</h2>
+        {% include ways_tabs.html ways=page.ways %}
+
+
+        {%- comment -%} Ben, 2026-09-16: the right column was Ways in + Cite alone, a third of the left. The two
+          columns now read as concepts — left, the measurement (where, its structure, how, why); right, the
+          record (ways in, coverage by depth and month, range and quality, related, cite). {%- endcomment -%}
+        {%- capture c_depth -%}<p>Values per depth band at the release grain, one thin bar per series. The bands are the
           record's own (<span class="mono">0-10</span> … <span class="mono">2000+</span> m).</p>{%- endcapture -%}
         <h2 class="cc-h3">By depth {% include info.html label="About the depth bands" body=c_depth %}</h2>
         <div class="mm-legend" id="mm-depth-legend"></div>
@@ -220,22 +244,6 @@ layout: default
         <h2 class="cc-h3">Related measurements {% include info.html label="Why these are kept separate" body=c_related %}</h2>
         {% include measurement_related.html rows=page.related %}
         {%- endif -%}
-      </div>
-
-      <div class="mm-col-ways">
-        {%- comment -%} M12 (WS-R3): the apps (Explorer, db-query) are buttons because they open
-          something; the code routes are ONE shared tabset (erddap · parquet · r · python · json),
-          fed by `page.ways`'s own `group` (`ways_rows()`). "This page as data" is the json way; the
-          JSON-LD paragraph that used to sit under it moves into an ⓘ on this heading. {%- endcomment -%}
-        {%- capture c_ways -%}<p>Read from <span class="mono">measurements.json</span> of release
-          <a href="{{ '/datasets/release/' | relative_url }}">{{ mm.release.version }}</a>, written at release by
-          <span class="mono">calcofi4db::build_measurements_catalog()</span> beside
-          <span class="mono">taxa.json</span>. The catalog's index is
-          <a href="{{ '/measurements/' | relative_url }}">/measurements/</a>; the JSON-LD on this page is a
-          <span class="mono">schema.org/DefinedTerm</span> in the NERC P01 term set with a
-          <span class="mono">PropertyValue</span> per series.</p>{%- endcapture -%}
-        <h2 class="cc-h3">Ways in {% include info.html label="About this page as data" body=c_ways %}</h2>
-        {% include ways_tabs.html ways=page.ways %}
 
         <h2 class="cc-h3">Cite</h2>
         <p class="mm-note">Cite the release; each dataset's own citation, licence and DOI are on its page —
