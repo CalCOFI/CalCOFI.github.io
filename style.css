@@ -1917,3 +1917,31 @@ a.cc-chip-lic:hover { color: var(--accent); border-color: var(--accent); text-de
   .cc-result { flex-direction: column; align-items: flex-start; gap: 2px; }
   .cc-result-m { margin-left: 0; white-space: normal; }
 }
+
+/* ── round 2 · measurement body (WS-R3) ──────────────────────────────────────
+   M1, M7–M9, M11–M13 (plan 2026-09-15 § D1–D3, D8): the flagged stat, the methods tabset, the
+   quality chip line, the ways-in tabset, and the ⓘ that now carries every figure caption below the
+   fold. `.mm-flagnote`/`.mm-flagnote-k` (above) are retired code, left in place rather than edited
+   out of a block this file does not own. */
+
+/* the flagged stat (M1): same size as its neighbours in .mm-stat, tinted --warn so it reads as the
+   one number here worth a second look even before the ⓘ is opened */
+.mm-stat dd.mm-stat-flag { color: var(--warn); }
+
+/* an ⓘ inside an UPPERCASE .cc-h3 heading (M1, M13): `font` shorthand on .cc-info > summary (WS-R1)
+   does not carry text-transform, so the "i" inherits the heading's and renders as "I" without this */
+.cc-h3 .cc-info { text-transform: none; vertical-align: -1px; }
+.cc-h3 .cc-info > summary { text-transform: none; }
+
+/* the methods tabset (M8): #ts-how reuses .tabset/.tabrow/.tabpanel as-is; only the card that used
+   to sit directly under a heading now sits inside a panel needs no extra rule beyond that */
+.mmf-how-cards + .tabset,
+#ts-how { margin-top: calc(var(--space) * 0.5); }
+
+/* the quality chip line (M11): four scannable facts above the collapsed definition list */
+.qline { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin: var(--space) 0 0; }
+.qline .k { font-size: 11.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.mm-qual .ds-details { margin-top: calc(var(--space) * 0.85); }
+
+/* the "structure" figure (M7): the What section's own big cards, kept and retitled — no rule of
+   their own; `.mmf-mols`/`.mmf-credit` (above) already carry the look */

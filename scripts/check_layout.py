@@ -391,7 +391,11 @@ PROBE = r"""
           drawn: !!panel && cs(panel).display !== "none",
           cards: panel ? panel.querySelectorAll(".prod-card").length : 0
         };
-      })
+      }),
+      // a tabset with ONE group/row draws no .tabrow at all (D2: "a single group renders no tab
+      // row"; M8/M12, WS-R3) — carry the panels themselves so Python can tell that apart from a
+      // real zero-selected bug rather than reading an empty `tabs` list either way
+      panels: [...ts.querySelectorAll(".tabpanel")].map(p => ({ id: p.getAttribute("data-panel"), hidden: p.hidden }))
     }));
   }
 
@@ -619,7 +623,22 @@ PROBE = r"""
         name: (li.querySelector(".mm-l1 a") || {}).textContent || "",
         dot: !!li.querySelector(".mm-dot")
       })),
-      explore: [...d.querySelectorAll('a[href*="/explore/"]')].map(a => a.getAttribute("href"))
+      explore: [...d.querySelectorAll('a[href*="/explore/"]')].map(a => a.getAttribute("href")),
+      // ── WS-R3 (plan 2026-09-15 § M1, M7–M9, M11–M13, § D8) ──────────────────
+      noFlagnote: !d.querySelector(".mm-flagnote"),
+      statFlag: !!d.querySelector(".mm-stat-flag"),
+      noWhat: !d.getElementById("what"),
+      noCol: !d.getElementById("mmf-col"),
+      howPanels: (() => {
+        const how = d.getElementById("how"), ts = how && how.nextElementSibling;
+        if (!ts || !ts.classList.contains("tabset")) return null;
+        const row = ts.querySelector(".tabrow");
+        return { panels: ts.querySelectorAll(".tabpanel").length,
+                 buttons: row ? row.querySelectorAll("button").length : 0, tabrow: !!row };
+      })(),
+      qualChips: d.querySelectorAll(".mm-qual .qline .cc-chip").length,
+      waysTabset: !!d.querySelector(".mm-col-ways .tabset"),
+      waysAppButtons: d.querySelectorAll(".mm-col-ways .cc-btn").length
     };
   }
   // every .mm-url is ONE line, elided from the middle rather than wrapped or cut
@@ -1191,6 +1210,31 @@ def check(path, r, width, theme, fails, notes):
         if mp["key"] == "temperature" and f"/explore/?var=temperature" not in " ".join(mp["explore"]):
             fails.append(f"{where}: the Explorer link does not open prefilled on the key: {mp['explore']!r}")
 
+        # ── WS-R3 (plan 2026-09-15 § M1, M7–M9, M11–M13, § D8) ──────────────────
+        if not mp["noFlagnote"]:
+            fails.append(f"{where}: .mm-flagnote is still on the page (M1 retired it)")
+        if not mp["statFlag"]:
+            fails.append(f"{where}: no .mm-stat-flag in the stats band")
+        if not mp["noWhat"]:
+            fails.append(f"{where}: #what is still on the page (M7 retired 'What it is')")
+        if not mp["noCol"]:
+            fails.append(f"{where}: #mmf-col is still on the page (M9 retired 'Where in the water column')")
+        hp = mp["howPanels"]
+        if hp:
+            if hp["panels"] < 1:
+                fails.append(f"{where}: the methods tabset (#ts-how) has no panels")
+            if hp["tabrow"] and hp["buttons"] != hp["panels"]:
+                fails.append(f"{where}: the methods tabset has {hp['buttons']} tab(s) for {hp['panels']} panel(s)")
+            if hp["panels"] == 1 and hp["tabrow"]:
+                fails.append(f"{where}: a single method still draws a tab row")
+            notes.append(f"{where}: methods tabset {hp['panels']} panel(s), tabrow={hp['tabrow']}")
+        if mp["qualChips"] != 4:
+            fails.append(f"{where}: the quality chip line has {mp['qualChips']} chip(s), expected 4")
+        if not mp["waysTabset"]:
+            fails.append(f"{where}: no ways-in tabset (M12)")
+        elif mp["waysAppButtons"] < 1:
+            fails.append(f"{where}: the ways-in tabset has no app button (Explorer/db-query)")
+
     for u in r.get("mmUrls", []):
         if u["lh"] and u["h"] > u["lh"] * 1.6:
             fails.append(f"{where}: a measurement URL wraps ({u['h']}px over a {u['lh']}px line): {u['t']}…")
@@ -1285,14 +1329,19 @@ def check(path, r, width, theme, fails, notes):
                          f"spark band {an.get('spark_band')!r}")
         elif not bands and mfa["scaleDrawn"] is not None:
             notes.append(f"{where}: no anomaly — the page says why instead")
-        # Where in the water column: the record's own bands
+        # § M9 (WS-R3, plan 2026-09-15): "Where in the water column" is retired — #mmf-col no
+        # longer exists on the page (its bands are "By depth"'s, unchanged); mfa["col"] is always
+        # falsy now, kept only so an older record replayed through this probe stays harmless.
         if mfa["col"] and mfa["colRows"] < 1:
             fails.append(f"{where}: the water-column figure is drawn with no bands")
-        # the three sections are written, and in this order
-        for h in ("What it is", "How it is measured", "Why it matters"):
+        # § M7: "What it is" is retired (the definition and the chain moved to the face's own What
+        # column, R2); "How it is measured" and "Why it matters" remain, in order
+        if "What it is" in mfa["heads"]:
+            fails.append(f"{where}: 'What it is' section still present ({mfa['heads']!r})")
+        for h in ("How it is measured", "Why it matters"):
             if h not in mfa["heads"]:
                 fails.append(f"{where}: no '{h}' section ({mfa['heads']!r})")
-        idx = [mfa["heads"].index(h) for h in ("What it is", "How it is measured", "Why it matters")
+        idx = [mfa["heads"].index(h) for h in ("How it is measured", "Why it matters")
                if h in mfa["heads"]]
         if idx != sorted(idx):
             fails.append(f"{where}: the face sections are out of order: {mfa['heads']!r}")
@@ -1470,6 +1519,18 @@ def check(path, r, width, theme, fails, notes):
 
     # ── the tabsets: one selected tab, one drawn panel, and a pill that is the panel's own count ─
     for ts in r.get("tabsets") or []:
+        # WS-R3: a tabset with one group/row draws NO .tabrow (D2's own rule — the methods tabset
+        # on a single-series page, e.g. ph, and the ways-in tabset would hit this too were it ever
+        # down to one code route) — that is not "zero selected", it is "nothing to select"
+        if not ts["tabs"]:
+            panels = ts.get("panels") or []
+            if len(panels) != 1:
+                fails.append(f"{where}: {ts['id'] or '(tabset)'} has no tab row but {len(panels)} panel(s), expected exactly one")
+            elif panels[0]["hidden"]:
+                fails.append(f"{where}: {ts['id'] or '(tabset)'} has no tab row and its one panel is hidden")
+            else:
+                notes.append(f"{where}: {ts['id'] or '(tabset)'} no tab row, one panel shown")
+            continue
         sel = [t for t in ts["tabs"] if t["selected"]]
         drawn = [t for t in ts["tabs"] if not t["hidden"]]
         notes.append(f"{where}: {ts['id']} " + " · ".join(f"{t['title']}" + (f" [{t['cards']} cards]" if t["cards"] else "")

@@ -9,9 +9,11 @@ layout: default
   column and flag column, "what the source called it". Every value on the page comes from
   _plugins/measurements.rb, which reads the release's measurements.json and nothing else.
 
-  The blocks, in the mock's order: crumb · eyebrow · label · description · ids · stats ·
-  Measured in (+ the years strip) · By depth · By month · Range & quality · Related measurements ·
-  Ways in · This page as data · Cite.
+  The blocks, in the mock's order: crumb · eyebrow · label · description · ids · stats (with the
+  flagged ⓘ) · the face · Measured in (+ the years strip) · [The structure ·] How it is measured
+  (tabbed by series) · Why it matters · By depth · By month · Range & quality (chip line + details)
+  · Related measurements · Ways in (app buttons + the erddap/parquet/r/python/json tabset,
+  including "this page as data") · Cite. (round 2 § D1–D3, D8, WS-R3, 2026-09-15.)
 {%- endcomment -%}
 {%- assign m = page.m -%}
 {%- assign mm = site.data.measurements -%}
@@ -50,16 +52,24 @@ layout: default
       </div>
     </div>
 
-    {%- if page.stats.size > 0 -%}
+    {%- comment -%} M1 (WS-R3): the heads-up folds into the stats band as a `flagged` stat, ⓘ'd
+      rather than sitting in its own warning paragraph (.mm-flagnote, retired). The count is
+      `quality_rows()`'s own flagged chip (page.quality.chips), so it is computed once; the body of
+      the ⓘ is `page.flag_note`, unchanged and verbatim. A key with n_flagged == 0 still shows the
+      stat (0), but no ⓘ opens on it — there is nothing to explain. {%- endcomment -%}
+    {%- assign fchip = page.quality.chips | where: "k", "flagged" | first -%}
+    {%- if page.stats.size > 0 or fchip -%}
     <dl class="mm-stat">
       {%- for s in page.stats -%}
+      {%- unless s.dt == "flagged" -%}
       <div{% if s.title %} title="{{ s.title | escape }}"{% endif %}><dd class="tab{% if s.small %} mm-stat-sm{% endif %}">{{ s.dd | escape }}</dd><dt>{{ s.dt }}</dt></div>
+      {%- endunless -%}
+      {%- if s.dt == "values" and fchip -%}
+      <div><dd class="tab mm-stat-flag">{{ fchip.label | escape }}</dd><dt>flagged{% if fchip.warn and page.flag_note %} {% include info.html label="What flagged means" body=page.flag_note %}{% endif %}</dt></div>
+      {%- endif -%}
       {%- endfor -%}
     </dl>
     {%- endif -%}
-    {%- comment -%} the heads-up: how many values their provider flags and what leaves them out —
-      the Explorer's "n flagged" count (NOT qual_ok), written where a reader of the data will see it {%- endcomment -%}
-    {%- if page.flag_note %}<p class="mm-flagnote"><span class="mm-flagnote-k">Heads-up</span> {{ page.flag_note }}</p>{% endif -%}
     {%- comment -%} the FACE (plan 2026-09-11 § D1–D7, WS-MF5): what it is, how it is taken, why it
       matters — and then the sentence. `page.face` is nil for a key the record gives no `face` block
       and the media sidecar no entry, and the page is then exactly what it was. {%- endcomment -%}
@@ -71,7 +81,12 @@ layout: default
   <div class="cc-container">
     <div class="mm-cols2">
       <div class="mm-col-main">
-        <h2 class="cc-h3">Measured in</h2>
+        {%- comment -%} M13 (WS-R3): the strip's caption paragraph (.mm-note) becomes an ⓘ on the
+          heading it captions, text verbatim {%- endcomment -%}
+        {%- capture c_measured -%}<p>One row per series, one cell per year, darker with more values — the same strip the front
+          door draws per dataset and a species page draws per taxon. Each row is one dataset's own
+          <span class="mono">measurement_type</span>; the label is written once, in the title above.</p>{%- endcapture -%}
+        <h2 class="cc-h3">Measured in {% include info.html label="About the years strip" body=c_measured %}</h2>
         {% include measurement_rows.html rows=page.ds_rows %}
         {%- comment -%} WS-M4's three figure hosts, each with its own inline JSON: the years strip,
           the depth bars and the month strip, all one row per SERIES {%- endcomment -%}
@@ -80,9 +95,6 @@ layout: default
         <div class="mm-strip-wrap">
           <svg class="mm-strip" id="mm-strip" role="img" aria-label="Values per year in each dataset"></svg>
         </div>
-        <p class="mm-note">One row per series, one cell per year, darker with more values — the same strip the front
-          door draws per dataset and a species page draws per taxon. Each row is one dataset's own
-          <span class="mono">measurement_type</span>; the label is written once, in the title above.</p>
 
         {% if page.face %}{% comment %} ── the face, at length (plan 2026-09-11 § D1–D7, WS-MF5) ──
           What it is · how it is taken · why it matters, each with the figure the mockup specifies.
@@ -93,10 +105,15 @@ layout: default
           trim the whitespace around it.
         {% endcomment %}
         {%- assign f = page.face -%}
-        <h2 class="cc-h3" id="what">What it is</h2>
-        {%- if f.what.note %}<p class="mm-note mmf-kindnote"><span class="cc-chip cc-chip-quiet">{{ f.kind_label | escape }}</span> {{ f.what.note | escape }}</p>{% endif -%}
-        <div class="mmf-fig" id="mmf-what"></div>
+        {%- comment -%} M7 (WS-R3): "What it is" is retired — the NERC definition (repeated a third
+          time here), the vocabulary chain and its "Identity, never resemblance" note are gone; the
+          face's own What column (R2) carries the definition behind its ⓘ and now also `f.chain`.
+          ONLY the big structure cards survive, retitled: they are this section's own figure, drawn
+          larger than the face row has room for, and #mmf-what (the ion table / Bjerrum plot / hair
+          / pH strip / Beaufort row assets/measurements.js drew here) moves to the face row's own
+          glyph (M6, R2) — nothing here draws into that host any more. {%- endcomment -%}
         {%- if f.what.structures.size > 0 -%}
+        <h2 class="cc-h3" id="structure">The structure</h2>
         <div class="mmf-mols">
           {%- for s in f.what.structures -%}
           <figure class="mmf-molcard">
@@ -111,110 +128,114 @@ layout: default
         {%- assign sd = f.what.structures[0].definition -%}
         <p class="mmf-credit">{% if sd %}ChEBI: “{{ sd | strip_html | escape }}” · {% endif %}{{ f.what.structures[0].drawn_by | default: 'Drawn from ChEBI’s own molfile' | escape }}, in the page’s ink{% if f.what.structures[0].license %} · {{ f.what.structures[0].license | escape }}{% endif %}. ChEBI’s roles are never shown.</p>
         {%- endif -%}
-        {%- if f.what.nerc.definition -%}
-        <p class="mmf-nerc-def">{{ f.what.nerc.definition | escape }}
-          <span class="mmf-credit">NERC Vocabulary Server, <a href="{{ f.what.nerc.url }}" rel="external">{{ f.what.nerc.p01 }}</a>{% if f.what.nerc.license %} · {{ f.what.nerc.license | escape }}{% endif %}</span></p>
-        {%- endif -%}
-        {%- if f.chain.size > 0 -%}
-        <h3 class="mmf-h3">How the page reaches it</h3>
-        <ul class="mmf-chain">
-          {%- for r in f.chain -%}
-          <li><span class="mmf-cc">{{ r.c }}</span><span class="mmf-cv">
-            <b>{% if r.url %}<a href="{{ r.url }}" rel="external">{{ r.title | escape }}</a>{% else %}{{ r.title | escape }}{% endif %}</b>{% if r.id %} <span class="mono">{{ r.id }}</span>{% endif %}
-            {%- if r.same.size > 0 %}<br>{% for s in r.same %}<a class="mono" href="{{ s.url }}" rel="external">{{ s.label | escape }}</a>{% unless forloop.last %} · {% endunless %}{% endfor %}{% endif -%}
-            {%- if r.note %}<br><span class="cc-muted">{{ r.note | escape }}</span>{% endif -%}
-          </span></li>
-          {%- endfor -%}
-        </ul>
-        <p class="mm-note">Identity, never resemblance: the page draws a structure only where the
-          concept’s own parts reach it. A key with no concept borrows the face of the quantity it
-          estimates and says so, and its ids stay empty.</p>
-        {%- endif -%}
 
+        {%- comment -%} M8 (WS-R3): one method per SERIES, tabbed rather than stacked — a
+          measurement with two datasets is two acts, and the values/years/source-column chips
+          `measurement_rows.html` already draws above are dropped here. `id="how"` stays on the
+          heading (R2's "n methods ↓" link in the face row targets it); no `data-url-tab`, so this
+          tabset never fights the ways-in tabset for the page's one `?tab=` slot (R1's gate). A
+          single method draws no tab row — the one panel just shows. {%- endcomment -%}
         <h2 class="cc-h3" id="how">How it is measured</h2>
-        <div class="mmf-how-cards">
+        <div class="tabset" id="ts-how">
+          {%- if f.how.size > 1 -%}
+          <div class="tabrow" role="tablist">
+            {%- for h in f.how -%}
+            {%- comment -%} the years pill is whichever meta entry is neither the values count nor
+              the source column — `how_rows()` (R2) builds `meta` as [values, years, column], so
+              elimination reads it without a new field {%- endcomment -%}
+            {%- assign yrs = nil -%}
+            {%- for x in h.meta -%}{%- unless x contains "values" or x contains "column" -%}{%- assign yrs = x -%}{%- endunless -%}{%- endfor -%}
+            <button type="button" role="tab" data-tab="{{ h.dataset_key | escape }}" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}">{{ h.name | escape }}{% if yrs %} <span class="pill">{{ yrs }}</span>{% endif %}</button>
+            {%- endfor -%}
+          </div>
+          {%- endif -%}
           {%- for h in f.how -%}
-          <div class="mmf-card">
-            <div class="mmf-card-top">
-              <span class="mmf-pg mmf-pg-lg" data-platform="{{ h.platform }}" aria-hidden="true"></span>
-              <div>
-                <div class="mmf-ds"><i class="mm-dot" style="background:{{ h.color | default: 'var(--muted)' }}" aria-hidden="true"></i>
-                  <a href="{{ h.url | relative_url }}">{{ h.name | escape }}</a>{% if h.platform_label %} · {{ h.platform_label | escape }}{% endif %}</div>
-                <div class="mmf-ins">{{ h.instrument | escape }}</div>
+          <div class="tabpanel" data-panel="{{ h.dataset_key | escape }}"{% unless forloop.first %} hidden{% endunless %}>
+            <div class="mmf-card">
+              <div class="mmf-card-top">
+                <span class="mmf-pg mmf-pg-lg" data-platform="{{ h.platform }}" aria-hidden="true"></span>
+                <div>
+                  <div class="mmf-ds"><i class="mm-dot" style="background:{{ h.color | default: 'var(--muted)' }}" aria-hidden="true"></i>
+                    <a href="{{ h.url | relative_url }}">{{ h.name | escape }}</a>{% if h.platform_label %} · {{ h.platform_label | escape }}{% endif %}</div>
+                  <div class="mmf-ins">{{ h.instrument | escape }}</div>
+                </div>
               </div>
+              {%- if h.principle %}<p>{{ h.principle | escape }}{% if h.source %} <span class="mmf-credit">({{ h.source | escape }})</span>{% endif %}</p>{% endif -%}
+              {%- if h.steps.size > 0 -%}
+              <ul class="mmf-steps">{% for s in h.steps %}<li>{{ s | escape }}</li>{% endfor %}</ul>
+              {%- endif -%}
+              {%- if h.nm %}<div class="mmf-spec" data-nm="{{ h.nm }}" role="img" aria-label="Read at {{ h.nm }} nanometres"></div>{% endif -%}
+              <div class="mmf-meta">
+                {%- if h.qual_column %}<span class="cc-chip cc-chip-ok">flag {{ h.qual_column | escape }}</span>{% else %}<span class="cc-chip cc-chip-warn">no flag at this grain</span>{% endif -%}
+                {%- if h.flagged %}<span class="cc-chip cc-chip-warn">{{ h.flagged }} flagged</span>{% endif -%}
+                {%- if h.precision %}<span class="cc-chip cc-chip-accent">{{ h.precision | escape }}</span>{% endif -%}
+              </div>
+              {%- if h.link -%}
+              <a class="mmf-pin" href="{{ h.link }}" rel="external"><span class="mmf-disc" aria-hidden="true"></span>{{ h.page | escape }} on calcofi.org ↗</a>
+              {%- endif -%}
+              {%- if h.acid_figure %}<div class="mmf-fig" id="mmf-acid"></div>{% endif -%}
             </div>
-            {%- if h.principle %}<p>{{ h.principle | escape }}{% if h.source %} <span class="mmf-credit">({{ h.source | escape }})</span>{% endif %}</p>{% endif -%}
-            {%- if h.steps.size > 0 -%}
-            <ul class="mmf-steps">{% for s in h.steps %}<li>{{ s | escape }}</li>{% endfor %}</ul>
-            {%- endif -%}
-            {%- if h.nm %}<div class="mmf-spec" data-nm="{{ h.nm }}" role="img" aria-label="Read at {{ h.nm }} nanometres"></div>{% endif -%}
-            <div class="mmf-meta">
-              {%- for x in h.meta %}<span class="cc-chip">{{ x | escape }}</span>{% endfor -%}
-              {%- if h.qual_column %}<span class="cc-chip cc-chip-ok">flag {{ h.qual_column | escape }}</span>{% else %}<span class="cc-chip cc-chip-warn">no flag at this grain</span>{% endif -%}
-              {%- if h.flagged %}<span class="cc-chip cc-chip-warn">{{ h.flagged }} flagged</span>{% endif -%}
-              {%- if h.precision %}<span class="cc-chip cc-chip-accent">{{ h.precision | escape }}</span>{% endif -%}
-            </div>
-            {%- if h.link -%}
-            <a class="mmf-pin" href="{{ h.link }}" rel="external"><span class="mmf-disc" aria-hidden="true"></span>{{ h.page | escape }} on calcofi.org ↗</a>
-            {%- endif -%}
-            {%- if h.acid_figure %}<div class="mmf-fig" id="mmf-acid"></div>{% endif -%}
           </div>
           {%- endfor -%}
         </div>
-        <h3 class="mmf-h3">Where in the water column</h3>
-        <div class="mmf-col-fig" id="mmf-col"></div>
-        <p class="mm-note">Every band the record counts a value in, as each series’ own share of its
-          values — the same bands the bars below count.</p>
 
         <h2 class="cc-h3" id="why">Why it matters</h2>
         {% include measurement_why.html face=f %}
-{% endif %}<h2 class="cc-h3">By depth</h2>
+{% endif %}{%- capture c_depth -%}<p>Values per depth band at the release grain, one thin bar per series. The bands are the
+          record's own (<span class="mono">0-10</span> … <span class="mono">2000+</span> m).</p>{%- endcapture -%}
+        <h2 class="cc-h3">By depth {% include info.html label="About the depth bands" body=c_depth %}</h2>
         <div class="mm-legend" id="mm-depth-legend"></div>
         <div class="mm-bars" id="mm-depth"></div>
-        <p class="mm-note">Values per depth band at the release grain, one thin bar per series. The bands are the
-          record's own (<span class="mono">0-10</span> … <span class="mono">2000+</span> m).</p>
 
-        <h2 class="cc-h3">By month</h2>
+        {%- capture c_month -%}<p>Values per calendar month, one row per series: CalCOFI's quarterly cruises show as peaks in
+          the months the ships sail.</p>{%- endcapture -%}
+        <h2 class="cc-h3">By month {% include info.html label="About the month strip" body=c_month %}</h2>
         <div class="mm-mstrip" id="mm-months"></div>
-        <p class="mm-note">Values per calendar month, one row per series: CalCOFI's quarterly cruises show as peaks in
-          the months the ships sail.</p>
 
+        {%- comment -%} M11 (WS-R3): the chip line is `quality_rows()`'s own `chips` array — bounds,
+          observed, flagged, baseline, each hovering to the number(s) it summarizes — with today's
+          definition list surviving whole under `details` {%- endcomment -%}
         <h2 class="cc-h3">Range &amp; quality</h2>
         <div class="mm-qual">
-          <dl class="mm-qgrid">
-            {%- for q in page.quality -%}
-            <dt>{{ q.dt }}</dt><dd>{{ q.dd }}</dd>
+          <div class="qline">
+            {%- for c in page.quality.chips -%}
+            <span class="k">{{ c.k }}</span><span class="cc-chip{% if c.warn %} cc-chip-warn{% endif %}{% if c.ok %} cc-chip-ok{% endif %}" title="{{ c.title | escape }}">{{ c.label | escape }}</span>
             {%- endfor -%}
-          </dl>
+          </div>
+          <details class="ds-details">
+            <summary>details</summary>
+            <dl class="mm-qgrid">
+              {%- for q in page.quality.rows -%}
+              <dt>{{ q.dt }}</dt><dd>{{ q.dd }}</dd>
+              {%- endfor -%}
+            </dl>
+          </details>
         </div>
 
         {%- if page.related.size > 0 -%}
-        <h2 class="cc-h3">Related measurements</h2>
-        {% include measurement_related.html rows=page.related %}
-        <p class="mm-note">The same quantity from another platform or another kind of sample, each its own page and
+        {%- capture c_related -%}<p>The same quantity from another platform or another kind of sample, each its own page and
           never merged into this one: a dataset's own bottle samples would count that dataset twice, an underway intake
           is not a cast, and a replicate is not a mean. The reason is the record's
-          (<span class="mono">related[].why</span>).</p>
+          (<span class="mono">related[].why</span>).</p>{%- endcapture -%}
+        <h2 class="cc-h3">Related measurements {% include info.html label="Why these are kept separate" body=c_related %}</h2>
+        {% include measurement_related.html rows=page.related %}
         {%- endif -%}
       </div>
 
       <div class="mm-col-ways">
-        <h2 class="cc-h3">Ways in</h2>
-        {% include measurement_ways.html ways=page.ways %}
-        <h2 class="cc-h3">This page as data</h2>
-        <ul class="mm-ways">
-          <li class="mm-way">
-            <div class="mm-l1"><b>JSON</b><span>this measurement's entry of the release record, verbatim</span></div>
-            <a class="mm-url" href="{{ '/measurements/' | append: page.slug | append: '.json' | relative_url }}">https://calcofi.io/measurements/{{ page.slug }}.json</a>
-          </li>
-        </ul>
-        <p class="mm-note">Read from <span class="mono">measurements.json</span> of release
+        {%- comment -%} M12 (WS-R3): the apps (Explorer, db-query) are buttons because they open
+          something; the code routes are ONE shared tabset (erddap · parquet · r · python · json),
+          fed by `page.ways`'s own `group` (`ways_rows()`). "This page as data" is the json way; the
+          JSON-LD paragraph that used to sit under it moves into an ⓘ on this heading. {%- endcomment -%}
+        {%- capture c_ways -%}<p>Read from <span class="mono">measurements.json</span> of release
           <a href="{{ '/datasets/release/' | relative_url }}">{{ mm.release.version }}</a>, written at release by
           <span class="mono">calcofi4db::build_measurements_catalog()</span> beside
           <span class="mono">taxa.json</span>. The catalog's index is
           <a href="{{ '/measurements/' | relative_url }}">/measurements/</a>; the JSON-LD on this page is a
           <span class="mono">schema.org/DefinedTerm</span> in the NERC P01 term set with a
-          <span class="mono">PropertyValue</span> per series.</p>
+          <span class="mono">PropertyValue</span> per series.</p>{%- endcapture -%}
+        <h2 class="cc-h3">Ways in {% include info.html label="About this page as data" body=c_ways %}</h2>
+        {% include ways_tabs.html ways=page.ways %}
 
         <h2 class="cc-h3">Cite</h2>
         <p class="mm-note">Cite the release; each dataset's own citation, licence and DOI are on its page —
@@ -233,4 +254,8 @@ layout: default
 <script id="mm-depth-data" type="application/json">{{ page.depth }}</script>
 <script id="mm-months-data" type="application/json">{{ page.months }}</script>
 <script defer src="{{ '/assets/measurements.js' | relative_url }}"></script>
+{%- comment -%} the ways-in tabset's copy buttons (M12, WS-R3): default.html does not load
+  assets/copy.js site-wide (only _layouts/dataset.html does), so this page loads its own — a
+  delegated listener, safe alongside dataset.html's copy of the same script on another page. {%- endcomment -%}
+<script defer src="{{ '/assets/copy.js' | relative_url }}"></script>
 <script type="application/ld+json">{{ page.jsonld }}</script>
