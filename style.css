@@ -640,6 +640,15 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 .ds-more-vars[open] > summary::after { content: " ▾"; }
 .ds-more-vars .cc-chip { margin: 2px 2px 0 0; }
 .ds-cov-h { margin-top: calc(var(--space) * 3); }
+/* a dataset's variables, one group per grain (CalCOFI.github.io#26): the release table named beside
+   its group, the measured counts in muted type. A per-cast chip with no page is a span, not a link. */
+.ds-vargroup { margin-top: calc(var(--space) * 2); }
+.ds-vargroup-h { margin: 0 0 calc(var(--space) * 0.75); font-size: var(--fs-sm); }
+.ds-vargroup-t { font-weight: 600; color: var(--fg); margin-right: 0.5em; }
+.ds-varchips .cc-chip small.ds-vn { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 0.85em; }
+.ds-chip-cast { cursor: default; }
+/* where the values after this record's last year live — a note under the description, one line */
+.ds-successor { margin: calc(var(--space) * 2) 0; padding: 6px 0 6px 12px; border-left: 3px solid var(--accent); max-width: 72ch; }
 .ds-taxa { list-style: none; margin: var(--space) 0; padding: 0; columns: 2; column-gap: calc(var(--space) * 5); font-size: 15px; }
 .ds-taxa li { break-inside: avoid; padding: 2px 0; }
 .ds-headlinks { display: flex; flex-wrap: wrap; gap: calc(var(--space) * 2); margin-top: calc(var(--space) * 2); }

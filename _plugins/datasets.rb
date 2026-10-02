@@ -609,6 +609,189 @@ module CalCOFI
 
     def variable_names(cov) = normalize_variables(cov).map { |v| v["name"] }
 
+    # ── every measurement_type a dataset ships, by grain (CalCOFI.github.io#26) ────────────────
+    # The record's coverage.variables[] is the `obs` grain only — one value per depth bin (obs_env)
+    # or per taxon (obs_bio). A value taken once per cast (a mixed-layer depth, a chlorophyll
+    # maximum, wind, a volume filtered) lives in `sample_measurement`, so calcofi_ctd-derived listed
+    # 2 of the 9 measurements it ships. scripts/fetch_dataset_measurements.py measures the per-cast
+    # types from the release's own parquet, through catalog.json, into _data/dataset_measurements.json;
+    # the profile counts come from the release's coverage.json. A release with no sidecar renders the
+    # profile group alone, exactly as before — a number the build cannot read is never typed.
+    PROFILE_TABLE = { "env" => "obs_env", "bio" => "obs_bio" }.freeze
+    GRAIN_GLOSS = {
+      "obs_env"            => "profile · one value at each depth of a cast",
+      "obs_bio"            => "profile · one value per taxon at a sampling event",
+      "sample_measurement" => "per cast · one value for the whole cast or tow, at no depth"
+    }.freeze
+
+    # the release's per-dataset, per-type counts (coverage.json variables[]), keyed dataset → type
+    def coverage_counts
+      @coverage_counts ||= begin
+        cov  = @site.data["release_coverage"]
+        rows = cov.is_a?(Hash) ? (cov["variables"] || []) : []
+        rows.group_by { |v| v["dataset_key"] }
+            .transform_values { |vs| vs.to_h { |v| [v["measurement_type"], v] } }
+      end
+    end
+
+    # the measured per-cast record of one dataset, or nil. A sidecar built against another release
+    # than the record is ignored with a note: counts from two releases on one page would be a lie.
+    def per_cast_for(key)
+      side = @site.data["dataset_measurements"]
+      return nil unless side.is_a?(Hash)
+      if side["release"] != release["version"]
+        unless @warned_dm
+          @warned_dm = true
+          Jekyll.logger.warn "datasets:", "dataset_measurements.json is for #{side['release']}, the record is " \
+                                          "#{release['version']} — per-cast variables are not drawn"
+        end
+        return nil
+      end
+      side.dig("datasets", key, "per_cast")
+    end
+
+    def years_phrase(a, b)
+      return nil if a.nil? && b.nil?
+      a == b ? a.to_s : "#{a}–#{b}"
+    end
+
+    # What a dataset spans over BOTH grains, measured: the record's coverage is the `obs` grain, and a
+    # per-cast product can run past it (calcofi_ctd-derived's profile values end 2025-04, its
+    # mld_temperature_02 runs to 2026-07 on the casts too fresh for the other products). The union of
+    # the record's years / "YYYY-MM to YYYY-MM" and the per-cast types' own, never the record's alone.
+    # A dataset with no per-cast rows returns exactly what the record says.
+    def span_of(r)
+      cov = r["coverage"] || {}
+      pc  = per_cast_for(r["dataset_key"])
+      types = (pc && pc["types"]) || []
+      ys = ([cov["year_min"], cov["year_max"]] + types.flat_map { |t| [t["year_min"], t["year_max"]] }).compact
+      rec_t = Fmt.present(cov["temporal"])&.split(" to ")
+      ms = ((rec_t || []) + types.flat_map { |t| [t["date_min"], t["date_max"]] }).compact
+      { "year_min" => ys.min, "year_max" => ys.max,
+        "temporal" => ms.empty? ? nil : "#{ms.min} to #{ms.max}" }
+    end
+
+    def span_years(r)
+      s = span_of(r)
+      years_phrase(s["year_min"], s["year_max"])
+    end
+
+    # one dataset's variables as groups: the profile group (obs_env / obs_bio) always, the per-cast
+    # group (sample_measurement) when the release holds rows of this dataset there. Each variable
+    # keeps its units and uri and gains its measured count and years.
+    def variable_groups(r)
+      (@variable_groups ||= {})[r["dataset_key"]] ||= build_variable_groups(r)
+    end
+
+    def build_variable_groups(r)
+      key   = r["dataset_key"]
+      cov   = r["coverage"] || {}
+      realm = cov["realm"] || r.dig("category", "realm")
+      table = PROFILE_TABLE[realm] || "obs_env"
+      seen  = coverage_counts[key] || {}
+      groups = []
+      prof = normalize_variables(cov).map do |v|
+        c = seen[v["name"]] || {}
+        v.merge("grain" => "profile", "n_values" => c["n_obs"], "n_fmt" => Fmt.num(c["n_obs"]),
+                "years" => years_phrase(c["year_min"], c["year_max"]))
+      end
+      unless prof.empty?
+        groups << { "id" => "profile", "table" => table, "gloss" => GRAIN_GLOSS[table],
+                    "n_values" => cov["n_obs"], "n_fmt" => Fmt.num(cov["n_obs"]),
+                    "years" => years_phrase(cov["year_min"], cov["year_max"]), "variables" => prof }
+      end
+      if (pc = per_cast_for(key))
+        vars = (pc["types"] || []).map do |t|
+          { "name" => t["measurement_type"], "units" => Fmt.present(t["units"]), "uri" => nil,
+            "category" => nil, "grain" => "per_cast", "description" => Fmt.present(t["description"]),
+            "n_values" => t["n_values"], "n_fmt" => Fmt.num(t["n_values"]),
+            "n_samples" => t["n_samples"], "n_samples_fmt" => Fmt.num(t["n_samples"]),
+            "years" => years_phrase(t["year_min"], t["year_max"]) }
+        end
+        years = (pc["types"] || []).flat_map { |t| [t["year_min"], t["year_max"]] }.compact
+        groups << { "id" => "per_cast", "table" => pc["table"], "gloss" => GRAIN_GLOSS[pc["table"]],
+                    "n_values" => pc["n_values"], "n_fmt" => Fmt.num(pc["n_values"]),
+                    "n_samples_fmt" => Fmt.num(pc["n_samples"]),
+                    "years" => years_phrase(years.min, years.max), "variables" => vars }
+      end
+      # the one line each group's heading carries: the grain, the measured counts, the years
+      groups.each do |g|
+        nv = g["variables"].size
+        g["summary"] = [g["gloss"],
+                        g["n_fmt"] && "#{g['n_fmt']} values#{" on #{g['n_samples_fmt']} sampling events" if g['n_samples_fmt']}",
+                        g["years"],
+                        "#{nv} variable#{'s' unless nv == 1}"].compact.join(" · ")
+      end
+      groups
+    end
+
+    # a dataset's tables that hold ITS rows but that the record's objects[] does not name: the shared
+    # per-cast table. The record's objects[] is what changed in a release, so a dataset whose
+    # sample_measurement rows are unchanged never lists it; the Access table must still name both
+    # grains. The object is the release catalog's own (path, bytes, sha256, since), never a built path.
+    def per_cast_objects(r)
+      pc = per_cast_for(r["dataset_key"]) or return []
+      cat = @site.data["release_catalog"]
+      return [] unless cat.is_a?(Hash)
+      have = (r["objects"] || []).map { |o| o["table"] }
+      t = (cat["tables"] || []).find { |x| x["name"] == pc["table"] } or return []
+      return [] if have.include?(t["name"])
+      # the storage root, read off the record's own object urls (url = root + path); a fixed
+      # fallback only for a dataset whose record carries no object at all
+      base = (r["objects"] || []).filter_map { |o| o["url"] && o["path"] && o["url"].delete_suffix(o["path"]).chomp("/") }.first || OBJECT_BASE
+      (t["objects"] || []).first(1).filter_map do |o|
+        next unless o["path"]
+        { "table" => t["name"], "scope" => "table", "shared" => true,
+          "path" => o["path"], "url" => "#{base}/#{o['path']}", "bytes" => o["bytes"],
+          "sha256" => o["sha256"], "since" => o["since"],
+          "table_description" => nil, "derived" => true }
+      end
+    end
+    OBJECT_BASE = "https://storage.googleapis.com/calcofi-db".freeze
+
+    # release tables the record names for a dataset that the release does not carry (the record lists
+    # `ctd_geostrophic` for calcofi_ctd-derived; v2026.10.01 does not ship it) — the Provenance chips
+    # link a schema anchor that does not exist. Where the release catalog is unreadable, nothing is dropped.
+    def shipped_tables(r)
+      names = r["tables"] || []
+      cat = @site.data["release_catalog"]
+      return names unless cat.is_a?(Hash) && cat["tables"].is_a?(Array)
+      have = cat["tables"].map { |t| t["name"] }
+      names.select { |t| have.include?(t) }
+    end
+
+    # the per-cast variables as the same {name, units, uri} shape the profile ones have, for the
+    # JSON-LD variableMeasured and the search text
+    def per_cast_variables(r)
+      (variable_groups(r).find { |g| g["id"] == "per_cast" } || {})["variables"] || []
+    end
+
+    # A dataset that stops while another carries its variables on. The rule is the data's, not the
+    # page's: dataset B (a record that ends in year E) names, in its own variables, a type `m`; dataset
+    # C carries `btl_<m>` (the bottle value of the CTD cast files) with a later last year. B's page then
+    # says where the values after E live. Found today for calcofi_bottle → calcofi_ctd-cast (the bottle
+    # database ends in 2021, the btl_* values of the cast files run to the present); no other pair.
+    def successor_note(r)
+      key  = r["dataset_key"]
+      cov  = r["coverage"] || {}
+      last = cov["year_max"] or return nil
+      mine = (coverage_counts[key] || {}).keys
+      return nil if mine.empty?
+      best = nil
+      datasets.each do |o|
+        next if o["dataset_key"] == key
+        theirs = (coverage_counts[o["dataset_key"]] || {}).select do |mt, v|
+          mt.start_with?("btl_") && mine.include?(mt.sub(/\Abtl_/, "")) && (v["year_max"] || 0) > last
+        end
+        next if theirs.empty?
+        yr = theirs.values.map { |v| v["year_max"] }.max
+        best = { "key" => o["dataset_key"], "name" => o["dataset_name_short"] || o["dataset_name"],
+                 "url" => page_url(o), "n" => theirs.size, "last" => last, "through" => yr,
+                 "types" => theirs.keys.map { |t| t.sub(/\Abtl_/, "") }.sort } if best.nil? || theirs.size > best["n"]
+      end
+      best
+    end
+
     # rung 1 and 2 of the emphasis ladder carry the dataset's own colour as a 9 px dot — the one
     # visual the Explorer, the Station Explorer and this catalog share. Never as text colour
     # (plan Decision 4); a record with no colour falls back to the accent in CSS.
@@ -652,7 +835,7 @@ module CalCOFI
         "realm"      => realm,
         "year_min"   => cov["year_min"],
         "year_max"   => cov["year_max"],
-        "years"      => year_span(cov),
+        "years"      => span_years(d),
         "n_obs"      => cov["n_obs"],
         "n_obs_fmt"  => Fmt.num(cov["n_obs"]),
         "license"     => d.dig("attribution", "license"),
@@ -662,9 +845,10 @@ module CalCOFI
         "formats"    => formats(d),
         "formats_phrase" => formats_phrase(d),
         "color"      => dot_color(d),
-        "n_variables" => cov["n_variables"] || normalize_variables(cov).size,
-        "n_var"      => realm == "env" ? (cov["n_variables"] || normalize_variables(cov).size) : nil,
-        "var_names"  => realm == "env" ? variable_names(cov).first(8) : [],
+        # profile + per-cast: every measurement_type the dataset ships (CalCOFI.github.io#26)
+        "n_variables" => (cov["n_variables"] || normalize_variables(cov).size) + per_cast_variables(d).size,
+        "n_var"      => realm == "env" ? (cov["n_variables"] || normalize_variables(cov).size) + per_cast_variables(d).size : nil,
+        "var_names"  => realm == "env" ? (variable_names(cov) + per_cast_variables(d).map { |v| v["name"] }).first(8) : [],
         "n_taxa"     => realm != "env" ? cov["n_taxa"] : nil,
         "taxa_names" => realm != "env" ? dataset_taxa_names(d["dataset_key"]).first(8) : [],
         "stage"      => d.dig("status", "stage"),
@@ -927,7 +1111,7 @@ module CalCOFI
 
       # ── Get the data ─────────────────────────────────────────────────────────
       blocks = []
-      objs = (d["objects"] || []).map do |o|
+      objs = ((d["objects"] || []) + per_cast_objects(d)).map do |o|
         shared = o["shared"] || o["scope"] == "table"
         { "label" => o["table"], "label_url" => "https://calcofi.io/db-schema/##{o['table']}",
           "label_title" => "#{o['table']} in the schema browser",
@@ -1013,10 +1197,9 @@ module CalCOFI
         { "label" => "R · calcofi4r", "label_url" => "https://calcofi.io/calcofi4r/", "url" => "https://calcofi.io/calcofi4r/",
           "code" => "con <- calcofi4r::cc_get_db()\ncalcofi4r::cc_cite(\"#{key}\")" },
         { "label" => "Python · calcofi4py", "label_url" => "https://calcofi.io/calcofi4py/", "url" => "https://calcofi.io/calcofi4py/",
-          "code" => "con = calcofi4py.cc_get_db()\ncalcofi4py.cite(\"#{key}\")" }] }
+          "code" => "con = calcofi4py.cc_get_db()\ncalcofi4py.cc_cite(\"#{key}\")" }] }
       obj = objs.first
       if obj && obj["url"]
-        where = obj["shared"] ? "\nWHERE dataset_key = '#{key}'" : ""
         code_blocks << {
           "title" => "DuckDB, anywhere",
           "lede" => "No CalCOFI package needed: each table above is a plain parquet object, readable " \
@@ -1025,8 +1208,11 @@ module CalCOFI
                     "so nothing unchanged is stored or downloaded twice. Swap in any table above; one " \
                     "shared with other datasets needs `WHERE dataset_key = '#{key}'`. Every object of " \
                     "every release is listed in [db-schema](https://calcofi.io/db-schema/?v=#{release['version']}).",
-          "rows" => [{ "label" => "#{obj['label']} · #{obj['scope']}", "url" => obj["url"],
-                       "code" => "SELECT *\nFROM read_parquet('#{obj['url']}')#{where}\nLIMIT 100;" }] }
+          "rows" => ([obj] + objs.select { |o| o["label"] == "sample_measurement" && !o.equal?(obj) }).map do |o|
+            w = o["shared"] ? "\nWHERE dataset_key = '#{key}'" : ""
+            { "label" => "#{o['label']} · #{o['scope']}", "url" => o["url"],
+              "code" => "SELECT *\nFROM read_parquet('#{o['url']}')#{w}\nLIMIT 100;" }
+          end }
       end
       unless tables.empty?
         tbl = %w[obs sample].find { |t| tables.include?(t) } || tables.first
@@ -1547,7 +1733,7 @@ module CalCOFI
       node["contactPoint"] = {
         "@type" => "ContactPoint", "contactType" => "dataset enquiries", "email" => contact
       }
-      node["temporalCoverage"] = Fmt.present(cov["temporal"])&.sub(" to ", "/")
+      node["temporalCoverage"] = span_of(r)["temporal"]&.sub(" to ", "/")
       if (b = cov["bbox"]) && b.values.none?(&:nil?)
         node["spatialCoverage"] = {
           "@type" => "Place",
@@ -1593,12 +1779,18 @@ module CalCOFI
     # a variable becomes a PropertyValue; `propertyID` carries the NERC P01 URI where the record
     # has one (measurement_type.uri) and is simply absent otherwise.
     def variables_measured(r)
-      (r.dig("coverage", "variables") || []).map do |v|
+      prof = (r.dig("coverage", "variables") || []).map do |v|
         v.is_a?(Hash) ?
           { "@type" => "PropertyValue", "name" => v["name"] || v["key"], "unitText" => v["units"],
             "propertyID" => v["uri"] }.compact :
           { "@type" => "PropertyValue", "name" => v }
       end
+      # the per-cast types (sample_measurement), measured from the release — absent without the sidecar
+      cast = per_cast_variables(r).map do |v|
+        { "@type" => "PropertyValue", "name" => v["name"], "unitText" => v["units"],
+          "description" => v["description"] }.compact
+      end
+      prof + cast
     end
 
     MEDIA = { "parquet" => "application/vnd.apache.parquet", "netcdf" => "application/x-netcdf",
@@ -1725,8 +1917,9 @@ module CalCOFI
       if (b = cov["bbox"]) && b.values.none?(&:nil?)
         out["spatial"] = format("%.4f,%.4f,%.4f,%.4f", b["lon_min"], b["lat_min"], b["lon_max"], b["lat_max"])
       end
-      if cov["year_min"] && cov["year_max"]
-        out["temporal"] = "#{cov['year_min']}-01-01T00:00:00Z/#{cov['year_max']}-12-31T23:59:59Z"
+      sp = span_of(r)
+      if sp["year_min"] && sp["year_max"]
+        out["temporal"] = "#{sp['year_min']}-01-01T00:00:00Z/#{sp['year_max']}-12-31T23:59:59Z"
       end
       out.compact
     end
@@ -1805,7 +1998,7 @@ module CalCOFI
           "text"  => [
             r["dataset_name"], r["dataset_name_short"], r["dataset_key"],
             plain(r["description_md"]), (r["keywords"] || []).join(" "),
-            variable_names(cov).join(" "),
+            variable_names(cov).join(" "), per_cast_variables(r).map { |v| v["name"] }.join(" "),
             (taxa_by_key[r["dataset_key"]] || []).join(" ")
           ].compact.join(" ").downcase
         }.compact
@@ -1996,7 +2189,8 @@ module CalCOFI
         "is_holding"  => is_holding,
         "icon"        => cat.icon_for(r.dig("category", "icon")),
         "years_bar"   => cat.years_bar(cov["years"], cov["year_min"], cov["year_max"]),
-        "years_span"  => cat.year_span(cov),
+        # the span over BOTH grains (the profile table and sample_measurement), measured from the release
+        "years_span"  => cat.span_years(r),
         "map"         => is_holding ? nil : cat.map_svg(r),
         "access"      => access,
         "formats"     => is_holding ? [] : cat.formats(r),
@@ -2008,6 +2202,14 @@ module CalCOFI
         "related"     => related(cat, r),
         # normalised once here so a template never asks whether a variable is a string or an object
         "variables"   => cat.normalize_variables(cov),
+        # every measurement_type by grain — profile (obs_env / obs_bio) and per-cast (sample_measurement),
+        # counts measured from the release (CalCOFI.github.io#26); n_types is their total
+        "variable_groups" => cat.variable_groups(r),
+        "n_types"     => cat.variable_groups(r).sum { |g| g["variables"].size },
+        # where the values after this record's last year live (data-derived; nil for most datasets)
+        "successor"   => is_holding ? nil : cat.successor_note(r),
+        # the release tables the record names that the release really ships
+        "tables"      => is_holding ? (r["tables"] || []) : cat.shipped_tables(r),
         # S1: the leaf of each GCMD path, the full path kept as the chip's title (data.json and the
         # JSON-LD read r["keywords"] directly — untouched)
         "keyword_chips" => (r["keywords"] || []).map { |k| { "leaf" => cat.kw_leaf(k), "full" => k } },
@@ -2018,7 +2220,11 @@ module CalCOFI
         # nil where the release carries no coverage.json, and the page then says "taxa" as before.
         "n_species"   => cat.taxa_by_dataset.dig(key, "species"),
         "n_cov_taxa"  => cat.taxa_by_dataset.dig(key, "taxa"),
-        "objects"     => (r["objects"] || []).map { |o| o.merge("bytes_fmt" => Fmt.bytes(o["bytes"])) },
+        # what this release changed for the dataset: the record's objects, plus the shared per-cast
+        # table where the catalog says its object is new in this release (never one it merely carries)
+        "objects"     => ((r["objects"] || []) +
+                          cat.per_cast_objects(r).select { |o| o["since"] == cat.release["version"] })
+                         .map { |o| o.merge("bytes_fmt" => Fmt.bytes(o["bytes"])) },
         "sources"     => is_holding ? nil : cat.source_files(r)
       )
       [page,

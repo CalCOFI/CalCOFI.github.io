@@ -18,6 +18,12 @@
 #   _data/release_anchors.json    the version ids the rendered RELEASES.html really carries, so the
 #                                 ship's log anchors a release entry only where the page has a
 #                                 heading for it (plan 2026-09-09 § N2)
+#   _data/dataset_measurements.json  every PER-CAST measurement_type each dataset ships
+#                                 (sample_measurement), measured from the release's own parquet
+#                                 through the catalog by scripts/fetch_dataset_measurements.py — the
+#                                 record's coverage.variables[] is the `obs` grain only, so a dataset
+#                                 page listed 2 of calcofi_ctd-derived's 9 measurements (#26). Needs
+#                                 python `duckdb`; absent, the pages list profile variables only
 #   _data/taxa.json               the species catalog record (calcofi4db::build_taxa_catalog(),
 #                                 schema 1.0, ~2.4 MB) — every taxon with an observation at or below
 #                                 it, its lineage, its per-dataset observations and the names each
@@ -401,6 +407,17 @@ except Exception as e:
 json.dump(ids, open(out, "w"), indent=1)
 print(f"changelog anchors: {len(ids)} version headings on RELEASES.html")
 PY3
+
+# every per-cast measurement_type each dataset ships (sample_measurement), MEASURED from the release's
+# own parquet through the release catalog fetched above (CalCOFI.github.io#26). The record's
+# coverage.variables[] is the `obs` grain only, so without this a dataset page lists a dataset's
+# profile variables and none of its per-cast ones (calcofi_ctd-derived showed 2 of its 9). Optional,
+# like every sidecar: no `duckdb` module, no catalog or an unreachable object leaves the file absent and
+# the pages draw the profile group alone. Locally the git-ignored .venv-media (`pip install duckdb`).
+PYBIN="python3"; [ -x "$ROOT/.venv-media/bin/python" ] && PYBIN="$ROOT/.venv-media/bin/python"
+rm -f "$DATA/dataset_measurements.json"
+"$PYBIN" "$ROOT/scripts/fetch_dataset_measurements.py" --data "$DATA" ||
+  echo "NOTE: per-cast measurements not measured — the dataset pages list the profile variables only" >&2
 
 python3 - "$DATA/datasets.json" "$source_kind" "$record_url" <<'PY'
 import json, sys

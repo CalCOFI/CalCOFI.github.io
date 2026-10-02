@@ -34,12 +34,15 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install --quiet jsonschema pyyaml shot-scraper && shot-scraper install   # Chromium is the default; a newer shot-scraper rejects the positional
+      # duckdb: the per-cast variables of each dataset page (scripts/fetch_dataset_measurements.py)
+      - run: pip install --quiet jsonschema pyyaml duckdb shot-scraper && shot-scraper install   # Chromium is the default; a newer shot-scraper rejects the positional
 
       # the portal-identifier parser: a pure rule with its own fixtures, so it runs before anything
       # is built (scripts/build.sh runs it too)
       - name: Unit tests
-        run: ruby _test/derive_id_test.rb
+        run: |
+          ruby _test/derive_id_test.rb
+          ruby _test/dataset_measurements_test.rb
 
       # a products.yml `datasets:` key that is in neither datasets[] nor holdings[] of the record
       # fails the build right here, which is the point of fetching before building

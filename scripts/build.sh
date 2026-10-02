@@ -17,6 +17,9 @@ bundle install --quiet
 # one list to agree on. Skip with CC_SKIP_TESTS=1.
 if [ -z "${CC_SKIP_TESTS:-}" ]; then
   ruby _test/derive_id_test.rb >/dev/null || { echo "FAIL: _test/derive_id_test.rb" >&2; exit 1; }
+  # the rules behind a dataset page's variable list: per-cast groups, the shared per-cast table, the
+  # successor note (CalCOFI.github.io#26)
+  ruby _test/dataset_measurements_test.rb >/dev/null || { echo "FAIL: _test/dataset_measurements_test.rb" >&2; exit 1; }
 fi
 
 scripts/fetch_release.sh

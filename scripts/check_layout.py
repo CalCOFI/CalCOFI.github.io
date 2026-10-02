@@ -41,6 +41,11 @@ can only pass by the layout actually being fixed:
              and is never stretched with preserveAspectRatio=none; the history writes a ± label per
              band (own scale per row), carries the two scale radios and a one-line legend; and
              exactly one .mmf-tip div serves every figure.
+  variables  (dataset pages, CalCOFI.github.io#26) Coverage lists every measurement_type a dataset
+             ships, one group per grain: each group names its release table (obs_env | obs_bio |
+             sample_measurement), its heading's count is the chips drawn under it, and the page's
+             total is their sum. calcofi_ctd-derived draws exactly two groups, obs_env then
+             sample_measurement. It listed 2 of 9: the per-cast types live in sample_measurement.
   erddap     (dataset pages) each ERDDAP dataset id's tabledap page appears exactly once. It was
              listed twice: once under Download for its formats, once under Services for its page.
   species    (/species/ and one taxon page, plan 2026-09-09 § S3; round 2 § I1, I2, P1–P3, WS-R5)
@@ -105,6 +110,8 @@ DEFAULT_PATHS = [
     "/datasets/calcofi_prodo/",      # a holding: no map, no Access-from-the-release, a long name
     "/datasets/calcofi_bottle/",     # D2/S1/S2 (round 2, WS-R4): an unstated licence chip, GCMD
                                      #   keyword leaves, the Access tabset (5 groups, 30 endpoints)
+    "/datasets/calcofi_ctd-derived/",   # #26: 9 variables in two groups — obs_env (profile) and
+                                     #   sample_measurement (per cast), counts from the release
     "/datasets/cce-lter_euphausiids/",  # D3: the bio row's own taxa expander (37 taxa, custom licence)
     "/species/",                     # the species catalog: search + tree, the matrix, the icicle
     "/species/?panes=matrix",        # the matrix expanded: the tree folds into a vertical pill, never gone
@@ -263,6 +270,26 @@ PROBE = r"""
     const panels = dsAccess.querySelectorAll(".tabpanel").length;
     const shown = [...dsAccess.querySelectorAll(".tabpanel")].filter(p => !p.hidden).length;
     out.dsAccessTabset = { tabs, panels, shown };
+  }
+  // Coverage's variables, one group per grain (CalCOFI.github.io#26): the table beside each group,
+  // the chips it draws, the count its own heading states, and the page's total
+  const vgs = [...d.querySelectorAll("#coverage .ds-vargroup")];
+  if (vgs.length) {
+    const tot = (d.querySelector("#coverage .ds-cov-h") || {}).textContent || "";
+    const gl = [...d.querySelectorAll(".ds-glance > div")].find(x => (x.querySelector("dt") || {}).textContent === "years");
+    out.varGroups = {
+      total: parseInt(tot, 10),
+      glance: gl ? gl.querySelector("dd").textContent.trim() : null,
+      summaries: vgs.map(g => (g.querySelector(".ds-vargroup-h .cc-muted") || {}).textContent || ""),
+      groups: vgs.map(g => ({
+        grain: g.dataset.grain,
+        table: (g.querySelector(".ds-vargroup-t") || {}).textContent || "",
+        // every chip of the group, the collapsed "all N" ones too: the parser closes a <p> at the
+        // <details> inside it, so those chips are siblings of .ds-varchips, not its children
+        chips: g.querySelectorAll(".cc-chip").length,
+        said: parseInt(((g.querySelector(".ds-vargroup-h .cc-muted") || {}).textContent || "").match(/(\d+) variables?\s*$/)?.[1], 10)
+      }))
+    };
   }
   // any two-column region between the head band and Cite
   const cite = d.getElementById("cite");
@@ -1069,6 +1096,31 @@ def check(path, r, width, theme, fails, notes):
             fails.append(f"{where}: Access has {at['tabs']} tab(s) but {at['panels']} panel(s) (S2)")
         if at["shown"] != 1:
             fails.append(f"{where}: Access shows {at['shown']} panel(s) at once, expected 1 (S2)")
+
+    # a dataset's variables, by grain (CalCOFI.github.io#26): every group names the release table its
+    # values live in, each heading's count is the chips drawn under it, and the page's total is their sum
+    vg = r.get("varGroups")
+    if vg:
+        notes.append(f"{where}: variables {vg['total']} = " +
+                     " + ".join(f"{g['table']} {g['chips']}" for g in vg["groups"]))
+        for g in vg["groups"]:
+            if g["table"] not in ("obs_env", "obs_bio", "sample_measurement"):
+                fails.append(f"{where}: variable group {g['grain']!r} names table {g['table']!r}, expected obs_env | obs_bio | sample_measurement")
+            if g["said"] != g["chips"]:
+                fails.append(f"{where}: {g['table']} says {g['said']} variable(s) but draws {g['chips']}")
+        if vg["total"] != sum(g["chips"] for g in vg["groups"]):
+            fails.append(f"{where}: Coverage says {vg['total']} variables but its groups draw "
+                         f"{sum(g['chips'] for g in vg['groups'])}")
+        # the page's years cover BOTH grains: no group may run to a year the glance does not reach
+        yr = re.compile(r"(?<![\d,])((?:19|20)\d{2})(?![\d,])")
+        gl = [int(y) for y in yr.findall(vg.get("glance") or "")]
+        for s in vg.get("summaries") or []:
+            ys = [int(y) for y in yr.findall(s)]
+            if ys and gl and max(ys) > max(gl):
+                fails.append(f"{where}: a variable group runs to {max(ys)} but the years line says {vg['glance']!r}")
+        if "calcofi_ctd-derived" in path and [g["table"] for g in vg["groups"]] != ["obs_env", "sample_measurement"]:
+            fails.append(f"{where}: calcofi_ctd-derived should list its profile and its per-cast variables "
+                         f"(obs_env, sample_measurement), got {[g['table'] for g in vg['groups']]}")
 
     if width <= 400:
         for u in r.get("urls", []):

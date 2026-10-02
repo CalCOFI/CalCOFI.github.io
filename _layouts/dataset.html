@@ -76,6 +76,7 @@ layout: default
           the title. A release with no coverage.json says "taxa" from the record, as before. {%- endcomment -%}
         {%- if page.n_species %}<div title="{{ page.n_cov_taxa | escape }} taxa in all"><dt>species</dt><dd>{{ page.n_species | escape }}</dd></div>
         {%- elsif cov.n_taxa > 0 %}<div><dt>taxa</dt><dd>{{ cov.n_taxa | escape }}</dd></div>
+        {%- elsif page.n_types > 0 %}<div><dt>variables</dt><dd>{{ page.n_types | escape }}</dd></div>
         {%- elsif cov.n_variables > 0 %}<div><dt>variables</dt><dd>{{ cov.n_variables | escape }}</dd></div>{% endif -%}
         {%- if cov.depth_max_m %}<div><dt>depth</dt><dd>{{ cov.depth_min_m | default: 0 | escape }}–{{ cov.depth_max_m | escape }} m</dd></div>{% endif -%}
       </dl>
@@ -112,8 +113,8 @@ layout: default
 <nav class="cc-tabs ds-tabs" aria-label="On this page">
   <div class="cc-container">
     <a href="#overview">Overview</a>
-    {%- if page.variables.size > 0 or cov.taxa.size > 0 or cov.life_stages.size > 0 or cov.contributes_to.size > 0 -%}
-    <a href="#coverage">Coverage{% if page.variables.size > 0 %} <span class="n">{{ page.variables.size }}</span>{% endif %}</a>
+    {%- if page.n_types > 0 or cov.taxa.size > 0 or cov.life_stages.size > 0 or cov.contributes_to.size > 0 -%}
+    <a href="#coverage">Coverage{% if page.n_types > 0 %} <span class="n">{{ page.n_types }}</span>{% endif %}</a>
     {%- endif -%}
     {%- if page.access.size > 0 -%}<a href="#access">Access <span class="n">{{ page.n_endpoints }}</span></a>{%- endif -%}
     <a href="#cite">Cite</a>
@@ -129,6 +130,16 @@ layout: default
     <h2 class="sr-only">Overview</h2>
     {%- if r.description_md -%}
     <div class="cc-prose ds-desc">{{ r.description_md | markdownify }}</div>
+    {%- endif -%}
+    {%- assign succ = page.successor -%}
+    {%- if succ -%}
+    {%- comment -%} generated from the release (_plugins/datasets.rb successor_note): this dataset's
+      record ends in cov.year_max, and another dataset carries `btl_<type>` twins of its variables
+      to a later year. Nothing here is typed but the sentence. {%- endcomment -%}
+    <p class="ds-successor cc-prose">This record ends in <strong>{{ succ.last | escape }}</strong>. From {{ succ.last | plus: 1 }} on, the
+      bottle values are the <span class="mono">btl_*</span> variables of
+      <a href="{{ succ.url | relative_url }}">{{ succ.name | escape }}</a>
+      (<span class="mono">{{ succ.key | escape }}</span>) — {{ succ.n }} of this dataset’s variables ({{ succ.types | join: ", " | escape }}), through {{ succ.through | escape }}.</p>
     {%- endif -%}
     <dl class="ds-meta">
       {%- if a.pi_names.size > 0 -%}
@@ -170,30 +181,41 @@ layout: default
 </section>
 
 {%- comment -%} ── Coverage band: still one column, the chips flowing full width ── {%- endcomment -%}
-{%- if page.variables.size > 0 or cov.taxa.size > 0 or cov.life_stages.size > 0 or cov.contributes_to.size > 0 -%}
+{%- if page.n_types > 0 or cov.taxa.size > 0 or cov.life_stages.size > 0 or cov.contributes_to.size > 0 -%}
 <section class="cc-band cc-band-alt ds-section ds-one" id="coverage">
   <div class="cc-container">
     <h2 class="cc-h2">Coverage</h2>
-    {%- if page.variables.size > 0 -%}
+    {%- if page.n_types > 0 -%}
     {%- comment -%} each variable links its MEASUREMENT page where the release's measurements.json
       carries one — site.data.measurements.type_slugs is measurement_type => slug, so a variable the
       catalog has no page for (a bio variable, or a release without the record) keeps the Explorer
       link it always had and the slug rule is never guessed here (plan 2026-09-10 § D2, WS-M3)
     {%- endcomment -%}
-    <h3 class="cc-h3 ds-cov-h">{{ page.variables.size }} variable{% unless page.variables.size == 1 %}s{% endunless %}</h3>
-    <p class="ds-kw ds-varchips">
-      {%- for v in page.variables limit: 16 -%}
-      {% include dataset_variable.html v=v r=r %}
-      {%- endfor -%}
-      {%- if page.variables.size > 16 -%}
-      <details class="ds-details ds-more-vars">
-        <summary>all {{ page.variables.size }}</summary>
-        {%- for v in page.variables offset: 16 -%}
+    {%- comment -%} every measurement_type this dataset ships, one group per grain: the profile
+      group (obs_env / obs_bio — a value per depth bin or per taxon) and the per-cast group
+      (sample_measurement — a value per cast or tow). The tables are named beside their group and the
+      counts are the release's own (_data/dataset_measurements.json, coverage.json), CalCOFI.github.io#26.
+      A release without the per-cast sidecar draws the profile group alone. {%- endcomment -%}
+    <h3 class="cc-h3 ds-cov-h">{{ page.n_types }} variable{% unless page.n_types == 1 %}s{% endunless %}</h3>
+    {%- for g in page.variable_groups -%}
+    <div class="ds-vargroup" data-grain="{{ g.id | escape }}">
+      <p class="ds-vargroup-h"><span class="mono ds-vargroup-t">{{ g.table | escape }}</span>
+        <span class="cc-muted">{{ g.summary | escape }}</span></p>
+      <p class="ds-kw ds-varchips">
+        {%- for v in g.variables limit: 16 -%}
         {% include dataset_variable.html v=v r=r %}
         {%- endfor -%}
-      </details>
-      {%- endif -%}
-    </p>
+        {%- if g.variables.size > 16 -%}
+        <details class="ds-details ds-more-vars">
+          <summary>all {{ g.variables.size }}</summary>
+          {%- for v in g.variables offset: 16 -%}
+          {% include dataset_variable.html v=v r=r %}
+          {%- endfor -%}
+        </details>
+        {%- endif -%}
+      </p>
+    </div>
+    {%- endfor -%}
     {%- assign fullres = site.data.measurements.full_res[page.dataset_key] -%}
     {%- if fullres.size > 0 -%}
     {%- comment -%} the series this dataset carries that are not canonical for any measurement key —
@@ -379,8 +401,8 @@ layout: default
         {%- if r.status.updated -%}
         <div><dt>record updated</dt><dd>{{ r.status.updated | escape }}</dd></div>
         {%- endif -%}
-        {%- if r.tables.size > 0 -%}
-        <div><dt>release tables</dt><dd class="ds-kw">{% for t in r.tables %}<a class="cc-chip" href="https://calcofi.io/db-schema/#{{ t | escape }}">{{ t | escape }}</a>{% endfor %}</dd></div>
+        {%- if page.tables.size > 0 -%}
+        <div><dt>release tables</dt><dd class="ds-kw">{% for t in page.tables %}<a class="cc-chip" href="https://calcofi.io/db-schema/#{{ t | escape }}">{{ t | escape }}</a>{% endfor %}</dd></div>
         {%- endif -%}
         {%- if r.status.blockers -%}
         <div><dt>blockers</dt><dd>{{ r.status.blockers | escape }}</dd></div>

@@ -4,12 +4,24 @@
   key rule, never re-derived here), and the Explorer prefilled on this dataset and variable where it
   does not — a bio variable, or any release built without measurements.json (plan 2026-09-10 § D2).
 
+  A PER-CAST variable (v.grain == "per_cast": a value in sample_measurement, one per cast or tow) with
+  no measurement page is a plain chip, not a link: the Explorer's `var=` reads depth observations
+  only, so a prefilled link would open on nothing (CalCOFI.github.io#26). Every chip carries the
+  release's own count and years in its title, and the count beside the name where the record has it.
+
   include dataset_variable.html v=<normalized variable> r=<the dataset record>
 {%- endcomment -%}
 {%- assign mslug = site.data.measurements.type_slugs[include.v.name] -%}
+{%- capture vtitle -%}{{ site.data.measurements.labels[include.v.name] | default: include.v.description | default: include.v.name | escape }}
+{%- if include.v.n_fmt %} · {{ include.v.n_fmt }} values{% endif -%}
+{%- if include.v.n_samples_fmt %} on {{ include.v.n_samples_fmt }} sampling events{% endif -%}
+{%- if include.v.years %} · {{ include.v.years }}{% endif -%}
+{%- if mslug %} — its page in the measurements catalog{% elsif include.v.grain == "per_cast" %} — per cast, in sample_measurement{% endif -%}
+{%- if include.v.uri %} · {{ include.v.uri | escape }}{% endif -%}{%- endcapture -%}
 {%- if mslug -%}
-<a class="cc-chip" href="{{ '/measurements/' | append: mslug | append: '/' | relative_url }}"
-   title="{{ site.data.measurements.labels[include.v.name] | default: include.v.name | escape }} — its page in the measurements catalog{% if include.v.uri %} · {{ include.v.uri | escape }}{% endif %}">{{ include.v.name | escape }}{% if include.v.units %} <small>{{ include.v.units | escape }}</small>{% endif %}</a>
+<a class="cc-chip" href="{{ '/measurements/' | append: mslug | append: '/' | relative_url }}" title="{{ vtitle | strip }}">{{ include.v.name | escape }}{% if include.v.units %} <small>{{ include.v.units | escape }}</small>{% endif %}{% if include.v.n_fmt %} <small class="ds-vn">{{ include.v.n_fmt }}</small>{% endif %}</a>
+{%- elsif include.v.grain == "per_cast" -%}
+<span class="cc-chip ds-chip-cast" title="{{ vtitle | strip }}">{{ include.v.name | escape }}{% if include.v.units %} <small>{{ include.v.units | escape }}</small>{% endif %}{% if include.v.n_fmt %} <small class="ds-vn">{{ include.v.n_fmt }}</small>{% endif %}</span>
 {%- else -%}
-<a class="cc-chip" href="https://calcofi.io/explore/?datasets={{ include.r.dataset_key | escape }}&amp;var={{ include.v.name | escape }}"{% if include.v.uri %} title="{{ include.v.uri | escape }}"{% endif %}>{{ include.v.name | escape }}{% if include.v.units %} <small>{{ include.v.units | escape }}</small>{% endif %}</a>
+<a class="cc-chip" href="https://calcofi.io/explore/?datasets={{ include.r.dataset_key | escape }}&amp;var={{ include.v.name | escape }}" title="{{ vtitle | strip }}">{{ include.v.name | escape }}{% if include.v.units %} <small>{{ include.v.units | escape }}</small>{% endif %}{% if include.v.n_fmt %} <small class="ds-vn">{{ include.v.n_fmt }}</small>{% endif %}</a>
 {%- endif -%}
