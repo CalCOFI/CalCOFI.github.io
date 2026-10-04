@@ -113,6 +113,25 @@ class DatasetMeasurementsTest < Minitest::Test
                  g[0]["summary"]
   end
 
+  # The measurements catalog now lists the per-cast types too (grain "sample"; calcofi4db ws-1004d), so
+  # a per-cast type is in measurements.json AND in the dataset_measurements.json sidecar. The dataset
+  # page reads only the record's coverage (the obs grain) and the sidecar, never measurements.json, so
+  # each type is listed once, in the group of the table it lives in; the chip links its page because
+  # the catalog's type_slugs now has it.
+  def test_a_type_the_catalog_lists_as_per_cast_is_listed_once_on_the_dataset_page
+    r = derived_record
+    mm = { "type_slugs" => { "mld_sigma_theta_003" => "mld_sigma_theta_003", "chl_max" => "chl_max",
+                             "sigma_theta_ave" => "sigma_theta" },
+           "measurements" => [{ "key" => "chl_max", "grain" => "sample" }] }
+    g = catalog([r], "dataset_measurements" => per_cast_sidecar, "measurements" => mm).variable_groups(r)
+    names = g.flat_map { |x| x["variables"].map { |v| v["name"] } }
+    assert_equal names.uniq, names, "a type appears in one group only"
+    assert_equal %w[sigma_theta_ave spiciness0], g[0]["variables"].map { |v| v["name"] }, "profile group = obs_env"
+    assert_equal %w[mld_sigma_theta_003 chl_max], g[1]["variables"].map { |v| v["name"] }, "per-cast group = sample_measurement"
+    assert(g[1]["variables"].all? { |v| v["grain"] == "per_cast" })
+    assert(g[1]["variables"].all? { |v| mm["type_slugs"].key?(v["name"]) }, "every per-cast chip has a page to link")
+  end
+
   def test_no_sidecar_leaves_the_profile_group_alone
     r = derived_record
     g = catalog([r]).variable_groups(r)

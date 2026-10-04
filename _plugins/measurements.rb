@@ -124,6 +124,26 @@ module CalCOFI
 
     def series_types(m) = (m["series"] || []).map { |s| s["measurement_type"] }
 
+    # ── grain (calcofi4db >= the ws-1004d catalog; schema stays 1.1, the field is additive) ──
+    # A per-cast measurement (the mixed-layer depths, the chlorophyll maximum and integral) is read
+    # from `sample_measurement`: one value per cast, at no depth. The record says so with
+    # `grain: "sample"` on the SERIES, and on the KEY when every series is per-cast. A record with no
+    # `grain` (every obs_env key, and any record from before the catalog read per-cast types) is a
+    # depth observation and every method below returns what it always did.
+    def sample_series?(s) = s["grain"] == "sample"
+    def per_cast?(m)      = m["grain"] == "sample" ||
+                            (!(m["series"] || []).empty? && (m["series"] || []).all? { |s| sample_series?(s) })
+    def grain_table(m)    = per_cast?(m) ? "sample_measurement" : "obs_env"
+
+    # the one statement a per-cast page makes about its grain, said once under the title. It says what
+    # the page does NOT draw (a depth profile, an anomaly against a normal) because those are what a
+    # reader of the other pages expects; nothing here is a number, so nothing can drift from the record.
+    GRAIN_NOTE = "One value per cast. This measurement is worked out once for each cast rather than " \
+                 "read at every depth, so it has no depth profile and no anomaly against a normal; its " \
+                 "values are rows of sample_measurement, not of obs_env."
+
+    def grain_note(m) = per_cast?(m) ? GRAIN_NOTE : nil
+
     # ── the quiet pills a series can carry ───────────────────────────────────
     # A label map with a plain-text fallback, so a flag the next release adds renders as itself
     # rather than disappearing. `sentinel_suspected` is handled separately: with a declared bound
@@ -264,7 +284,8 @@ module CalCOFI
       t = m["totals"] || {}
       rows = []
       rows << { "dd" => Fmt.num(t["n_values"]), "dt" => "values",
-                "title" => "rows of obs_env — one measurement × one sample" } if t["n_values"]
+                "title" => per_cast?(m) ? "rows of sample_measurement — one value per cast" :
+                                          "rows of obs_env — one measurement × one sample" } if t["n_values"]
       if (nf = flagged_total(m)).positive?
         rows << { "dd" => Fmt.num(nf), "dt" => "flagged",
                   "title" => "values their provider flags questionable or bad (qual_ok is FALSE); " \
@@ -298,6 +319,8 @@ module CalCOFI
         k = s["dataset_key"]
         nf = flagged(s)
         chips = series_chips(m, s)
+        chips = [{ "flag" => "per_cast", "label" => "one value per cast",
+                   "title" => "read from sample_measurement: a value for the whole cast, at no depth" }] + chips if sample_series?(s)
         if nf.positive? && s["n_values"].to_i.positive?
           pct = (100.0 * nf / s["n_values"].to_i)
           # under a tenth of a percent the percentage reads "0.0 %", which says less than the count
@@ -560,28 +583,37 @@ module CalCOFI
                  "url"   => "#{EXPLORE}?lens=section&var=#{CGI.escape(key)}&anom=1" }
       end
       inlist = types.map { |t| "'#{t}'" }.join(", ")
+      tbl = grain_table(m)               # sample_measurement for a per-cast key, else obs_env
       sql = types.size == 1 ?
-        "SELECT * FROM __TBL:obs_env__ WHERE measurement_type = #{inlist} LIMIT 100;" :
-        "SELECT * FROM __TBL:obs_env__ WHERE measurement_type IN (#{inlist}) LIMIT 100;"
+        "SELECT * FROM __TBL:#{tbl}__ WHERE measurement_type = #{inlist} LIMIT 100;" :
+        "SELECT * FROM __TBL:#{tbl}__ WHERE measurement_type IN (#{inlist}) LIMIT 100;"
       out << { "name" => "db-query", "group" => "app", "about" => "SQL in your browser — the shell opens with this query",
                "url"  => "#{DBQUERY}?sql=#{CGI.escape(sql)}", "sql" => sql }
-      out.concat(erddap_ways(m))
-      out << { "name" => "Parquet", "group" => "parquet",
-               "about" => "obs_env is partitioned by measurement_type in the content-addressed store — resolved through the release catalog, never a path built by hand",
-               "code"  => (["SELECT * FROM read_json('…/#{release['version']}/catalog.json')",
-                            "-- objects[] WHERE table = 'obs_env'"] +
-                           types.each_with_index.map do |t, i|
-                             i.zero? ? "--   AND partition_value = '#{t}'" : "--                    | '#{t}'"
-                           end).join("\n") }
+      # ERDDAP's tables are the depth observations; a per-cast key has no row there to constrain
+      out.concat(erddap_ways(m)) unless per_cast?(m)
+      out << (per_cast?(m) ?
+        { "name" => "Parquet", "group" => "parquet",
+          "about" => "sample_measurement holds one row per cast and measurement_type, in the content-addressed store — resolved through the release catalog, never a path built by hand",
+          "code"  => (["SELECT * FROM read_json('…/#{release['version']}/catalog.json')",
+                       "-- objects[] WHERE table = 'sample_measurement'",
+                       "-- then filter the rows:"] +
+                      ["--   measurement_type IN (#{inlist})"]).join("\n") } :
+        { "name" => "Parquet", "group" => "parquet",
+          "about" => "obs_env is partitioned by measurement_type in the content-addressed store — resolved through the release catalog, never a path built by hand",
+          "code"  => (["SELECT * FROM read_json('…/#{release['version']}/catalog.json')",
+                       "-- objects[] WHERE table = 'obs_env'"] +
+                      types.each_with_index.map do |t, i|
+                        i.zero? ? "--   AND partition_value = '#{t}'" : "--                    | '#{t}'"
+                      end).join("\n") })
       out << { "name" => "R", "group" => "r", "code" => <<~R.strip }
         library(calcofi4r)
         con <- cc_get_db()                      # the promoted release
-        tbl(con, "obs_env") |> filter(measurement_type %in% c(#{types.map { |t| "\"#{t}\"" }.join(', ')}))
+        tbl(con, "#{tbl}") |> filter(measurement_type %in% c(#{types.map { |t| "\"#{t}\"" }.join(', ')}))
       R
       out << { "name" => "Python", "group" => "python", "code" => <<~PY.strip }
         import calcofi4py as cc
         con = cc.cc_get_db()
-        con.sql("SELECT * FROM obs_env WHERE measurement_type IN (#{inlist})").df()
+        con.sql("SELECT * FROM #{tbl} WHERE measurement_type IN (#{inlist})").df()
       PY
       # M12: "This page as data" folds into the ways-in tabset as the json group, rather than its
       # own section below — the entry, and the words, are otherwise unchanged.
@@ -627,11 +659,18 @@ module CalCOFI
         "rows" => (m["series"] || []).map { |s| series_row(s).merge("y" => s["years"] || {}) } }
     end
 
+    # a per-cast series (grain "sample") has no depth, so it contributes no row; a page whose series
+    # are all per-cast has none, and the layout then draws no "By depth" at all (`has_depth`)
+    def depth_series(m) = (m["series"] || []).reject { |s| sample_series?(s) }
+
     def depth_json(m)
-      bands = (m["series"] || []).flat_map { |s| (s["depth_bands"] || {}).keys }.uniq
+      ss = depth_series(m)
+      bands = ss.flat_map { |s| (s["depth_bands"] || {}).keys }.uniq
       { "key" => m["key"], "bands" => bands,
-        "rows" => (m["series"] || []).map { |s| series_row(s).merge("b" => s["depth_bands"] || {}) } }
+        "rows" => ss.map { |s| series_row(s).merge("b" => s["depth_bands"] || {}) } }
     end
+
+    def has_depth?(m) = !depth_series(m).empty?
 
     def months_json(m)
       { "key" => m["key"],
@@ -1226,7 +1265,11 @@ module CalCOFI
       s = +"CalCOFI holds #{Fmt.num(t['n_values'])} values of it from #{Fmt.num(t['n_roots'])} sampling events"
       s << " in #{t['n_datasets'].to_i == 1 ? 'one dataset' : "#{t['n_datasets']} datasets"}" if t["n_datasets"]
       s << ", #{span(t['year_min'], t['year_max'])}" if span(t["year_min"], t["year_max"])
-      s << (t["depth_max_m"].to_f.zero? ? ", at the surface." : ", from the surface to #{Fmt.num(t['depth_max_m'].to_f.round)} m.")
+      if per_cast?(m)
+        s << ", one per cast."
+      else
+        s << (t["depth_max_m"].to_f.zero? ? ", at the surface." : ", from the surface to #{Fmt.num(t['depth_max_m'].to_f.round)} m.")
+      end
       a = m["anomaly"]
       b = a && (a["bands"] || []).find { |x| x["band"] == a["spark_band"] }
       if b
@@ -1618,7 +1661,9 @@ module CalCOFI
       Jekyll.logger.info "measurements:",
                          "#{mm.measurements.size} pages · #{Fmt.num(mm.counts['series'])} series · " \
                          "#{mm.counts['datasets']} datasets · #{Fmt.num(mm.counts['obs_env_rows'])} values " \
-                         "at the release grain from #{mm.release['version']} · inline #{site.data['measurements']['inline_kb']} KB"
+                         "at the release grain" \
+                         "#{mm.counts['sample_measurement_rows'].to_i.positive? ? " + #{Fmt.num(mm.counts['sample_measurement_rows'])} per-cast values (#{mm.measurements.count { |x| mm.per_cast?(x) }} per-cast keys)" : ''} " \
+                         "from #{mm.release['version']} · inline #{site.data['measurements']['inline_kb']} KB"
     end
 
     def index_page(site, mm)
@@ -1653,6 +1698,10 @@ module CalCOFI
         "units"       => Fmt.units(m["units"]),
         "units_raw"   => Fmt.present(m["units"]),
         "is_unified"  => m["is_unified"],
+        # grain: a per-cast key (sample_measurement) says so under its title and draws no depth figure
+        "per_cast"    => mm.per_cast?(m),
+        "grain_note"  => mm.grain_note(m),
+        "has_depth"   => mm.has_depth?(m),
         "ids"         => id_rows(mm, m),
         # the face (plan 2026-09-11 § D1–D7) — nil for a key with neither a `face` block in the
         # record nor an entry in the media sidecar, and the layout then draws the page it drew
@@ -1691,7 +1740,7 @@ module CalCOFI
       bits = [mm.heading(m)]
       bits << m.dig("category", "name") if m.dig("category", "name")
       if t["n_values"]
-        bits << "#{Fmt.num(t['n_values'])} values in #{t['n_datasets']} CalCOFI dataset#{'s' if t['n_datasets'].to_i != 1}"
+        bits << "#{Fmt.num(t['n_values'])} values#{', one per cast,' if mm.per_cast?(m)} in #{t['n_datasets']} CalCOFI dataset#{'s' if t['n_datasets'].to_i != 1}"
       end
       bits << "#{t['year_min']}–#{t['year_max']}" if t["year_min"] && t["year_max"]
       "#{bits.join(' · ')} — CalCOFI integrated database #{mm.release['version']}."

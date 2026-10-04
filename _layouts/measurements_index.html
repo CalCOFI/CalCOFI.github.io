@@ -42,7 +42,8 @@ layout: default
         <div><dd class="tab">{{ c.series }}</dd><dt>series</dt></div>
         <div><dd class="tab">{{ c.datasets }}</dd><dt>datasets</dt></div>
         <div title="rows of obs_env — one measurement × one sample"><dd class="tab">{{ c.obs_env_rows_m }} M</dd><dt>values · release grain</dt></div>
-        <div title="with the two full-resolution supplementals, obs_ctd_full and obs_mets_full"><dd class="tab">{{ c.full_rows_m }} M</dd><dt>with full resolution</dt></div>
+        {% if mm.counts.sample_measurement_rows > 0 %}<div title="rows of sample_measurement — one value per cast (the mixed-layer depths and chlorophyll maximum and integral), counted apart from the depth observations"><dd class="tab">{{ c.sample_measurement_rows }}</dd><dt>values · one per cast</dt></div>
+        {% endif %}<div title="with the two full-resolution supplementals, obs_ctd_full and obs_mets_full"><dd class="tab">{{ c.full_rows_m }} M</dd><dt>with full resolution</dt></div>
         <div title="the other {{ c.n_no_p01 }} carry no NERC P01 concept and are listed under their own names"><dd class="tab">{{ c.n_p01 }}</dd><dt>with a NERC concept</dt></div>
       </dl>
     </div>
