@@ -51,6 +51,19 @@ module CalCOFI
       @base = "https://calcofi.io" if @base.empty?
     end
 
+    # The chip already says "stands in: <label>'s face", so the registry's note (which by convention
+    # reads "stands in: temperature's face (underway sea-surface reading)") is cut to what it adds,
+    # "underway sea-surface reading"; a note not of that shape passes through unchanged. Before this,
+    # every stand-in page said "stands in: temperature's face, stands in: temperature's face (...)".
+    def self.stands_in_tail(note)
+      s = note.to_s.strip
+      return nil if s.empty?
+      t = s.sub(/\Astands in:\s*[^,(]*?['’]s face\s*(?:--\s*|,\s*)?/i, "").strip
+      return s if t == s
+      t = t[1..-2].strip if t.start_with?("(") && t.end_with?(")") && t.count("(") == 1
+      t.empty? ? nil : t
+    end
+
     def release      = rec["release"] || {}
     # the record's counts plus three the head's copy needs, so "79 measurements" reads as the TOTAL
     # and the NERC-keyed count as a part of it (Ben, 2026-09-10): how many keys unify two datasets'
@@ -1023,7 +1036,7 @@ module CalCOFI
       o = of && by_key[of]
       { "face_of" => of, "label" => o ? heading(o) : of,
         "url" => o && page_url(o),
-        "why" => Fmt.present((m["face"] || {})["stands_in_note"]) }.compact
+        "why" => self.class.stands_in_tail(Fmt.present((m["face"] || {})["stands_in_note"])) }.compact
     end
 
     # ── What: the entity NERC names, reached only by identity ────────────────
