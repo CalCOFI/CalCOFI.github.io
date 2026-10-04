@@ -1362,6 +1362,8 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 .mm-h { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space) calc(var(--space) * 4); align-items: end; }
 .mm-h .cc-h1 { margin: 2px 0 4px; }
 .mm-sub { font-size: var(--fs-sm); color: var(--muted); max-width: 72ch; margin: 0 0 4px; }
+.mm-grain { font-size: var(--fs-sm); color: var(--muted); max-width: 72ch; margin: 6px 0 4px; }
+.mm-grain .cc-chip { margin-right: 6px; }
 .mm-ids { display: flex; flex-wrap: wrap; gap: 5px 14px; font-size: 13px; }
 .mm-ids a, .mm-ids .mono { font-family: var(--mono); font-size: 12.5px; }
 .mm-nolabel { margin: 6px 0 0; max-width: 72ch; }

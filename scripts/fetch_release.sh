@@ -31,9 +31,11 @@
 #                                 NOTHING else; without it the site builds with no species pages
 #                                 (plan 2026-09-09 § D7)
 #   _data/measurements.json       the measurements catalog record
-#                                 (calcofi4db::build_measurements_catalog(), schema 1.0, ~170 KB) —
+#                                 (calcofi4db::build_measurements_catalog(), schema 1.1, ~170 KB) —
 #                                 one entry per measurement KEY with its series, per-year, per-month,
-#                                 per-depth-band and per-flag counts, bounds and related keys.
+#                                 per-depth-band and per-flag counts, bounds and related keys. A
+#                                 per-cast key (grain "sample", read from sample_measurement) is one
+#                                 entry too; the schema version does not move for it (additive field)
 #                                 _plugins/measurements.rb draws /measurements/ from it and NOTHING
 #                                 else; without it the site builds with no measurement pages and the
 #                                 front door's measurement doors fall back to the Explorer
