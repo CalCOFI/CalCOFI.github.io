@@ -5,7 +5,7 @@
 #
 #   _data/datasets.json           the record (calcofi4db::build_dataset_catalog(), schema 1.x)
 #   _data/versions.json           the release history (the release strip's "all releases")
-#   _data/grid.geojson            the 218 station-grid cells (the extent map's backdrop)
+#   _data/grid.geojson            the station-grid cells (the extent map's backdrop; 225 from v2026.10.04)
 #   _data/coverage_stations.json  which grid cells each dataset actually sampled, and how much
 #                                 (~470 KB; read at BUILD time to draw the map's filled marks —
 #                                 never shipped to the browser)

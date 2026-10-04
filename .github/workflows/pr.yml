@@ -43,6 +43,8 @@ jobs:
         run: |
           ruby _test/derive_id_test.rb
           ruby _test/dataset_measurements_test.rb
+          ruby _test/measurements_grain_test.rb
+          ruby _test/licence_pending_test.rb
 
       # a products.yml `datasets:` key that is in neither datasets[] nor holdings[] of the record
       # fails the build right here, which is the point of fetching before building

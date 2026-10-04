@@ -22,6 +22,8 @@ if [ -z "${CC_SKIP_TESTS:-}" ]; then
   ruby _test/dataset_measurements_test.rb >/dev/null || { echo "FAIL: _test/dataset_measurements_test.rb" >&2; exit 1; }
   # what a measurement page does with grain "sample" (one value per cast: no depth figure, no anomaly)
   ruby _test/measurements_grain_test.rb >/dev/null || { echo "FAIL: _test/measurements_grain_test.rb" >&2; exit 1; }
+  # a licence the provider has not stated yet reads as pending in the citation and is absent from JSON-LD
+  ruby _test/licence_pending_test.rb >/dev/null || { echo "FAIL: _test/licence_pending_test.rb" >&2; exit 1; }
 fi
 
 scripts/fetch_release.sh
