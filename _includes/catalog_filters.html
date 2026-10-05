@@ -37,7 +37,7 @@
     <label for="ds-lic">Licence</label>
     <select id="ds-lic" data-facet="lic">
       <option value="">all</option>
-      {%- for v in f.licenses %}<option value="{{ v | escape }}">{{ v | escape }}</option>{% endfor -%}
+      {%- for v in f.licenses %}<option value="{{ v | escape }}">{% if v == 'unknown' %}pending (not yet established){% else %}{{ v | escape }}{% endif %}</option>{% endfor -%}
     </select>
   </div>
   <div class="ds-filter">

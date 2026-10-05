@@ -1,6 +1,6 @@
 /* assets/reach.js — the reach: where and when, measured (plan 2026-09-07 § D-3).
    Two drawings from the inline JSON `#reach` (_plugins/datasets.rb, from the release record):
-     · the map — the 218 grid cells by pattern over the coastline, the standard and extended lines as
+     · the map — the grid cells (one per official station, beside the kept historical ones) by pattern over the coastline, the standard and extended lines as
        polylines. STATIC (Ben, 2026-09-07): the cruise sweep and its year odometer read as one
        station visited a year, so they went;
      · the years strip — one row per dataset in the release, one cell per year, opacity by how much
@@ -53,11 +53,18 @@
     st.forEach(function (s) { if (s.p !== 'h') (byLine[s.p + s.l] = byLine[s.p + s.l] || []).push(s); });
     Object.keys(byLine).forEach(function (k) {
       var arr = byLine[k].slice().sort(function (a, b) { return a.s - b.s; });
+      if (arr.length < 2) return;   // a one-station line (93.4, 91.7, … since the 225-cell grid) is a dot, not a track
       el('polyline', { points: arr.map(function (s) { return px(s.x).toFixed(1) + ',' + py(s.y).toFixed(1); }).join(' '), cls: 'trk ' + arr[0].p }, svg);
     });
     // the stations, historical under extended under standard
-    var stdLines = st.filter(function (s) { return s.p === 's'; }).map(function (s) { return +s.l; })
-      .filter(function (v, i, a) { return a.indexOf(v) === i; }).sort(function (a, b) { return b - a; });   // north (93.3) to south (76.7)
+    // the lines the map labels are lines of the survey pattern: two or more stations. Line 93.4 holds the one
+    // SCCOOS inshore station and sorts north of 93.3, so "the northernmost standard line" read 93.4.
+    function linesOf(pat) {
+      var n = {};
+      st.forEach(function (s) { if (s.p === pat) n[+s.l] = (n[+s.l] || 0) + 1; });
+      return Object.keys(n).filter(function (l) { return n[l] > 1; }).map(Number);
+    }
+    var stdLines = linesOf('s').sort(function (a, b) { return b - a; });   // north (93.3) to south (76.7)
     ['h', 'e', 's'].forEach(function (pat) {
       st.filter(function (s) { return s.p === pat; }).forEach(function (s) {
         var c = el('circle', { cx: px(s.x).toFixed(1), cy: py(s.y).toFixed(1), r: pat === 's' ? 3 : pat === 'e' ? 2.6 : 2, cls: 'st ' + pat, 'data-key': s.k }, svg);
@@ -67,7 +74,7 @@
     // line labels at the west end of the outermost standard lines and the first extended one
     var labelLines = [];
     if (stdLines.length) labelLines.push([stdLines[0], 's'], [stdLines[stdLines.length - 1], 's']);
-    var extLines = st.filter(function (s) { return s.p === 'e'; }).map(function (s) { return +s.l; }).sort(function (a, b) { return b - a; });
+    var extLines = linesOf('e').sort(function (a, b) { return b - a; });
     if (extLines.length) labelLines.push([extLines[extLines.length - 1], 'e']);
     labelLines.forEach(function (q) {
       var w = st.filter(function (s) { return +s.l === q[0] && s.p === q[1]; }).sort(function (a, b) { return a.x - b.x; })[0];

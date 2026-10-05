@@ -78,7 +78,7 @@ layout: default
         {%- elsif cov.n_taxa > 0 %}<div><dt>taxa</dt><dd>{{ cov.n_taxa | escape }}</dd></div>
         {%- elsif page.n_types > 0 %}<div><dt>variables</dt><dd>{{ page.n_types | escape }}</dd></div>
         {%- elsif cov.n_variables > 0 %}<div><dt>variables</dt><dd>{{ cov.n_variables | escape }}</dd></div>{% endif -%}
-        {%- if cov.depth_max_m %}<div><dt>depth</dt><dd>{{ cov.depth_min_m | default: 0 | escape }}–{{ cov.depth_max_m | escape }} m</dd></div>{% endif -%}
+        {%- if cov.depth_max_m %}<div><dt>depth</dt><dd>{% if cov.depth_max_m == 0 and cov.depth_min_m == 0 %}surface only{% else %}{{ cov.depth_min_m | default: 0 | escape }}–{{ cov.depth_max_m | escape }} m{% endif %}</dd></div>{% endif -%}
       </dl>
       {%- if page.years_bar -%}
       <figure class="ds-figure ds-spark-fig">
@@ -153,7 +153,8 @@ layout: default
       </dd></div>
       {%- endif -%}
       {%- if a.contact -%}
-      <div><dt>Contact</dt><dd><a href="mailto:{{ a.contact | escape }}">{{ a.contact | escape }}</a></dd></div>
+      {%- assign contact_addr = a.contact | remove_first: "mailto:" -%}
+      <div><dt>Contact</dt><dd><a href="mailto:{{ contact_addr | escape }}">{{ contact_addr | escape }}</a></dd></div>
       {%- endif -%}
       {%- if a.funding -%}<div><dt>Funding</dt><dd>{{ a.funding | escape }}</dd></div>{%- endif -%}
       {%- if page.keyword_chips.size > 0 -%}

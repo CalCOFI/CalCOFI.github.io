@@ -299,7 +299,7 @@ module CalCOFI
         {
           "release"    => { "version" => release["version"], "date" => release["release_date"] },
           "numbers"    => numbers,
-          # the 218 cells: k key · l line · s station · p pattern · x lon · y lat (2 decimals: 1 km)
+          # the grid cells: k key · l line · s station · p pattern · x lon · y lat (2 decimals: 1 km)
           "stations"   => @grid.map do |g|
             { "k" => g["key"], "l" => g["line"], "s" => g["station"], "p" => pat[g["pattern"]] || "h",
               "x" => g["lon"].round(2), "y" => g["lat"].round(2) }
@@ -1645,15 +1645,23 @@ module CalCOFI
       end
     end
 
+    # the licence line of a citation. `unknown` is metadata/license.csv's "not yet established" (an open
+    # question names the field): it reads as pending, never as the raw id; blank is no line at all.
+    def license_text(a)
+      lic = Fmt.present(a["license"])
+      return nil unless lic
+      return "License: #{Fmt.present(a['license_name']) ? a['license_name'].downcase : 'not yet established'}" if lic == "unknown"
+      lic == "custom" && Fmt.present(a["license_url"]) ? "License: #{lic} (#{a['license_url']})" : "License: #{lic}"
+    end
+
     # ── cite: the same wording as calcofi4r::cc_cite() ───────────────────────
     def cite_text(r)
       a = r["attribution"] || {}
       lines = []
       lines << (Fmt.present(a["citation_main"]) ||
                 "#{r['dataset_name'] || r['dataset_key']} [dataset].")
-      if (lic = Fmt.present(a["license"]))
-        lines << (lic == "custom" && Fmt.present(a["license_url"]) ?
-                  "License: #{lic} (#{a['license_url']})" : "License: #{lic}")
+      if (ltxt = license_text(a))
+        lines << ltxt
       end
       lines << "DOI: https://doi.org/#{a['doi']}" if Fmt.present(a["doi"])
       lines << "Acknowledgement: #{a['acknowledgement']}" if Fmt.present(a["acknowledgement"])
@@ -1664,8 +1672,7 @@ module CalCOFI
       a = r["attribution"] || {}
       cit = Fmt.present(a["citation_main"])
       note = [
-        (Fmt.present(a["license"]) ? (a["license"] == "custom" && Fmt.present(a["license_url"]) ?
-          "License: #{a['license']} (#{a['license_url']})" : "License: #{a['license']}") : nil),
+        license_text(a),
         (Fmt.present(a["acknowledgement"]) ? "Acknowledgement: #{a['acknowledgement']}" : nil)
       ].compact.join("; ")
       fields = {
@@ -1722,7 +1729,8 @@ module CalCOFI
       end
       kw = (r["keywords"] || []) + [r.dig("category", "name")].compact + (cov["variables"] || [])
       node["keywords"] = kw.uniq unless kw.empty?
-      node["license"] = Fmt.present(a["license_url"]) || Fmt.present(a["license"])
+      # JSON-LD's license is a URL or a licence: "unknown" (not yet established) is neither, so it is left out
+      node["license"] = Fmt.present(a["license_url"]) || (a["license"] == "unknown" ? nil : Fmt.present(a["license"]))
       node["citation"] = Fmt.present(a["citation_main"])
       node["creator"] = creators(r)
       node["provider"] = org(r["provider"])

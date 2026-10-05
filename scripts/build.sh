@@ -20,6 +20,10 @@ if [ -z "${CC_SKIP_TESTS:-}" ]; then
   # the rules behind a dataset page's variable list: per-cast groups, the shared per-cast table, the
   # successor note (CalCOFI.github.io#26)
   ruby _test/dataset_measurements_test.rb >/dev/null || { echo "FAIL: _test/dataset_measurements_test.rb" >&2; exit 1; }
+  # what a measurement page does with grain "sample" (one value per cast: no depth figure, no anomaly)
+  ruby _test/measurements_grain_test.rb >/dev/null || { echo "FAIL: _test/measurements_grain_test.rb" >&2; exit 1; }
+  # a licence the provider has not stated yet reads as pending in the citation and is absent from JSON-LD
+  ruby _test/licence_pending_test.rb >/dev/null || { echo "FAIL: _test/licence_pending_test.rb" >&2; exit 1; }
 fi
 
 scripts/fetch_release.sh

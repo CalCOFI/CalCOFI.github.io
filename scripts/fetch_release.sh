@@ -5,7 +5,7 @@
 #
 #   _data/datasets.json           the record (calcofi4db::build_dataset_catalog(), schema 1.x)
 #   _data/versions.json           the release history (the release strip's "all releases")
-#   _data/grid.geojson            the 218 station-grid cells (the extent map's backdrop)
+#   _data/grid.geojson            the station-grid cells (the extent map's backdrop; 225 from v2026.10.04)
 #   _data/coverage_stations.json  which grid cells each dataset actually sampled, and how much
 #                                 (~470 KB; read at BUILD time to draw the map's filled marks —
 #                                 never shipped to the browser)
@@ -31,9 +31,11 @@
 #                                 NOTHING else; without it the site builds with no species pages
 #                                 (plan 2026-09-09 § D7)
 #   _data/measurements.json       the measurements catalog record
-#                                 (calcofi4db::build_measurements_catalog(), schema 1.0, ~170 KB) —
+#                                 (calcofi4db::build_measurements_catalog(), schema 1.1, ~170 KB) —
 #                                 one entry per measurement KEY with its series, per-year, per-month,
-#                                 per-depth-band and per-flag counts, bounds and related keys.
+#                                 per-depth-band and per-flag counts, bounds and related keys. A
+#                                 per-cast key (grain "sample", read from sample_measurement) is one
+#                                 entry too; the schema version does not move for it (additive field)
 #                                 _plugins/measurements.rb draws /measurements/ from it and NOTHING
 #                                 else; without it the site builds with no measurement pages and the
 #                                 front door's measurement doors fall back to the Explorer

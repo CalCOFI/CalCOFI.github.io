@@ -14,7 +14,9 @@
 
   Text: CC-BY-4.0 -> "CC BY 4.0" · CC0-1.0 -> "CC0 · public domain" · any other stated id -> `name`
   if given, else the id with hyphens loosened to spaces (never the bare id) · custom -> "provider
-  terms ↗", linking license_url · blank -> "unstated", no link, title explains why.
+  terms ↗", linking license_url · blank -> "unstated", no link, title explains why · "unknown"
+  (metadata/license.csv: an open question names the field) -> "licence pending", dimmed like "unstated"
+  but named as pending, never the raw id.
 
   include licence_chip.html license=d.license license_url=d.license_url name=d.license_name
 
@@ -33,6 +35,8 @@
 {%- assign glyph = '<svg aria-hidden="true"><use href="#i-licence"/></svg>' -%}
 {%- if lic == "" -%}
 <span class="{{ cls }} cc-lic-unstated" title="the record carries no licence">{{ glyph }}unstated</span>
+{%- elsif lic == "unknown" -%}
+<span class="{{ cls }} cc-lic-unstated" title="{{ include.name | default: 'Not yet established' | escape }} — the licence is an open question with the provider (metadata/license.csv `unknown`)">{{ glyph }}licence pending</span>
 {%- elsif lic == "custom" -%}
 {%- if url -%}
 <a class="{{ cls }}" href="{{ url }}" rel="external" title="the provider's own terms">{{ glyph }}provider terms ↗</a>

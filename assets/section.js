@@ -206,8 +206,12 @@
     });
     el('text', { x: 22, y: 400, cls: 'axt', transform: 'rotate(-90 22 400)', 'text-anchor': 'middle', text: 'depth (m)' }, ax);
     el('line', { x1: AX_X, x2: floor.coastX + 2, y1: FLOOR_Y, y2: FLOOR_Y, cls: 'axl' }, ax);
+    var lastLabelX = -1e9;
     stations.forEach(function (st) {                                                // the station axis, from the record's line-90 standard cells
       el('line', { x1: sx(st), x2: sx(st), y1: FLOOR_Y, y2: FLOOR_Y + 6, cls: 'axl' }, ax);
+      // decimal stations exist (27.7, next to 28): a label closer than 22 px to the last one is left off, its tick stays
+      if (sx(st) - lastLabelX < 22) return;
+      lastLabelX = sx(st);
       el('text', { x: sx(st), y: FLOOR_Y + 22, cls: 'ax', 'text-anchor': 'middle', text: String(st) }, ax);
     });
     el('text', { x: ST_X0, y: 646, cls: 'axt', text: '← offshore' }, ax);

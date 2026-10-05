@@ -36,6 +36,9 @@ the marks are <code>metadata/measurement_scale.csv</code>'s, each hovering to it
 {%- endif -%}
 
 {%- comment -%} ── the anomaly, band by band ─────────────────────────────── {%- endcomment -%}
+{%- comment -%} a per-cast key (grain "sample": one value per cast) has no anomaly to draw and the page says so
+  once, under its title, so the panel and its empty-state sentence are left out {%- endcomment -%}
+{%- unless page.per_cast -%}
 {%- comment -%} M10 (round 2, WS-R2): the four-line mono legend and the depth paragraph move into
   an ⓘ on the heading (D1), the scale becomes a choice the reader makes (own scale per band is the
   default, D4), and the legend is one line of swatches. The computation sentence and the credit are
@@ -66,6 +69,7 @@ the marks are <code>metadata/measurement_scale.csv</code>'s, each hovering to it
 {%- else -%}
 <p class="mmf-empty">{{ f.anomaly_note | default: 'The release builds no climatology for this measurement, so there is no normal to draw a departure from.' | escape }}</p>
 {%- endif -%}
+{%- endunless -%}
 
 {%- comment -%} ── the EOV card and the borrowed context ─────────────────── {%- endcomment -%}
 <div class="mmf-why-row">
