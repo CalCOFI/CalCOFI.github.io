@@ -1071,7 +1071,11 @@ CARD_TABSETS = ("ts-explore", "ts-access")
 # a 169 px DECREASE, not a growth: D1 drops the format phrase from every homed row, D4/D5 drop the
 # catalog's own #ds-q field and both per-tab search boxes on the front door (their own idxtab-form
 # input + link row), more than the D3 variables/taxa expander (closed by default) adds back.
-DATA_SECTION_BASE = 2948
+# Re-measured 2026-10-05 on main's own build (pr.yml workflow_dispatch, run 37361035371) with the promoted
+# v2026.10.05 record: 3,113 px light and dark at 1470 — the same 3,113 px this branch measures
+# (run 37361038873), so the +165 px is the record's growth (cce-lter_iron, 96 measurement keys
+# against v2026.09.11's 89), not a change to the catalog's furniture.
+DATA_SECTION_BASE = 3113
 DATA_SECTION_GROWTH = 120
 
 _PROBED = {}          # pin hrefs answered once per run, not per width and theme
