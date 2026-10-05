@@ -96,7 +96,7 @@ Lighthouse is NOT run here (it needs its own Chrome and ~30 s a page); README sa
 
 Needs shot-scraper (`pipx install shot-scraper && shot-scraper install`).
 """
-import argparse, json, re, subprocess, sys
+import argparse, json, os, re, subprocess, sys
 
 DEFAULT_PATHS = [
     "/",                             # the front door: the section, the numbers, the bento (plan 2026-09-07)
@@ -133,11 +133,82 @@ DEFAULT_PATHS = [
     "/measurements/nitrate/",              # structure: one ion, a bounded scale, six anomaly bands
     "/measurements/salinity/",             # composition: the sea-salt ion bar, two datasets
     "/measurements/dic/",                  # composition: a pool, the Bjerrum plot, no scale
-    "/measurements/synechococcus/",        # organism: the species face through S25 → WoRMS
+    "/measurements/synechococcus/",        # organism: the species face through S25 → WoRMS — a
+                                           #   record-dependent exemplar, see FACE_EXEMPLARS
     "/measurements/wind_speed_ms/",        # no concept: the Beaufort scale and no ids at all
     "/measurements/est_nitrate_sta_corr/", # stands in: nitrate's face, none of nitrate's ids
     "/measurements/ammonia/",              # structure: an equilibrium pair, a left-censored scale
 ]
+
+# ── record-dependent exemplars ────────────────────────────────────────────────
+# A face state can only be exercised on a key the BUILT record carries. The organism state's
+# exemplar was /measurements/synechococcus/, a picoplankton key; cce-lter_picoplankton-bacteria left
+# the release's measurements record at v2026.10.01, so the page stopped being built and the probe
+# measured the server's 404 page — which has no header, so it read as "no phone menu button" (PR #27,
+# 2026-10-05). The exemplar is now resolved against the same _data/ files the build read: the
+# preferred key if the record carries it, else the first key of that face kind the record does carry,
+# else the path is dropped with a note saying the state is not exercised on this record. Without
+# _data/measurements.json (a --base pointed at the live site) the default paths stand as written,
+# and a page that answers >= 400 fails as missing, never as a layout fault.
+FACE_EXEMPLARS = {"organism": "/measurements/synechococcus/"}
+
+
+def _record_face_kinds(record, media):
+    """{measurement key: face kind} from the record's own `face` and the media sidecar's"""
+    items = (record or {}).get("measurements") or []
+    items = items if isinstance(items, list) else list(items.values())
+    mm = (media or {}).get("measurements") or {}
+    kinds = {}
+    for m in items:
+        k = m.get("key") or m.get("slug")
+        if not k:
+            continue
+        kinds[k] = (m.get("face") or {}).get("kind") or ((mm.get(k) or {}).get("face") or {}).get("kind")
+    return kinds
+
+
+def resolve_face_exemplars(paths, record, media, notes=None):
+    """swap or drop each FACE_EXEMPLARS path the record cannot build (see the block comment)"""
+    if record is None:
+        return list(paths)
+    kinds = _record_face_kinds(record, media)
+    out = []
+    for p in paths:
+        kind = next((k for k, v in FACE_EXEMPLARS.items() if v == p), None)
+        key = p.strip("/").split("/")[-1]
+        if kind is None or key in kinds:
+            out.append(p)
+            continue
+        alt = sorted(k for k, v in kinds.items() if v == kind)
+        if alt:
+            out.append(f"/measurements/{alt[0]}/")
+            if notes is not None:
+                notes.append(f"{p}: not in this record — the {kind} face is checked on /measurements/{alt[0]}/")
+        elif notes is not None:
+            notes.append(f"{p}: not in this record and no key of face kind {kind!r} is — "
+                         f"the {kind} face is not exercised on this record")
+    return out
+
+
+def _read_json(path):
+    try:
+        with open(path) as f:
+            return json.load(f)
+    except (OSError, ValueError):
+        return None
+
+
+def page_status(url):
+    """the HTTP status of a GET, None when unreachable — a missing page must fail as missing"""
+    import urllib.request, urllib.error
+    try:
+        with urllib.request.urlopen(url, timeout=20) as r:
+            return r.status
+    except urllib.error.HTTPError as e:
+        return e.code
+    except Exception:  # noqa: BLE001
+        return None
+
 
 # ── the probe ─────────────────────────────────────────────────────────────────
 # `shot-scraper javascript` has no --width (only `shot` does), so the page is loaded in a
@@ -957,6 +1028,9 @@ def probe(url, width, theme, browser, wait):
               .replace("__PROBE__", PROBE).replace("__WAIT__", str(wait)))
     # the host page must be same-origin with the target, so load the target itself and let the
     # iframe inside it be the one that is measured at the width under test
+    status = page_status(target)
+    if status is not None and status >= 400:
+        return {"error": f"HTTP {status} — the page is not on this build"}
     cmd = ["shot-scraper", "javascript", target, js, "--browser", browser]
     r = subprocess.run(cmd, capture_output=True, text=True, timeout=180)
     if r.returncode:
@@ -1929,8 +2003,11 @@ def main():
     ap.add_argument("--wait", type=int, default=2500, help="ms to settle (fonts, masonry) before measuring")
     a = ap.parse_args()
 
-    urls = a.url or [a.base.rstrip("/") + p for p in DEFAULT_PATHS]
     fails, notes = [], []
+    data = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "_data")
+    paths = resolve_face_exemplars(DEFAULT_PATHS, _read_json(os.path.join(data, "measurements.json")),
+                                   _read_json(os.path.join(data, "measurements_media.json")), notes)
+    urls = a.url or [a.base.rstrip("/") + p for p in paths]
     for url in urls:
         for width in a.widths:
             for theme in a.themes:
