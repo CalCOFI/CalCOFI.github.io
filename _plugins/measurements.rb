@@ -412,7 +412,7 @@ module CalCOFI
     def baseline_row(m)
       if m["climatology"]
         "A monthly climatology exists for this measurement (the release's <span class=\"mono\">climatology</span> " \
-          "table: 1993–2013, dataset × grid cell × calendar month × 10 m bin), so the Explorer can draw anomalies " \
+          "table: 1993–2013, dataset × station × the cruise's month × 10 m bin), so the Explorer can draw anomalies " \
           "against it rather than values."
       else
         "No climatology row is built for this measurement, so the Explorer draws values, not anomalies."
