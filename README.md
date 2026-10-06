@@ -522,8 +522,12 @@ scripts/check_species_media.py   the gate: an allow-listed licence, a credit, a 
                                  named taxon on every asset; silhouettes on >= 95 % of the taxa
 scripts/fetch_release.sh         {bucket}/species-media/{release}/taxa_media.json →
                                  _data/taxa_media.json (git-ignored, silently absent)
+scripts/media_due.py             which keys of the promoted release neither sidecar has (exit 3
+                                 = due); the release's deploy (workflows/scripts/
+                                 deploy_consumers.sh, step 7) runs it and, only when due, the
+                                 fetch → check → --upload → refresh.yml above
 .github/workflows/species-media.yml   weekly, Sundays 09:00 UTC — DISABLED (`if: false`) until a
-                                 GCP_SA_KEY secret exists; run it by hand until then
+                                 GCP_SA_KEY secret exists; the release deploy runs it instead
 ```
 
 **The sources, in the order they are asked.** **PhyloPic** for the silhouette — by WoRMS id, else
