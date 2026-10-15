@@ -230,13 +230,17 @@
         var payload = { app: cfg.app, kind: 'feedback', label: cfg.label, title: '', link: '', datasets: '', url: url, release: cfg.release, viewport: viewport, theme: theme,
                         text: ta.value.trim(), email: em.value.trim(), image: image, website: '', user_agent: navigator.userAgent };
         return fetch(cfg.endpoint, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain;charset=UTF-8' }, redirect: 'follow' });
-      }).then(function (res) { return res.json().catch(function () { return null; }); }).then(function (j) {
+      }).then(function (res) {   // a reply that is not JSON is logged, so the next time it happens we see what came back
+        return res.text().then(function (t) { try { return JSON.parse(t); } catch (e) { console.warn('[feedback] reply was not JSON', res.status, res.type, res.url, t.slice(0, 300)); return null; } },
+                               function (e) { console.warn('[feedback] reply unreadable', res.status, res.type, e); return null; });
+      }).then(function (j) {
         if (j && j.ok === false) throw new Error(j.error || 'the endpoint refused it');
         // no honeypot: `website` is always empty, as in the Explorer — a hidden `name="website"` input that autofill
         // filled dropped real reports while the dialog said "Received" (2026-10-15); a skip is never a success
         if (j && j.skipped) throw new Error('the endpoint skipped it (' + j.skipped + ')');
         if (window.gtag && !navigator.webdriver) try { window.gtag('event', 'feedback', { app: cfg.app, image: !!(include && shot) }); } catch (e) {}
-        body.innerHTML = '<p>' + (j ? 'Received.' : 'Sent.') + ' The team gets it by mail' + (j && j.issue_url ? ' and it is public issue <a href="' + esc(j.issue_url) + '" target="_blank" rel="noopener">' + esc(j.issue_url.replace(/^https?:\/\/github\.com\//, '')) + '</a>' : '') + (j && j.id ? ' <span class="fb-hint">· id ' + esc(j.id) + '</span>' : '') + '.</p><p class="fb-hint">Thank you.</p>';
+        body.innerHTML = '<p>' + (j ? 'Received.' : 'Sent.') + ' The team gets it by mail' + (j && j.issue_url ? ' and it is public issue <a href="' + esc(j.issue_url) + '" target="_blank" rel="noopener">' + esc(j.issue_url.replace(/^https?:\/\/github\.com\//, '')) + '</a>'
+          : j ? '' : '; it should appear among the <a href="https://github.com/' + esc(cfg.repo) + '/issues?q=label%3A' + encodeURIComponent(cfg.label) + '" target="_blank" rel="noopener">public feedback issues</a>') + (j && j.id ? ' <span class="fb-hint">· id ' + esc(j.id) + '</span>' : '') + '.</p><p class="fb-hint">Thank you.</p>';
         dlg.querySelector('.fb-actions').innerHTML = '<button type="button" class="cc-btn cc-btn-primary fb-btn fb-ok">Close</button>';
         dlg.querySelector('.fb-ok').addEventListener('click', function () { dlg.close(); });
       }).catch(function (e) { err.hidden = false; err.textContent = 'Not sent: ' + e.message + '. Try again, or open the issue yourself.'; })
