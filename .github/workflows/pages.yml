@@ -6,6 +6,7 @@ name: Deploy CalCOFI.io (Jekyll → GitHub Pages)
 on:
   push:
     branches: [main]
+    paths-ignore: ['feedback/**']   # a feedback screenshot the Apps Script commits is not a site change
   workflow_dispatch:
 
 permissions:

@@ -188,7 +188,6 @@
       '<div class="fb-body">' +
       '<label class="fb-f">What happened / what did you expect?<textarea rows="4" placeholder="that number looks wrong — the dataset page says … / the map is empty on my phone …" autofocus></textarea></label>' +
       '<label class="fb-f">email <span class="fb-hint">(optional — you get a copy of this report and any reply; never public)</span><input type="email" placeholder="you@example.org" autocomplete="email"></label>' +
-      '<input type="text" name="website" tabindex="-1" autocomplete="off" class="fb-hp" aria-hidden="true">' +
       '<div class="fb-shot"><div class="fb-thumb"><span class="fb-hint">capturing the view…</span></div>' +
       '<div class="fb-row"><label class="fb-row"><input type="checkbox" checked class="fb-include"> include screenshot</label>' +
       '<button type="button" class="cc-chip fb-pill" data-act="edit" disabled>' + icon('pen') + ' edit</button><button type="button" class="cc-chip fb-pill" data-act="retake" disabled>' + icon('capture') + ' retake</button></div></div>' +
@@ -229,10 +228,13 @@
       if (include && shot) p = fitBytes(shot, 3e6).then(function (r) { return new Promise(function (ok) { var fr = new FileReader(); fr.onload = function () { ok(String(fr.result)); }; fr.readAsDataURL(r.blob); }); });
       p.then(function (image) {
         var payload = { app: cfg.app, kind: 'feedback', label: cfg.label, title: '', link: '', datasets: '', url: url, release: cfg.release, viewport: viewport, theme: theme,
-                        text: ta.value.trim(), email: em.value.trim(), image: image, website: dlg.querySelector('.fb-hp').value, user_agent: navigator.userAgent };
+                        text: ta.value.trim(), email: em.value.trim(), image: image, website: '', user_agent: navigator.userAgent };
         return fetch(cfg.endpoint, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain;charset=UTF-8' }, redirect: 'follow' });
       }).then(function (res) { return res.json().catch(function () { return null; }); }).then(function (j) {
         if (j && j.ok === false) throw new Error(j.error || 'the endpoint refused it');
+        // no honeypot: `website` is always empty, as in the Explorer — a hidden `name="website"` input that autofill
+        // filled dropped real reports while the dialog said "Received" (2026-10-15); a skip is never a success
+        if (j && j.skipped) throw new Error('the endpoint skipped it (' + j.skipped + ')');
         if (window.gtag && !navigator.webdriver) try { window.gtag('event', 'feedback', { app: cfg.app, image: !!(include && shot) }); } catch (e) {}
         body.innerHTML = '<p>' + (j ? 'Received.' : 'Sent.') + ' The team gets it by mail' + (j && j.issue_url ? ' and it is public issue <a href="' + esc(j.issue_url) + '" target="_blank" rel="noopener">' + esc(j.issue_url.replace(/^https?:\/\/github\.com\//, '')) + '</a>' : '') + (j && j.id ? ' <span class="fb-hint">· id ' + esc(j.id) + '</span>' : '') + '.</p><p class="fb-hint">Thank you.</p>';
         dlg.querySelector('.fb-actions').innerHTML = '<button type="button" class="cc-btn cc-btn-primary fb-btn fb-ok">Close</button>';

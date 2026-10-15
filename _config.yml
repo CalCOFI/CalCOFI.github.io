@@ -29,10 +29,9 @@ stay_informed_url: "mailto:data@calcofi.io?subject=CalCOFI%20release%20updates" 
 # The Apps Script endpoint calcofi4r::cc_feedback_script() generates, shared with the Explorer (the
 # same "CalCOFI app feedback" Sheet, recipients tab and Drive folder; the /exec URL is public in the
 # Explorer's bundle, so it is written here rather than kept as a repository variable). The script
-# routes the public issue by the payload's `app`: this site sends `calcofi-io`, and the script must
-# be regenerated with repos = c(explore = "CalCOFI/explore", "calcofi-io" = "CalCOFI/CalCOFI.github.io")
-# and re-pasted for the issue step to run — until then a report still reaches the Sheet and the mail,
-# and the dialog's own "Open as GitHub issue myself" files it here. Empty = no endpoint: the dialog
+# routes the public issue by the payload's `app`: this site sends `calcofi-io`, which the deployed
+# script maps to this repo (its GITHUB_TOKEN covers the org, 2026-10-15); the issue's screenshot is
+# committed under feedback/, excluded below and ignored by pages.yml. Empty = no endpoint: the dialog
 # offers only the prefilled issue.
 feedback_url: "https://script.google.com/macros/s/AKfycby8SIv9aBTXGBqKpPxLGox6YV2ZvqXwxvpwFq7Z9uFWLS8ik38_bADnMKlOJ_JolcfI/exec"
 feedback_repo: "CalCOFI/CalCOFI.github.io"
@@ -58,3 +57,4 @@ exclude:
   - .bundle
   - .jekyll-cache
   - scripts            # screenshot tooling (shots.sh); recipes live in _data/shots.yml
+  - feedback           # the feedback Apps Script commits each report's screenshot here for its issue to embed

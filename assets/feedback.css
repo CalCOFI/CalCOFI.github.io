@@ -17,7 +17,6 @@
 .fb-f .fb-hint { font-weight: 400; }
 .fb-f textarea, .fb-f input { font: 15px/1.4 var(--sans); color: var(--fg); background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 8px 10px; width: 100%; }
 .fb-f textarea:focus-visible, .fb-f input:focus-visible, .fb-pill:focus-visible, .fb-seg button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.fb-hp { position: absolute; left: -9999px; width: 1px; height: 1px; }
 .fb-hint { margin: 0; font-size: var(--fs-sm); color: var(--muted); line-height: 1.4; }
 .fb-hint code { font-size: 0.9em; }
 .fb-warn { color: var(--warn); }
