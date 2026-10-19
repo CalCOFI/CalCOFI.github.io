@@ -470,9 +470,9 @@ identification is a real taxon with data); the unobserved minor ranks of the WoR
 (subphylum, infraphylum, parvphylum, gigaclass, superclass, subclass, superorder, subfamily …) are
 folded out of the display and their shown descendants attach to the nearest shown ancestor.
 Counts never change — every rollup is over the full tree. **all ranks** (`?ranks=all`) shows
-everything. And either pane — the tree or the matrix — can be **expanded to the full width**
-with the ⤢ button in its header (`?panes=tree|matrix` in the URL — not remembered across visits since 2026-09-10, when a remembered matrix followed Ben around with the tree gone). The collapsed pane folds into a 28 px vertical pill beside the expanded one — the Explorer's collapsed-panel idiom — and the pill, like ⤡, shows both again; a search with matches shows the tree again if it was folded. The
-⤡ button restores both. With both shown the tree pane is still exactly the matrix pane's height.
+everything. (The tree and the matrix used to share one row, with ⤢ / ⤡ to widen either and
+`?panes=` in the URL; since issue #30 each is its own view tab at the full width, so the panes and
+their pills are gone.)
 
 **The inline JSON.** `/species/` inlines **one** payload (284 KB, 56 KB gzipped): every node with
 its key, name, common name, rank, parent, direct observations and per-dataset observations
@@ -487,11 +487,38 @@ WoRMS LSID `urn:lsid:marinespecies.org:taxname:{id}`, or ITIS's TSN page) and th
 none, and none is invented); `parentTaxon` exactly where the record has a parent, read back from the
 sidecar so a page cannot claim a lineage the record lacks; `/species/` one `CollectionPage`; and the
 species sitemap equal to the pages that exist. `check_layout.py`: the index's five counts equal the
-inline record's, the matrix has exactly rows × datasets cells, the tree pane is exactly the matrix
-pane's height (the tree scrolls **inside** it, so no unbounded text sits beside a fixed-height
-figure), every `.sp-url` is one line and actually elided, and on a taxon page the *Observed in* rows
-are the record's `datasets[]` with its counts, the lineage is a chain of species links, and the
-Explorer link opens prefilled.
+inline record's and its h1 carries no digit, the class list is the record's classes by observations,
+the matrix has exactly rows × datasets cells, a search's hits fill the flat Matches list, every
+`.sp-url` is one line and actually elided, and on a taxon page the *Observed in* rows are the
+record's `datasets[]` with its counts and one drawn strip each, the lineage is a chain of species
+links, and the Explorer link opens prefilled. Since issue #30 it also asserts nothing is open on load
+(no class row, one view panel, every fold closed), every fold's title carries an answer, no sub-nav,
+and a height ceiling at 1470 with nothing open (the content, header to last fold: index ≤ 2,220 px,
+a taxon page ≤ 1,500 px — the mockups' 1,775 and ~1,200 plus a quarter).
+
+### Issue #30 · calmer (what moved where)
+
+Both pages are built from `assets/calm.css`; nothing was removed, it moved (D1–D17, all A unless noted).
+
+- **`/species/`** — the catalog head (the three siblings, *Species*, one sentence with the old lede in
+  its ⓘ, the five counts as one quiet line, and the ONE search, `one_search.html`, D10 B). Then ONE
+  list (D7 A): the 22 classes with their PhyloPic silhouettes, most observed first, each a
+  `calm-item` that opens to its six most-observed taxa as R1 result rows, plus *Open*, *Explorer* and
+  *In the tree*. The tree (with its rank folds and *all ranks*), the matrix and the icicle are view
+  tabs (`?tab=tree|matrix|hierarchy`), each today's panel unchanged; the icicle is drawn the first
+  time its tab is chosen. `species.js` listens to `#door-q`: the hits fill `#sp-matches` above the
+  views, the class list keeps the classes holding one, and the tree folds to them (`?q=`).
+- **A taxon page** — one column, no sub-nav (D17). The head is the silhouette as the mark, the name
+  (italic for genus and below), the common name, a facts line (rank · status · ids · key · groups),
+  the sentence, ONE picture (D11: the photo; the silhouette where there is none) with its credit as the
+  caption, and one line of numbers that now carries the max length (`el-size`). *Observed in* stays
+  open, each dataset a row with its own years strip. The ways are one line (Explorer · db-query ·
+  ERDDAP | R · Python · JSON, D12); the code and URLs are the first fold, with `ways_tabs.html`
+  inside. Everything else is a fold titled with its answer (D14, `page.fold` from
+  `Taxa#folds`): *Code and endpoints*, *How big is it · 39.5 cm max · egg 1.34–2.05 mm* (the glance,
+  ladder, beside figure, plate), *Under it · 38 taxa · … most observed*, *Life stages*, *Lineage ·
+  12 ranks · Biota to Sardinops* (the crumb shows the last three; its "N ranks" opens this fold),
+  *Credits*, *Elsewhere* (Wikidata, iNaturalist, FishBase … from the sidecar's links) and *Cite*.
 
 **The `TAXA_RELEASE_URL` bridge.** `fetch_release.sh` takes the promoted release's own `taxa.json`
 first. Until a promoted release carries one, `TAXA_RELEASE_URL` names a staging record — a full
@@ -588,7 +615,7 @@ _data/taxa_media.json     scripts/fetch_species_media.py → the silhouette, the
 _data/size_reference.csv  key,label,m,note,source — the ladder's six reference objects
 _plugins/species.rb       composes page.face / page.glance / page.sentence / page.credits /
                           page.size_data, all nil-safe; and the JSON-LD `image`
-_includes/species_face.html   the face row, the sentence, the credit line (server-side: content)
+_includes/species_face.html   the mark, the picture, the sentence, the glance (server-side: content)
 _includes/species_size.html   the How big section's hosts and its one inline payload
 _includes/species_credit.html the ONE credit format: kind · who · licence · where · what it shows
 assets/species.js         the ladder, the beside figure and the plate (figures: drawn in the browser)

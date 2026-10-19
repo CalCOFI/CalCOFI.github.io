@@ -48,22 +48,25 @@ can only pass by the layout actually being fixed:
              sample_measurement. It listed 2 of 9: the per-cast types live in sample_measurement.
   erddap     (dataset pages) each ERDDAP dataset id's tabledap page appears exactly once. It was
              listed twice: once under Download for its formats, once under Services for its page.
-  species    (/species/ and one taxon page, plan 2026-09-09 § S3; round 2 § I1, I2, P1–P3, WS-R5)
-             the index's five counts equal the inline record's and its h1 carries no digit (the
-             band is the numbers' only home); the matrix has exactly (rows x datasets) cells and
-             its pane is not drawn taller than its own content; the tree pane is EXACTLY the matrix
-             pane's height (the tree scrolls inside it, so no unbounded text sits beside a
-             fixed-height figure); a search's hits fill a flat #sp-matches list above the tree,
-             never hidden while there is at least one; every .sp-url is one line and elided from
-             the middle rather than wrapped; on a taxon page the "Observed in" rows are the
-             record's datasets[] with its counts, the lineage is a chain of links ending in the
-             taxon's parent, the Explorer link opens prefilled on the taxon key, and Ways in takes
-             the same tabset include as the measurement page.
+  species    (/species/ and one taxon page, plan 2026-09-09 § S3; round 2 § I1, I2, P1–P3, WS-R5;
+             issue #30 D7, D10–D12, D14, D17) the index's five counts equal the inline record's and
+             its h1 carries no digit (the quiet line is the numbers' only home); the class list is
+             the record's classes, most observed first; the views are the four tabs and exactly one
+             panel shows; nothing is open on load; the matrix has exactly (rows x datasets) cells and
+             the icicle draws when its view is chosen; a search's hits fill a flat #sp-matches list
+             above the views, never hidden while there is at least one, and the class list keeps
+             only the classes holding one; every .sp-url is one line and elided from the middle; on
+             a taxon page the "Observed in" rows are the record's datasets[] with its counts and one
+             DRAWN strip each, the lineage is a chain of links ending in the taxon's parent, the
+             Explorer link opens prefilled on the taxon key, the ways are one line with the code
+             fold taking the ways_tabs include, every fold is closed on load and titled with its
+             answer, and there is no sub-nav. At 1470 with nothing open the index's content is at
+             most MAX_SPECIES_INDEX_H and a taxon page's MAX_SPECIES_PAGE_H.
   faces      (a taxon page, plan 2026-09-11 § D1–D5, D9; round 2 § P1, P2, D6) the silhouette is a
-             labelled role="img" with real pixels; the photo has alt text, loading="lazy" and the
-             radial mask on its FRAME; the glance draws two bars or says "not on record" — never a
-             blank slot; the sentence's marked parts each end in exactly one .cc-src source badge
-             and carry NO .sp-legend (retired in favour of the badges); every asset shown has a
+             labelled role="img" with real pixels; the photo has alt text and loading="lazy", and
+             the head carries ONE picture (#30 D11 A: the photo, else the silhouette); the glance
+             draws two bars or says "not on record" — never a blank slot; the sentence's marked
+             parts each end in exactly one .cc-src source badge and carry NO .sp-legend (retired in favour of the badges); every asset shown has a
              credit line; the ladder draws exactly the payload's marks and the six references of
              size_reference.csv with NO two labels overlapping (bounding boxes read from the DOM);
              the plate is drawn exactly where the payload has one; and the stat row says "records",
@@ -113,10 +116,10 @@ DEFAULT_PATHS = [
     "/datasets/calcofi_ctd-derived/",   # #26: 9 variables in two groups — obs_env (profile) and
                                      #   sample_measurement (per cast), counts from the release
     "/datasets/cce-lter_euphausiids/",  # D3: the bio row's own taxa expander (37 taxa, custom licence)
-    "/species/",                     # the species catalog: search + tree, the matrix, the icicle
-    "/species/?panes=matrix",        # the matrix expanded: the tree folds into a vertical pill, never gone
-    "/species/?panes=matrix&q=sardine",  # …and a search with a hit shows the tree again (Ben, 2026-09-10)
-    "/species/?q=sardin",            # I2: the flat Matches list above the tree (WS-R5, umbrella D9)
+    "/species/",                     # the species catalog: the 22 classes, the views behind tabs (#30 D7 A)
+    "/species/?tab=matrix",          # the matrix view, unchanged, one click away
+    "/species/?tab=hierarchy",       # the icicle, drawn the first time its view is chosen
+    "/species/?q=sardin",            # I2: the flat Matches list above the views (WS-R5, umbrella D9)
     "/species/worms-217452/",        # the sardine: two datasets, twelve lineage ranks, five ways in
                                      # — and the full face: silhouette, photo, glance, five ladder
                                      #   marks and a NOAA plate (plan 2026-09-11 § Verification F3)
@@ -127,6 +130,10 @@ DEFAULT_PATHS = [
     "/species/worms-273305/",        # jack mackerel — a taxon the media sidecar has no entry for
                                      #   (the fixture's ten are the cast): the page is what
                                      #   it was, plus the sentence's record part and D9's stat word
+    "/species/worms-126175/",        # Sebastes: a genus, 38 taxa under it, a synonym pill, no length
+    "/species/worms-293496/",        # Teleostei: a class, nothing keyed to it directly
+    "/species/itis-176817/",         # Larus occidentalis: a bird keyed through ITIS, a length, no plate
+    "/species/worms-104085/",        # Eucalanidae: a silhouette and no photo — the silhouette is the picture
     "/measurements/",                # the measurements catalog: search + timeline, matrix, datasets
     "/measurements/temperature/",    # the unified key: two series, two datasets, eight ways in
     # the faces (plan 2026-09-11 § Verification MF5) — the seven states a measurement page can be in
@@ -606,31 +613,30 @@ PROBE = r"""
     }
   }
 
-  // ── the species catalog (plan 2026-09-09 § S3) ─────────────────────────────
-  // The index: the counts, the matrix's shape and the two panes, all read back from the page's own
+  // ── the species catalog (plan 2026-09-09 § S3; issue #30 D7 A, D10 B, D17) ─
+  // The index: the counts, the class list, the matrix's shape, all read back from the page's own
   // inline record so the check compares the drawing with the data it was drawn from.
   const spData = d.getElementById("sp-data");
   if (spData) {
     let rec = null; try { rec = JSON.parse(spData.textContent); } catch (e) {}
     const num = s2 => +String(s2 || "").replace(/[^0-9]/g, "");
-    const counts = [...d.querySelectorAll(".sp-counts > div")].map(el => ({
-      label: el.querySelector("dt").textContent.trim(), value: num(el.querySelector("dd").textContent)
+    // the five counts: one quiet line, each <span data-count="label"><b>value</b> label</span>
+    const counts = [...d.querySelectorAll(".sp-counts [data-count]")].map(el => ({
+      label: el.getAttribute("data-count"), value: num((el.querySelector("b") || {}).textContent)
     }));
-    const tree = d.getElementById("sp-tree"), mwrap = d.getElementById("sp-matrix");
-    const pane = el => el && el.closest(".sp-pane");
-    // a pane's natural height: the same pane with its scroll box let be its content's height
-    const natural = el => {
-      if (!el) return 0;
-      const p2 = pane(el), was = tree.style.height;
-      tree.style.height = "auto";
-      void p2.offsetHeight;
-      const h = p2.getBoundingClientRect().height;
-      tree.style.height = was;
-      return h;
-    };
+    const tree = d.getElementById("sp-tree");
+    const page = d.querySelector(".calm-page");
+    // the Class nodes the record holds with an observation at or below — the list's own rule
+    const recClasses = rec ? (() => {
+      const kids = {}, own = {};
+      rec.nodes.forEach(n => { own[n.k] = n.o || 0; if (n.p) (kids[n.p] = kids[n.p] || []).push(n.k); });
+      const roll = k => own[k] + (kids[k] || []).reduce((a, c) => a + roll(c), 0);
+      return rec.nodes.filter(n => n.r === "Class" && roll(n.k) > 0).length;
+    })() : null;
+    const view = d.querySelector('#ts-species .tabrow > button[aria-selected="true"]');
     out.species = {
       counts,
-      h1: (d.querySelector(".sp-idx-head h1") || {}).textContent || null,
+      h1: (d.querySelector(".calm-cathead h1") || {}).textContent || null,
       matchesHidden: (d.getElementById("sp-matches") || {}).hidden,
       matchesRows: [...d.querySelectorAll("#sp-matches .cc-result")].map(a => ({
         n: (a.querySelector(".cc-result-n") || {}).textContent || "",
@@ -640,38 +646,47 @@ PROBE = r"""
       rows: rec && rec.mx ? rec.mx.rows.length : null,
       cols: rec && rec.mx ? rec.mx.cols.length : null,
       cells: d.querySelectorAll(".sp-mx .sp-c").length,
-      treePane: pane(tree) ? px(pane(tree).getBoundingClientRect().height) : 0,
-      matrixPane: pane(mwrap) ? px(pane(mwrap).getBoundingClientRect().height) : 0,
-      matrixNatural: pane(mwrap) ? px(pane(mwrap).scrollHeight) : 0,
+      recClasses,
+      classes: d.querySelectorAll("#sp-classes > .sp-class").length,
+      classesShown: [...d.querySelectorAll("#sp-classes > .sp-class")].filter(el => !el.hidden).length,
+      classSils: d.querySelectorAll("#sp-classes > .sp-class svg.sp-csil").length,
+      classOrder: rec ? (() => {
+        const kids = {}, own = {};
+        rec.nodes.forEach(n => { own[n.k] = n.o || 0; if (n.p) (kids[n.p] = kids[n.p] || []).push(n.k); });
+        const roll = k => own[k] + (kids[k] || []).reduce((a, c) => a + roll(c), 0);
+        return [...d.querySelectorAll("#sp-classes > .sp-class")].map(el => roll(el.dataset.k));
+      })() : [],
+      view: view ? view.getAttribute("data-tab") : null,
+      views: [...d.querySelectorAll("#ts-species .tabrow > button")].map(b => b.getAttribute("data-tab")),
+      // nothing open on load: no class row, and only the chosen view's panel showing
+      openItems: d.querySelectorAll("#sp-classes > .sp-class[open]").length,
+      panelsShown: [...d.querySelectorAll("#ts-species > .tabpanel")].filter(p => !p.hidden).length,
+      // the page's own content (header to its last row, the site footer excluded), at this width
+      contentH: page ? px(page.getBoundingClientRect().bottom + w.scrollY) : 0,
       iceRects: d.querySelectorAll("#sp-ice rect").length,
       treeRoots: d.querySelectorAll('#sp-tree > ul > li[role="treeitem"]').length,
-      // the panes' mode and the collapsed pane's pill (Ben, 2026-09-10): the pill must stand where
-      // the folded pane was, as tall as the expanded pane, and a search with hits must show the tree
-      panes: (d.querySelector(".sp-two") || {}).getAttribute ? d.querySelector(".sp-two").getAttribute("data-panes") : null,
-      pill: (() => { const pl = [...d.querySelectorAll(".sp-pane-pill")].find(el => !el.hidden && cs(el).display !== "none");
-        if (!pl) return null; const b = pl.getBoundingClientRect();
-        return { pane: pl.dataset.pane, label: pl.getAttribute("aria-label"), w: px(b.width), h: px(b.height), text: pl.textContent.trim() }; })(),
-      treeShown: !!tree && tree.offsetParent !== null,
       hits: d.querySelectorAll("#sp-tree .sp-hit").length,
-      hitsShown: [...d.querySelectorAll("#sp-tree .sp-hit")].filter(el => el.offsetParent !== null).length,
-      warnEls: [...d.querySelectorAll(".sp-body *, .sp-head *")].filter(el => {
-        const st = cs(el), w = out.warn;
-        return st.color.replace(/\s/g, "") === w || st.backgroundColor.replace(/\s/g, "") === w;
+      warnEls: [...d.querySelectorAll(".sp-cat *")].filter(el => {
+        const st = cs(el), w2 = out.warn;
+        return st.color.replace(/\s/g, "") === w2 || st.backgroundColor.replace(/\s/g, "") === w2;
       }).map(el => String(el.className || el.tagName)).slice(0, 6)
     };
-    void natural;   // the tree pane is bounded by the matrix pane, which is checked directly
 
     // WS-F4: a phylum/class row's silhouette (.sp-tsil, 18 px tall — under the 20 px .sp-tw button,
     // the row's tallest fixed element) must not change the row's height; hidden vs shown on the
-    // SAME row proves it rather than a remembered pixel count.
+    // SAME row proves it rather than a remembered pixel count. The tree is a view: show it while
+    // measuring, then put the panels back as they were.
     const silEl = d.querySelector("#sp-tree .sp-tr .sp-tsil");
     if (silEl) {
+      const tp = silEl.closest(".tabpanel"), was0 = tp && tp.hidden;
+      if (tp) tp.hidden = false;
       const row = silEl.closest(".sp-tr");
       out.species.treeRowH = px(row.getBoundingClientRect().height);
       const was = silEl.style.display;
       silEl.style.display = "none";
       out.species.treeRowHNoSil = px(row.getBoundingClientRect().height);
       silEl.style.display = was;
+      if (tp) tp.hidden = was0;
     }
   }
 
@@ -680,6 +695,8 @@ PROBE = r"""
   if (spStrip) {
     let S = null; try { S = JSON.parse(spStrip.textContent); } catch (e) {}
     const numc = s2 => +String(s2 || "").replace(/,/g, "").match(/\d+/);
+    const strips = [...d.querySelectorAll("svg.sp-strip")];
+    const page = d.querySelector(".calm-page");
     out.speciesPage = {
       key: S && S.key,
       recRows: S ? S.rows.map(r => ({ name: r.s, n: r.n })) : [],
@@ -690,25 +707,39 @@ PROBE = r"""
       lineage: [...d.querySelectorAll(".sp-lineage a")].map(a => ({ name: a.textContent.trim(), href: a.getAttribute("href") })),
       here: (d.querySelector(".sp-lineage .sp-here") || {}).textContent || null,
       explore: [...d.querySelectorAll('a[href*="/explore/"]')].map(a => a.getAttribute("href")),
-      stripRows: d.querySelectorAll("#sp-strip rect").length ? new Set([...d.querySelectorAll("#sp-strip rect")].map(r => r.getAttribute("y"))).size : 0,
-      // DRAWN, not merely populated: `.sp-strip:not([viewBox])` lowercases to `[viewbox]` in an
-      // HTML document and never matches SVG's camelCase attribute, so the strip was display:none
-      // with 93 rects in it and every count still agreed (measured 2026-09-09)
-      stripH: d.querySelector("#sp-strip") ? px(d.querySelector("#sp-strip").getBoundingClientRect().height) : 0,
+      // one strip per "Observed in" row, each DRAWN (`.sp-drawn`) — not merely populated:
+      // `.sp-strip:not([viewBox])` lowercases to `[viewbox]` in an HTML document and never matches
+      // SVG's camelCase attribute, so the strip was display:none with 93 rects in it and every
+      // count still agreed (measured 2026-09-09)
+      stripRows: strips.filter(s => s.classList.contains("sp-drawn") && s.querySelector("rect")).length,
+      stripH: strips.length ? Math.min(...strips.map(s => px(s.getBoundingClientRect().height))) : 0,
       stats: [...d.querySelectorAll(".sp-stat > div")].map(el => el.querySelector("dt").textContent.trim()),
-      waysTabset: !!d.querySelector(".sp-col-ways .tabset")
+      waysTabset: !!d.querySelector("#ways .tabset"),
+      waysLine: d.querySelectorAll(".calm-ways > a").length,
+      folds: d.querySelectorAll(".calm-folds > .calm-fold").length,
+      foldsOpen: [...d.querySelectorAll(".calm-folds > .calm-fold")].filter(f => f.open).map(f => f.id),
+      // every fold is titled with its answer (D14)
+      foldsNoAns: [...d.querySelectorAll(".calm-folds > .calm-fold")]
+        .filter(f => !((f.querySelector(":scope > summary .calm-ans") || {}).textContent || "").trim()).map(f => f.id),
+      subnav: d.querySelectorAll(".calm-page nav:not(.calm-crumb):not(.sp-lineage)").length,
+      h1: (d.querySelector(".calm-name h1") || {}).textContent || "",
+      h1Italic: d.querySelector(".calm-name h1") ? cs(d.querySelector(".calm-name h1")).fontStyle : "",
+      contentH: page ? px(page.getBoundingClientRect().bottom + w.scrollY) : 0
     };
   }
 
-  // ── faces: the face row, the sentence, the glance, the ladder (plan 2026-09-11 § D1–D5, D9)
+  // ── faces: the mark, the picture, the sentence, the glance, the ladder (plan 2026-09-11 § D1–D5, D9)
   // Read back from the page's OWN inline #sp-size-data where there is one, so the check compares
-  // the drawing with the payload it was drawn from and never with a number typed here.
-  if (d.querySelector(".sp-page-head")) {
+  // the drawing with the payload it was drawn from and never with a number typed here. The ladder
+  // lives in the closed How big fold: it is opened while its labels are measured, then closed.
+  if (d.querySelector(".sp-pg")) {
     const sil = d.querySelector(".sp-sil"), ph = d.querySelector(".sp-photo img");
     const box = el => { const b = el.getBoundingClientRect(); return { x: px(b.x), y: px(b.y), w: px(b.width), h: px(b.height) }; };
     let size = null;
     const sd = d.getElementById("sp-size-data");
     if (sd) { try { size = JSON.parse(sd.textContent); } catch (e) {} }
+    const hb = d.getElementById("how-big"), hbWas = hb && hb.open;
+    if (hb) hb.open = true;
     // every label the ladder draws, with its box, so Python can look for an overlapping pair
     const ladder = d.getElementById("sp-ladder");
     // …each tagged with the <g> it belongs to: a reference's name and its length are stacked on
@@ -725,9 +756,10 @@ PROBE = r"""
                                            fill: cs(sil).fill.replace(/\s/g, "") }) : null,
       photo: ph ? Object.assign(box(ph), { alt: ph.getAttribute("alt"), w0: ph.getAttribute("width"),
                                            h0: ph.getAttribute("height"), loading: ph.getAttribute("loading"),
-                                           pos: cs(ph).objectPosition,
-                                           masked: cs(ph.parentElement).maskImage !== "none" ||
-                                                   cs(ph.parentElement).webkitMaskImage !== "none" }) : null,
+                                           pos: cs(ph).objectPosition }) : null,
+      // D11 A: the head's ONE picture — the photo, or the silhouette where there is no photo
+      pics: d.querySelectorAll(".calm-head .calm-pic").length,
+      silPic: !!d.querySelector(".calm-head .sp-sil-pic svg"),
       nc: !!d.querySelector(".sp-photo-fig .cc-chip"),
       bars: [...d.querySelectorAll(".sp-glance .sp-bar")].map(b => px(b.getBoundingClientRect().width)),
       glanceNone: !!d.querySelector(".sp-glance-none"),
@@ -744,8 +776,9 @@ PROBE = r"""
       besideDrawn: !!(d.querySelector(".sp-beside") && d.querySelector(".sp-beside").classList.contains("sp-drawn")),
       plateImg: !!d.querySelector(".sp-plate-img img"),
       early: d.querySelectorAll(".sp-early li").length,
-      howBig: !!d.getElementById("how-big")
+      howBig: !!hb && !!sd
     };
+    if (hb) hb.open = hbWas;
   }
 
   // every .sp-url is ONE line, and elided from the middle rather than wrapped or cut
@@ -1048,6 +1081,8 @@ MAX_HERO_GAP = 120    # px between the head band's two columns
 MAX_GRID_H = 4400     # px at 1470 with the staging record (was 4,910)
 MAX_HERO_VH = 62      # the front door's drawing at 1470: the catalog must start within reach
 MAX_TILE_STRETCH = 1.25
+MAX_SPECIES_INDEX_H = 2220   # issue #30: /species/ at 1470, nothing open — the mockup's 1,775 + 25 %
+MAX_SPECIES_PAGE_H = 1500    # issue #30: a taxon page at 1470, nothing open — ~1,200 + 25 %
 
 # ── the front door's navigation (plan 2026-09-10 § D7, WS-M0) ─────────────────
 # The six words plus calcofi.org ↗ — seven items, as before D7. DOCS and NEWS are pages, so the
@@ -1209,7 +1244,7 @@ def check(path, r, width, theme, fails, notes):
         if n != 1:
             fails.append(f"{where}: ERDDAP id {ds_id} listed {n} times, expected once")
 
-    # ── the species catalog's index (plan 2026-09-09 § S3) ────────────────────
+    # ── the species catalog's index (plan 2026-09-09 § S3; issue #30 D7 A, D10 B, D17) ─────
     sp = r.get("species")
     if sp:
         rec = sp.get("rec") or {}
@@ -1225,82 +1260,67 @@ def check(path, r, width, theme, fails, notes):
                 fails.append(f"{where}: the species index has no {k!r} count though the record carries {v}")
             elif seen[k] != v:
                 fails.append(f"{where}: the index says {k} = {seen[k]}, the record says {v}")
-        # I1: the h1 is a name, not a sentence of numbers — the numbers live in the band above,
-        # once, and only there (checked against the record above)
+        # I1: the h1 is a name, not a sentence of numbers — the numbers live in the one quiet line
         if sp.get("h1") and any(ch.isdigit() for ch in sp["h1"]):
             fails.append(f"{where}: the species index h1 carries a digit: {sp['h1']!r}")
+        # D7 A: the ONE list is the record's classes, most observed first, each with its silhouette
+        if sp.get("recClasses") is not None and sp["classes"] != sp["recClasses"]:
+            fails.append(f"{where}: the class list draws {sp['classes']} rows, the record has "
+                         f"{sp['recClasses']} classes with an observation")
+        order = sp.get("classOrder") or []
+        if any(a < b for a, b in zip(order, order[1:])):
+            fails.append(f"{where}: the class list is not ordered by observations: {order[:6]}…")
+        # the dense views stay, one click away: the tabs, unchanged panels behind them
+        if sp.get("views") != ["classes", "tree", "matrix", "hierarchy"]:
+            fails.append(f"{where}: the view tabs read {sp.get('views')}, expected classes · tree · matrix · hierarchy")
+        # nothing open on load: no class row, and exactly the chosen view's panel
+        if sp.get("openItems"):
+            fails.append(f"{where}: {sp['openItems']} class row(s) open on load")
+        if sp.get("panelsShown") != 1:
+            fails.append(f"{where}: {sp.get('panelsShown')} view panels showing, expected exactly one")
         # the matrix is exactly (classes + the two rows the record makes necessary) x datasets
         if sp["rows"] and sp["cols"]:
             wantc = sp["rows"] * sp["cols"]
             if sp["cells"] != wantc:
                 fails.append(f"{where}: the matrix has {sp['cells']} cells for "
                              f"{sp['rows']} rows x {sp['cols']} datasets ({wantc})")
-        if sp["iceRects"] < 10:
-            fails.append(f"{where}: the icicle drew {sp['iceRects']} bands")
+        # the icicle is drawn the first time its view is chosen, and only then
+        if sp.get("view") == "hierarchy" and sp["iceRects"] < 10:
+            fails.append(f"{where}: the hierarchy view is showing but the icicle drew {sp['iceRects']} bands")
         if sp["treeRoots"] < 2:
             fails.append(f"{where}: the tree drew {sp['treeRoots']} roots")
         if sp["warnEls"]:
             fails.append(f"{where}: --warn on the species index: {', '.join(sorted(set(sp['warnEls']))[:4])}")
-        # WS-F4: a phylum/class row's silhouette must not change the row's height (checked only
-        # when a row actually carries one — the WS-F4 fixture's ten taxa are none of them
-        # phylum/class rank, so this is a no-op until the real taxa_media.json lands)
+        # WS-F4: a phylum/class row's silhouette must not change the row's height
         if sp.get("treeRowH") is not None and sp["treeRowH"] != sp["treeRowHNoSil"]:
             fails.append(f"{where}: a tree row with its silhouette is {sp['treeRowH']}px, "
                          f"{sp['treeRowHNoSil']}px without it — the glyph grew the row")
-        # No unbounded text beside a fixed-height figure: the tree scrolls INSIDE a pane that is
-        # exactly the matrix pane's height, and the matrix pane is bounded by its own content — so
-        # neither pane can be drawn taller than something real (the tree's own content is 2,403
-        # nodes, taller than any pane).
-        mode = sp.get("panes") or "both"
         has_q = "q=" in path
-        if width >= 1100 and mode == "both":
-            gap = abs(sp["treePane"] - sp["matrixPane"])
-            notes.append(f"{where}: panes tree {sp['treePane']}px / matrix {sp['matrixPane']}px, "
-                         f"matrix {sp['cells']} cells, icicle {sp['iceRects']} bands")
-            if gap > 4:
-                fails.append(f"{where}: the tree pane is {sp['treePane']}px and the matrix pane "
-                             f"{sp['matrixPane']}px ({gap}px apart) — they must match")
-            if sp["matrixNatural"] and sp["matrixPane"] > sp["matrixNatural"] * MAX_STRETCH:
-                fails.append(f"{where}: the matrix pane is drawn {sp['matrixPane']}px for "
-                             f"{sp['matrixNatural']}px of content")
-        # an expanded pane folds the other into a vertical pill, never removes it (Ben, 2026-09-10)
-        if width >= 1100 and mode != "both":
-            pl = sp.get("pill")
-            other = "tree" if mode == "matrix" else "matrix"
-            if not pl or pl["pane"] != other:
-                fails.append(f"{where}: panes={mode} but no pill stands in for the {other} pane")
-            else:
-                shown_h = sp["matrixPane"] if mode == "matrix" else sp["treePane"]
-                notes.append(f"{where}: panes={mode}; the {other} pill {pl['w']}×{pl['h']}px reads {pl['label']!r}")
-                if not (24 <= pl["w"] <= 32):
-                    fails.append(f"{where}: the {other} pill is {pl['w']}px wide, expected about 28")
-                if abs(pl["h"] - shown_h) > 4:
-                    fails.append(f"{where}: the {other} pill is {pl['h']}px tall beside a {shown_h}px pane")
-                if not (pl["label"] or "").lower().startswith("show the"):
-                    fails.append(f"{where}: the {other} pill's label reads {pl['label']!r}, not 'Show the …'")
-        # a search with hits must show the tree they are in, whatever ?panes= asked for
-        if has_q and width >= 1100:
-            if sp["hits"] and (not sp["treeShown"] or sp["hitsShown"] == 0):
-                fails.append(f"{where}: the search found {sp['hits']} hit(s) but the tree is folded — nothing to click")
-            elif sp["hits"]:
-                notes.append(f"{where}: search hits {sp['hits']}, shown {sp['hitsShown']}, panes={mode}")
-            # I2 (umbrella D9): the Matches list above the tree — the same hits, selectable, never
-            # hidden while there is at least one
-            if sp["hits"]:
-                mrows = sp.get("matchesRows") or []
-                if sp.get("matchesHidden", True) or not mrows:
-                    fails.append(f"{where}: the search found {sp['hits']} hit(s) but #sp-matches is "
-                                 f"hidden or empty")
-                else:
-                    notes.append(f"{where}: #sp-matches {len(mrows)} row(s), first {mrows[0]['n']!r} {mrows[0]['m']!r}")
-                if re.search(r"[?&]q=sardin\b", path):
-                    if len(mrows) < 2:
-                        fails.append(f"{where}: #sp-matches has {len(mrows)} row(s) for 'sardin', expected >= 2")
-                    elif not mrows[0]["n"].strip().startswith("Sardinops"):
-                        fails.append(f"{where}: #sp-matches' first row is {mrows[0]['n']!r}, "
-                                     f"expected a Sardinops by observations")
+        notes.append(f"{where}: {sp['classes']} classes ({sp['classSils']} silhouettes), view {sp.get('view')}, "
+                     f"matrix {sp['cells']} cells, icicle {sp['iceRects']} bands, content {sp['contentH']}px")
+        # issue #30: a height ceiling with nothing open — the mockup's 1,775 px + 25 %
+        if width >= 1400 and not has_q and sp.get("view") == "classes" and sp["contentH"] > MAX_SPECIES_INDEX_H:
+            fails.append(f"{where}: the species index is {sp['contentH']}px with nothing open, "
+                         f"ceiling {MAX_SPECIES_INDEX_H}px")
+        # I2 (umbrella D9): a search fills the flat Matches list above the views, never hidden while
+        # there is at least one hit, and the class list keeps only the classes holding one
+        if has_q:
+            mrows = sp.get("matchesRows") or []
+            if sp["hits"] and (sp.get("matchesHidden", True) or not mrows):
+                fails.append(f"{where}: the search found {sp['hits']} hit(s) but #sp-matches is hidden or empty")
+            elif mrows:
+                notes.append(f"{where}: #sp-matches {len(mrows)} row(s), first {mrows[0]['n']!r} {mrows[0]['m']!r}; "
+                             f"{sp['classesShown']} of {sp['classes']} classes kept")
+            if re.search(r"[?&]q=sardin\b", path):
+                if len(mrows) < 2:
+                    fails.append(f"{where}: #sp-matches has {len(mrows)} row(s) for 'sardin', expected >= 2")
+                elif not mrows[0]["n"].strip().startswith("Sardinops"):
+                    fails.append(f"{where}: #sp-matches' first row is {mrows[0]['n']!r}, "
+                                 f"expected a Sardinops by observations")
+                if not (0 < sp["classesShown"] < sp["classes"]):
+                    fails.append(f"{where}: 'sardin' keeps {sp['classesShown']} of {sp['classes']} classes")
 
-    # ── one taxon page ────────────────────────────────────────────────────────
+    # ── one taxon page (issue #30: D11 A, D12 A, D14 A, D17 A) ──────────────────────
     spp = r.get("speciesPage")
     if spp:
         rec_rows = spp["recRows"]
@@ -1316,9 +1336,19 @@ def check(path, r, width, theme, fails, notes):
                                  f"the record says {wantr['n']}")
         if not spp["lineage"]:
             fails.append(f"{where}: the taxon page has no lineage")
-        # P3: Ways in takes the same tabset include as the measurement page (D2)
+        # D12 A: the ways are one line of links, the code behind a fold that takes the ways_tabs include
         if not spp.get("waysTabset"):
-            fails.append(f"{where}: Ways in has no .tabset — the ways_tabs.html include is missing")
+            fails.append(f"{where}: the Code fold has no .tabset — the ways_tabs.html include is missing")
+        if spp.get("waysLine", 0) < 2:
+            fails.append(f"{where}: the ways line draws {spp.get('waysLine')} link(s)")
+        # D14 A: every fold titled with its answer, and every fold closed on load
+        if spp.get("foldsOpen"):
+            fails.append(f"{where}: fold(s) open on load: {', '.join(spp['foldsOpen'])}")
+        if spp.get("foldsNoAns"):
+            fails.append(f"{where}: fold(s) with no answer in the title: {', '.join(spp['foldsNoAns'])}")
+        # D17 A: no sub-nav
+        if spp.get("subnav"):
+            fails.append(f"{where}: {spp['subnav']} sub-nav(s) on the taxon page")
         for a in spp["lineage"]:
             if not str(a["href"]).startswith("/species/"):
                 fails.append(f"{where}: lineage link {a['name']!r} does not point at a species page: {a['href']!r}")
@@ -1326,13 +1356,18 @@ def check(path, r, width, theme, fails, notes):
             wanted = f"https://calcofi.io/explore/?taxon={spp['key']}"
             if wanted not in spp["explore"]:
                 fails.append(f"{where}: the Explorer link is {spp['explore']!r}, expected {wanted}")
-        if spp["stripRows"] and len(rec_rows) and spp["stripRows"] != len(rec_rows):
-            fails.append(f"{where}: the years strip has {spp['stripRows']} rows for {len(rec_rows)} datasets")
+        if len(rec_rows) and spp["stripRows"] != len(rec_rows):
+            fails.append(f"{where}: {spp['stripRows']} years strip(s) drawn for {len(rec_rows)} datasets")
         if rec_rows and spp["stripH"] < 20:
-            fails.append(f"{where}: the years strip is {spp['stripH']}px tall though the record has "
+            fails.append(f"{where}: a years strip is {spp['stripH']}px tall though the record has "
                          f"{len(rec_rows)} dataset(s) — it is drawn but not displayed")
         notes.append(f"{where}: {len(rows)} dataset row(s), {len(spp['lineage'])} lineage links, "
-                     f"strip {spp['stripRows']} rows / {spp['stripH']}px, stats {' · '.join(spp['stats'])}")
+                     f"{spp['stripRows']} strips / {spp['stripH']}px, {spp['folds']} folds, "
+                     f"content {spp['contentH']}px, stats {' · '.join(spp['stats'])}")
+        # issue #30: a height ceiling with nothing open — the mockup's ~1,200 px + 25 %
+        if width >= 1400 and spp["contentH"] > MAX_SPECIES_PAGE_H:
+            fails.append(f"{where}: the taxon page is {spp['contentH']}px with nothing open, "
+                         f"ceiling {MAX_SPECIES_PAGE_H}px")
         # the sardine is the named regression case: its lineage, its two datasets and their counts
         if spp["key"] == "worms:217452":
             chain = [a["name"] for a in spp["lineage"]]
@@ -1342,6 +1377,8 @@ def check(path, r, width, theme, fails, notes):
                 fails.append(f"{where}: the sardine's lineage reads {' › '.join(chain)}")
             if spp["here"] != "Sardinops sagax":
                 fails.append(f"{where}: the lineage ends at {spp['here']!r}, expected 'Sardinops sagax'")
+            if spp.get("h1Italic") != "italic":
+                fails.append(f"{where}: the species name is not italic ({spp.get('h1Italic')!r})")
 
     # ── the face row, the sentence, the glance and the ladder (plan 2026-09-11) ─
     fa = r.get("faces")
@@ -1381,14 +1418,17 @@ def check(path, r, width, theme, fails, notes):
             p = fa["photo"]
             if not p["alt"]:
                 fails.append(f"{where}: the photo has no alt text")
-            if not p["masked"]:
-                fails.append(f"{where}: the photo frame carries no radial mask (§ D2)")
             if p["loading"] != "lazy":
                 fails.append(f"{where}: the photo is not loading=lazy")
             if p["w"] < 40 or p["h"] < 40:
                 fails.append(f"{where}: the photo is drawn {p['w']}x{p['h']}px")
             notes.append(f"{where}: photo {p['w']}x{p['h']} pos {p['pos']}"
                          + (" · NC labelled" if fa["nc"] else ""))
+        # D11 A: the head carries ONE picture — the photo, or the silhouette where there is none
+        if (fa["photo"] or fa.get("silPic")) and fa.get("pics") != 1:
+            fails.append(f"{where}: the head draws {fa.get('pics')} pictures, expected one")
+        if fa["photo"] and fa.get("silPic"):
+            fails.append(f"{where}: the head draws the photo AND the silhouette as its picture")
         # the glance: two bars, or one honest line — never a blank slot
         if fa["sil"] or fa["photo"]:
             if not fa["glanceNone"] and len(fa["bars"]) != 2:
@@ -1986,7 +2026,7 @@ def check(path, r, width, theme, fails, notes):
     if dp:
         notes.append(f"{where}: 'sardine'→{dp['sardineSpeciesResults']} .cc-result(s) in the Species "
                      f"panel; 'krill' grid rows shown: {dp['krillRowsShown']}")
-        if not dp["sardineSpeciesResults"]:
+        if dp["sardineSpeciesResults"] == 0:    # None: no Species panel here (a catalog page's one_search)
             fails.append(f"{where}: '?q=sardine' on the Species tab rendered no .cc-result (D9)")
         if dp["krillRowsShown"] is not None:
             if not dp["krillRowsShown"]:

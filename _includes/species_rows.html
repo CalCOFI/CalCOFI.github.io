@@ -1,7 +1,9 @@
 {%- comment -%}
-  One row per dataset that observed this taxon, most observations first (the record's own order):
-  the dataset · its observations · its sampling events · its years · its life stages, then the name
-  THAT dataset uses with a quiet pill for every flag the crosswalk raised.
+  "Observed in" (issue #30: what the page is about stays open): one calm-row per dataset that
+  observed this taxon, most observations first (the record's own order) — the dataset · its
+  observations · its sampling events · its years · its life stages, then the name THAT dataset uses
+  with a quiet pill for every flag the crosswalk raised; and on the right, that dataset's own years
+  strip (one cell per year, drawn by assets/species.js from #sp-strip-data into the row's <svg>).
 
   The dot carries the dataset's colour from the record, and the dataset's NAME is always beside it —
   the record's ten biology colours fail the colour-blind check on two pairs, so colour is a second
@@ -9,15 +11,12 @@
 
   include species_rows.html rows=page.ds_rows
 {%- endcomment -%}
-<ul class="sp-dsrows">
+<ul class="calm-rows sp-dsrows">
   {%- for d in include.rows -%}
-  <li class="sp-dsrow">
-    <i class="sp-dot" style="background:{{ d.color | default: 'var(--muted)' }}" aria-hidden="true"></i>
-    <div>
-      <div class="sp-l1">
-        <a href="{{ d.url | relative_url }}">{{ d.name | escape }}</a>
-        <span class="sp-meta tab">{{ d.n_obs }} obs{% if d.n_samples %} · {{ d.n_samples }} events{% endif %}{% if d.years %} · {{ d.years }}{% endif %}{% if d.stages != "" %} · {{ d.stages | escape }}{% endif %}</span>
-      </div>
+  <li class="calm-row sp-dsrow">
+    <div class="calm-row-l">
+      <div class="calm-row-n sp-l1"><i class="sp-dot" style="background:{{ d.color | default: 'var(--muted)' }}" aria-hidden="true"></i><a href="{{ d.url | relative_url }}">{{ d.name | escape }}</a></div>
+      <div class="calm-row-m sp-meta"><span>{{ d.n_obs }} obs</span>{% if d.n_samples %}<span>{{ d.n_samples }} events</span>{% endif %}{% if d.years %}<span>{{ d.years }}</span>{% endif %}{% if d.stages != "" %}<span>{{ d.stages | escape }}</span>{% endif %}</div>
       {%- for s in d.sources -%}
       <div class="sp-l2">
         {%- if s.name -%}
@@ -31,6 +30,7 @@
       </div>
       {%- endfor -%}
     </div>
+    <div class="calm-row-r"><svg class="sp-strip" data-k="{{ d.key | escape }}" role="img" aria-label="{{ d.name | escape }}: observations per year"></svg></div>
   </li>
   {%- endfor -%}
 </ul>
