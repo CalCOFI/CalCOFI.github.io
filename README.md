@@ -694,6 +694,35 @@ their folded-open ancestors; the tree keeps its own fold and highlight below it.
 
 ## The measurements catalog (`/measurements/`, `/measurements/{key}/`)
 
+### Calmer (issue #30, 2026-10)
+
+Re-cut on `assets/calm.css` by the review's decisions; **nothing was removed, it moved**:
+
+- **`/measurements/`** — one column: the catalog head (Datasets · Species · Measurements, the name,
+  one sentence with the counting ⓘ, one line of numbers, the ONE search over the three indexes,
+  D10 B). The default view is a **list** (D8 A), rendered by Liquid from `site.data.measurements.list`
+  (`catalog_groups` in `_plugins/measurements.rb`): the keys unified across datasets on top, then the
+  five categories as rows that open in place, **collapsed**, each to its keys (`?cat=` opens one). The
+  old stats band went into the numbers line and the ⓘ; the chips into the categories. The timeline
+  table and the category × dataset matrix (with the datasets list) are view tabs, unchanged, and
+  `#door-q` filters both the list and the timeline (`row_hay` = the timeline's haystack).
+- **Short label** (D13 A): `short_label` where the record has one, else the heading cut at its first
+  comma or colon outside parentheses (`MeasurementsRecord.cut_label`, tested in
+  `_test/measurements_short_label_test.rb`). It is the catalog row's name, the h1, the crumb and the
+  one search's name; the full label is the sub line under it.
+- **A measurement page** — one column. The head: category glyph + short label, the full label, the
+  ids, the face's ONE sentence, one line of numbers, and ONE picture: the face's What column (the
+  molecule, the ion bar, the scale ramp, the Beaufort strip or the organism) with NERC's definition
+  as its caption. **Measured in** stays open, each series row with its own years strip. The ways in
+  are one line of links; every endpoint and the code are the *Every way in* fold (D12 A,
+  `ways_tabs.html` inside). Everything else is a fold, closed on load and titled with its answer
+  (D14 A): The structure · How it is measured (the How column + the methods tabset) · Why it matters
+  (the spark, the EOV card, CalCOFI's words, the other ways to say why) · The record's own history
+  (the anomaly) · Units and range (range & quality + the familiar scale) · By depth · by month ·
+  Related measurements · Cite. A figure in a fold is drawn when the fold opens, at its width.
+- `check_layout.py` reads the folds closed on load, then opens them and checks every face rule as
+  before; heights at 1470 px with nothing open are capped at 1,625 px (catalog) and 1,850 px (a page).
+
 The species catalog's pattern with `obs_env.measurement_type` in the place of `obs_bio.taxon_key`:
 one record, one generator, one page per key, and **not one measurement fact written in this repo**.
 The source is `measurements.json` — the record `calcofi4db::build_measurements_catalog()` writes

@@ -8,12 +8,20 @@
   payload; each stays `display: none` until the drawing adds `.mmf-drawn`, so a page read without
   JavaScript shows no 300 x 150 hole (the `[viewBox]` trap the species strip hit on 2026-09-09).
 
-  include measurement_why.html face=page.face
+  Issue #30 split the one section into three folds, each its own `part` (no part draws all three,
+  in the order they were):
+    part="scale"    the familiar scale and its flags        → the "Units and range" fold
+    part="history"  the anomaly, band by band               → "The record's own history" fold
+    part="eov"      the EOV card and CalCOFI's own words    → the "Why it matters" fold
+  The figures inside a fold are drawn when the fold opens (assets/measurements.js), at its width.
+
+  include measurement_why.html face=page.face part="history"
 {%- endcomment -%}
 {%- assign f = include.face -%}
+{%- assign part = include.part | default: "all" -%}
 
 {%- comment -%} ── the familiar scale ────────────────────────────────────── {%- endcomment -%}
-{%- if f.scale -%}
+{%- if f.scale and part == "scale" or f.scale and part == "all" -%}
 {%- capture scale_info -%}
 <p>Bars are each series' 5th–95th percentile, the line its minimum to maximum, the ring its median;
 the marks are <code>metadata/measurement_scale.csv</code>'s, each hovering to its own source.</p>
@@ -38,6 +46,7 @@ the marks are <code>metadata/measurement_scale.csv</code>'s, each hovering to it
 {%- comment -%} ── the anomaly, band by band ─────────────────────────────── {%- endcomment -%}
 {%- comment -%} a per-cast key (grain "sample": one value per cast) has no anomaly to draw and the page says so
   once, under its title, so the panel and its empty-state sentence are left out {%- endcomment -%}
+{%- if part == "history" or part == "all" -%}
 {%- unless page.per_cast -%}
 {%- comment -%} M10 (round 2, WS-R2): the four-line mono legend and the depth paragraph move into
   an ⓘ on the heading (D1), the scale becomes a choice the reader makes (own scale per band is the
@@ -53,7 +62,7 @@ the marks are <code>metadata/measurement_scale.csv</code>'s, each hovering to it
   <code>build_climatology()</code> and puts these bands on the page too.</p>
 {%- endif -%}
 {%- endcapture -%}
-<h3 class="mmf-h3 mmf-h3-i" id="mmf-anom-h">The record’s own history {% include info.html label="How the anomaly is computed" body=anom_info %}
+<h3 class="mmf-h3 mmf-h3-i" id="mmf-anom-h">Each year against the normal {% include info.html label="How the anomaly is computed" body=anom_info %}
   {%- if f.anomaly_bands -%}
   <span class="mmf-scale-pick">
     <label><input type="radio" name="mmf-hsc" value="own" checked> own scale per band</label>
@@ -70,7 +79,9 @@ the marks are <code>metadata/measurement_scale.csv</code>'s, each hovering to it
 <p class="mmf-empty">{{ f.anomaly_note | default: 'The release builds no climatology for this measurement, so there is no normal to draw a departure from.' | escape }}</p>
 {%- endif -%}
 {%- endunless -%}
+{%- endif -%}
 
+{%- if part == "eov" or part == "all" -%}
 {%- comment -%} ── the EOV card and the borrowed context ─────────────────── {%- endcomment -%}
 <div class="mmf-why-row">
   {%- if f.eov.name -%}
@@ -113,3 +124,4 @@ the marks are <code>metadata/measurement_scale.csv</code>'s, each hovering to it
       revision it was fetched at. {%- endcomment -%}
   </div>
 </div>
+{%- endif -%}

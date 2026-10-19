@@ -117,6 +117,35 @@ module CalCOFI
       d && d != heading(m) ? d : nil
     end
 
+    # D13 (issue #30, "calcofi.io, calmer"): the SHORT label a title wears. The registry has no
+    # short-label field yet; where the record carries `short_label` it wins, else the heading is cut
+    # at its first comma (or colon) outside parentheses — "Mixed-layer depth, temperature departure
+    # of 0.2 degC from 10 m (…)" titles as "Mixed-layer depth", while "Spice (spiciness at 0 dbar,
+    # TEOS-10)" keeps its parenthesis whole. Cut HERE, once, so the catalog row, the page's h1, the
+    # crumb and the one search all say the same name; the full label is the sub line under it.
+    def self.cut_label(s)
+      s = s.to_s.strip
+      depth = 0
+      s.each_char.with_index do |ch, i|
+        case ch
+        when "(", "[" then depth += 1
+        when ")", "]" then depth -= 1 if depth.positive?
+        when ",", ":"
+          head = s[0...i].strip
+          return head if depth.zero? && s[i + 1] == " " && !head.empty?
+        end
+      end
+      s
+    end
+
+    def short_label(m) = Fmt.present(m["short_label"].to_s.strip) || self.class.cut_label(heading(m))
+    def full_label(m)  = m["label"].to_s.strip
+    # the calm-sub under the short label: the full label where the title was cut, else the
+    # description where it says more than the title (today's `subtitle`)
+    def sub_line(m)
+      full_label(m) == short_label(m) ? subtitle(m) : (subtitle(m) || full_label(m))
+    end
+
     def no_label?(m) = (m["flags"] || []).include?("no_label")
 
     # http://vocab.nerc.ac.uk/collection/P01/current/TEMPPR01/ → TEMPPR01
@@ -530,7 +559,7 @@ module CalCOFI
         next if o.nil?
         t = o["totals"] || {}
         { "key"   => r["key"],
-          "label" => heading(o),
+          "label" => short_label(o),
           "url"   => page_url(o),
           "why"   => WHY[r["why"]] || r["why"].to_s.tr("_", " "),
           "why_code" => r["why"],
@@ -710,7 +739,8 @@ module CalCOFI
           # the slug is NOT carried: it is the key itself in this record, so measurements.js uses
           # `base + key + "/"` and 79 rows do not repeat their own key twice
           "rows"   => measurements.map do |m|
-            { "k"  => m["key"], "l" => heading(m), "c" => m.dig("category", "name"),
+            { "k"  => m["key"], "l" => short_label(m), "c" => m.dig("category", "name"),
+              "lf" => (full_label(m) == short_label(m) ? nil : full_label(m)),
               "u"  => Fmt.units(m["units"]), "ur" => Fmt.present(m["units"]),
               "p" => m["nerc_p01"] && nerc_id(m["nerc_p01"]),
               "un" => m["is_unified"] ? 1 : nil,
@@ -739,14 +769,91 @@ module CalCOFI
       measurements.map do |m|
         t = m["totals"] || {}
         dsn = (m["series"] || []).map { |s| ds_name(s["dataset_key"]) }.uniq
-        hay = ([heading(m), m["key"], m["description"], m["units"], Fmt.units(m["units"]),
+        hay = ([short_label(m), heading(m), m["key"], m["description"], m["units"], Fmt.units(m["units"]),
                 m["nerc_p01"] && nerc_id(m["nerc_p01"]), m.dig("category", "name")] +
                series_types(m) + dsn +
                (m["series"] || []).map { |s| s["dataset_key"] }).compact.join(" ").downcase
-        { "n" => heading(m), "c" => m.dig("category", "name"), "r" => dsn.join(" · "),
+        { "n" => short_label(m), "c" => m.dig("category", "name"), "r" => dsn.join(" · "),
           "o" => t["n_values"], "y0" => t["year_min"], "y1" => t["year_max"],
           "u" => page_url(m), "t" => hay }
       end
+    end
+
+    # ── the catalog's list (issue #30 D8 A) ──────────────────────────────────
+    # /measurements/ opens on a LIST rendered by Liquid (there with JavaScript off, and read by a
+    # crawler): the keys unified across datasets on top, then one collapsed row per category opening
+    # to its keys. Every row is one measurement — its short label (D13), the full label where it was
+    # cut, its key, units, datasets (dot AND name: never colour alone), years and values — with the
+    # haystack the timeline's search reads, so the one search filters the list by the same words.
+    def compact(n)
+      return nil if n.nil?
+      n = n.to_i
+      return "#{(n / 1e6).round(1).to_s.sub(/\.0\z/, '')} M" if n >= 1_000_000
+      return "#{Fmt.num((n / 1e3).round)} k" if n >= 10_000
+      Fmt.num(n)
+    end
+
+    def row_hay(m)
+      parts = [short_label(m), full_label(m), m["key"], m["description"], m.dig("category", "name"),
+               Fmt.units(m["units"]), m["units"], m["nerc_p01"] && nerc_id(m["nerc_p01"])]
+      (m["series"] || []).each do |s|
+        d = ds_by_key[s["dataset_key"]] || {}
+        parts.push(s["measurement_type"], s["source_column"], s["qual_column"],
+                   s["nerc_p01"] && nerc_id(s["nerc_p01"]), s["description"],
+                   d["dataset_name_short"], s["dataset_key"])
+      end
+      parts.compact.map(&:to_s).reject(&:empty?).uniq.join(" ").downcase
+    end
+
+    def catalog_row(m)
+      t = m["totals"] || {}
+      ds = (m["series"] || []).map { |s| s["dataset_key"] }.uniq
+      { "key"   => m["key"], "url" => page_url(m),
+        "short" => short_label(m),
+        "full"  => (full_label(m) == short_label(m) ? nil : full_label(m)),
+        "cat"   => m.dig("category", "name"),
+        "units" => Fmt.units(m["units"]), "units_raw" => Fmt.present(m["units"]),
+        "years" => span(t["year_min"], t["year_max"]),
+        "values" => compact(t["n_values"]), "values_n" => Fmt.num(t["n_values"]),
+        "per_cast" => per_cast?(m) || nil,
+        "unified" => m["is_unified"] || nil, "clim" => m["climatology"] || nil,
+        "p01"   => m["nerc_p01"] && nerc_id(m["nerc_p01"]),
+        "ds"    => ds.map { |k| { "name" => ds_name(k), "color" => ds_color(k) } },
+        "q"     => row_hay(m) }.compact
+    end
+
+    # a category's one line is the record's: the measurements record's own `description` where a
+    # release carries it, else the SAME category's description in the datasets record (category.csv,
+    # one registry) — never typed here. Nil, and the row draws no sub line, where neither has one.
+    def category_desc(name)
+      own = measurements.map { |m| m["category"] || {} }.find { |c| c["name"] == name && Fmt.present(c["description"]) }
+      return own["description"] if own
+      @ds_cat_desc ||= begin
+        out = {}
+        walk = lambda do |o|
+          case o
+          when Hash
+            out[o["name"]] ||= o["description"] if o["name"] && o.key?("realm") && Fmt.present(o["description"])
+            o.each_value { |v| walk.call(v) }
+          when Array then o.each { |v| walk.call(v) }
+          end
+        end
+        walk.call(@site.data["datasets"])
+        out
+      end
+      @ds_cat_desc[name]
+    end
+
+    def catalog_groups
+      cats = inline["cats"]
+      { "unified" => measurements.select { |m| m["is_unified"] }.map { |m| catalog_row(m) },
+        "categories" => cats.map do |c|
+          rows = measurements.select { |m| m.dig("category", "name") == c["n"] && !m["is_unified"] }
+          { "name" => c["n"], "icon" => c["i"] || "cat-other", "realm" => c["r"],
+            "desc" => category_desc(c["n"]),
+            "n_all" => c["k"], "n_unified" => c["k"] - rows.size,
+            "rows" => rows.map { |m| catalog_row(m) } }
+        end }
     end
 
     # ══ faces (WS-MF5) ═══════════════════════════════════════════════════════
@@ -1586,7 +1693,9 @@ module CalCOFI
         # reader of that dataset's page wants to know they exist (plan § D2)
         "full_res"   => mm.full_resolution_only,
         "inline"     => json,
-        "inline_kb"  => (json.bytesize / 1024.0).round
+        "inline_kb"  => (json.bytesize / 1024.0).round,
+        # issue #30 D8 A: the catalog's default list, rendered by Liquid (_layouts/measurements_index.html)
+        "list"       => mm.catalog_groups
       }
 
       # The front door's Data section reads the measurement counts through
@@ -1690,8 +1799,10 @@ module CalCOFI
         "m"           => m,
         "key"         => m["key"],
         "slug"        => m["slug"],
-        "h1"          => mm.heading(m),
-        "sub"         => mm.subtitle(m),
+        # D13 (issue #30): the short label is the name, the full label the sub line under it
+        "h1"          => mm.short_label(m),
+        "full_label"  => mm.full_label(m),
+        "sub"         => mm.sub_line(m),
         "no_label"    => mm.no_label?(m),
         "category"    => m.dig("category", "name"),
         "cat_icon"    => (m.dig("category", "icon") || "cat-other"),   # the hero's own glyph for the pin's disc (Ben, 2026-09-16)

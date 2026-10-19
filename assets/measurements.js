@@ -2,10 +2,10 @@
 
    Two pages, one file, no library and no network:
 
-   /measurements/            #mm-data      → the search (?q=), the category chips, the TIMELINE
-                                             table (one row per measurement, one bar per series on
-                                             a 1949 → release-year axis), the category × dataset
-                                             MATRIX and the datasets list
+   /measurements/            #mm-data      → the one search (#door-q, ?q=) filtering the Liquid list
+                                             and the TIMELINE view (one row per measurement, one
+                                             bar per series on a 1949 → release-year axis), the
+                                             category × dataset MATRIX view and the datasets list
    /measurements/{key}/      #mm-strip-data → the years strip (an <svg>)
                              #mm-depth-data → the depth bars
                              #mm-months-data → the month strip
@@ -91,6 +91,29 @@
   addEventListener("resize", elide);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(elide);
 
+  /* ── the folds (issue #30): closed on load, each titled with its answer ─────────────────────
+     A URL inside a fold measures 0 px until the fold opens, so the elision runs again on every
+     open. A link that names a fold (`a[data-fold]`, the ways line's "R · Python · Parquet") opens
+     it in place and scrolls to it; a URL whose #hash is a fold's id lands on it open. */
+  [].forEach.call(document.querySelectorAll("details.calm-fold"), function (d) {
+    d.addEventListener("toggle", function () { if (d.open) elide(); });
+  });
+  function openFold(id, scroll) {
+    var d = id && document.getElementById(id);
+    if (!d || d.tagName !== "DETAILS") return false;
+    d.open = true;
+    if (scroll) d.scrollIntoView({ block: "start" });
+    return true;
+  }
+  document.addEventListener("click", function (e) {
+    var a = e.target.closest && e.target.closest("a[data-fold]");
+    if (a && openFold(a.getAttribute("data-fold"), true)) {
+      e.preventDefault();
+      if (history.replaceState) history.replaceState(null, "", "#" + a.getAttribute("data-fold"));
+    }
+  });
+  if (location.hash) openFold(location.hash.slice(1), true);
+
   /* ══ the measurement page's three figures ════════════════════════════════════════════════ */
   function readJSON(id) {
     var s = document.getElementById(id);
@@ -99,48 +122,44 @@
   }
   function rowLabel(r) { return shortName(r.s); }
 
-  /* the years strip: one row per SERIES, one cell per year, opacity by √(n / that row's max) */
+  /* the years strip: one per SERIES, in that series' own row of "Measured in" (issue #30: the open
+     section carries its strips), one cell per year, opacity by sqrt(n / that row's max). Each
+     svg.mm-strip[data-i] draws #mm-strip-data's row i — the plugin writes both the rows and the
+     payload from `m.series` in the same order. The dataset's NAME is the row's own link beside it,
+     so the strip carries no label, and colour is never the only cue. */
   (function strip() {
-    var host = document.getElementById("mm-strip"), S = readJSON("mm-strip-data");
-    if (!host || !S || !S.rows || !S.rows.length) return;
-    /* the mock's geometry, FIXED: a 96 px label gutter, an 8 px year cell, a 22 px row in a
-       742-wide viewBox. The <svg> scales to whatever column it lands in, so the cells stay square
-       on a phone instead of being recomputed to 3 px against a 96 px gutter. */
-    function draw() {
-      var years = [], y;
-      for (y = S.y0; y <= S.y1; y++) years.push(y);
-      var lw = 150, cw = 8, W = lw + years.length * cw + 6;
-      var rh = 22, H = S.rows.length * rh + 22;
+    var S = readJSON("mm-strip-data");
+    var hosts = [].slice.call(document.querySelectorAll("svg.mm-strip[data-i]"));
+    if (!hosts.length || !S || !S.rows || !S.rows.length) return;
+    /* FIXED geometry: an 8 px year cell, a 22 px row in a viewBox the svg scales to its column, so
+       the cells stay square on a phone instead of being recomputed to 3 px */
+    var years = [], y;
+    for (y = S.y0; y <= S.y1; y++) years.push(y);
+    var cw = 8, L = 2, W = L + years.length * cw + 14, rh = 22, H = rh + 20;
+    hosts.forEach(function (host) {
+      var r = S.rows[+host.getAttribute("data-i")];
+      if (!r) return;
       host.setAttribute("viewBox", "0 0 " + W + " " + H);
       host.classList.add("mm-drawn");
       host.innerHTML = "";
-      S.rows.forEach(function (r, j) {
-        var vals = Object.keys(r.y).map(function (k) { return r.y[k]; });
-        var max = Math.max.apply(null, vals.concat([1]));
-        /* the dot AND the dataset's name: colour is the second cue here, never the only one */
-        svgEl("circle", { cx: 6, cy: j * rh + 11, r: 5, fill: r.c || "var(--accent)" }, host);
-        /* the label is the dataset's name, cut to the gutter rather than run under the cells —
-           the full name is the row's <title> and is written out in "Measured in" above */
-        var nm = rowLabel(r), lab = nm.length > 21 ? nm.slice(0, 20) + "…" : nm;
-        var t = svgEl("text", { x: 17, y: j * rh + 15, cls: "mm-rl", text: lab }, host);
-        svgEl("title", { text: r.s + " · " + r.mt + " · " + fmt(r.n) + " values" }, t);
-        years.forEach(function (yy, i) {
-          var n = r.y[yy] || 0;
-          if (!n) return;
-          var rect = svgEl("rect", { x: lw + i * cw, y: j * rh + 3, width: Math.max(cw - 1, 0.6),
-                                     height: rh - 6, rx: 1.5, fill: r.c || "var(--accent)",
-                                     opacity: (0.18 + 0.82 * Math.sqrt(n / max)).toFixed(2) }, host);
-          svgEl("title", { text: r.s + " · " + r.mt + " · " + yy + " · " + fmt(n) + " values" }, rect);
-        });
+      svgEl("title", { text: r.s + " · " + r.mt + " · " + fmt(r.n) + " values, " + S.y0 + "–" + S.y1 }, host);
+      svgEl("line", { x1: L, x2: W - 14, y1: rh + 0.5, y2: rh + 0.5, stroke: "var(--border)" }, host);
+      var vals = Object.keys(r.y || {}).map(function (k) { return r.y[k]; });
+      var max = Math.max.apply(null, vals.concat([1]));
+      years.forEach(function (yy, i) {
+        var n = (r.y || {})[yy] || 0;
+        if (!n) return;
+        var rect = svgEl("rect", { cls: "mm-yc", x: L + i * cw, y: 3, width: Math.max(cw - 1, 0.6),
+                                   height: rh - 6, rx: 1.5, fill: r.c || "var(--accent)",
+                                   opacity: (0.18 + 0.82 * Math.sqrt(n / max)).toFixed(2) }, host);
+        svgEl("title", { text: r.s + " · " + r.mt + " · " + yy + " · " + fmt(n) + " values" }, rect);
       });
       for (y = 1950; y <= S.y1; y += 10) {
-        var x = lw + (y - S.y0) * cw;
-        svgEl("line", { x1: x, x2: x, y1: S.rows.length * rh + 1, y2: S.rows.length * rh + 5,
-                        stroke: "var(--border)" }, host);
-        svgEl("text", { x: x, y: S.rows.length * rh + 18, "text-anchor": "middle", text: y }, host);
+        var x = L + (y - S.y0) * cw;
+        svgEl("line", { x1: x, x2: x, y1: rh + 1, y2: rh + 5, stroke: "var(--border)" }, host);
+        svgEl("text", { x: x, y: rh + 17, "text-anchor": "middle", text: y }, host);
       }
-    }
-    draw();
+    });
   })();
 
   /* by depth: the record's own bands, one thin bar per series, the end label INSIDE the column */
@@ -246,6 +265,15 @@
     function width(host, min) {
       host.classList.add("mmf-drawn");
       return Math.max(Math.round(host.getBoundingClientRect().width) || 0, min || 280);
+    }
+    /* issue #30: a figure in a FOLD (closed on load) measures 0 px wide, so it is drawn when its
+       fold opens — at the fold's own width — and redrawn each time it opens again (a resize while
+       closed is then never stale). A host already showing is drawn at once. */
+    function whenShown(host, draw) {
+      if (!host) return;
+      var det = host.closest("details:not([open])");
+      if (!det) { draw(); return; }
+      det.addEventListener("toggle", function () { if (det.open) draw(); });
     }
     function band(name) {
       var a = F.anomaly;
@@ -654,6 +682,9 @@
        a ramp or an axis, labels on it, and a hover — one rule per face kind, in this order) */
     var mini = document.getElementById("mmf-mini");
     if (mini) {
+      /* shown BEFORE it is drawn, so the ramp measures the figure's own width rather than 0 and
+         a 220-unit minimum stretched to fit (its labels drew 1.8x their size) */
+      mini.classList.add("mmf-drawn");
       var h = "", drew = false;
       if (F.composition || (F.chem || []).some(function (x) { return x.fraction != null; })) h = ionsHTML(true);
       /* an organism's figure needs a measured cell size AND a measured hair; where the species
@@ -675,7 +706,7 @@
         if (!drew) h = miniHTML();
       }
       if (h) { mini.innerHTML = h; drew = true; }
-      if (drew) mini.classList.add("mmf-drawn");
+      if (!drew) mini.classList.remove("mmf-drawn");
     }
 
     /* ── the face row's Why spark: the band with the most values, on ITS OWN scale ──────────
@@ -685,7 +716,7 @@
        (+top · 0 · −top), four year ticks put the bars in time, the trend is drawn where the record
        has one, strong El Niño years are shaded, and every year hovers to its own numbers. */
     var SPARK_TOP = null;
-    (function spark() {
+    whenShown(document.getElementById("mmf-spark"), function spark() {
       var host = document.getElementById("mmf-spark");
       if (!host || !F.anomaly) return;
       var b = band(F.anomaly.spark_band);
@@ -741,7 +772,7 @@
         } else { txt = bandTxt(b.band) + " m"; }
         line.innerHTML = txt + ' <span class="cc-muted">\u00b7 drawn to \u00b1' + fmtN(top, tdp(top)) + esc(units()) + "</span>";
       }
-    })();
+    });
 
     /* ── What, at length: the composition table, the Bjerrum plot, the hair, the scale ───── */
     (function whatFig() {
@@ -857,7 +888,7 @@
       for (v = Math.ceil(lo / step) * step; v <= hi + 1e-9; v += step) t.push(+v.toFixed(10));
       return t;
     }
-    (function scaleChart() {
+    whenShown(document.getElementById("mmf-scale"), function scaleChart() {
       var host = document.getElementById("mmf-scale"), sc = F.scale;
       if (!host || !sc || !sc.axis) return;
       var W = width(host, 320), L = 20, R = 20, rows = (sc.series || []).length;
@@ -986,7 +1017,7 @@
              .map(function (r) { return esc(r.label) + (r.src ? " (" + esc(r.src) + ")" : ""); }).join("; ") : "") +
           (sc.axis.source ? " · " + esc(sc.axis.source) : "");
       }
-    })();
+    });
 
     /* ── Why: the record's own history, one row per depth band (round 2, M10) ───────────────
        OWN SCALE PER ROW by default — the ± is written at the left of each row beside its band and
@@ -1053,7 +1084,7 @@
       host.classList.add("mmf-drawn");
     }
 
-    (function history() {
+    whenShown(document.getElementById("mmf-anom"), function history() {
       var host = document.getElementById("mmf-anom"), a = F.anomaly;
       if (!host || !a || !(a.bands || []).length) return;
       var radios = [].slice.call(document.querySelectorAll('input[name="mmf-hsc"]'));
@@ -1062,7 +1093,10 @@
         return !!on && on.value === "shared";
       };
       drawHistory(read());
-      radios.forEach(function (r) { r.addEventListener("change", function () { drawHistory(read()); }); });
+      if (!host.hasAttribute("data-wired")) {      /* a fold opened twice wires its radios once */
+        host.setAttribute("data-wired", "");
+        radios.forEach(function (r) { r.addEventListener("change", function () { drawHistory(read()); }); });
+      }
 
       /* the legend: one line of swatches, and the computation sentence in the heading's ⓘ — both
          written from the payload, never typed (§ D7) */
@@ -1094,7 +1128,7 @@
           (since2 != null ? "; the dashed line is the least-squares trend over years with two or more cruises, since " +
             since2 : "") + ". A bar off its row\u2019s scale is marked \u25b2 at the row edge.";
       }
-    })();
+    });
   })();
 
   /* ══ the index ═══════════════════════════════════════════════════════════════════════════ */
@@ -1142,12 +1176,9 @@
 
   /* ── the timeline table ─────────────────────────────────────────────────────────────────── */
   var tl = document.getElementById("mm-tl");
-  var q = document.getElementById("mm-q"), qn = document.getElementById("mm-qn");
-  var chips = document.getElementById("mm-chips");
-  var curCat = "";
 
   function hayOf(r) {
-    var parts = [r.l, r.k, r.c, r.u, r.ur, r.p];
+    var parts = [r.l, r.lf, r.k, r.c, r.u, r.ur, r.p];
     (r.se || []).forEach(function (s) {
       var d = DS[s.d] || {};
       parts.push(s.mt, s.sc, s.qc, s.p, s.de, d.s, d.k);
@@ -1190,14 +1221,8 @@
     if (!tl) return;
     var s = (q ? q.value : "").trim().toLowerCase();
     var rows = ROWS.filter(function (r) {
-      if (curCat && r.c !== curCat) return false;
       return !s || r._h.indexOf(s) >= 0;
     });
-    if (qn) {
-      qn.textContent = rows.length === ROWS.length
-        ? fmt(ROWS.length) + " measurements"
-        : fmt(rows.length) + " of " + fmt(ROWS.length);
-    }
     tl.innerHTML = "";
     /* role="table" needs role="row" children and rows need cells, so every row is a wrapper with
        `display: contents` — the CSS grid still lays the cells out as one grid, and the
@@ -1275,57 +1300,69 @@
     });
   }
 
-  /* ── the chips: one per category, with its count ────────────────────────────────────────── */
+  /* ── the list and the one search (issue #30 D8 A, D10 B) ────────────────────────────────────
+     The list is Liquid's (the unified keys, then one collapsed row per category); this filters it
+     in place as the ONE search box (#door-q, _includes/one_search.html) is typed into — the same
+     words the timeline's search reads (each row's data-q is the plugin's `row_hay`). A category
+     with a hit opens, one without hides, and clearing the box closes what the search opened and
+     leaves open what the reader opened. The timeline view filters on the same box. The dropdown
+     door-search.js draws for the other two indexes still answers. ?q= and ?cat= are read on load
+     (a measurement page's crumb links ?cat= to its category, which opens). */
   function writeParam(name, value) {
     if (!history.replaceState) return;
     var u = new URL(location.href);
     if (value) u.searchParams.set(name, value); else u.searchParams.delete(name);
     history.replaceState(null, "", u.toString());
   }
-  function chipBtn(label, val, n, title) {
-    var b = el("button", null, esc(label) + (n != null ? '<span class="mm-n">' + fmt(n) + "</span>" : ""));
-    b.type = "button";
-    b.setAttribute("data-cat", val);
-    b.setAttribute("aria-pressed", val === curCat ? "true" : "false");
-    if (title) b.title = title;
-    b.addEventListener("click", function () {
-      curCat = val;
-      [].forEach.call(chips.querySelectorAll("button"), function (x) {
-        x.setAttribute("aria-pressed", x.getAttribute("data-cat") === curCat ? "true" : "false");
-      });
-      writeParam("cat", curCat);
-      draw();
+  var rowsAll = [].slice.call(document.querySelectorAll("#ts-mm .mm-row[data-q]"));
+  var cats = [].slice.call(document.querySelectorAll("#mm-cats > details.mm-cat-item"));
+  var uniH = document.getElementById("mm-unified-h"), uni = document.getElementById("mm-unified");
+  var empty = document.getElementById("mm-empty");
+  var hint = document.querySelector("#door-search .dsearch-k");
+  var total = rowsAll.length;
+  function filterList(s) {
+    var n = 0;
+    rowsAll.forEach(function (li) {
+      var hit = !s || li.getAttribute("data-q").indexOf(s) >= 0;
+      li.hidden = !hit;
+      if (hit) n++;
     });
-    return b;
-  }
-  /* the chip's short label is the category name's own head — "Physical Oceanography" reads
-     "Physical" on a pill, and the full name is the title and the row heading below */
-  function chipLabel(name) { return String(name).split(/ (?:&|and) /)[0].split(" ")[0]; }
-
-  if (chips) {
-    chips.appendChild(chipBtn("all", "", ROWS.length, "Every measurement in the release"));
-    CATS.forEach(function (c) {
-      var n = ROWS.filter(function (r) { return r.c === c.n; }).length;
-      chips.appendChild(chipBtn(chipLabel(c.n), c.n, n,
-                                c.n + (c.r === "bio" ? " — a biology category: cell counts, rows of obs_env" : "")));
+    cats.forEach(function (g) {
+      var hits = g.querySelectorAll(".mm-row:not([hidden])").length;
+      var cn = g.querySelector(".mm-cat-n");
+      if (cn) cn.textContent = s ? hits + " of " + cn.getAttribute("data-n") : cn.getAttribute("data-n");
+      g.hidden = !!s && !hits;
+      if (s && hits && !g.open) { g.open = true; g.setAttribute("data-searched", ""); }
+      if (!s && g.hasAttribute("data-searched")) { g.open = false; g.removeAttribute("data-searched"); }
     });
+    if (uni && uniH) {
+      var u = uni.querySelectorAll(".mm-row:not([hidden])").length;
+      uni.hidden = uniH.hidden = !!s && !u;
+    }
+    if (empty) empty.hidden = n > 0;
+    if (hint) hint.textContent = s ? fmt(n) + " of " + fmt(total) : fmt(total);
+    return n;
   }
-
+  var q = document.getElementById("door-q");
+  function onQuery() {
+    var s = (q ? q.value : "").trim().toLowerCase();
+    filterList(s);
+    draw();
+  }
   if (q) {
-    q.addEventListener("input", function () { draw(); writeParam("q", q.value.trim()); });
+    q.addEventListener("input", function () { onQuery(); writeParam("q", q.value.trim()); });
   }
   var params = new URLSearchParams(location.search);
   var q0 = params.get("q"), cat0 = params.get("cat");
-  if (cat0 && CATS.some(function (c) { return c.n === cat0; })) {
-    curCat = cat0;
-    if (chips) {
-      [].forEach.call(chips.querySelectorAll("button"), function (x) {
-        x.setAttribute("aria-pressed", x.getAttribute("data-cat") === curCat ? "true" : "false");
-      });
-    }
-  }
   if (q0 && q) q.value = q0;
-  draw();
+  onQuery();
+  if (cat0) {
+    cats.forEach(function (g) {
+      if (g.getAttribute("data-cat") !== cat0) return;
+      g.open = true;
+      setTimeout(function () { g.scrollIntoView({ block: "start" }); }, 0);
+    });
+  }
 
   /* ── the matrix: category × dataset, the cell is how many measurements ──────────────────── */
   var mx = document.getElementById("mm-matrix");
