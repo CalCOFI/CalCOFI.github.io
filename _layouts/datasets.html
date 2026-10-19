@@ -2,36 +2,174 @@
 layout: default
 ---
 {%- comment -%}
-  /datasets/ — the same grid the landing page opens on, full width, with the release strip above it.
-  Nothing here is authored: every tile, row and number comes from the release record through
-  _plugins/datasets.rb.
+  /datasets/ — the catalog, calmer (issue #30, D1–D17). One column:
+
+    head    the three catalogs as siblings, "Datasets", one sentence, one line of counts, the ONE
+            search over the three indexes (D10 B) — which also filters this page's rows — and a
+            "Filter" button that opens the six facets
+    list    every dataset in the release in ONE list, Biology then Environment, one generous row
+            each: category glyph · name (category · provider under it) · years · obs · licence.
+            A row opens to its description, what is in it and the ways in. The category's own
+            description is the ⓘ beside its name in the opened row, and the name's hover (D9 B).
+    views   the category tiles of the old page are the second view tab ("By category"), unchanged
+            (_includes/catalog_grid.html, the same include the front door draws)
+    folds   the holdings, the reference frame and the release, each titled with its answer (D14)
+
+  Nothing here is authored: every row, count and answer comes from the release record through
+  _plugins/datasets.rb (site.data.catalog).
 {%- endcomment -%}
-<section class="cc-band cc-band-alt ds-head">
-  <div class="cc-container">
-    <div class="cc-eyebrow">{{ site.data.catalog.counts.datasets | escape }} datasets · {{ site.data.catalog.counts.holdings | escape }} holdings · {{ site.data.catalog.counts.reference | escape }} reference rows</div>
-    <h1 class="cc-h1">Datasets</h1>
-    <p class="cc-lede cc-prose">Every dataset CalCOFI holds — the {{ site.data.catalog.counts.datasets | escape }} in the
-      integrated database, each with its coverage, every endpoint it can be reached through and how to cite
-      it, and the {{ site.data.catalog.counts.holdings | escape }} holdings that are not in the database yet.
-      One page per dataset.</p>
-    <p class="cc-aside">The machine-readable catalog is
-      <a href="{{ '/data.json' | relative_url }}">data.json</a> and
-      <a href="{{ '/datasets/sitemap.xml' | relative_url }}">sitemap.xml</a>.</p>
-    {% include release_strip.html %}
-  </div>
-</section>
+{%- assign cat = site.data.catalog -%}
+{%- assign rel = cat.release -%}
+{%- assign ref = cat.reference -%}
+{%- assign nums = cat.numbers -%}
+<main class="calm-page ds-cat">
 
-<section class="cc-band ds-body">
-  <div class="cc-container">
-    {%- comment -%}
-      The tiles are h3 (they sit under an h2 on the landing page). This page's h1 is "Datasets", so
-      it needs the h2 rung for the heading order to be sequential — the name of the grid, announced
-      but not drawn.
-    {%- endcomment -%}
+<header class="calm-cathead ds-cathead">
+  <nav class="calm-siblings" aria-label="The three catalogs">
+    <a href="{{ '/datasets/' | relative_url }}" aria-current="page"><i class="cc-i cc-i-ui-data" aria-hidden="true"></i>Datasets</a>
+    <a href="{{ '/species/' | relative_url }}"><i class="cc-i cc-i-realm-bio" aria-hidden="true"></i>Species</a>
+    <a href="{{ '/measurements/' | relative_url }}"><i class="cc-i cc-i-el-measured" aria-hidden="true"></i>Measurements</a>
+  </nav>
+  <div class="ds-cathead-g">
+    <div class="ds-cathead-l">
+      <h1>Datasets</h1>
+      <p class="calm-sentence">Who collected what, with its coverage, every endpoint, the licence and how to cite it.</p>
+      <p class="ds-counts">{{ cat.counts.datasets }} in the release · {{ cat.counts.holdings }} held · {{ cat.counts.reference }} reference rows · <a href="{{ '/datasets/release/' | relative_url }}">{{ rel.version | escape }}</a></p>
+      <details class="ds-more">
+        <summary>What this is <i class="cc-i cc-i-ui-down" aria-hidden="true"></i></summary>
+        <p>Every dataset CalCOFI holds: the {{ cat.counts.datasets }} in the integrated database, each with
+          its coverage, every endpoint it can be reached through and how to cite it, and the
+          {{ cat.counts.holdings }} holdings that are not in the database yet. One page per dataset. The
+          machine-readable catalog is <a href="{{ '/data.json' | relative_url }}">data.json</a> and
+          <a href="{{ '/datasets/sitemap.xml' | relative_url }}">sitemap.xml</a>.</p>
+      </details>
+    </div>
+    <div class="ds-cathead-r">
+      {% include one_search.html placeholder="bottle · CUFES · zooplankton · CCE-LTER · eDNA …" hint=cat.counts.datasets %}
+      <div class="ds-tools">
+        <span>Rows open to the description, what is in them and the ways in.</span>
+        <button type="button" class="ds-filter-btn" id="ds-filter-btn" aria-expanded="false" aria-controls="ds-filters"><i class="cc-i cc-i-ui-filter" aria-hidden="true"></i>Filter</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+{% include catalog_filters.html hidden=true %}
+
+<div class="tabset calm-views ds-views" id="ts-ds-views" data-url-tab>
+  <div class="tabrow" role="tablist" aria-label="How to see the datasets">
+    <button type="button" role="tab" id="ds-view-tab-list" aria-controls="ds-view-list" data-tab="list" aria-selected="true" tabindex="0"><i class="cc-i cc-i-view-list" aria-hidden="true"></i>List</button>
+    <button type="button" role="tab" id="ds-view-tab-grid" aria-controls="ds-view-grid" data-tab="grid" aria-selected="false" tabindex="-1"><i class="cc-i cc-i-view-grid" aria-hidden="true"></i>By category</button>
+  </div>
+
+  <div class="tabpanel" id="ds-view-list" data-panel="list" role="tabpanel" aria-labelledby="ds-view-tab-list">
+    <div id="ds-list">
+    {%- for rlm in cat.realms -%}
+    {%- assign n_rlm = 0 -%}
+    {%- for c in rlm.categories %}{% assign n_rlm = n_rlm | plus: c.datasets.size %}{% endfor -%}
+    {%- if n_rlm > 0 -%}
+    <section class="ds-realm-grp" id="ds-realm-{{ rlm.id }}" aria-labelledby="ds-realm-h-{{ rlm.id }}">
+      <div class="ds-realm-h">
+        <h2 id="ds-realm-h-{{ rlm.id }}"><i class="cc-i cc-i-{{ rlm.icon | escape }}" aria-hidden="true"></i>{{ rlm.title | escape }}</h2>
+        <span class="calm-ans">{{ n_rlm }} dataset{% if n_rlm != 1 %}s{% endif %} · {{ rlm.lede | replace: " — ", ": " | escape }}</span>
+      </div>
+      <div class="calm-list">
+      {%- comment -%} every dataset of the realm, by category order then name: the categories come
+        sorted from the generator, and the rows within each {%- endcomment -%}
+      {%- for c in rlm.categories -%}
+      {%- for d in c.datasets -%}
+      <details class="calm-item ds-item" data-kind="dataset" data-key="{{ d.key | escape }}" data-cat="{{ c.name | escape }}"
+               data-realm="{{ d.realm | escape }}" data-prov="{{ d.provider | escape }}"
+               data-lic="{{ d.license | default: 'unstated' | escape }}" data-fmt="{{ d.formats | join: ' ' | escape }}"
+               data-stage="{{ d.stage | default: 'published' | escape }}">
+        <summary>
+          <span class="calm-item-g"{% if d.color %} style="--dot: {{ d.color | escape }}"{% endif %}><i class="cc-i cc-i-{{ d.icon | escape }}" aria-hidden="true"></i></span>
+          <span class="calm-item-tx">
+            <span class="calm-item-t">{{ d.name | escape }}</span>
+            <span class="calm-item-s"><span{% if c.description %} title="{{ c.description | escape }}"{% endif %}>{{ c.name | escape }}</span> · {{ d.provider | escape }}</span>
+          </span>
+          <span class="calm-item-k">
+            {%- if d.years %}<span>{{ d.years | escape }}</span>{% endif -%}
+            {%- if d.n_obs_short %}<span title="{{ d.n_obs_fmt }} observations">{{ d.n_obs_short }} obs</span>{% endif -%}
+            {% include licence_chip.html license=d.license license_url=d.license_url name=d.license_name %}
+          </span>
+          <i class="calm-chev cc-i cc-i-ui-down" aria-hidden="true"></i>
+        </summary>
+        <div class="calm-item-b">
+          <p>{% if d.full_name and d.full_name != d.name %}<b>{{ d.full_name | escape }}.</b> {% endif %}{{ d.sentence | escape }}</p>
+          <div class="ds-item-what">
+            <span class="ds-item-cat"><i class="cc-i cc-i-{{ d.icon | escape }}" aria-hidden="true"></i>{{ c.name | escape }}
+              {%- if c.description -%}
+              {%- capture cbody %}<p>{{ c.description | escape }}.</p>{% endcapture -%}
+              {% include info.html label="What this category holds" body=cbody %}
+              {%- endif -%}</span>
+            {%- if d.n_taxa and d.n_taxa > 0 -%}
+            <span><i class="cc-i cc-i-el-taxa" aria-hidden="true"></i><b>{{ d.n_taxa }} taxa</b>{% if d.taxa_names.size > 0 %} · <i>{{ d.taxa_names | join: ", " | escape }}</i>{% if d.n_taxa > d.taxa_names.size %} …{% endif %}{% endif %}</span>
+            {%- elsif d.n_var and d.n_var > 0 -%}
+            <span><i class="cc-i cc-i-el-variables" aria-hidden="true"></i><b>{{ d.n_var }} variable{% if d.n_var != 1 %}s{% endif %}</b> · <span class="mono">{{ d.var_names | join: ", " | escape }}</span>{% if d.n_var > d.var_names.size %} …{% endif %}</span>
+            {%- endif -%}
+            {%- if d.years %}<span><i class="cc-i cc-i-ui-years" aria-hidden="true"></i>{{ d.years | escape }}{% if d.n_stations %} · {{ d.n_stations }} stations{% endif %}</span>{% endif -%}
+            {%- if d.contrib.size > 0 -%}
+            <span><i class="cc-i cc-i-el-contributes" aria-hidden="true"></i>also in {% for ct in d.contrib %}{{ ct.category | escape }} ({{ ct.n }}){% unless forloop.last %} · {% endunless %}{% endfor %}</span>
+            {%- endif -%}
+            {%- if d.since %}<span><i class="cc-i cc-i-el-release" aria-hidden="true"></i>in the release since <span class="mono">{{ d.since | escape }}</span>{% if d.stage %} · {{ d.stage | escape }}{% endif %}</span>{% endif -%}
+          </div>
+          <p class="calm-ways">
+            <a href="{{ d.url | relative_url }}"><i class="cc-i cc-i-ui-open" aria-hidden="true"></i>Dataset page</a>
+            {%- for w in d.ways %}<a href="{{ w.url | escape }}"><i class="cc-i cc-i-{{ w.icon }}" aria-hidden="true"></i>{{ w.label | escape }}</a>{% endfor -%}
+          </p>
+        </div>
+      </details>
+      {%- endfor -%}
+      {%- endfor -%}
+      </div>
+    </section>
+    {%- endif -%}
+    {%- endfor -%}
+    </div>
+    <p class="ds-empty" id="ds-empty" hidden>No dataset matches. <button type="button" class="cc-text-link" id="ds-clear2">Clear</button></p>
+  </div>
+
+  <div class="tabpanel ds-view-grid" id="ds-view-grid" data-panel="grid" role="tabpanel" aria-labelledby="ds-view-tab-grid" hidden>
+    {%- comment -%} the old page's tiles, unchanged: the realm columns, each category's datasets,
+      contributions and holdings (the h2 rung the tiles' h3s need is this view's own) {%- endcomment -%}
     <h2 class="sr-only">Datasets by category</h2>
-    {% include catalog_grid.html %}
-    {% include reference_band.html %}
+    {% include catalog_grid.html filters="off" %}
   </div>
-</section>
+</div>
 
-<script type="application/ld+json">{{ site.data.catalog.jsonld }}</script>
+<div class="calm-folds ds-cat-folds">
+  {%- assign n_held = cat.counts.holdings -%}
+  {%- if n_held > 0 -%}
+  <details class="calm-fold" id="ds-holdings">
+    <summary><i class="cc-i cc-i-el-holding" aria-hidden="true"></i>Holdings
+      <span class="calm-ans">{{ n_held }} not yet in the database</span><i class="calm-chev cc-i cc-i-ui-down" aria-hidden="true"></i></summary>
+    <div class="calm-body">
+      <p class="ds-fold-lede">What CalCOFI has or tracks that is not in the integrated database yet. Each has a page that says where it lives today and what it is waiting on.</p>
+      <ul class="ds-rows ds-held-rows">
+        {%- for c in cat.categories -%}
+        {%- for h in c.holdings -%}
+        {% include catalog_holding_row.html h=h cat=c.name %}
+        {%- endfor -%}
+        {%- endfor -%}
+      </ul>
+    </div>
+  </details>
+  {%- endif -%}
+  <details class="calm-fold" id="reference">
+    <summary><i class="cc-i cc-i-{{ ref.icon | escape }}" aria-hidden="true"></i>The reference frame
+      <span class="calm-ans">{{ ref.tables.size }} tables · {{ ref.layers.size }} spatial layers{% for r in ref.rasters %} · {{ r.name | escape }}{% endfor %}</span><i class="calm-chev cc-i cc-i-ui-down" aria-hidden="true"></i></summary>
+    <div class="calm-body">{% include reference_band.html %}</div>
+  </details>
+  <details class="calm-fold" id="release">
+    <summary><i class="cc-i cc-i-el-release" aria-hidden="true"></i>The release
+      <span class="calm-ans">{{ rel.version | escape }}{% if rel.release_date %} · {{ rel.release_date | escape }}{% endif %} · {{ rel.n_tables }} tables · {{ nums.rows_m }} M rows</span><i class="calm-chev cc-i cc-i-ui-down" aria-hidden="true"></i></summary>
+    <div class="calm-body">{% include release_strip.html %}</div>
+  </details>
+</div>
+
+</main>
+
+<script src="{{ '/assets/catalog.js' | relative_url }}" defer
+        data-search="{{ '/datasets/search.json' | relative_url }}"></script>
+<script type="application/ld+json">{{ cat.jsonld }}</script>

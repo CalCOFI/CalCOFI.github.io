@@ -17,9 +17,11 @@ can only pass by the layout actually being fixed:
              to --warn. Holdings used to be --fg at 700 wearing the page's only yellow chip, so
              the 17 things NOT in the database read louder than the 16 that are.
   scroll     no horizontal scroll at either width, either theme.
-  hero       (dataset pages) the head band's two columns end within 120 px of each other, and no
-             two-column region sits between the head and Cite. The CTD page's main column was
-             418 px beside a 1,346 px sidebar — 928 px of blank page.
+  calm       (the dataset catalog and a dataset page, issue #30) the page is at most MAX_DS_H tall
+             at 1470 with nothing open; every fold, catalog row, "what is in it" line and "What
+             this is" is CLOSED on load; the catalog's list has exactly the record's datasets; and
+             no block under a dataset page's head is a grid of more than one column (the CTD page's
+             main column was once 418 px beside a 1,346 px sidebar — 928 px of blank page).
   filter     (the catalog) choosing a category actually hides the other tiles and rows. `el.hidden`
              is a UA rule, so `.cc-card { display: flex }` beat it and the filter hid nothing —
              invisible until the grid packed, then the "hidden" tiles overlapped everything.
@@ -259,6 +261,23 @@ PROBE = r"""
     docHeight: d.documentElement.scrollHeight
   };
 
+  // ── the dataset catalog and a dataset page, calmer (issue #30) ─────────────
+  // measured FIRST, before any probe below opens or filters anything: the page's height with
+  // nothing open, and every fold, catalog row and "what is in it" line closed on load
+  const calmDs = d.querySelector("main.ds-page, main.ds-cat");
+  if (calmDs) {
+    out.calmDs = {
+      kind: calmDs.classList.contains("ds-cat") ? "catalog" : "dataset",
+      holding: !!d.getElementById("lives"),
+      height: d.documentElement.scrollHeight,
+      folds: calmDs.querySelectorAll(".calm-fold").length,
+      open: [...calmDs.querySelectorAll(".calm-fold[open], .calm-item[open], .ds-line[open], .ds-more[open]")]
+              .map(el => el.id || String(el.className).slice(0, 30)),
+      // the list's rows are the record's datasets, once each
+      rows: [...calmDs.querySelectorAll("#ds-list .ds-item[data-key]")].map(el => el.dataset.key)
+    };
+  }
+
   // ── the grid: drawn vs natural height per tile ──────────────────────────────
   const grid = d.getElementById("ds-grid");
   if (grid) {
@@ -335,14 +354,11 @@ PROBE = r"""
   }));
 
   // ── the dataset page ───────────────────────────────────────────────────────
-  const hero = d.querySelector(".ds-hero");
-  if (hero) {
-    const kids = [...hero.children].filter(c => c.getBoundingClientRect().height > 0);
-    out.hero = { columns: kids.length, heights: kids.map(c => px(c.getBoundingClientRect().height)) };
-  }
+  // (issue #30: the head is calm.css's head of four things — the map is its picture at its own
+  // aspect, never stretched to the text — so the old hero's "two columns end together" is gone)
 
   // D2 (round 2, WS-R4): the head wears the same licence chip as a homed row
-  const headLic = d.querySelector(".ds-chips .cc-chip-lic");
+  const headLic = d.querySelector(".ds-facts .cc-chip-lic, .ds-chips .cc-chip-lic");
   if (headLic) {
     out.headLicence = { present: true, text: headLic.textContent.replace(/\s+/g, " ").trim() };
   }
@@ -368,7 +384,7 @@ PROBE = r"""
   const vgs = [...d.querySelectorAll("#coverage .ds-vargroup")];
   if (vgs.length) {
     const tot = (d.querySelector("#coverage .ds-cov-h") || {}).textContent || "";
-    const gl = [...d.querySelectorAll(".ds-glance > div")].find(x => (x.querySelector("dt") || {}).textContent === "years");
+    const gl = [...d.querySelectorAll(".ds-head .calm-nums > div")].find(x => (x.querySelector("dt") || {}).textContent === "years");
     out.varGroups = {
       total: parseInt(tot, 10),
       glance: gl ? gl.querySelector("dd").textContent.trim() : null,
@@ -383,16 +399,14 @@ PROBE = r"""
       }))
     };
   }
-  // any two-column region between the head band and Cite
-  const cite = d.getElementById("cite");
-  out.twoCol = [...d.querySelectorAll(".ds-page .cc-container")]
+  // one column under the head (issue #30): no block of the page body, nor anything directly inside
+  // its open sections, is a grid of more than one column (inner tables inside a fold may be)
+  out.twoCol = [...d.querySelectorAll("main.ds-page > *:not(.calm-head), main.ds-page > .calm-sec > *")]
     .filter(el => {
-      if (!cite || !(cite.compareDocumentPosition(el) & 2 /* PRECEDING */)) return false;
-      if (el.closest(".ds-page-head")) return false;
       const st = cs(el);
       return st.display === "grid" && st.gridTemplateColumns.split(" ").filter(Boolean).length > 1;
     })
-    .map(el => (el.parentElement.id || String(el.className)));
+    .map(el => (el.id || String(el.className)));
 
   // a URL line must never wrap. Measure the TEXT, not the row: the row also holds a copy button,
   // which is taller than a line of 11.5 px mono and would read as a wrap that is not there.
@@ -775,9 +789,12 @@ PROBE = r"""
     t: (a.textContent || "").trim().slice(0, 48)
   }));
 
-  // one ERDDAP listing: count each tabledap page link
+  // one ERDDAP listing: count each tabledap page link. On a dataset page that listing is the
+  // "Every endpoint" fold (#access); the ways line above it names the first id once more ON
+  // PURPOSE (issue #30 D12/D16: a shortlist of the ways in), so it is not the listing counted here.
+  // The catalog (/datasets/) has no listing: each row's ways line names its dataset's first id.
   const tabledap = {};
-  [...d.querySelectorAll('a[href*="tabledap/"]')].forEach(a => {
+  if (!d.querySelector("main.ds-cat")) [...(d.querySelector("main.ds-page #access") || d).querySelectorAll('a[href*="tabledap/"]')].forEach(a => {
     const m = /tabledap\/([^.?#\/]+)\.html(?:$|[?#])/.exec(a.getAttribute("href") || "");
     if (m) tabledap[m[1]] = (tabledap[m[1]] || 0) + 1;
   });
@@ -1106,7 +1123,10 @@ def probe(url, width, theme, browser, wait):
 
 # ── the assertions ────────────────────────────────────────────────────────────
 MAX_STRETCH = 1.25    # a tile drawn more than a quarter taller than its content is stretch
-MAX_HERO_GAP = 120    # px between the head band's two columns
+# issue #30: a page's height at 1470 with nothing open — the mockup's target + ~25 %, footer included
+# (the mockups: the dataset catalog ~1,750 px, a dataset page ~1,750 px). The old pages ran 3,500 /
+# 4,200–5,100 px; anything past these means something that should be a fold has come back open.
+MAX_DS_H = {"catalog": 2300, "dataset": 2200}   # catalog: 19 rows + the 347 px site footer the mockup lacked
 MAX_GRID_H = 4400     # px at 1470 with the staging record (was 4,910)
 MAX_SPECIES_INDEX_H = 2220   # issue #30: /species/ at 1470, nothing open — the mockup's 1,775 + 25 %
 MAX_SPECIES_PAGE_H = 1500    # issue #30: a taxon page at 1470, nothing open — ~1,200 + 25 %
@@ -1211,14 +1231,25 @@ def check(path, r, width, theme, fails, notes):
         if h["warn"]:
             fails.append(f"{where}: holding {h['key']} carries --warn on {h['warn']}")
 
-    hero = r.get("hero")
-    if hero and hero["columns"] == 2 and width >= 900:
-        gap = abs(hero["heights"][0] - hero["heights"][1])
-        notes.append(f"{where}: hero columns {hero['heights']} (gap {gap}px)")
-        if gap > MAX_HERO_GAP:
-            fails.append(f"{where}: hero columns end {gap}px apart ({hero['heights']}), max {MAX_HERO_GAP}")
+    # issue #30: the dataset catalog and a dataset page, calmer — a height ceiling with nothing open,
+    # every fold closed on load, and the catalog's list is the record's datasets, once each
+    cd = r.get("calmDs")
+    if cd:
+        notes.append(f"{where}: {cd['kind']} {cd['height']}px with nothing open, {cd['folds']} folds")
+        if width >= 1400 and cd["height"] > MAX_DS_H[cd["kind"]]:
+            fails.append(f"{where}: {cd['kind']} page is {cd['height']}px with nothing open, "
+                         f"max {MAX_DS_H[cd['kind']]} (issue #30)")
+        if cd["open"]:
+            fails.append(f"{where}: open on load, expected closed: {cd['open']}")
+        if cd["folds"] < (2 if cd["kind"] == "dataset" else 3):
+            fails.append(f"{where}: only {cd['folds']} fold(s) — the dense parts are supposed to be folded")
+        if cd["kind"] == "catalog":
+            rec = _read_json(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "_data", "datasets.json")) or {}
+            want = sorted(x["dataset_key"] for x in rec.get("datasets", []) if x.get("visibility") != "internal")
+            if want and sorted(cd["rows"]) != want:
+                fails.append(f"{where}: the list has {len(cd['rows'])} rows for {len(want)} datasets in the record")
     if r.get("twoCol"):
-        fails.append(f"{where}: two-column region(s) between the head and Cite: {r['twoCol']}")
+        fails.append(f"{where}: two-column region(s) under the head: {r['twoCol']}")
 
     # D2 S1 S2 (round 2, WS-R4): the dataset page's own licence chip, keyword leaves, Access tabset
     hl = r.get("headLicence")
