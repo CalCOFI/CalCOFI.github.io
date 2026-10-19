@@ -199,8 +199,14 @@
 
   // D9: a shared link — `?q=sardine&tab=species` — lands with the box already filled and the
   // panels already rendered; the tab itself is tabs.js's own ?tab= restore, independent of this.
+  // The box is prefilled from ?q= on EVERY page (a catalog's own filter reads it), but the search
+  // only runs on load, and the dropdown only opens, where the D9 result panels exist (the front
+  // door): on a catalog page the dropdown would cover the page's own list (issue #30, D10 B).
   try {
     var q0 = new URLSearchParams(location.search).get("q");
-    if (q0) { box.value = q0; open(); }
+    if (q0) {
+      box.value = q0;
+      if (RESULT_PANELS.S.host || RESULT_PANELS.M.host) open();
+    }
   } catch (e) { /* no URL API: the box starts empty, as before */ }
 })();

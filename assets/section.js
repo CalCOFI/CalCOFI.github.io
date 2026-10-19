@@ -16,7 +16,13 @@
        protocol, each with a `source:` comment naming the calcofi.org page;
      · a pin's link is the calcofi.org method page — a constant, probed by scripts/check_layout.py.
    Nothing about a dataset is typed here. No framework, no library, no external asset: the glyphs are
-   <use> references into the brand sprite (same origin). */
+   <use> references into the brand sprite (same origin).
+
+   Two drawings from one function (issue #30, D2/D5): the front door's first screen draws it QUIET
+   (#sec-quiet: the sky, the water, the floor, the ship and its gear — no depth grid, no axes, no
+   captions, no pins, cropped at the floor line, an image with one label), and the "Learn how CalCOFI
+   sampling and data work" door draws it ANNOTATED (#sec-full: everything above, the pins included).
+   Each build suffixes its gradient ids, so two drawings on one page never share a <defs>. */
 (function () {
   'use strict';
 
@@ -121,6 +127,7 @@
   function buildSection(host, reach, opts) {
     opts = opts || {};
     var sprite = opts.sprite || '/brand/v2/icons/calcofi-icons.svg';
+    var quiet = !!opts.quiet, sfx = opts.id || (quiet ? 'q' : 'f');
     var byCat = {};
     (reach.categories || []).forEach(function (c) { byCat[c.icon] = c; });
     var stations = (reach.stations || [])
@@ -131,26 +138,31 @@
 
     /* role="group", not "img": an img subtree is presentational and would hide the thirteen pin
        links from assistive tech. The decorative parts are aria-hidden; the pins carry <title>s. */
-    var svg = el('svg', { viewBox: '0 0 ' + W + ' 660', cls: 'sec', role: 'group',
-      'aria-label': 'A cross-section of CalCOFI Line 90, west on the left: the ship on the surface, its instruments at the depths they sample, the sea floor from GEBCO, and one link per data category to its methods on calcofi.org' });
+    var svg = quiet
+      ? el('svg', { viewBox: '0 0 ' + W + ' ' + FLOOR_Y, cls: 'sec sec-quiet', role: 'img',
+          'aria-label': 'A cross-section of CalCOFI Line 90, west on the left: the ship on the surface, its instruments lowered to the depths they sample, and the sea floor ' + (floor.measured ? 'from GEBCO' : 'as drawn') })
+      : el('svg', { viewBox: '0 0 ' + W + ' 660', cls: 'sec', role: 'group',
+          'aria-label': 'A cross-section of CalCOFI Line 90, west on the left: the ship on the surface, its instruments at the depths they sample, the sea floor from GEBCO, and one link per data category to its methods on calcofi.org' });
     svg.setAttribute('xmlns:xlink', XL);
     var defs = el('defs', {}, svg);
-    var g1 = el('linearGradient', { id: 'sec-sky', x1: 0, y1: 0, x2: 0, y2: 1 }, defs);
+    var g1 = el('linearGradient', { id: 'sec-sky-' + sfx, x1: 0, y1: 0, x2: 0, y2: 1 }, defs);
     el('stop', { offset: '0', style: 'stop-color:var(--cc-sec-sky0)' }, g1);
     el('stop', { offset: '1', style: 'stop-color:var(--cc-sec-sky1)' }, g1);
-    var g2 = el('linearGradient', { id: 'sec-water', x1: 0, y1: 0, x2: 0, y2: 1 }, defs);
+    var g2 = el('linearGradient', { id: 'sec-water-' + sfx, x1: 0, y1: 0, x2: 0, y2: 1 }, defs);
     [['0', 'w0'], ['.18', 'w1'], ['.45', 'w2'], ['.7', 'w3'], ['1', 'w4']].forEach(function (s) {
       el('stop', { offset: s[0], style: 'stop-color:var(--cc-sec-' + s[1] + ')' }, g2);
     });
 
     var deco = el('g', { 'aria-hidden': 'true' }, svg);             // everything that is not a link
-    el('rect', { x: 0, y: 0, width: W, height: SKY, fill: 'url(#sec-sky)' }, deco);
-    el('rect', { x: 0, y: SKY, width: W, height: FLOOR_Y - SKY, fill: 'url(#sec-water)' }, deco);
-    el('rect', { x: 0, y: FLOOR_Y, width: W, height: 60, cls: 'axis-ground' }, deco);
-    // the faint depth grid
-    [100, 200, 300, 400, 500, 1000, 2000, 3000, 4000].forEach(function (m) {
-      el('line', { x1: AX_X, x2: W, y1: dy(m), y2: dy(m), cls: 'grid' }, deco);
-    });
+    el('rect', { x: 0, y: 0, width: W, height: SKY, fill: 'url(#sec-sky-' + sfx + ')' }, deco);
+    el('rect', { x: 0, y: SKY, width: W, height: FLOOR_Y - SKY, fill: 'url(#sec-water-' + sfx + ')' }, deco);
+    if (!quiet) {
+      el('rect', { x: 0, y: FLOOR_Y, width: W, height: 60, cls: 'axis-ground' }, deco);
+      // the faint depth grid
+      [100, 200, 300, 400, 500, 1000, 2000, 3000, 4000].forEach(function (m) {
+        el('line', { x1: AX_X, x2: W, y1: dy(m), y2: dy(m), cls: 'grid' }, deco);
+      });
+    }
     el('circle', { cx: 1310, cy: 58, r: 22, cls: 'sun' }, deco);      // the sun; a moon in dark
     el('path', { d: floor.d, cls: 'floor' }, deco);                     // the sea floor + the headland
     el('line', { x1: 0, x2: floor.coastX + 2, y1: SKY, y2: SKY, cls: 'surf' }, deco);   // the surface
@@ -191,6 +203,7 @@
     el('path', { d: 'M684,190 L668,197', cls: 'wire' }, deco);                                // the manta, at the surface
     el('path', { d: 'M658,' + (dy(MANTA_M) - 5) + ' h14 v4 h-14 z M658,' + (dy(MANTA_M) - 3) + ' L640,' + (dy(MANTA_M) - 1) + ' L658,' + (dy(MANTA_M) - 1) + ' Z', cls: 'net' }, deco);
     el('path', { d: 'M440,' + (dy(KRILL_DAY_M) - 6) + ' L440,212 M436,218 L440,212 L444,218 M436,' + (dy(KRILL_DAY_M) - 12) + ' L440,' + (dy(KRILL_DAY_M) - 6) + ' L444,' + (dy(KRILL_DAY_M) - 12), cls: 'thin' }, deco);   // krill: diel migration
+    if (quiet) { host.appendChild(svg); return svg; }   // the quiet drawing ends at the gear: no captions, axes or pins
     // the gear captions
     [[296, dy(CUFES_M) - 8, 'CUFES · ' + CUFES_M + ' m, underway', 'end'], [636, 193, 'manta · surface', 'end'],
      [736, dy(PAIROVET_M) - 6, 'PairoVET · ' + PAIROVET_M + ' m'], [bx - 18, dy(BONGO_M) + 31, 'bongo · ' + BONGO_M + ' m', 'end']].forEach(function (t) {
@@ -242,12 +255,14 @@
     return svg;
   }
 
-  // ── wiring ──
-  var host = document.getElementById('sec-host');
+  // ── wiring: the quiet drawing on the first screen, the annotated one behind the Learn door ──
   var data = document.getElementById('reach');
-  if (!host || !data) return;
+  if (!data) return;
   var reach;
   try { reach = JSON.parse(data.textContent); } catch (e) { return; }
-  buildSection(host, reach, { sprite: host.getAttribute('data-sprite') });
+  [['sec-quiet', true], ['sec-full', false], ['sec-host', false]].forEach(function (h) {
+    var host = document.getElementById(h[0]);
+    if (host) buildSection(host, reach, { sprite: host.getAttribute('data-sprite'), quiet: h[1], id: h[0] });
+  });
   window.ccSection = { build: buildSection, dy: dy, sx: sx };
 })();

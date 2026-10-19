@@ -2,119 +2,164 @@
 layout: default
 ---
 {%- comment -%}
-  /measurements/{key}/ — one page per measurement key (plan 2026-09-10 § D2, D6).
+  /measurements/{key}/ — one page per measurement key (plan 2026-09-10 § D2, D6; re-cut for issue #30,
+  "calcofi.io, calmer": D1 A one column · D12 A ways in as one line, code behind a fold · D13 A the
+  short label · D14 A every fold titled with its answer).
 
   The integrated database integrates: a measurement has ONE page however many datasets carry it,
   headed by its label once, with the SERIES under it — each dataset's own measurement_type, source
   column and flag column, "what the source called it". Every value on the page comes from
-  _plugins/measurements.rb, which reads the release's measurements.json and nothing else.
+  _plugins/measurements.rb, which reads the release's measurements.json (and the faces' media
+  sidecar) and nothing else.
 
-  The blocks, in the mock's order: crumb · eyebrow · label · description · ids · stats (with the
-  flagged ⓘ) · the face · Measured in (+ the years strip) · [The structure ·] How it is measured
-  (tabbed by series) · Why it matters · By depth · By month · Range & quality (chip line + details)
-  · Related measurements · Ways in (app buttons + the erddap/parquet/r/python/json tabset,
-  including "this page as data") · Cite. (round 2 § D1–D3, D8, WS-R3, 2026-09-15.)
+  The page, top to bottom:
+    the head      category mark + short label · the full label · the ids · ONE sentence (the face's,
+                  each part with its source badge) · one line of numbers · ONE picture (the face's
+                  What: molecule, composition, scale ramp, Beaufort strip or organism)
+    Measured in   open: one row per series, each with its own years strip
+    Ways in       one line of links; every endpoint and the code behind one fold
+    the folds     closed on load, each titled with its answer: The structure · How it is measured ·
+                  Why it matters · The record's own history · Units and range · By depth and month ·
+                  Related measurements · Cite
+  Nothing was removed in the re-cut; the face row's How and Why columns, the structure cards, the
+  methods tabset, the familiar scale, the anomaly, the EOV card, by depth, by month, range & quality,
+  related and cite all moved into the folds. The figures in a fold are drawn when it first opens,
+  at its own width (assets/measurements.js).
 {%- endcomment -%}
 {%- assign m = page.m -%}
 {%- assign mm = site.data.measurements -%}
+{%- assign f = page.face -%}
+{%- assign fchip = page.quality.chips | where: "k", "flagged" | first -%}
+{%- assign bchip = page.quality.chips | where: "k", "bounds" | first -%}
 
-<section class="cc-band cc-band-alt mm-page-head">
-  <div class="cc-container">
-    <nav class="mm-crumb" aria-label="Where this page sits">
-      <a href="{{ '/measurements/' | relative_url }}">Measurements</a>
-      {%- if page.category %}<span class="mm-sep" aria-hidden="true">›</span>
-      <a href="{{ '/measurements/?cat=' | append: page.category | uri_escape | relative_url }}">{{ page.category | escape }}</a>{% endif -%}
-      <span class="mm-sep" aria-hidden="true">›</span>
-      <span class="mm-here">{{ page.h1 | escape }}</span>
-    </nav>
+<div class="calm-page mm-pg">
+  <nav class="calm-crumb" aria-label="Where this page sits">
+    <a href="{{ '/measurements/' | relative_url }}">Measurements</a>
+    {%- if page.category %}<span class="calm-sep-t" aria-hidden="true">›</span>
+    <a href="{{ '/measurements/?cat=' | append: page.category | uri_escape | relative_url }}">{{ page.category | escape }}</a>{% endif -%}
+    <span class="calm-sep-t" aria-hidden="true">›</span>
+    <span>{{ page.h1 | escape }}</span>
+  </nav>
 
-    <div class="mm-h">
-      <div class="mm-h-main">
-        <div class="cc-eyebrow">Measurement
-          {%- if page.category %} · {{ page.category | escape }}{% endif -%}
-          {%- if page.units %} · <span title="{{ page.units_raw | escape }} in metadata/measurement_type.csv">{{ page.units | escape }}</span>{% endif -%}
-          {%- if page.is_unified %} · one key across {{ m.series.size }} datasets{% endif -%}
-        </div>
-        <h1 class="cc-h1">{{ page.h1 | escape }}</h1>
-        {%- if page.sub %}<p class="mm-sub">{{ page.sub | escape }}</p>{% endif -%}
-        {%- comment -%} a per-cast key (grain "sample", read from sample_measurement) says what it is, once,
-          and the page then draws no depth figure and no anomaly {%- endcomment -%}
-        {%- if page.per_cast %}<p class="mm-grain" id="mm-grain"><span class="cc-chip">one value per cast</span> {{ page.grain_note | escape }}</p>{% endif -%}
-        {%- comment -%} page.no_label (the registry has no authored label; the h1 is the canonical series'
-          description) is an engineering fact — README.md, never a paragraph on the page (Ben, 2026-09-16) {%- endcomment -%}
+  <header class="calm-head{% unless f %} calm-head-1{% endunless %} mm-head">
+    <div class="calm-head-l">
+      <div class="calm-name">
+        <i class="calm-mark cc-i cc-i-{{ page.cat_icon | default: 'cat-other' }}" aria-hidden="true" title="{{ page.category | escape }}"></i>
+        <h1>{{ page.h1 | escape }}</h1>
       </div>
-      <div class="mm-ids">
-        {%- for i in page.ids -%}
-        <span><span class="cc-muted">{{ i.label }}</span> <a href="{{ i.url }}" rel="external">{{ i.id }}</a>{% if i.note %} <span class="cc-muted">{{ i.note | escape }}</span>{% endif %}</span>
-        {%- endfor -%}
+      {%- comment -%} D13: the full label where the short one was cut, else the description where it
+        says more than the title. page.no_label (the registry has no authored label) is an
+        engineering fact — README.md, never a paragraph on the page (Ben, 2026-09-16) {%- endcomment -%}
+      {%- if page.sub %}<p class="calm-sub">{{ page.sub | escape }}</p>{% endif -%}
+      <p class="calm-facts mm-ids">
+        {%- if page.units %}<span title="{{ page.units_raw | escape }} in metadata/measurement_type.csv">{{ page.units | escape }}</span>{% endif -%}
         <span><span class="cc-muted">key</span> <span class="mono">{{ page.key | escape }}</span></span>
+        {%- for i in page.ids -%}
+        <span><span class="cc-muted">{{ i.label }}</span> <a class="mono" href="{{ i.url }}" rel="external">{{ i.id }}</a></span>
+        {%- endfor -%}
+        {%- if page.ids.size == 0 %}<span class="cc-chip cc-chip-na" title="an empty concept means no NERC P01 concept says exactly this, never that nobody looked">no NERC concept says exactly this</span>{% endif -%}
+        {%- if page.is_unified %}<span class="cc-chip cc-chip-accent">one key across {{ m.series.size }} datasets</span>{% endif -%}
         <span><span class="cc-muted">series</span> <span class="mono">{% for s in m.series %}{{ s.measurement_type | escape }}{% unless forloop.last %} · {% endunless %}{% endfor %}</span></span>
-      </div>
-    </div>
+      </p>
+      {%- comment -%} a per-cast key (grain "sample", read from sample_measurement) says what it is,
+        once, and the page then draws no depth figure and no anomaly {%- endcomment -%}
+      {%- if page.per_cast %}<p class="mm-grain" id="mm-grain"><span class="cc-chip">one value per cast</span> {{ page.grain_note | escape }}</p>{% endif -%}
 
-    {%- comment -%} M1 (WS-R3): the heads-up folds into the stats band as a `flagged` stat, ⓘ'd
-      rather than sitting in its own warning paragraph (.mm-flagnote, retired). The count is
-      `quality_rows()`'s own flagged chip (page.quality.chips), so it is computed once; the body of
-      the ⓘ is `page.flag_note`, unchanged and verbatim. A key with n_flagged == 0 still shows the
-      stat (0), but no ⓘ opens on it — there is nothing to explain. {%- endcomment -%}
-    {%- assign fchip = page.quality.chips | where: "k", "flagged" | first -%}
-    {%- if page.stats.size > 0 or fchip -%}
-    <dl class="mm-stat">
-      {%- for s in page.stats -%}
-      {%- unless s.dt == "flagged" -%}
-      <div{% if s.title %} title="{{ s.title | escape }}"{% endif %}><dd class="tab{% if s.small %} mm-stat-sm{% endif %}">{{ s.dd | escape }}</dd><dt>{{ s.dt }}</dt></div>
-      {%- endunless -%}
-      {%- if s.dt == "values" and fchip -%}
-      <div><dd class="tab mm-stat-flag">{{ fchip.label | escape }}</dd><dt>flagged{% if fchip.warn and page.flag_note %} {% include info.html label="What flagged means" body=page.flag_note %}{% endif %}</dt></div>
+      {%- comment -%} the ONE sentence (round 2 M5, D3 say it once): the record says what we hold ·
+        the pick says why it matters, as prose. Each part ends in a `.cc-src` badge whose hover is
+        its source; the citation links stay in the `sup`. The `s-rec` / `s-why` classes stay on the
+        spans: the JSON-LD and check_layout.py read them. {%- endcomment -%}
+      {%- if f.sentence -%}
+      <p class="calm-sentence mmf-sent">
+        {%- for p in f.sentence -%}
+        <span class="{{ p.cls }}">{{ p.text | escape }}</span>{% if p.badge %}<span class="cc-src {{ p.badge_cls }}" title="{{ p.badge_title | escape }}">{{ p.badge }}</span>{% endif %}{% if p.cites %}<sup>{% for c in p.cites %}{% if c.url %}<a href="{{ c.url }}" rel="external" title="{{ c.label | escape }}">{{ c.label | escape }}</a>{% else %}{{ c.label | escape }}{% endif %}{% unless forloop.last %}, {% endunless %}{% endfor %}</sup>{% endif %}
+        {% endfor -%}
+      </p>
+      {%- else -%}
+      <p class="calm-sentence">{{ page.description | escape }}</p>
       {%- endif -%}
-      {%- endfor -%}
-    </dl>
+
+      {%- comment -%} the one line of numbers. M1 (WS-R3): `flagged` is a number with an ⓘ, the
+        count `quality_rows()`'s own flagged chip, its body `page.flag_note` verbatim {%- endcomment -%}
+      <dl class="calm-nums mm-stat">
+        {%- for s in page.stats -%}
+        {%- if s.dt == "flagged" %}{% continue %}{% endif -%}
+        {%- comment -%} the sentence already says how many sampling events, and each series row too {%- endcomment -%}
+        {%- if s.dt == "sampling events" and f.sentence %}{% continue %}{% endif -%}
+        {%- if s.dt == "seasons" and s.dd != "every month" -%}
+        {%- assign mo = s.dd | split: " · " -%}
+        <div title="{{ s.dd | escape }}"><dd class="tab mm-sm">{{ mo.size }} of 12</dd><dt>months</dt></div>
+        {%- else -%}
+        <div{% if s.title %} title="{{ s.title | escape }}"{% endif %}><dd class="tab{% if s.small %} mm-sm{% endif %}">{{ s.dd | escape }}</dd><dt>{% if s.dt == "seasons" %}months{% else %}{{ s.dt }}{% endif %}</dt></div>
+        {%- endif -%}
+        {%- if s.dt == "values" and fchip -%}
+        <div><dd class="tab mm-stat-flag{% if fchip.warn %} mm-warn{% endif %}">{{ fchip.label | escape }}</dd><dt>flagged{% if fchip.warn and page.flag_note %} {% include info.html label="What flagged means" body=page.flag_note %}{% endif %}</dt></div>
+        {%- endif -%}
+        {%- endfor -%}
+      </dl>
+    </div>
+    {%- if f %}{% include measurement_face.html face=f %}{% endif -%}
+  </header>
+
+  {%- capture c_measured -%}<p>One row per series, one cell per year, darker with more values — the same strip the front
+    door draws per dataset and a species page draws per taxon. Each row is one dataset's own
+    <span class="mono">measurement_type</span>; the label is written once, in the title above.</p>{%- endcapture -%}
+  {%- assign n_ds = m.totals.n_datasets | default: page.ds_rows.size -%}
+  <section class="calm-sec mm-measured" id="measured" aria-labelledby="measured-h">
+    <h2 id="measured-h"><i class="cc-i cc-i-el-measured" aria-hidden="true"></i>Measured in
+      <span class="calm-ans">{{ n_ds }} dataset{% if n_ds != 1 %}s{% endif %}{% if page.ds_rows.size != n_ds %} · {{ page.ds_rows.size }} series{% endif %}</span>
+      {% include info.html label="About the years strip" body=c_measured %}</h2>
+    {% include measurement_rows.html rows=page.ds_rows %}
+  </section>
+
+  {%- comment -%} D12 A: the ways in are ONE line of links; every endpoint and the code (ERDDAP per
+    series, Parquet, R, Python, this page as data) sit behind the fold under it, in the same
+    ways_tabs.html tabset as before (M12) {%- endcomment -%}
+  {%- assign erd = page.ways | where: "group", "erddap" | first -%}
+  <p class="calm-ways mm-ways-line" aria-label="Ways in">
+    {%- for w in page.ways -%}
+    {%- if w.group == "app" -%}
+    <a href="{{ w.url }}"><i class="cc-i {% if w.name == 'db-query' %}cc-i-way-query{% else %}cc-i-way-explorer{% endif %}" aria-hidden="true"></i>{{ w.name | remove_first: 'Explorer · ' }}</a>
     {%- endif -%}
-    {%- comment -%} the FACE (plan 2026-09-11 § D1–D7, WS-MF5): what it is, how it is taken, why it
-      matters — and then the sentence. `page.face` is nil for a key the record gives no `face` block
-      and the media sidecar no entry, and the page is then exactly what it was. {%- endcomment -%}
-    {%- if page.face %}{% include measurement_face.html face=page.face %}{% endif -%}
-  </div>
-</section>
-
-<section class="cc-band mm-page-body">
-  <div class="cc-container">
-    <div class="mm-cols2">
-      <div class="mm-col-main">
-        <p class="cc-eyebrow mm-col-eyebrow">The measurement</p>
-        {%- comment -%} M13 (WS-R3): the strip's caption paragraph (.mm-note) becomes an ⓘ on the
-          heading it captions, text verbatim {%- endcomment -%}
-        {%- capture c_measured -%}<p>One row per series, one cell per year, darker with more values — the same strip the front
-          door draws per dataset and a species page draws per taxon. Each row is one dataset's own
-          <span class="mono">measurement_type</span>; the label is written once, in the title above.</p>{%- endcapture -%}
-        <h2 class="cc-h3">Measured in {% include info.html label="About the years strip" body=c_measured %}</h2>
-        {% include measurement_rows.html rows=page.ds_rows %}
-        {%- comment -%} WS-M4's three figure hosts, each with its own inline JSON: the years strip,
-          the depth bars and the month strip, all one row per SERIES {%- endcomment -%}
-        {%- comment -%} the strip is 78 years wide: below ~620 px it scrolls inside its own box
-          rather than shrinking its row labels to nothing (the timeline's rule) {%- endcomment -%}
-        <div class="mm-strip-wrap">
-          <svg class="mm-strip" id="mm-strip" role="img" aria-label="Values per year in each dataset"></svg>
-        </div>
-
-        {% if page.face %}{% comment %} ── the face, at length (plan 2026-09-11 § D1–D7, WS-MF5) ──
-          What it is · how it is taken · why it matters, each with the figure the mockup specifies.
-          Drawn by assets/measurements.js from ONE inline payload (#mm-face) at the host's own
-          measured width, so a chart is 1 px per unit at any column width and its labels stay
-          legible. Absent for a key with no face: the three headings are not written at all, and
-          the page is byte-for-byte the page it was — the WS-MF5 gate, so the `if` above does not
-          trim the whitespace around it.
-        {% endcomment %}
-        {%- assign f = page.face -%}
-        {%- comment -%} M7 (WS-R3): "What it is" is retired — the NERC definition (repeated a third
-          time here), the vocabulary chain and its "Identity, never resemblance" note are gone; the
-          face's own What column (R2) carries the definition behind its ⓘ and now also `f.chain`.
-          ONLY the big structure cards survive, retitled: they are this section's own figure, drawn
-          larger than the face row has room for, and #mmf-what (the ion table / Bjerrum plot / hair
-          / pH strip / Beaufort row assets/measurements.js drew here) moves to the face row's own
-          glyph (M6, R2) — nothing here draws into that host any more. {%- endcomment -%}
-        {%- if f.what.structures.size > 0 -%}
-        <h2 class="cc-h3" id="structure">The structure</h2>
+    {%- endfor -%}
+    <span class="calm-sep" aria-hidden="true"></span>
+    {%- if erd %}<a href="{{ erd.url }}"><i class="cc-i cc-i-way-erddap" aria-hidden="true"></i>ERDDAP</a>{% endif -%}
+    <a href="{{ page.slug | prepend: '/measurements/' | append: '.json' | relative_url }}"><i class="cc-i cc-i-way-api" aria-hidden="true"></i>This page as JSON</a>
+    <a href="#ways" data-fold="ways"><i class="cc-i cc-i-ui-code" aria-hidden="true"></i>R · Python · Parquet</a>
+  </p>
+  {%- capture c_ways -%}<p>Read from <span class="mono">measurements.json</span> of release
+    <a href="{{ '/datasets/release/' | relative_url }}">{{ mm.release.version }}</a>, written at release by
+    <span class="mono">calcofi4db::build_measurements_catalog()</span> beside
+    <span class="mono">taxa.json</span>. The catalog's index is
+    <a href="{{ '/measurements/' | relative_url }}">/measurements/</a>; the JSON-LD on this page is a
+    <span class="mono">schema.org/DefinedTerm</span> in the NERC P01 term set with a
+    <span class="mono">PropertyValue</span> per series.</p>{%- endcapture -%}
+  {%- assign glist = '' -%}
+  {%- for w in page.ways -%}
+  {%- case w.group -%}
+  {%- when 'erddap' %}{% assign gl = 'ERDDAP' %}{% when 'parquet' %}{% assign gl = 'Parquet' %}{% when 'r' %}{% assign gl = 'R' %}{% when 'python' %}{% assign gl = 'Python' %}{% when 'json' %}{% assign gl = 'JSON' %}{% else %}{% assign gl = nil -%}
+  {%- endcase -%}
+  {%- if gl %}{% assign probe = glist | append: '|' %}{% assign gkey = '|' | append: gl | append: '|' %}{% unless probe contains gkey %}{% assign glist = glist | append: '|' | append: gl %}{% endunless %}{% endif -%}
+  {%- endfor -%}
+  <div class="calm-folds mm-folds">
+    <details class="calm-fold mm-col-ways" id="ways">
+      <summary><i class="cc-i cc-i-el-endpoints" aria-hidden="true"></i>Every way in
+        <span class="calm-ans">{{ page.ways.size }} ways · {{ glist | remove_first: '|' | split: '|' | join: ' · ' }}</span>
+        <i class="calm-chev cc-i cc-i-ui-down" aria-hidden="true"></i></summary>
+      <div class="calm-body">
+        {{ c_ways }}
+        {% include ways_tabs.html ways=page.ways %}
+      </div>
+    </details>
+    {%- if f and f.what.structures.size > 0 -%}
+    {%- comment -%} M7: the big structure cards, this fold's own figure, drawn larger than the head
+      has room for. A stand-in's cards are the face it borrows, and its answer says so. {%- endcomment -%}
+    {%- assign s0 = f.what.structures[0] -%}
+    <details class="calm-fold" id="structure">
+      <summary><i class="cc-i cc-i-el-molecule" aria-hidden="true"></i>The structure
+        <span class="calm-ans">{% if f.what.stands_in %}{{ f.what.stands_in.label | escape | downcase }}’s, standing in{% elsif f.what.structures.size > 1 %}{{ f.what.structures.size }} structures{% else %}{% if s0.formula %}{{ s0.formula }} {% endif %}{{ s0.name | escape }}{% endif %}</span>
+        <i class="calm-chev cc-i cc-i-ui-down" aria-hidden="true"></i></summary>
+      <div class="calm-body">
         <div class="mmf-mols">
           {%- for s in f.what.structures -%}
           <figure class="mmf-molcard">
@@ -126,24 +171,37 @@ layout: default
           </figure>
           {%- endfor -%}
         </div>
-        {%- assign sd = f.what.structures[0].definition -%}
-        <p class="mmf-credit">{% if sd %}ChEBI: “{{ sd | strip_html | escape }}” · {% endif %}{{ f.what.structures[0].drawn_by | default: 'Drawn from ChEBI’s own molfile' | escape }}, in the page’s ink{% if f.what.structures[0].license %} · {{ f.what.structures[0].license | escape }}{% endif %}. ChEBI’s roles are never shown.</p>
-        {%- endif -%}
+        {%- assign sd = s0.definition -%}
+        <p class="mmf-credit">{% if sd %}ChEBI: “{{ sd | strip_html | escape }}” · {% endif %}{{ s0.drawn_by | default: 'Drawn from ChEBI’s own molfile' | escape }}, in the page’s ink{% if s0.license %} · {{ s0.license | escape }}{% endif %}. ChEBI’s roles are never shown.</p>
+      </div>
+    </details>
+    {%- endif -%}
 
-        {%- comment -%} M8 (WS-R3): one method per SERIES, tabbed rather than stacked — a
-          measurement with two datasets is two acts, and the values/years/source-column chips
-          `measurement_rows.html` already draws above are dropped here. `id="how"` stays on the
-          heading (R2's "n methods ↓" link in the face row targets it); no `data-url-tab`, so this
-          tabset never fights the ways-in tabset for the page's one `?tab=` slot (R1's gate). A
-          single method draws no tab row — the one panel just shows. {%- endcomment -%}
-        <h2 class="cc-h3" id="how">How it is measured</h2>
+    {%- if f -%}
+    {%- comment -%} the face's How column and today's methods tabset (M8: one method per SERIES,
+      tabbed, no data-url-tab so it never fights the catalog's ?tab=), in one fold titled with the
+      first method's instrument {%- endcomment -%}
+    {%- assign h0 = f.how[0] -%}
+    <details class="calm-fold" id="how">
+      <summary><i class="cc-i cc-i-el-method" aria-hidden="true"></i>How it is measured
+        <span class="calm-ans">{% if h0 %}{{ h0.instrument | default: h0.platform_label | escape }}{% if h0.nm %} at {{ h0.nm }} nm{% endif %}{% if f.how.size > 1 %} · {{ f.how.size }} methods{% endif %}{% else %}no method registered yet{% endif %}</span>
+        <i class="calm-chev cc-i cc-i-ui-down" aria-hidden="true"></i></summary>
+      <div class="calm-body mmf-how">
+        {%- if f.how.size > 0 -%}
+        <div class="mmf-plat">
+          {%- assign seen = '' -%}
+          {%- for h in f.how -%}
+          {%- unless seen contains h.platform -%}
+          {%- assign seen = seen | append: h.platform | append: '|' -%}
+          <span class="mmf-pg" data-platform="{{ h.platform }}"><span>{{ h.platform_label | escape }}</span></span>
+          {%- endunless -%}
+          {%- endfor -%}
+          {%- if h0.nm %}<span class="cc-chip cc-chip-accent">{{ h0.nm }} nm</span>{% if h0.nm_note %} <span class="cc-muted">{{ h0.nm_note | escape }}</span>{% endif %}{% endif -%}
+        </div>
         <div class="tabset" id="ts-how">
           {%- if f.how.size > 1 -%}
           <div class="tabrow" role="tablist">
             {%- for h in f.how -%}
-            {%- comment -%} the years pill is whichever meta entry is neither the values count nor
-              the source column — `how_rows()` (R2) builds `meta` as [values, years, column], so
-              elimination reads it without a new field {%- endcomment -%}
             {%- assign yrs = nil -%}
             {%- for x in h.meta -%}{%- unless x contains "values" or x contains "column" -%}{%- assign yrs = x -%}{%- endunless -%}{%- endfor -%}
             <button type="button" role="tab" data-tab="{{ h.dataset_key | escape }}" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}">{{ h.name | escape }}{% if yrs %} <span class="pill">{{ yrs }}</span>{% endif %}</button>
@@ -179,49 +237,74 @@ layout: default
           </div>
           {%- endfor -%}
         </div>
-
-        <h2 class="cc-h3" id="why">Why it matters</h2>
-        {% include measurement_why.html face=f %}
-{% endif %}
-      </div>
-
-      <div class="mm-col-ways">
-        <p class="cc-eyebrow mm-col-eyebrow">The record</p>
-        {%- comment -%} M12 (WS-R3): the apps (Explorer, db-query) are buttons because they open
-          something; the code routes are ONE shared tabset (erddap · parquet · r · python · json),
-          fed by `page.ways`'s own `group` (`ways_rows()`). "This page as data" is the json way; the
-          JSON-LD paragraph that used to sit under it moves into an ⓘ on this heading. {%- endcomment -%}
-        {%- capture c_ways -%}<p>Read from <span class="mono">measurements.json</span> of release
-          <a href="{{ '/datasets/release/' | relative_url }}">{{ mm.release.version }}</a>, written at release by
-          <span class="mono">calcofi4db::build_measurements_catalog()</span> beside
-          <span class="mono">taxa.json</span>. The catalog's index is
-          <a href="{{ '/measurements/' | relative_url }}">/measurements/</a>; the JSON-LD on this page is a
-          <span class="mono">schema.org/DefinedTerm</span> in the NERC P01 term set with a
-          <span class="mono">PropertyValue</span> per series.</p>{%- endcapture -%}
-        <h2 class="cc-h3">Ways in {% include info.html label="About this page as data" body=c_ways %}</h2>
-        {% include ways_tabs.html ways=page.ways %}
-
-
-        {%- comment -%} Ben, 2026-09-16: the right column was Ways in + Cite alone, a third of the left. The two
-          columns now read as concepts — left, the measurement (where, its structure, how, why); right, the
-          record (ways in, coverage by depth and month, range and quality, related, cite). {%- endcomment -%}
-        {%- if page.has_depth -%}
-        {%- capture c_depth -%}<p>Values per depth band at the release grain, one thin bar per series. The bands are the
-          record's own (<span class="mono">0-10</span> … <span class="mono">2000+</span> m).</p>{%- endcapture -%}
-        <h2 class="cc-h3">By depth {% include info.html label="About the depth bands" body=c_depth %}</h2>
-        <div class="mm-legend" id="mm-depth-legend"></div>
-        <div class="mm-bars" id="mm-depth"></div>
+        {%- else -%}
+        <p class="mmf-none">No method row is registered for this measurement yet
+          (<span class="mono">metadata/measurement_method.csv</span>).</p>
         {%- endif -%}
+      </div>
+    </details>
 
-        {%- capture c_month -%}<p>Values per calendar month, one row per series: CalCOFI's quarterly cruises show as peaks in
-          the months the ships sail.</p>{%- endcapture -%}
-        <h2 class="cc-h3">By month {% include info.html label="About the month strip" body=c_month %}</h2>
-        <div class="mm-mstrip" id="mm-months"></div>
+    {%- comment -%} the face's Why column (the spark, drawn to its band's own scale) and today's
+      Why section (the EOV card, CalCOFI's own words), with the sentence's other readings closed
+      under it (§ D5) {%- endcomment -%}
+    {%- assign n_why = f.why.alts.size -%}
+    {%- if f.why.pick %}{% assign n_why = n_why | plus: 1 %}{% endif -%}
+    <details class="calm-fold" id="why">
+      <summary><i class="cc-i cc-i-el-why" aria-hidden="true"></i>Why it matters
+        <span class="calm-ans">{% if n_why > 0 %}{{ n_why }} way{% if n_why != 1 %}s{% endif %} to say it{% if f.eov.name %} · EOV {{ f.eov.name | escape }}{% endif %}{% elsif f.eov.name %}EOV {{ f.eov.name | escape }}{% else %}no reason registered yet{% endif %}</span>
+        <i class="calm-chev cc-i cc-i-ui-down" aria-hidden="true"></i></summary>
+      <div class="calm-body mmf-whyf">
+        {%- if f.anomaly_bands -%}
+        <div class="mmf-spark-wrap">
+          <svg class="mmf-spark" id="mmf-spark" role="img" aria-label="Yearly anomaly against the release's own normal"></svg>
+          <p class="mmf-line" id="mmf-spark-line"></p>
+        </div>
+        {%- endif -%}
+        {% include measurement_why.html face=f part="eov" %}
+        {%- if f.why.alts.size > 0 -%}
+        <details class="ds-details mmf-alts-det">
+          <summary>other ways to say why · {{ f.why.alts.size }}</summary>
+          <ul class="mmf-alts">
+            {%- for a in f.why.alts -%}
+            <li>
+              <span class="mmf-ak mmf-ak-{{ a.kind }}">{{ a.kind_label | escape }}</span>
+              <span>{{ a.text | escape }}
+                {%- if a.cites.size > 0 %} <span class="mmf-ac">{% for c in a.cites %}{% if c.url %}<a href="{{ c.url }}" rel="external">{{ c.label | escape }}</a>{% else %}{{ c.label | escape }}{% endif %}{% unless forloop.last %} · {% endunless %}{% endfor %}</span>
+                {%- elsif a.url %} <span class="mmf-ac"><a href="{{ a.url }}" rel="external">source</a></span>
+                {%- elsif a.needs_cite %} <span class="mmf-anc">needs a citation before it can be the pick</span>
+                {%- endif -%}
+              </span>
+            </li>
+            {%- endfor -%}
+          </ul>
+        </details>
+        {%- endif -%}
+      </div>
+    </details>
 
-        {%- comment -%} M11 (WS-R3): the chip line is `quality_rows()`'s own `chips` array — bounds,
-          observed, flagged, baseline, each hovering to the number(s) it summarizes — with today's
-          definition list surviving whole under `details` {%- endcomment -%}
-        <h2 class="cc-h3">Range &amp; quality</h2>
+    {%- unless page.per_cast -%}
+    {%- assign bl = m.anomaly.baseline -%}
+    <details class="calm-fold" id="history">
+      <summary><i class="cc-i cc-i-el-history" aria-hidden="true"></i>The record’s own history
+        <span class="calm-ans">{% if f.anomaly_bands %}{{ f.anomaly_bands }} depth band{% if f.anomaly_bands != 1 %}s{% endif %} against the {% if bl %}{{ bl | join: '–' }} {% endif %}normal{% else %}no climatology to depart from{% endif %}</span>
+        <i class="calm-chev cc-i cc-i-ui-down" aria-hidden="true"></i></summary>
+      <div class="calm-body">
+        {% include measurement_why.html face=f part="history" %}
+      </div>
+    </details>
+    {%- endunless -%}
+    {%- endif -%}
+
+    {%- comment -%} M11: the chip line (bounds, observed, flagged, baseline, each hovering to its
+      numbers) with today's definition list whole under `details`, the units' P06 concept, and the
+      familiar scale with the flags it surfaced {%- endcomment -%}
+    <details class="calm-fold" id="range">
+      <summary><i class="cc-i cc-i-el-units" aria-hidden="true"></i>Units and range
+        <span class="calm-ans">{% if page.units %}{{ page.units | escape }} · {% endif %}{% if bchip %}{{ bchip.label | remove: page.units | strip | escape }} declared{% endif %}{% if fchip %} · {{ fchip.label | escape }} flagged{% endif %}</span>
+        <i class="calm-chev cc-i cc-i-ui-down" aria-hidden="true"></i></summary>
+      <div class="calm-body">
+        <p class="mm-units-line">{% if page.units %}<b>{{ page.units | escape }}</b>{% if page.units_raw != page.units %} <span class="cc-muted">(<span class="mono">{{ page.units_raw | escape }}</span> in metadata/measurement_type.csv)</span>{% endif %}{% else %}No unit in the registry.{% endif %}
+          {%- for i in page.ids %}{% if i.label contains "P06" %} · {{ i.label }} <a class="mono" href="{{ i.url }}" rel="external">{{ i.id }}</a>{% endif %}{% endfor -%}</p>
         <div class="mm-qual">
           <div class="qline">
             {%- for c in page.quality.chips -%}
@@ -237,35 +320,70 @@ layout: default
             </dl>
           </details>
         </div>
+        {%- if f %}{% include measurement_why.html face=f part="scale" %}{% endif -%}
+      </div>
+    </details>
 
-        {%- if page.related.size > 0 -%}
-        {%- capture c_related -%}<p>The same quantity from another platform or another kind of sample, each its own page and
+    {%- comment -%} by depth (the record's own bands) and by month: the climatology's two axes {%- endcomment -%}
+    <details class="calm-fold" id="when">
+      <summary><i class="cc-i cc-i-el-climatology" aria-hidden="true"></i>{% if page.has_depth %}By depth · by month{% else %}By month{% endif %}
+        <span class="calm-ans">{% for s in page.stats %}{% if s.dt == "depth" %}{{ s.dd }} · {% endif %}{% if s.dt == "seasons" %}{% if s.dd == "every month" %}every month{% else %}{% assign mo = s.dd | split: " · " %}{{ mo.size }} of 12 months{% endif %}{% endif %}{% endfor %}</span>
+        <i class="calm-chev cc-i cc-i-ui-down" aria-hidden="true"></i></summary>
+      <div class="calm-body mm-when">
+        {%- if page.has_depth -%}
+        {%- capture c_depth -%}<p>Values per depth band at the release grain, one thin bar per series. The bands are the
+          record's own (<span class="mono">0-10</span> … <span class="mono">2000+</span> m).</p>{%- endcapture -%}
+        <div>
+          <h3 class="mmf-h3 mmf-h3-i">By depth {% include info.html label="About the depth bands" body=c_depth %}</h3>
+          <div class="mm-legend" id="mm-depth-legend"></div>
+          <div class="mm-bars" id="mm-depth"></div>
+        </div>
+        {%- endif -%}
+        {%- capture c_month -%}<p>Values per calendar month, one row per series: CalCOFI's quarterly cruises show as peaks in
+          the months the ships sail.</p>{%- endcapture -%}
+        <div>
+          <h3 class="mmf-h3 mmf-h3-i">By month {% include info.html label="About the month strip" body=c_month %}</h3>
+          <div class="mm-mstrip" id="mm-months"></div>
+        </div>
+      </div>
+    </details>
+
+    {%- if page.related.size > 0 -%}
+    <details class="calm-fold" id="related">
+      <summary><i class="cc-i cc-i-el-related" aria-hidden="true"></i>Related measurements
+        <span class="calm-ans">{{ page.related.size }} kept separate</span>
+        <i class="calm-chev cc-i cc-i-ui-down" aria-hidden="true"></i></summary>
+      <div class="calm-body">
+        <p>The same quantity from another platform or another kind of sample, each its own page and
           never merged into this one: a dataset's own bottle samples would count that dataset twice, an underway intake
           is not a cast, and a replicate is not a mean. The reason is the record's
-          (<span class="mono">related[].why</span>).</p>{%- endcapture -%}
-        <h2 class="cc-h3">Related measurements {% include info.html label="Why these are kept separate" body=c_related %}</h2>
+          (<span class="mono">related[].why</span>).</p>
         {% include measurement_related.html rows=page.related %}
-        {%- endif -%}
+      </div>
+    </details>
+    {%- endif -%}
 
-        <h2 class="cc-h3">Cite</h2>
-        <p class="mm-note">Cite the release; each dataset's own citation, licence and DOI are on its page —
+    <details class="calm-fold" id="cite">
+      <summary><i class="cc-i cc-i-el-cite" aria-hidden="true"></i>Cite
+        <span class="calm-ans">the release, {{ mm.release.version | escape }}</span>
+        <i class="calm-chev cc-i cc-i-ui-down" aria-hidden="true"></i></summary>
+      <div class="calm-body">
+        <p>Cite the release; each dataset's own citation, licence and DOI are on its page —
           {% for d in page.ds_rows %}<a href="{{ d.url | relative_url }}">{{ d.name | escape }}</a>{% unless forloop.last %}, {% endunless %}{% endfor %}.
           The Explorer's <i>Share → Cite</i> writes it for the view you make.</p>
       </div>
-    </div>
+    </details>
   </div>
-</section>
+</div>
 
 {% if page.face %}{% comment %} ONE payload for every face figure (WS-MF5): the scale's axis, marks
   and flags, the anomaly per band with the ONI years, the composition, the Bjerrum curve, the
-  taxon's size — each read, never typed. Absent where the page has no face, and the tags do not
-  trim, so a page without one is byte-for-byte what it was. {% endcomment %}<script id="mm-face" type="application/json">{{ page.face.json }}</script>
+  taxon's size — each read, never typed. {% endcomment %}<script id="mm-face" type="application/json">{{ page.face.json }}</script>
 {% endif %}<script id="mm-strip-data" type="application/json">{{ page.strip }}</script>
 {% if page.has_depth %}<script id="mm-depth-data" type="application/json">{{ page.depth }}</script>
 {% endif %}<script id="mm-months-data" type="application/json">{{ page.months }}</script>
 <script defer src="{{ '/assets/measurements.js' | relative_url }}"></script>
 {%- comment -%} the ways-in tabset's copy buttons (M12, WS-R3): default.html does not load
-  assets/copy.js site-wide (only _layouts/dataset.html does), so this page loads its own — a
-  delegated listener, safe alongside dataset.html's copy of the same script on another page. {%- endcomment -%}
+  assets/copy.js site-wide, so this page loads its own {%- endcomment -%}
 <script defer src="{{ '/assets/copy.js' | relative_url }}"></script>
 <script type="application/ld+json">{{ page.jsonld }}</script>

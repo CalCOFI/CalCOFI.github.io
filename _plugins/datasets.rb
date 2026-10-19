@@ -852,7 +852,23 @@ module CalCOFI
         "n_taxa"     => realm != "env" ? cov["n_taxa"] : nil,
         "taxa_names" => realm != "env" ? dataset_taxa_names(d["dataset_key"]).first(8) : [],
         "stage"      => d.dig("status", "stage"),
-        "years_bar"  => years_bar(cov["years"], cov["year_min"], cov["year_max"])
+        "years_bar"  => years_bar(cov["years"], cov["year_min"], cov["year_max"]),
+        # the calm list's row (issue #30): its glyph, the category's own description for the ⓘ
+        # (D9 B), the opened body's sentence, counts and three ways in
+        "icon"       => icon_for(d.dig("category", "icon")),
+        "category"   => d.dig("category", "name"),
+        "cat_desc"   => Fmt.present(d.dig("category", "description")),
+        "sentence"   => first_sentence(d["description_md"]),
+        "n_stations" => cov["n_stations"].to_i.positive? ? Fmt.num(cov["n_stations"]) : nil,
+        # 11 M · 1.3 M · 156 k · 1,456: the row's key number, Fmt.millions above a million
+        "n_obs_short" => if cov["n_obs"].nil? then nil
+                         elsif cov["n_obs"] >= 1_000_000 then "#{Fmt.millions(cov['n_obs'])} M"
+                         elsif cov["n_obs"] >= 10_000 then "#{(cov['n_obs'] / 1000.0).round} k"
+                         else Fmt.num(cov["n_obs"])
+                         end,
+        "since"      => d["since_version"],
+        "contrib"    => (cov["contributes_to"] || []).map { |ct| { "category" => ct["category"], "n" => (ct["variables"] || []).size } },
+        "ways"    => ways(d).select { |w| %w[way-explorer way-erddap ui-data].include?(w["icon"]) }
       }
     end
 
@@ -866,6 +882,140 @@ module CalCOFI
         "stage"     => h.dig("status", "stage"),
         "link"      => h.dig("links", "data_source")
       }
+    end
+
+    # ── the calm re-cut (issue #30): what a catalog row and a page head say at a glance ─────────
+    # Every string below is CUT from the record or COUNTED from it, never paraphrased, so nothing
+    # here is a typed dataset fact. None of it reaches data.json or the JSON-LD.
+
+    # the record's own description, cut at its first sentence (the page keeps the whole text one
+    # click away, under "What this is")
+    def first_sentence(md)
+      s = plain(md) or return nil
+      if (m = s.match(/\A(.{20,260}?[.!?])(?=\s|\z)/))
+        return m[1]
+      end
+      return s if s.length <= 220
+      s[0, 220].sub(/\s+\S*\z/, "").sub(/[,;:(]\z/, "") + " …"
+    end
+
+    # a record with sampling events and no counted observation yet (sio_pic-zooplankton): the
+    # Explorer has nothing to draw, so the page says so instead of offering it
+    def samples_only?(r) = !holding?(r) && r.dig("coverage", "n_obs").to_i.zero?
+
+    # the head's second sentence: what CalCOFI holds of the dataset, from the coverage counts
+    def holds_sentence(r)
+      if holding?(r)
+        return "CalCOFI holds or tracks this dataset; it is not in the integrated database, so there " \
+               "are no release tables, no ERDDAP service and no parquet. Where it lives today is below."
+      end
+      cov = r["coverage"] || {}
+      if samples_only?(r)
+        t = Fmt.present(cov["temporal"])
+        return "CalCOFI holds the sampling events only#{t ? " (#{t})" : ''}, with no observations " \
+               "counted yet, so the Explorer has nothing to draw until there are."
+      end
+      s = "CalCOFI holds #{Fmt.num(cov['n_obs'])} observations"
+      s += " from #{Fmt.num(cov['n_roots'])} sampling events" if cov["n_roots"].to_i.positive?
+      n_st = cov["n_stations"].to_i
+      s += " at #{Fmt.num(n_st)} station#{'s' unless n_st == 1}" if n_st.positive?
+      yrs = span_years(r)
+      s += ", #{yrs}" if yrs
+      unless cov["depth_max_m"].nil?
+        s += cov["depth_max_m"].to_f <= 1 ? ", at the surface" :
+               ", #{Fmt.num(cov['depth_min_m'] || 0)}–#{Fmt.num(cov['depth_max_m'])} m"
+      end
+      "#{s}."
+    end
+
+    # the Cite fold's answer (D14): who and when, cut from the citation itself — the text before its
+    # first year (or its first full stop), and that year
+    def cite_answer(r)
+      a = r["attribution"] || {}
+      c = Fmt.present(a["citation_main"]).to_s.gsub(/\s+/, " ").strip
+      doi = Fmt.present(a["doi"]) ? " · DOI" : ""
+      return "no citation from the provider yet#{doi}" if c.empty?
+      yr  = c.match(/\b(1[89]\d\d|20\d\d)\b/)
+      dot = c.index(/\.\s/)
+      cut = [yr&.begin(0), dot].compact.min || c.length
+      who = c[0, cut].sub(/[\s.,;:(\-–]+\z/, "")
+      who = "#{who[0, 46].sub(/\s+\S*\z/, '')} …" if who.length > 48
+      "#{who}#{yr && yr.begin(0) - cut <= 4 ? ", #{yr[1]}" : ''}#{doi}"
+    end
+
+    # the ways in, as ONE line of links (D12, D16): the app that opens on this dataset, the SQL
+    # shell, then each kind of endpoint once — its first current address in the record. Every
+    # endpoint is still listed, all of them, in the page's "Every endpoint" fold; this is the
+    # shortlist. `kind` is "app" for the two buttons that lead the line.
+    def ways(r)
+      key  = r["dataset_key"]
+      dist = r["distributions"] || []
+      out  = []
+      add  = lambda do |label, url, icon, kind = nil|
+        out << { "label" => label, "url" => url, "icon" => icon, "kind" => kind } if Fmt.present(url)
+      end
+      live = ->(pred) { dist.find { |x| x["status"] != "superseded" && pred.call(x) }&.dig("url") }
+      if holding?(r)
+        dist.select { |x| %w[source page archive].include?(x["kind"]) }.each do |x|
+          add.call(portal_name(x["portal"]), x["url"], x["kind"] == "archive" ? "way-archive" : "way-portal")
+        end
+        add.call("Source", r.dig("links", "data_source"), "way-portal") if out.empty?
+      else
+        unless samples_only?(r)
+          ex = products_by_dataset[key].find { |p| p["key"] == "explore" && Fmt.present(p["dataset_url"]) }
+          add.call("Explorer", ex["dataset_url"].gsub("{key}", key), "way-explorer", "app") if ex
+        end
+        tables = r["tables"] || []
+        unless tables.empty?
+          tbl = %w[obs sample].find { |t| tables.include?(t) } || tables.first
+          saved = SAVED_QUERIES[key]
+          add.call("db-query", saved ? "https://calcofi.io/db-query/##{saved}" :
+                   query_shell_url("SELECT *\nFROM __TBL:#{tbl}__\nWHERE dataset_key = '#{key}'\nLIMIT 100;"),
+                   "way-query", "app")
+        end
+        add.call("ERDDAP", erddap_current(dist).first&.dig("url"), "way-erddap")
+        add.call("Parquet", live.call(->(x) { x["format"] == "parquet" }), "way-file")
+        add.call("netCDF", live.call(->(x) { x["format"] == "netcdf" }), "way-file")
+        add.call("STAC", dist.any? { |x| x["format"] == "stac" } ? stac_browser_url(key) : nil, "way-stac")
+        add.call("Ingest notebook", live.call(->(x) { x["kind"] == "notebook" }), "ui-code")
+        add.call("calcofi.org", live.call(->(x) { x["kind"] == "page" && x["portal"] == "calcofi.org" }), "way-portal")
+      end
+      add.call("As JSON", abs("/datasets/#{key}.json"), "ui-data")
+      out
+    end
+
+    # the years strip under the map (D15): observations per year on the RELEASE's own axis — the
+    # first to the last year any dataset reaches — so two pages' strips can be read side by side.
+    # Bars carry data-year / data-n for assets/coverage.js's hover card, as the spark did.
+    def strip_span
+      @strip_span ||= begin
+        ys = datasets.flat_map { |d| [d.dig("coverage", "year_min"), d.dig("coverage", "year_max")] }.compact
+        ys.empty? ? nil : [ys.min, ys.max]
+      end
+    end
+
+    def years_strip(r)
+      cov = r["coverage"] || {}
+      return nil if Fmt.blank?(cov["years"]) || strip_span.nil?
+      y0, y1 = strip_span
+      by  = cov["years"].to_h { |y| [y["year"], y["n_obs"].to_f] }
+      max = by.values.max.to_f
+      return nil if max <= 0
+      cell, base, h = 8.0, 40.0, 62.0
+      w = (y1 - y0 + 1) * cell
+      bars = by.sort.filter_map do |yr, v|
+        next if yr < y0 || yr > y1 || v <= 0
+        bh = [2.0, (v / max) * (base - 2)].max
+        format('<rect x="%.1f" y="%.1f" width="%.1f" height="%.1f" rx="1" data-year="%d" data-n="%d">' \
+               '<title>%d · %s obs</title></rect>', (yr - y0) * cell, base - bh, cell - 1.4, bh, yr, v.to_i, yr, Fmt.num(v))
+      end
+      ticks = ((y0 / 10.0).ceil * 10).step(y1, 10).map do |yr|
+        format('<text%s x="%.1f" y="%.1f" text-anchor="middle">%d</text>', (yr / 10).odd? ? ' class="o"' : "", (yr - y0) * cell + cell / 2, h - 3, yr)
+      end
+      %(<svg class="ds-strip" viewBox="0 0 #{w.to_i} #{h.to_i}" role="img" ) +
+        %(aria-label="Observations per year, #{cov['year_min']} to #{cov['year_max']}">) +
+        %(<line class="ds-strip-axis" x1="0" x2="#{w.to_i}" y1="#{base + 0.5}" y2="#{base + 0.5}"/>) +
+        %(#{bars.join}<g class="ds-strip-tk">#{ticks.join}</g></svg>)
     end
 
     def year_span(cov)
@@ -2233,7 +2383,20 @@ module CalCOFI
         "objects"     => ((r["objects"] || []) +
                           cat.per_cast_objects(r).select { |o| o["since"] == cat.release["version"] })
                          .map { |o| o.merge("bytes_fmt" => Fmt.bytes(o["bytes"])) },
-        "sources"     => is_holding ? nil : cat.source_files(r)
+        "sources"     => is_holding ? nil : cat.source_files(r),
+        # the calm re-cut (issue #30): the head's one sentence (the record's first, then what CalCOFI
+        # holds), the ways line, the years strip under the map and the folds' answers (D12–D16)
+        "sentence"     => cat.first_sentence(r["description_md"]),
+        "holds"        => cat.holds_sentence(r),
+        "samples_only" => cat.samples_only?(r),
+        "ways"         => cat.ways(r),
+        "years_strip"  => is_holding ? nil : cat.years_strip(r),
+        "cite_answer"  => cat.cite_answer(r),
+        "depth"        => if cov["depth_max_m"].nil? then nil
+                          elsif cov["depth_max_m"].to_f <= 0 && cov["depth_min_m"].to_f <= 0 then "surface"
+                          else "#{Fmt.num(cov['depth_min_m'] || 0)}–#{Fmt.num(cov['depth_max_m'])} m"
+                          end,
+        "cat_desc"     => Fmt.present(r.dig("category", "description"))
       )
       [page,
        json_page(site, "/datasets/", "#{key}.json", JSON.pretty_generate(r)),

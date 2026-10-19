@@ -1,32 +1,39 @@
-/* assets/catalog.js — the dataset grid's filter row and search. Plain JS, no framework.
+/* assets/catalog.js — the dataset catalog's filter and search. Plain JS, no framework.
    The DOM already carries the facet values as data-* on every row; the free-text search needs the
    descriptions, keywords and variables that are NOT in the DOM, so it fetches /datasets/search.json
    (one small file, 16–33 rows) the first time someone types. Filtering works with the fetch still in
    flight — it just matches on the visible text until the index lands.
-   Every filter is reflected in the URL query so a filtered grid is a link you can share.
-   The reference frame is a band below the grid (plan D-2), not a tile inside it, so it is outside
-   #ds-grid and the filters never see it — which is what they always did, by a special case that is
-   now unnecessary.
+   Every filter is reflected in the URL query so a filtered catalog is a link you can share; the
+   URL's other parameters (the view tab's ?tab=) are kept.
 
-   D4/D5 (round 2, WS-R4, umbrella D9): the catalog's own #ds-q is gone — the query comes from the
-   front door's #door-q, which lives OUTSIDE this form (#ds-filters), possibly on a different part
-   of the page (index.html's #door-search, above the tabset) or not at all (the standalone
-   /datasets/ page, which renders this filter row with no door search). `qState` is the fallback
-   when there is no #door-q to read from, so a shared `?q=` link still filters once on load even
-   without a visible box. */
+   Rows live in up to three places, and one filter drives them all:
+     #ds-list      /datasets/'s calm list (issue #30): details.ds-item rows in two realm groups
+     #ds-grid      the category tiles — /datasets/'s "By category" view, and the front door's grid
+     #ds-holdings  /datasets/'s holdings fold (rung 3 rows, outside both)
+   The query comes from the one search box (#door-q, _includes/one_search.html, D10 B), which lives
+   OUTSIDE the facet form; `qState` is the fallback when there is no #door-q, so a shared `?q=` link
+   still filters once on load. On /datasets/ the facets sit behind a "Filter" button (#ds-filter-btn);
+   a link that arrives with a facet set opens them, so the reader sees why rows are missing. */
 (function () {
   "use strict";
   var form = document.getElementById("ds-filters");
+  var list = document.getElementById("ds-list");
   var grid = document.getElementById("ds-grid");
-  if (!form || !grid) return;
+  var held = document.getElementById("ds-holdings");
+  if (!form || !(list || grid)) return;
 
-  var rows   = Array.prototype.slice.call(grid.querySelectorAll(".ds-row[data-key]"));
-  var tiles  = Array.prototype.slice.call(grid.querySelectorAll(".ds-tile"));
+  var scopes = [list, grid, held].filter(Boolean);
+  var rows   = [];
+  scopes.forEach(function (s) { rows = rows.concat([].slice.call(s.querySelectorAll("[data-key][data-kind]"))); });
+  var tiles  = grid ? [].slice.call(grid.querySelectorAll(".ds-tile")) : [];
   var q      = document.getElementById("door-q");
   var qState = "";
   var count  = document.getElementById("ds-count");
+  var hint   = document.querySelector("#door-search .dsearch-k");
   var empty  = document.getElementById("ds-empty");
-  var selects = Array.prototype.slice.call(form.querySelectorAll("select[data-facet]"));
+  var btn    = document.getElementById("ds-filter-btn");
+  var selects = [].slice.call(form.querySelectorAll("select[data-facet]"));
+  var KEYS   = ["q"].concat(selects.map(function (el) { return el.dataset.facet; }));
   var index  = null;            // key -> haystack, from search.json
   var src    = (document.currentScript && document.currentScript.dataset.search) || "/datasets/search.json";
 
@@ -43,7 +50,7 @@
   }
 
   // the query text, wherever it lives: #door-q's value when the element exists, else the state
-  // read from ?q= on load (restore()) — the standalone /datasets/ page has no visible box
+  // read from ?q= on load (restore())
   function currentQ() { return q ? q.value.trim().toLowerCase() : qState; }
 
   // a row matches when every set filter matches; data-fmt is space-separated
@@ -69,60 +76,78 @@
     return s;
   }
 
+  function each(root, sel, fn) { if (root) [].forEach.call(root.querySelectorAll(sel), fn); }
+
   function apply() {
-    var state = read(), shown = 0;
+    var state = read(), seen = {};
+    var filtered = !!(state.q || selects.some(function (el) { return el.value; }));
     rows.forEach(function (row) {
       var ok = matches(row, state);
       row.hidden = !ok;
-      if (ok && row.getAttribute("data-kind") === "dataset") shown++;
+      if (ok && row.getAttribute("data-kind") === "dataset") seen[row.getAttribute("data-key")] = 1;
     });
-    // a tile with nothing left to show goes away
-    tiles.forEach(function (tile) {
-      var any = tile.querySelectorAll(".ds-row[data-key]:not([hidden])").length;
-      tile.hidden = !any;
-    });
-    Array.prototype.forEach.call(grid.querySelectorAll(".ds-realm"), function (col) {
-      col.hidden = !col.querySelectorAll(".ds-tile:not([hidden])").length;
-    });
+    var shown = Object.keys(seen).length;
+    // the list: a realm group with nothing left to show goes away with its heading
+    each(list, ".ds-realm-grp", function (g) { g.hidden = !g.querySelector("[data-key]:not([hidden])"); });
+    // the grid: a tile, then a realm column, with nothing left to show goes away
+    tiles.forEach(function (tile) { tile.hidden = !tile.querySelector(".ds-row[data-key]:not([hidden])"); });
+    each(grid, ".ds-realm", function (col) { col.hidden = !col.querySelector(".ds-tile:not([hidden])"); });
     // the holdings are collapsed: a filter that matches only those should open the block, and a
-    // block with nothing left in it goes away with its summary
-    Array.prototype.forEach.call(grid.querySelectorAll(".ds-holdings-det"), function (det) {
+    // block with nothing left in it goes away with its summary (one-way: never force-closed)
+    each(grid, ".ds-holdings-det", function (det) {
       var live = det.querySelectorAll(".ds-row[data-key]:not([hidden])").length;
-      var filtered = !!(state.q || selects.some(function (el) { return el.value; }));
       det.parentNode.hidden = !live;
       if (filtered && live) det.open = true;
     });
-    // D3: a search hit inside a homed row's own variables/taxa expander opens it — the names stay
-    // in the DOM whether the <details> is open or closed, so the hit is real; this only ever
-    // opens (never force-closes), the same one-way rule as the holdings block above
+    if (held) {
+      var liveH = held.querySelectorAll("[data-key]:not([hidden])").length;
+      held.hidden = filtered && !liveH;
+      if (filtered && liveH && !shown) held.open = true;
+    }
+    // D3: a search hit inside a grid row's own variables/taxa expander opens it — the names stay
+    // in the DOM whether the <details> is open or closed, so the hit is real; this only ever opens
     if (state.q) {
-      Array.prototype.forEach.call(grid.querySelectorAll(".ds-vars"), function (det) {
+      each(grid, ".ds-vars", function (det) {
         if (det.textContent.toLowerCase().indexOf(state.q) >= 0) det.open = true;
       });
     }
     if (count) count.textContent = shown + " dataset" + (shown === 1 ? "" : "s") + " shown";
+    if (hint) hint.textContent = String(shown);
     if (empty) empty.hidden = shown > 0;
     sync(state);
-    // the grid's spans are wrong the moment a row is hidden — assets/masonry.js listens for this
+    // the front door's grid packing listens for this
     document.dispatchEvent(new CustomEvent("ds:filtered"));
   }
 
+  // only this script's own keys are written; anything else on the URL (?tab=) stays
   function sync(state) {
-    var p = new URLSearchParams();
-    Object.keys(state).forEach(function (k) { if (state[k]) p.set(k, state[k]); });
+    var p = new URLSearchParams(location.search);
+    KEYS.forEach(function (k) { if (state[k]) p.set(k, state[k]); else p.delete(k); });
     var qs = p.toString();
     history.replaceState(null, "", qs ? "?" + qs + location.hash : location.pathname + location.hash);
   }
 
   function restore() {
-    var p = new URLSearchParams(location.search);
+    var p = new URLSearchParams(location.search), any = false;
     var got = p.get("q");
     if (got) { if (q) q.value = got; else qState = got.trim().toLowerCase(); }
     selects.forEach(function (el) {
       var v = p.get(el.dataset.facet);
-      if (v) el.value = v;
+      if (v) { el.value = v; any = any || !!el.value; }
     });
+    if (any) showFacets(true);
   }
+
+  function showFacets(on) {
+    if (!btn) return;
+    form.hidden = !on;
+    btn.setAttribute("aria-expanded", on ? "true" : "false");
+  }
+  if (btn) btn.addEventListener("click", function () {
+    var on = form.hidden;
+    showFacets(on);
+    if (on) { var s = form.querySelector("select"); if (s) s.focus(); }
+  });
 
   // the selects live in this form; #door-q (when present) does not — it is outside #ds-filters,
   // shared with assets/door-search.js, so it gets its own listener rather than relying on bubbling

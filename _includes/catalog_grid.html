@@ -16,10 +16,12 @@
   Yellow is reserved: a pipeline stage is information, not a warning, so no chip here is --warn.
 
   Everything is `site.data.catalog`, built by _plugins/datasets.rb from the release record.
-  include params: none
+  include params: filters (optional) — "off" leaves out the filter row, the empty
+  note and assets/catalog.js, for a page that draws them itself around more than this grid
+  (/datasets/, where the grid is the "By category" view beside the list, issue #30)
 {%- endcomment -%}
 
-{% include catalog_filters.html %}
+{% unless include.filters == "off" %}{% include catalog_filters.html %}{% endunless %}
 
 {%- comment -%}
   Two columns by realm (2026-09-06): Biology on the left, Environment on the right, each under its
@@ -159,8 +161,10 @@
   {%- endfor -%}
 </div>
 
+{%- unless include.filters == "off" %}
 <p class="ds-empty" id="ds-empty" hidden>No dataset matches those filters. <button type="button" class="cc-text-link" id="ds-clear2">Clear</button></p>
 
 <script src="{{ '/assets/catalog.js' | relative_url }}" defer
         data-search="{{ '/datasets/search.json' | relative_url }}"></script>
+{%- endunless %}
 

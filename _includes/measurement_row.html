@@ -1,0 +1,22 @@
+{%- comment -%}
+  One measurement in the catalog's list (/measurements/, issue #30 D8 A): the short label (D13)
+  linking its page, the key, the full label under it where the title was cut, then units, the
+  datasets (dot AND name — identity is never colour alone), years, values and the quiet chips.
+  `data-q` is the haystack the one search filters on (_plugins/measurements.rb `row_hay`).
+
+  include measurement_row.html r=row
+{%- endcomment -%}
+{%- assign r = include.r -%}
+<li class="mm-row" data-q="{{ r.q | escape }}" data-key="{{ r.key | escape }}">
+  <div class="mm-row-n">
+    <a href="{{ r.url | relative_url }}">{{ r.short | escape }}</a> <code class="mm-k">{{ r.key | escape }}</code>
+    {%- if r.full %}<span class="mm-row-s">{{ r.full | escape }}</span>{% endif -%}
+  </div>
+  <span class="mm-row-u mono"{% if r.units_raw %} title="{{ r.units_raw | escape }}"{% endif %}>{{ r.units | default: '—' | escape }}</span>
+  <span class="mm-row-ds">{% for d in r.ds %}<span><i class="mm-dot" style="background:{{ d.color | default: 'var(--muted)' }}" aria-hidden="true"></i>{{ d.name | escape }}</span>{% endfor %}</span>
+  <span class="mm-row-m mono"><span>{{ r.years }}</span><span title="{{ r.values_n }} values{% if r.per_cast %}, one per cast{% else %} at the release grain{% endif %}">{{ r.values }} values</span>
+    {%- if r.unified %}<span class="cc-chip cc-chip-accent" title="one key across datasets: the same NERC P01 concept for the same kind of sample">unified</span>{% endif -%}
+    {%- if r.clim %}<span class="cc-chip cc-chip-na" title="the release builds a climatology for it, so its page draws the anomaly">anomaly</span>{% endif -%}
+    {%- if r.per_cast %}<span class="cc-chip cc-chip-na" title="read from sample_measurement: one value per cast, at no depth">per cast</span>{% endif -%}
+  </span>
+</li>

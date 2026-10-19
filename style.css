@@ -33,27 +33,149 @@ code, .mono { font-family: var(--mono); font-size: 0.9em; }
 #layout { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr auto auto; min-height: 100vh; }
 main#panel { width: 100%; }
 
-/* ── hero: the section (plan 2026-09-07 § D-1) ─────────────────────────────────
-   Line 90 as an oceanographic section, drawn at page load by assets/section.js into #sec-host as
-   one <svg viewBox="0 0 1400 660"> that is `width: 100%; height: auto`, so it scales as one unit and
-   the mockup's positions hold at any width. The copy — eyebrow, the Teko h1, the one-line lede, the
-   one yellow CTA and two text links — is HTML, absolutely positioned over the SKY (the top 30 % of
-   the drawing) at ≥ 980 px so it wraps, sizes with the drawing (cqw) and stays selectable; below
-   that it stacks above the drawing. The drawing is tokens only (--cc-sec-*), so the toggle repaints
-   it with no JS. The old Sand hero and its dead `.hero.has-photo` hook went with the re-cut. */
-.hero-sec { position: relative; container-type: inline-size; max-width: var(--container); margin: 0 auto; padding: 0 calc(var(--space) * 3); }
-.hero-drawing { position: relative; }
-.hero-drawing svg.sec { display: block; width: 100%; height: auto; font-family: var(--sans); border-radius: var(--radius-card) var(--radius-card) 0 0; }
-/* the copy: over the sky, left edge at the drawing's x = 90 (6.4 % of the container, past the section's own padding); everything sized from the
-   container so it keeps its place in the sky as the drawing scales (measured at 1170 px: the copy
-   ends 9 px above the surface line; see check_layout.py's hero assertion) */
-.hero-copy { position: absolute; z-index: 2; left: calc(var(--space) * 3 + 6.4cqw); top: 1.2cqw; width: 64cqw; max-width: 760px; }
-.hero-copy .cc-eyebrow { font-size: max(11.5px, 0.95cqw); margin-bottom: 0.15em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.hero-copy .cc-h1 { font-size: 4.6cqw; line-height: 0.92; margin: 0 0 0.06em; letter-spacing: 0.01em; }
-.hero-copy .hero-lede { margin: 0 0 0.4em; font-size: max(13px, 1.2cqw); line-height: 1.3; white-space: nowrap; }
-.hero-copy .hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6em 1.3em; margin: 0; }
-.hero-copy .cc-btn { min-height: max(30px, 3cqw); min-width: 0; padding: 0.3em 1em; font-size: max(12px, 1.1cqw); }
-.hero-copy .cc-text-link { font-size: max(11.5px, 1cqw); }
+/* ══ the front door (issue #30, "calcofi.io, calmer": D2 A · D3 A · D4 B · D5 A · D6 A) ═════════
+   ONE screen at 1280 × 645: what CalCOFI is on the left (eyebrow, h1, lede, five numbers, the Line 90
+   section drawn quiet by assets/section.js into #sec-quiet) and "What do you want to do?" with seven
+   doors on the right. A door opens ONE full-width panel on the Sand band beneath the first screen
+   (the inline script at the foot of index.html); everything the page carried before lives in one of
+   them. No yellow on the first screen: each panel carries its one .cc-btn-cta. Every rule here is
+   prefixed fd- or scoped under .fd-panel, except the shared .sec / .map / .strip / .tile-tabs / .log
+   drawings below, which the panels reuse unchanged. */
+.fd-screen {
+  max-width: var(--container); margin: 0 auto; padding: 26px calc(var(--space) * 3) 28px;
+  display: grid; grid-template-columns: minmax(0, 10fr) minmax(0, 12fr); grid-template-rows: auto 1fr;
+  gap: 14px 56px; align-items: start;
+}
+.fd-who { grid-column: 1; grid-row: 1; min-width: 0; }
+.fd-fig { grid-column: 1; grid-row: 2; min-width: 0; margin: 0; }
+.fd-ask { grid-column: 2; grid-row: 1 / span 2; min-width: 0; }
+.fd-who .cc-h1 { margin: 0.12em 0 0.1em; font-size: clamp(44px, 4.8vw, 60px); }
+.fd-lede { margin: 0 0 14px; font-size: 1.05em; line-height: 1.35; max-width: 44ch; }
+.fd-nums { display: flex; flex-wrap: wrap; gap: 6px 22px; margin: 0; }
+.fd-nums > div { display: flex; flex-direction: column; min-width: 0; }
+.fd-nums dd { margin: 0; font-family: var(--display); font-weight: 500; font-size: 30px; line-height: 1; letter-spacing: 0.02em; font-variant-numeric: tabular-nums; }
+.fd-nums dd a { color: var(--accent); }
+.fd-nums dt { font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+.fd-sec { border: 1px solid var(--border); border-radius: var(--radius-card); overflow: hidden; background: var(--panel); }
+.fd-sec svg.sec { display: block; width: 100%; height: auto; font-family: var(--sans); }
+.fd-cap { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 14px; margin: 8px 0 0; font-size: 13.5px; line-height: 1.35; color: var(--muted); }
+.fd-cap .cc-text-link { font-size: 11.5px; }
+/* the quiet drawing: the gear reads at a third of the size, so its strokes are heavier */
+.sec-quiet .wire, .sec-quiet .net, .sec-quiet .ros, .sec-quiet .cufes, .sec-quiet .thin { stroke-width: 2; }
+.sec-quiet .btl { r: 3.6; }
+
+/* the seven doors: a disclosure list, the last two drawn smaller (D5 A) */
+.fd-ask .cc-h2 { margin: 0.1em 0 0.15em; }
+.fd-hint { margin: 0 0 10px; font-size: 15px; color: var(--muted); }
+.fd-doors { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--border); }
+.fd-door {
+  display: grid; grid-template-columns: 28px minmax(0, 1fr) 18px; grid-template-rows: auto auto; column-gap: 14px; row-gap: 1px; align-items: center;
+  width: 100%; min-height: 44px; padding: 10px 8px 10px 4px; margin: 0; background: none; border: 0; border-bottom: 1px solid var(--border); border-radius: 0;
+  text-align: left; font: inherit; color: var(--fg); cursor: pointer; transition: background-color 120ms;
+}
+.fd-door:hover { background: var(--panel); }
+.fd-door:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.fd-door-i { grid-column: 1; grid-row: 1 / span 2; font-size: 26px; color: var(--accent); justify-self: center; }
+.fd-door-t { grid-column: 2; grid-row: 1; font-weight: 700; font-size: 19px; line-height: 1.2; }
+.fd-door-b { grid-column: 2; grid-row: 2; font-size: 15px; line-height: 1.3; color: var(--muted); }
+.fd-door-chev { grid-column: 3; grid-row: 1 / span 2; font-size: 18px; color: var(--muted); transition: transform 200ms; }
+.fd-door[aria-expanded="true"] { background: var(--panel); }
+.fd-door[aria-expanded="true"] .fd-door-t { color: var(--accent); }
+.fd-door[aria-expanded="true"] .fd-door-chev { transform: rotate(180deg); color: var(--accent); }
+.fd-door-sm { grid-template-rows: auto; padding: 8px 8px 8px 4px; }
+.fd-door-sm .fd-door-i, .fd-door-sm .fd-door-chev { grid-row: 1; }
+.fd-door-sm .fd-door-i { font-size: 20px; }
+.fd-door-sm .fd-door-t { font-size: 16px; font-weight: 600; }
+.fd-door-q { font-weight: 400; font-size: 14.5px; color: var(--muted); }
+
+/* a door's panel: full width on the Sand band, beneath the first screen; one open at a time */
+.fd-panel { background: var(--band); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); scroll-margin-top: var(--header-h); }
+.fd-panel > .cc-container { position: relative; padding-top: 30px; padding-bottom: 40px; }
+@keyframes fd-in { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+.fd-panel:not([hidden]) { animation: fd-in 220ms ease-out; }
+.fd-close {
+  position: absolute; top: 26px; right: calc(var(--space) * 3); z-index: 2; display: inline-flex; align-items: center; gap: 6px;
+  min-height: 32px; padding: 4px 0; background: none; border: 0; font: inherit; font-size: 14px; color: var(--muted); cursor: pointer;
+}
+.fd-close:hover { color: var(--accent); }
+.fd-close:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.fd-phead { margin-bottom: 26px; }
+.fd-phead .cc-eyebrow { padding-right: 90px; }
+.fd-phead .cc-h2 { margin: 0.1em 0 0.15em; }
+.fd-phead .blurb { margin: 0 0 14px; max-width: 66ch; }
+.fd-pact { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 22px; margin: 0; }
+.fd-panel .cc-card { background: var(--panel-2); }
+.fd-panel .tabrow { margin-bottom: calc(var(--space) * 2); }
+.fd-h3 { display: flex; align-items: center; gap: 10px; margin: 30px 0 6px; font-weight: 700; font-size: 1.05em; line-height: 1.2; text-transform: uppercase; letter-spacing: 0.04em; }
+.fd-foot { margin: 26px 0 0; font-size: var(--fs-sm); color: var(--muted); }
+.fd-foot a { color: var(--fg); text-decoration: underline; text-decoration-color: var(--border); text-underline-offset: 0.15em; }
+.fd-foot a:hover { color: var(--accent); }
+.fd-links { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 10px 0 0; }
+.fd-links .cc-text-link { font-size: 12.5px; }
+.fd-two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: calc(var(--space) * 4); align-items: start; }
+
+/* Find: the head and the years strip on the left, the grid map on the right (D4 B), then the one
+   search and the three catalog tabs at full width */
+.fd-find { display: grid; grid-template-columns: minmax(0, 8fr) minmax(0, 4fr); grid-template-areas: "head map" "years map" "cat cat"; column-gap: 40px; }
+.fd-find > .fd-phead { grid-area: head; }
+.fd-years { grid-area: years; margin: 0; align-self: end; }
+.fd-map { grid-area: map; margin: 44px 0 0; }
+.fd-catalog { grid-area: cat; margin-top: 28px; }
+.fd-years, .fd-map, .fd-get, .fd-log { background: var(--panel-2); border-radius: var(--radius-card); padding: 14px 16px; min-width: 0; }
+.fd-years .cc-eyebrow, .fd-map .cc-eyebrow, .fd-get .cc-eyebrow, .fd-log .cc-eyebrow { font-size: 11.5px; margin-bottom: 6px; }
+.fd-years figcaption, .fd-map figcaption { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 14px; margin-top: 6px; font-size: 12.5px; color: var(--muted); }
+.fd-years figcaption .cc-text-link, .fd-map figcaption .cc-text-link { font-size: 12px; }
+.fd-map .fd-cap { margin: 0; font-size: 12.5px; }
+.fd-catalog .dsearch { margin-bottom: calc(var(--space) * 2); }
+/* the species row's silhouettes and the measurement glyphs, beside each index's door */
+.tile-glyphs { display: inline-flex; align-items: center; gap: 8px; color: var(--accent); font-size: 22px; line-height: 1.2; }
+.tile-glyphs .tile-sil { fill: currentColor; }
+/* Download programmatically: the five snippets (radio tabs, no script) above Services · Packages */
+.fd-get { max-width: 820px; margin-bottom: 30px; }
+.fd-get .tile-tabs { flex: none; }
+/* Learn: the annotated section, then the docs book's card beside the ship's log */
+.fd-secfull { margin: 0 0 26px; }
+.fd-secfull .fd-sec { background: var(--panel-2); }
+.fd-log .log { margin-top: 4px; }
+
+/* the front door's footer: the partner strip and the three columns share one row, so the page
+   with no door open stays within one screen and a half (the layout's footer is untouched elsewhere) */
+#layout:has(.fd-screen) .v2-footer { padding: 28px 0; }
+#layout:has(.fd-screen) .v2-footer > .cc-container { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 20px 40px; align-items: center; }
+#layout:has(.fd-screen) .v2-footer .partners { margin-bottom: 0; gap: 14px 20px; }
+#layout:has(.fd-screen) .v2-footer .partners img { height: 46px; }
+#layout:has(.fd-screen) .v2-footer .cols { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+#layout:has(.fd-screen) .v2-footer .cols .cc-h3 { margin-top: 0; }
+
+@media (max-width: 900px) {
+  .fd-screen { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto; gap: 18px; padding-top: 20px; }
+  .fd-who { grid-column: 1; grid-row: auto; order: 1; }
+  .fd-ask { grid-column: 1; grid-row: auto; order: 2; }
+  .fd-fig { grid-column: 1; grid-row: auto; order: 3; }
+  .fd-find { grid-template-columns: minmax(0, 1fr); grid-template-areas: "head" "cat" "years" "map"; }
+  .fd-years, .fd-map { margin-top: 20px; }
+  .fd-two { grid-template-columns: minmax(0, 1fr); }
+  #layout:has(.fd-screen) .v2-footer > .cc-container { grid-template-columns: minmax(0, 1fr); }
+  #layout:has(.fd-screen) .v2-footer .cols { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+}
+@media (max-width: 640px) {
+  /* the strip is 1000 units wide: on a phone it scrolls inside its card at a readable size rather
+     than shrinking to 3 px type (the page body never scrolls sideways) */
+  .fd-strip { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .fd-strip svg.strip { min-width: 680px; }
+}
+@media (max-width: 520px) {
+  .fd-who .cc-h1 { font-size: clamp(40px, 12vw, 56px); }
+  .fd-door-t { font-size: 17px; }
+  .fd-door-sm .fd-door-t { font-size: 15.5px; }
+  .fd-panel > .cc-container { padding-top: 22px; }
+  .fd-close { top: 18px; }
+  .fd-pact .cc-btn { min-width: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fd-panel:not([hidden]) { animation: none; }
+  .fd-door, .fd-door-chev { transition: none; }
+}
 
 /* the drawing's parts — every colour a --cc-sec-* token (brand/v2/theme.css, additions 2026-09-07) */
 .sec .axis-ground { fill: var(--bg); }
@@ -96,83 +218,11 @@ main#panel { width: 100%; }
   .sec .rosette, .sec .cufes { animation: none; }
   html { scroll-behavior: auto; }
 }
-/* below 980 px the sky is too short for the copy: it stacks above the drawing on the page ground */
-@media (max-width: 979px) {
-  .hero-copy { position: static; width: auto; max-width: none; padding: calc(var(--band-pad) * 0.8) 0 calc(var(--space) * 3); }
-  .hero-copy .cc-h1 { font-size: clamp(44px, 9vw, 72px); }
-  .hero-copy .hero-lede { font-size: 1.05em; max-width: 60ch; white-space: normal; }
-  .hero-copy .cc-btn { min-height: 42px; font-size: 15px; padding: 0.4em 1.5em; }
-  .hero-copy .cc-text-link { font-size: 0.8em; }
-  .hero-copy .cc-eyebrow { font-size: var(--fs-sm); white-space: normal; }
-}
 /* below 700 px the labels and gear captions hide (the pins and their <title>s stay); below 500 px
    the axes' tick labels go too — the drawing scales as one unit, so the text would be unreadable */
 @media (max-width: 699px) { .sec .lab { display: none; } }
 @media (max-width: 499px) { .sec .ax, .sec .axt { display: none; } }
 
-/* ── the bento: ways in (plan § D-4), and the reach's two drawings (§ D-3) ──────────
-   A 6-column grid between the hero and the catalog; a tile is a bordered panel whose content sets
-   its height, and no tile ends in a button — the one CTA is the hero's. Where (2 columns) is the
-   static grid map; When (4 columns) is the years strip. Two columns at ≤ 860 px, one at ≤ 640 px,
-   and the rows go auto so nothing is clipped. */
-.bento-wrap { max-width: var(--container); margin: 0 auto; padding: calc(var(--space) * 3) calc(var(--space) * 3) calc(var(--space) * 4); }
-.bento { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); grid-auto-rows: 25px; gap: calc(var(--space) * 2); }
-.tile {
-  position: relative; display: flex; flex-direction: column; gap: 6px; min-width: 0; overflow: hidden;
-  padding: 14px 16px; border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--panel-2);
-}
-.tile .cc-eyebrow { font-size: 11.5px; }
-.tile .fill { flex: 1; min-height: 0; position: relative; }
-.tile .tile-cap { margin: 0; font-size: 12.5px; line-height: 1.3; color: var(--muted); }
-.tile .tile-more { margin-top: auto; font-size: 12.5px; align-self: flex-start; }
-/* The row unit is 25 px, not the original 150 (2026-09-08). Every tile is drawn within a quarter
-   of its own content's height (check_layout.py's 1.25x stretch rule), and on a 150 px unit only
-   two of the seven could be: the ship's log had to give a step back and the Life tile take one,
-   and neither is a whole 150 px. A tile of n rows is 41n − 16 px (25 px rows, a 16 px gap), and
-   all three columns end on row line 22 — so read these spans as a sum, never edit one alone:
-     1–2  map 10 + Explorer card 11                              (a gap between = 21 rows)
-     3–4  years 9 + release 4 + get 8                            = 21
-     5–6  years 9 + ship's log 6 + life 6                        = 21
-   The Explorer's cell is a real product card, not tile markup, so it carries no .tile rules. */
-.tile.t-map { grid-column: 1 / span 2; grid-row: 1 / span 10; }
-.t-exp-cell { grid-column: 1 / span 2; grid-row: 11 / span 11; }
-.tile.t-years { grid-column: 3 / span 4; grid-row: 1 / span 9; }
-.tile.t-rel { grid-column: 3 / span 2; grid-row: 10 / span 4; }
-.tile.t-get { grid-column: 3 / span 2; grid-row: 14 / span 8; }
-.tile.t-log { grid-column: 5 / span 2; grid-row: 10 / span 6; }
-/* the Life tile keeps a deeper foot: the six organism glyphs and "From diatoms to whales →" were
-   reading as if they had fallen off the tile's bottom edge. The room is PADDING, not grid rows, so
-   the tile's natural height grows with it and the stretch rule still holds. */
-.tile.t-life { grid-column: 5 / span 2; grid-row: 16 / span 6; padding-bottom: 34px; }
-.tile.t-life .tile-row { margin-bottom: 4px; }
-/* the numbers band (§ D-2): Teko numerals with uppercase labels on the Sand band */
-.numsband { padding: calc(var(--space) * 2.5) 0; }
-.nums { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: calc(var(--space) * 1.5); margin: 0 auto; }
-.nums > div { border-left: 2px solid var(--border); padding-left: 12px; min-width: 0; }
-.nums dd { margin: 0; font-family: var(--display); font-size: clamp(34px, 3.4vw, 50px); line-height: 0.95; font-weight: 500; color: var(--fg); font-variant-numeric: tabular-nums; }
-.nums dt { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-/* the release tile */
-.tile .tile-v { font: 700 22px var(--mono); color: var(--accent); }
-.tile .tile-dl { display: flex; flex-wrap: wrap; gap: 4px 18px; margin: 0; }
-.tile .tile-dl div { min-width: 0; }
-.tile .tile-dl dt { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
-.tile .tile-dl dd { margin: 0; font-family: var(--mono); font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.tile .tile-links { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: auto 0 0; }
-.tile .tile-links .cc-text-link { font-size: 12.5px; }
-/* the Explore tile IS the Explorer's product card (_includes/product_card.html, the same include
-   the catalog renders below), so the two can never drift. The bento only fits it to a tile: the
-   tile's border and ground, a shorter crop of the shot, a clamped description, and no dataset chip
-   row — a 6-column tile is not a card grid. Everything it SAYS comes from products.yml. */
-.t-exp-cell { display: flex; min-width: 0; }
-.t-exp-cell .prod-card {
-  flex: 1; min-width: 0; font-size: 15px; overflow: hidden;
-  border: 1px solid var(--border); background: var(--panel-2);
-}
-.t-exp-cell .cc-card-shot { border-bottom: 1px solid var(--border); }
-.t-exp-cell .cc-card-shot img { aspect-ratio: auto; height: 176px; }
-.t-exp-cell .cc-card-body { padding: 12px 16px 14px; }
-.t-exp-cell .prod-card .desc { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 0.6em; }
-.t-exp-cell .prod-card .card-datasets { display: none; }
 /* the Get-the-data tile: radio tabs, no JS — the checked input's sibling <pre> shows */
 .tile-tabs { display: flex; flex-wrap: wrap; align-content: flex-start; align-items: flex-end; gap: 0 14px; position: relative; min-height: 0; flex: 1; }
 .tile-tabs input { position: absolute; width: 1px; height: 1px; margin: -1px; opacity: 0; }
@@ -217,12 +267,6 @@ main#panel { width: 100%; }
   .log-e .log-b { grid-column: 1 / -1; }
 }
 
-/* the Life tile */
-.tile .tile-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
-.tile .tile-big { font-family: var(--display); font-size: 40px; line-height: 0.9; font-weight: 500; }
-.tile .tile-glyphs { display: inline-flex; gap: 8px; color: var(--accent); font-size: 24px; }
-.tile.t-map .fill svg { position: absolute; inset: 0; width: 100%; height: 100%; }
-
 /* the map: the brand's --cc-map-* tokens, the stations by pattern — static (Ben, 2026-09-07: a sweep
    read as one station visited a year) */
 svg.map { display: block; width: 100%; height: auto; border-radius: var(--radius); }
@@ -258,61 +302,6 @@ svg.strip { display: block; width: 100%; height: auto; }
 .strip .gl { font: 700 9px var(--sans); letter-spacing: 0.09em; fill: var(--muted); }
 .strip .gh .gr { fill: var(--fg); opacity: 0.55; }
 .strip .gsep { stroke: var(--fg); opacity: 0.14; stroke-width: 1; }
-/* Below --container (1170 px) the tiles start losing width, and a tile that loses width gains
-   height: by 1060 px the release tile's list needs 181 px where 141 px sufficed, so the desktop
-   spans above would CLIP it. One second sum, tuned to the widest content measured anywhere in
-   861–1099 px (release 203, log 239, get 324, life 238, years 284, card 479 — measured, not
-   guessed; 1100–1169 still fits the desktop sum, which is why the query stops at 1099):
-     1–2  map 10 + Explorer card 13                                         = 23 rows
-     3–4  years 8 + release 6 + get 9                                       = 23
-     5–6  years 8 + ship's log 7 + life 8                                   = 23
-   Same rule as above — the three columns are a sum, so never edit one span alone. */
-@media (max-width: 1099px) {
-  .tile.t-map { grid-row: 1 / span 10; }
-  .t-exp-cell { grid-row: 11 / span 13; }
-  .tile.t-years { grid-row: 1 / span 8; }
-  .tile.t-rel { grid-row: 9 / span 6; }
-  .tile.t-get { grid-row: 15 / span 9; }
-  .tile.t-log { grid-row: 9 / span 7; }
-  .tile.t-life { grid-row: 16 / span 8; }
-}
-@media (max-width: 860px) {
-  .nums { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .bento { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: auto; }
-  .tile, .t-exp-cell { grid-column: auto / span 2 !important; grid-row: auto !important; }
-  /* off the fixed grid the card is a card again: its own crop, its whole description */
-  .t-exp-cell .cc-card-shot img { aspect-ratio: 16 / 10; height: auto; }
-  .t-exp-cell .prod-card .desc { display: block; overflow: visible; }
-  .tile.t-map .fill { min-height: 420px; }
-  .tile.t-years .fill { min-height: 0; }
-}
-@media (max-width: 640px) {
-  .nums { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .bento { grid-template-columns: minmax(0, 1fr); }
-  .tile, .t-exp-cell { grid-column: auto / span 1 !important; }
-  .tile.t-map .fill { min-height: 360px; }
-  /* the strip is 1000 units wide: on a phone it scrolls inside its tile at a readable size rather
-     than shrinking to 3 px type (the page body never scrolls sideways) */
-  .tile.t-years .fill { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  .tile.t-years svg.strip { min-width: 680px; }
-}
-
-/* ── section nav: the SIO uppercase tab row under the hero ────────────────
-   Moved into the brand contract as `.cc-tabs` (theme.css, additions 2026-09-05) so the dataset
-   page's sub-nav is the same row. `.section-tabs` stays as an alias for one release — the markup
-   carries both classes — and these rules are the alias, not a second definition: they repeat what
-   .cc-tabs says so a page that has not been updated still renders. */
-
-.section-tabs { position: sticky; top: var(--header-h); z-index: 1010; background: var(--bg); border-bottom: 1px solid var(--border); }
-.section-tabs .cc-container { display: flex; flex-wrap: wrap; gap: 0 calc(var(--space) * 3); }
-.section-tabs a {
-  display: inline-block; padding: calc(var(--space) * 1.5) 0;
-  font-weight: 700; font-size: var(--nav-fs); letter-spacing: 0.06em; text-transform: uppercase;
-  color: var(--fg); border-bottom: 3px solid transparent; margin-bottom: -1px;
-}
-.section-tabs a:hover { color: var(--accent); border-bottom-color: var(--accent); text-decoration: none; }
-.section-tabs a .n { color: var(--muted); font-weight: 400; margin-left: 0.4em; font-variant-numeric: tabular-nums; }
-
 /* ── product sections: alternating bands ────────────────────────────────── */
 
 .prod-section { scroll-margin-top: calc(var(--header-h) + 48px); }
@@ -391,9 +380,6 @@ svg.strip { display: block; width: 100%; height: auto; }
 
 @media (max-width: 640px) {
   :root { --band-pad: 28px; }
-  .hero-copy .cc-h1 { font-size: clamp(40px, 12vw, 56px); }
-  .section-tabs .cc-container { gap: 0 calc(var(--space) * 2); }
-  .section-tabs a { font-size: 13px; padding: 10px 0; }
   .card-grid, .card-grid.featured-grid { grid-template-columns: 1fr; }
   .cc-header .cc-title small { display: none; }
 }
@@ -548,79 +534,137 @@ svg.strip { display: block; width: 100%; height: auto; }
 .ds-row-ref .ds-row-name { font-weight: 400; color: var(--accent); }
 .ds-refband .ds-ref-desc { flex-basis: 100%; margin-left: 0; font-size: var(--fs-sm); color: var(--muted); max-width: 60ch; }
 
-/* ── a dataset page (plan D-4 to D-7) ─────────────────────────────────────────
-   The first cut put an abstract of unknown length beside a sidebar of 33 variable chips: the main
-   column measured 418 px against 1,346 px, so 928 px of blank page sat between the abstract and
-   Access. Two columns whose contents are that different can never be made to end together.
-
-   So: the head band is the ONLY two-column region, its second column is the map, and the map is
-   bounded to the first column's height by construction — the cell stretches to the grid row and
-   the SVG fits inside it. Everything below the head is one column. */
+/* ── the release page's head band (/datasets/release/, _layouts/release.html) ──────────────────
+   These were the dataset page's head before issue #30; the release page still draws them. The
+   dataset page itself is the calm block below. */
 .ds-page-head { padding-top: calc(var(--band-pad) * 1.1); }
-.ds-hero { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: calc(var(--space) * 3); align-items: stretch; }
-.ds-hero-main { min-width: 0; }
-/* the map cell: a row that takes the leftover height, and a caption under it */
-.ds-mapwrap { display: grid; grid-template-rows: minmax(0, 1fr) auto; gap: 4px; min-height: 0; min-width: 0; justify-self: end; width: 100%; }
-/* The box IS the drawing. It used to be the whole cell, and `meet` fitted a portrait drawing by
-   height inside it: on swfsc_ichthyo the box measured 467 px wide and the map 256 px, so 211 px of
-   rounded, --cc-map-water-cornered box sat empty to the left of the coast, and the element's 8 px
-   radius curved around nothing while the square water rect inside it did not. `aspect-ratio` from
-   the drawing's own viewBox (the generator writes it as --map-ar) makes the box exactly the map:
-   the water fills it corner to corner, and the radius is the map's. */
-.ds-mapbox { position: relative; min-height: 0; margin-left: auto; aspect-ratio: var(--map-ar); max-width: 100%; }
-.ds-mapbox .cc-map { position: absolute; inset: 0; width: 100%; height: 100%; }
-/* The drawing is portrait and the cell is landscape, so `meet` fits it by height and leaves the
-   slack on the LEFT (the SVG is `xMaxYMin`, flush right against the container edge). A caption
-   starting at the cell's left edge therefore floated 211 px away from the map it captions
-   (measured on swfsc_ichthyo at 1470 px). Push it right so its right edge is the map's right
-   edge — both flush to the container, which is what makes them read as one figure. */
-/* The caption belongs to a figure that hugs the container's right edge, and the figure is only as
-   wide as the drawing — narrower than a comfortable measure for two lines of prose. So the caption
-   keeps its own measure and is set ragged-left: every line ENDS on the map's right edge, which is
-   what makes the two read as one figure whatever the drawing's shape. */
-.ds-mapcap { font-size: var(--fs-sm); color: var(--muted); max-width: 46ch; margin-left: auto; text-align: right; }
 
 .ds-crumb { display: flex; gap: 8px; font-size: var(--fs-sm); color: var(--muted); margin-bottom: var(--space); }
-.ds-title { display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--space) * 2); font-size: clamp(30px, 5vw, 60px); overflow-wrap: anywhere; }
-.ds-title .cc-i { font-size: 0.8em; color: var(--accent); flex: none; }
-/* a record whose only name runs past 80 characters would be six lines of Teko caps at the h1 size
-   (the EDI holdings' names run 40–60 words) — the generator flags it, this sets it at the h2 size */
-.ds-title-long { font-size: clamp(26px, 3.4vw, 38px); }
-/* past 180 characters the name is a sentence, and uppercase Teko is unreadable at that length
-   whatever the size — so it becomes a sans title in the record's own case (calcofi_prodo's name is
-   416 characters). Nothing is hidden: the whole name is the h1. */
-.ds-title-vlong { font-family: var(--sans); font-weight: 700; font-size: clamp(21px, 2vw, 27px); line-height: 1.25; letter-spacing: 0; text-transform: none; max-width: 46ch; }
-/* a block, not the h1's flex row: at 46ch the icon and the first words cannot share a line, so
-   the flex row put the icon alone above the title */
-.ds-title-vlong { display: block; }
-.ds-title-vlong .cc-i { font-size: 1.1em; vertical-align: -0.1em; margin-right: 0.4em; }
-.ds-lede { margin: 0 0 calc(var(--space) * 1.5); color: var(--muted); max-width: 68ch; }
 .ds-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: calc(var(--space) * 1.5) 0 0; }
 .ds-chips .cc-chip { font-size: 0.8em; }
 a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decoration: none; }
 .ds-chip-key { font-weight: 700; }
-.ds-holding-note { margin-top: calc(var(--space) * 2); max-width: 70ch; }
+/* ── /datasets/, calmer (issue #30): the catalog head, the one list, the folds ──────────────────
+   Built on assets/calm.css (calm-cathead, calm-list/calm-item, calm-views, calm-folds); what is here
+   is only what the dataset catalog adds. The tiles above stay: they are the "By category" view. */
+.ds-cathead-g { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 14px 56px; align-items: end; }
+.ds-cathead-l, .ds-cathead-r { min-width: 0; }
+.ds-cathead .calm-sentence { font-size: 1.08em; max-width: 46ch; margin-bottom: 8px; }
+.ds-counts { margin: 0; font-size: var(--fs-sm); color: var(--muted); font-variant-numeric: tabular-nums; }
+.ds-counts a { color: var(--muted); font-family: var(--mono); }
+.ds-cathead-r .dsearch { max-width: none; margin: 0; }
+.ds-tools { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 18px; margin-top: 10px; font-size: var(--fs-sm); color: var(--muted); }
+.ds-filter-btn { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 4px 0 2px; background: none; border: 0; border-bottom: 1px solid currentColor; color: var(--fg); font: 700 11.5px/1.3 var(--sans); text-transform: uppercase; letter-spacing: 0.08em; cursor: pointer; }
+.ds-filter-btn:hover, .ds-filter-btn[aria-expanded="true"] { color: var(--accent); }
+.ds-filter-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.ds-cat .ds-filters { margin: 4px 0 14px; padding: 14px 16px; background: var(--panel); border-radius: var(--radius-card); }
+/* "What this is": the catalog's long lede and a dataset's whole description, one click away */
+.ds-more { margin: 8px 0 0; }
+.ds-more > summary { display: inline-flex; align-items: center; gap: 6px; min-height: 28px; cursor: pointer; list-style: none; font-size: var(--fs-sm); font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.ds-more > summary::-webkit-details-marker { display: none; }
+.ds-more > summary:hover { color: var(--accent); }
+.ds-more > summary .cc-i { transition: transform 200ms; }
+.ds-more[open] > summary .cc-i { transform: rotate(180deg); }
+.ds-more > p { margin: 8px 0 0; max-width: 60ch; color: var(--muted); font-size: 15.5px; }
+.ds-views { margin-top: 10px; }
+.ds-views > .tabrow button { display: inline-flex; align-items: center; }
+.ds-realm-h { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; margin: 26px 0 6px; }
+.ds-realm-grp:first-child .ds-realm-h { margin-top: 14px; }
+.ds-realm-h h2 { margin: 0; display: inline-flex; align-items: center; gap: 8px; font-family: var(--display); font-weight: 500; font-size: 28px; line-height: 1; text-transform: uppercase; letter-spacing: 0.03em; }
+.ds-realm-h h2 .cc-i { font-size: 24px; color: var(--accent); }
+/* name, then "category · provider" beside it on one line (the mockup's row); stacked on a phone */
+.ds-item .calm-item-tx { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 14px; }
+.ds-item .calm-item-t { color: var(--accent); }
+.ds-item .calm-item-s { flex: 1 1 14em; min-width: 0; }
+.ds-item > summary:hover { background: var(--panel); }
+/* 19 rows: calm.css's 56 px row is a little generous for a list this long — 48 px, the mockup's */
+.ds-item > summary { min-height: 48px; padding-block: 8px; }
+.ds-item .calm-item-k { display: flex; align-items: center; gap: 4px 14px; }
+.ds-item .calm-item-k .cc-chip { font-size: 11px; }
+.ds-item-what { display: flex; flex-wrap: wrap; gap: 4px 20px; margin: 0 0 4px; font-size: 14px; color: var(--muted); }
+.ds-item-what > span { display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: 0 6px; min-width: 0; max-width: 100%; }
+.ds-item-what > span > .cc-i { align-self: center; }
+.ds-item-what b { color: var(--fg); font-weight: 600; }
+.ds-item-what .mono { font-size: 12.5px; overflow-wrap: anywhere; }
+.ds-item-cat { color: var(--fg); }
+.ds-item .calm-ways { margin-top: 10px; }
+.ds-cat-folds { margin-top: 30px; }
+.ds-fold-lede { color: var(--muted); font-size: 14.5px; }
+.ds-cat-folds .ds-release, .ds-cat-folds .ds-refband { margin: 0; }
 
-/* at a glance: 3 x 2, the numbers in mono, under the chips */
-.ds-glance { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: calc(var(--space) * 1.5) calc(var(--space) * 2); margin: calc(var(--space) * 2.5) 0 var(--space); }
-.ds-glance div { min-width: 0; }
-.ds-glance dt { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
-.ds-glance dd { margin: 0; font-family: var(--mono); font-size: 1.05em; font-weight: 600; font-variant-numeric: tabular-nums; }
-.ds-spark-fig { margin: var(--space) 0 0; position: relative; }
-/* the hover / tap card over the years bars and the map's stations (assets/coverage.js) */
-.ds-figure .ds-spark rect, .ds-mapbox .st-on { cursor: pointer; }
-.ds-figure .ds-spark rect:hover, .ds-figure .ds-spark rect.is-on { fill: var(--cc-yellow, #FFCD00); }
+/* ── a dataset page, calmer (issue #30) ──────────────────────────────────────────────────────────
+   One column under calm.css's head of four things: the name, one sentence, the map (the head's one
+   picture, as tall as its own aspect, never stretched to the text) and one line of numbers. What
+   is in it stays open; the ways in are one line; everything else is a fold titled with its answer. */
+.ds-page .calm-name .calm-mark { color: var(--accent); }
+/* a record whose only name runs past 80 characters would be six lines of Teko caps at the h1 size
+   (the EDI holdings' names run 40–60 words) — the generator flags it, this sets it at the h2 size */
+.calm-name h1.ds-title-long { font-size: clamp(26px, 3.4vw, 40px); }
+/* past 180 characters the name is a sentence, and uppercase Teko is unreadable at that length
+   whatever the size — so it becomes a sans title in the record's own case. Nothing is hidden. */
+.calm-name h1.ds-title-vlong { font-family: var(--sans); font-weight: 700; font-size: clamp(21px, 2vw, 27px); line-height: 1.25; letter-spacing: 0; text-transform: none; max-width: 46ch; }
+.ds-key { display: inline-flex; align-items: center; font-size: 13px; color: var(--fg); }
+.ds-facts .cc-chip { font-size: 11px; }
+.ds-facts { gap: 4px 0; }
+.ds-facts > * + *::before { content: "·"; margin: 0 9px; color: var(--muted); }
+.ds-page > .ds-access-foot { margin-top: 22px; max-width: 88ch; font-size: 14.5px; color: var(--muted); }
+.ds-more-b { margin-top: 8px; }
+.ds-desc { max-width: 70ch; color: var(--fg); font-size: 15.5px; }
+.ds-fullname { margin: 0 0 6px; max-width: 70ch; }
+/* the map: the head's picture. The box IS the drawing — `aspect-ratio` from the drawing's own
+   viewBox (the generator writes it as --map-ar) — so the water fills it corner to corner. */
+.ds-mapfig { position: relative; }
+.ds-mapbox { position: relative; width: 100%; aspect-ratio: var(--map-ar, 360 / 387); max-height: 640px; border-radius: var(--radius-card, 12px); overflow: hidden; }
+.ds-mapbox .cc-map { position: absolute; inset: 0; width: 100%; height: 100%; }
+.ds-heldnote { padding: 14px 16px; background: var(--panel); border-radius: var(--radius-card); font-size: 15px; line-height: 1.45; }
+.ds-heldnote p { margin: 0; }
+/* the years strip under the map (D15), on the release's own axis; the bars wear the dataset's colour */
+.ds-strip-fig { position: relative; margin: 2px 0 12px; max-width: 760px; }
+.ds-strip { display: block; width: 100%; height: auto; overflow: visible; }
+.ds-strip rect { fill: var(--dot, var(--accent)); cursor: pointer; }
+.ds-strip-axis { stroke: var(--border); stroke-width: 1; }
+.ds-strip-tk text { font-family: var(--mono); font-size: 12px; fill: var(--muted); }
+/* the hover / tap card over the strip's bars and the map's stations (assets/coverage.js) */
+.ds-mapbox .st-on { cursor: pointer; }
+.ds-strip rect:hover, .ds-strip rect.is-on { fill: var(--cc-yellow, #FFCD00); }
 .ds-mapbox .st-on:hover, .ds-mapbox .st-on.is-on, .ds-mapbox .st-on:focus-visible { stroke: var(--cc-yellow, #FFCD00); stroke-width: 2px; outline: none; }
 .ds-tip { position: absolute; z-index: 5; pointer-events: none; background: var(--fg); color: var(--bg); font-size: 12.5px; line-height: 1.35; padding: 5px 8px; border-radius: var(--radius); white-space: nowrap; box-shadow: 0 2px 8px rgba(0,0,0,.25); }
 .ds-tip b { font-family: var(--mono); font-weight: 600; }
-.ds-mapwrap { position: relative; }
+/* What is in it: one line per kind of content, each opening to all of it in place */
+.ds-line { margin: 8px 0 0; font-size: 15.5px; line-height: 1.5; }
+.ds-line > summary, p.ds-line { display: flex; align-items: baseline; gap: 10px; }
+.ds-line > summary { cursor: pointer; list-style: none; padding: 2px 0; }
+.ds-line > summary::-webkit-details-marker { display: none; }
+.ds-line > summary > .cc-i, p.ds-line > .cc-i { flex: none; align-self: flex-start; margin-top: 4px; color: var(--muted); font-size: 17px; }
+.ds-line > summary > span, p.ds-line > span { min-width: 0; overflow-wrap: anywhere; }
+.ds-line .mono { font-size: 13.5px; }
+.ds-line-all { color: var(--accent); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.15em; white-space: nowrap; }
+.ds-line > summary:hover .ds-line-all { text-decoration-thickness: 2px; }
+.ds-line[open] > summary .ds-line-all::after { content: " ▴"; }
+.ds-line-b { padding: 6px 0 8px 27px; }
+.ds-line-quiet { color: var(--muted); font-size: 14px; }
+.ds-line-b .ds-vargroup:first-child { margin-top: 0; }
+/* a holding's open section, and the ways line */
+.ds-lives .ds-arow:first-of-type { border-top: 0; }
+.ds-ways a.is-app { color: var(--accent); }
+.ds-ways-note { margin: 10px 0 0; font-size: 14.5px; color: var(--muted); max-width: 72ch; }
+.ds-fold-h { margin: 16px 0 6px; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+.ds-fold-note { font-size: 14px; }
+.ds-folds .ds-access-lede:first-child { margin-bottom: 12px; }
+@media (max-width: 760px) {
+  .ds-cathead-g { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  .ds-realm-h h2 { font-size: 24px; }
+  .ds-item .calm-item-k { flex-wrap: wrap; gap: 2px 12px; }
+  .ds-item .calm-item-tx { display: block; }
+  /* the strip is drawn in viewBox units: a phone needs its decade labels drawn larger */
+  .ds-strip-tk text { font-size: 20px; } .ds-strip-tk text.o { display: none; }
+  .ds-taxa { columns: 1; }
+  .ds-line-b { padding-left: 0; }
+  .ds-mapbox { max-height: none; }
+}
 
-.ds-tabs { z-index: 1010; }
+
 .ds-section { scroll-margin-top: calc(var(--header-h) + 56px); }
-/* one column, and the assertion in check_layout.py says so: no grid with more than one column
-   sits between the head band and Cite */
-.ds-one > .cc-container { display: block; }
-.ds-desc { max-width: 72ch; }
 .ds-cols { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: calc(var(--space) * 5); align-items: start; }
 .ds-meta, .ds-stats { margin: calc(var(--space) * 2) 0; max-width: 88ch; }
 .ds-meta div, .ds-stats div { display: flex; flex-wrap: wrap; gap: 4px 12px; padding: 5px 0; border-top: 1px solid var(--border); }
@@ -632,14 +676,6 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
    chip is nowrap, so let these wrap or a phone gets a horizontally scrolling page */
 .ds-kw .cc-chip, .ds-chips .cc-chip { white-space: normal; overflow-wrap: anywhere; }
 .ds-varchips .cc-chip small { color: var(--muted); margin-left: 0.35em; font-family: var(--sans); }
-/* "all 33" reads as a link, not as a heading — .ds-details' summary is uppercase and muted */
-.ds-more-vars { display: inline; }
-.ds-more-vars > summary { display: inline; cursor: pointer; list-style: none; font: inherit; font-size: var(--fs-sm); text-transform: none; letter-spacing: 0; font-weight: 400; color: var(--accent); }
-.ds-more-vars > summary::-webkit-details-marker { display: none; }
-.ds-more-vars > summary::after { content: " ▸"; }
-.ds-more-vars[open] > summary::after { content: " ▾"; }
-.ds-more-vars .cc-chip { margin: 2px 2px 0 0; }
-.ds-cov-h { margin-top: calc(var(--space) * 3); }
 /* a dataset's variables, one group per grain (CalCOFI.github.io#26): the release table named beside
    its group, the measured counts in muted type. A per-cast chip with no page is a span, not a link. */
 .ds-vargroup { margin-top: calc(var(--space) * 2); }
@@ -651,11 +687,6 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 .ds-successor { margin: calc(var(--space) * 2) 0; padding: 6px 0 6px 12px; border-left: 3px solid var(--accent); max-width: 72ch; }
 .ds-taxa { list-style: none; margin: var(--space) 0; padding: 0; columns: 2; column-gap: calc(var(--space) * 5); font-size: 15px; }
 .ds-taxa li { break-inside: avoid; padding: 2px 0; }
-.ds-headlinks { display: flex; flex-wrap: wrap; gap: calc(var(--space) * 2); margin-top: calc(var(--space) * 2); }
-.ds-side-h { margin-top: calc(var(--space) * 3); }
-.ds-figure { margin: calc(var(--space) * 2) 0; }
-.ds-figure figcaption { margin-top: 4px; font-size: var(--fs-sm); color: var(--muted); }
-.ds-figure .ds-spark { width: 100%; height: 44px; fill: var(--accent); display: block; }
 .ds-contrib-list, .ds-questions, .ds-objects, .ds-versions, .ds-parts { list-style: none; margin: var(--space) 0; padding: 0; font-size: 15px; }
 .ds-contrib-list li, .ds-questions li, .ds-objects li, .ds-versions li, .ds-parts li { padding: 4px 0; border-top: 1px solid var(--border); }
 .ds-versions li { display: flex; flex-wrap: wrap; gap: 4px 8px; }
@@ -759,17 +790,6 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 @media (max-width: 900px) {
   .ds-cols { grid-template-columns: 1fr; gap: calc(var(--space) * 3); }
 }
-/* the head band collapses; the map is no longer bounded by a neighbour, so it takes the drawing's
-   own aspect ratio, written on the element by the generator */
-@media (max-width: 820px) {
-  .ds-hero { grid-template-columns: 1fr; }
-  /* the column has collapsed, so there is no row height for the aspect ratio to read a width from
-     — take the full width and let the ratio give the height instead. Without this the auto margin
-     leaves the box with an auto width AND an auto height, and the map disappears. */
-  .ds-mapbox { width: 100%; margin-left: 0; aspect-ratio: var(--map-ar, 360 / 387); }
-  .ds-mapcap { text-align: left; }
-  .ds-taxa { columns: 1; }
-}
 /* the ERDDAP matrix and the tables table fold to one field per line */
 @media (max-width: 520px) {
   .ds-tbl { grid-template-columns: 1fr; gap: 2px 0; }
@@ -797,9 +817,6 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
   .ds-release-links { margin-left: 0; }
   .ds-row { flex-direction: column; align-items: flex-start; }
   .ds-row-meta { margin-left: 0; }
-  .ds-glance { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .ds-title { font-size: clamp(26px, 8vw, 36px); }
-  .ds-title-long { font-size: clamp(22px, 6vw, 28px); }
   .ds-meta dt, .ds-stats dt { min-width: 0; flex-basis: 100%; }
   .ds-ref-desc { max-width: 100%; }
   .ds-filters { gap: var(--space); }
@@ -817,94 +834,85 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 .ds-arow-k[href]:hover, .ds-parts a:hover, .ds-related li a:hover, .ds-matrix-f a:hover { text-decoration-color: currentColor; }
 
 /* ══ the species catalog (/species/, /species/{slug}/) ════════════════════════════
-   Additive to brand v2: every colour is a token or the record's own dataset colour, which is
-   never the only cue (the record's ten biology colours fail the CVD check on two pairs, so a dot
-   always has its dataset's name beside it and the matrix is one sequential ramp). The species
-   PAGE is below; the index's tree, matrix, icicle and years strip follow in the next block.
-   Ported from the mockup species_catalog_mockup.html (2026-09-09), classes prefixed `sp-` so
-   nothing here can collide with the dataset catalog's `ds-` rules or the front door's. */
+   Additive to brand v2 and to assets/calm.css (issue #30): the page shape — the head, the open
+   section, the ways line, the folds, the catalog head and its list — is calm.css's; the rules here
+   are only what the species pages draw INSIDE that shape (the mark, the strips, the class rows, the
+   tree, the matrix, the icicle, the size figures). Every colour is a token or the record's own
+   dataset colour, which is never the only cue (the record's ten biology colours fail the CVD check
+   on two pairs, so a dot always has its dataset's name beside it and the matrix is one sequential
+   ramp). Classes prefixed `sp-` so nothing here can collide with the dataset catalog's `ds-` rules
+   or the front door's. */
 
-/* the lineage breadcrumb: every ancestor with a page is a link, each behind its rank's abbreviation */
-.sp-lineage { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; font-size: var(--fs-sm); margin: 0 0 var(--space); }
+/* the lineage chain (the Lineage fold): every ancestor with a page is a link, each behind its rank's abbreviation */
+.sp-lineage { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; font-size: var(--fs-sm); margin: 0; }
 .sp-lineage .sp-sep { color: var(--muted); }
 .sp-r { font: 700 10px var(--mono); color: var(--muted); letter-spacing: 0.04em; text-transform: uppercase; margin-right: 3px; }
 .sp-here { color: var(--muted); }
 .sp-it { font-style: italic; }
+.sp-pg .calm-crumb .sp-it { font-style: italic; }
 
-/* the head: the accepted name once, the ids beside it */
-.sp-h { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space) calc(var(--space) * 4); align-items: end; }
-.sp-h .cc-h1 { margin: 2px 0 4px; }
-.sp-common { font-style: normal; font-family: var(--display); font-weight: 500; font-size: clamp(20px, 2.2vw, 28px); line-height: 1; color: var(--muted); margin: 0 0 4px; }
-.sp-ids { display: flex; flex-wrap: wrap; gap: 5px 14px; font-size: 13px; }
-.sp-ids a, .sp-ids .mono { font-family: var(--mono); font-size: 12.5px; }
-.sp-status { margin: 4px 0 0; font-size: var(--fs-sm); }
-.sp-local { margin: 6px 0 0; font-size: var(--fs-sm); max-width: 72ch; }
+/* the head (calm-head): the silhouette is the mark, as wide as its own aspect wants up to a cap —
+   calm.css's 56 x 44 box would draw a 3 : 1 fish 18 px tall */
+.sp-pg .calm-name svg.calm-mark { width: auto; height: 44px; max-width: 150px; color: var(--fg); fill: currentColor; }
+.sp-pg .calm-facts .mono { font-family: var(--mono); font-size: 12.5px; }
+.sp-pg .calm-facts a { font-family: var(--mono); font-size: 12.5px; }
+.sp-pg .calm-facts .cc-chip { white-space: normal; overflow-wrap: anywhere; }
+.sp-pg .calm-sub .cc-chip { margin-right: 4px; }
 .sp-local code { font-family: var(--mono); font-size: 0.92em; }
+.sp-pg .calm-sentence { font-size: 1.05em; }
+.sp-pg .calm-nums { margin-top: 4px; gap: 6px 22px; }
+.sp-pg .calm-facts .cc-info { margin-left: 4px; }
+.sp-pg .calm-nums dd.sp-stat-sm { font-size: 22px; padding-top: 6px; }
+.sp-pg .calm-nums dt .cc-i { margin-right: 4px; vertical-align: -2px; }
+/* the one picture: the photo in calm.css's rounded 3 : 2 frame; or, with no photo, the silhouette
+   drawn large in the figure frame, capped so a near-square one (a diatom, a copepod) stays modest */
+.sp-photo-fig, .sp-sil-fig { margin: 0; min-width: 0; }
+.sp-photo img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.sp-sil-pic { display: flex; align-items: center; justify-content: center; }
+.sp-sil-pic svg { display: block; width: 100%; height: auto; max-height: 220px; color: var(--fg); fill: currentColor; }
 
 /* the years strip is drawn by assets/species.js, which adds .sp-drawn when it has: before that an
    <svg> is 300 x 150 by the CSS default, which would leave a hole here and on a page read without
    JS. The class, NOT an attribute selector: a CSS attribute name is lowercased in an HTML document,
    so `:not([viewBox])` is written `[viewbox]`, never matches SVG's camelCase attribute, and hid
-   the strip on every species page (measured 2026-09-09). */
-.sp-strip { display: none; width: 100%; height: auto; margin: var(--space) 0 0; }
+   the strip on every species page (measured 2026-09-09). One strip per "Observed in" row now. */
+.sp-strip { display: none; width: 100%; height: auto; }
 .sp-strip.sp-drawn { display: block; }
 .sp-strip text { font: 11px var(--mono); fill: var(--muted); }
+.sp-strip .sp-sax { stroke: var(--border); stroke-width: 1; }
 
-/* the stat row: observations · sampling events · years · datasets · life stages */
-.sp-stat { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: calc(var(--space) * 1.5); margin: calc(var(--space) * 2.5) 0 0; padding: calc(var(--space) * 2) 0 0; border-top: 1px solid var(--border); }
-.sp-stat dd { margin: 0; font-family: var(--display); font-weight: 500; font-size: 30px; line-height: 1; }
-.sp-stat dd.sp-stat-sm { font-family: var(--sans); font-size: 17px; font-weight: 600; line-height: 1.2; }
-.sp-stat dt { font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
-
-/* two columns: what was observed, and the ways in. No unbounded text beside a fixed figure —
-   both columns are prose-width and the strip is drawn to the left column's width. */
-.sp-cols2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 calc(var(--space) * 5); align-items: start; }
-.sp-page-body .cc-h3 { margin-top: calc(var(--space) * 3); }
-.sp-page-body .sp-col-obs > .cc-h3:first-child, .sp-page-body .sp-col-ways > .cc-h3:first-child { margin-top: 0; }
+/* one row per dataset (calm-row): the dot in the record's colour, the dataset's NAME always beside it */
+.sp-dsrow .calm-row-n { align-items: center; }
+.sp-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex: none; box-shadow: 0 0 0 1px var(--bg); }
+.sp-l2 { font-size: 13.5px; color: var(--muted); margin-top: 2px; }
+.sp-l2 code { font: 12px var(--mono); color: var(--fg); background: var(--panel); padding: 1px 5px; border-radius: 4px; }
+.sp-l2 .cc-chip { margin-left: 2px; }
 .sp-note { font-size: var(--fs-sm); color: var(--muted); max-width: 80ch; margin: var(--space) 0 0; }
 .sp-note .mono, .sp-note code { font-family: var(--mono); font-size: 0.92em; }
 
-/* one row per dataset: the dot in the record's colour, the dataset's NAME always beside it */
-.sp-dsrows { list-style: none; margin: var(--space) 0 0; padding: 0; }
-.sp-dsrow { display: grid; grid-template-columns: 14px minmax(0, 1fr); gap: 10px; padding: 10px 0; border-top: 1px solid var(--border); align-items: start; }
-.sp-dsrow:first-child { border-top: 0; }
-.sp-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-top: 6px; box-shadow: 0 0 0 1px var(--bg); }
-.sp-l1 { display: flex; flex-wrap: wrap; gap: 3px 14px; align-items: baseline; }
-.sp-l1 a { font-weight: 600; }
-.sp-meta { font: 12.5px var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; }
-.sp-l2 { font-size: 13px; color: var(--muted); margin-top: 2px; }
-.sp-l2 code { font: 12px var(--mono); color: var(--fg); background: var(--panel); padding: 1px 5px; border-radius: 4px; }
-.sp-l2 .cc-chip { margin-left: 2px; }
+/* the ways line: R and Python open the Code fold; the fold carries the ways_tabs.html tabset */
+.sp-ways-code .tabset { margin-top: 4px; }
+.sp-ways-code .sp-note { margin-top: 12px; }
 
-/* the taxa under a higher taxon, most observed first; past 30 they fold */
-.sp-kids { list-style: none; margin: var(--space) 0 0; padding: 0; font-size: 15px; columns: 2; column-gap: calc(var(--space) * 4); }
-.sp-kids li { break-inside: avoid; padding: 2px 0; display: flex; align-items: baseline; gap: 5px; }
+/* the taxa under a higher taxon (the Under it fold), most observed first; past 30 they fold */
+.sp-kids { list-style: none; margin: 0; padding: 0; font-size: 15px; columns: 2; column-gap: calc(var(--space) * 4); }
+.sp-kids li { break-inside: avoid; padding: 3px 0; display: flex; align-items: baseline; gap: 5px; border-bottom: 1px solid var(--border); }
 .sp-kn { margin-left: auto; font: 12px var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; }
 .sp-more > summary { cursor: pointer; font-size: var(--fs-sm); color: var(--accent); margin-top: var(--space); }
-.sp-chips { display: flex; flex-wrap: wrap; gap: 5px; margin: var(--space) 0 0; }
-.sp-chips .cc-chip { white-space: normal; overflow-wrap: anywhere; }
+/* the Life stages, Credits and Elsewhere folds */
+.sp-stage-rows, .sp-credits { list-style: none; margin: 0; padding: 0; }
+.sp-stage-rows li { padding: 4px 0; display: flex; flex-wrap: wrap; gap: 2px 12px; }
+.sp-stage-rows span { color: var(--muted); }
+.sp-credits li { padding: 3px 0; }
+.sp-elsewhere { display: flex; flex-wrap: wrap; gap: 4px 8px; margin: 0 0 8px; }
+.sp-elsewhere > span { color: var(--muted); }
 
-/* the ways in: ONE row per endpoint, the URL a full-width single mono line (assets/species.js
-   elides it from the middle rather than letting it wrap) */
-.sp-ways { list-style: none; margin: var(--space) 0 0; padding: 0; }
-.sp-way { padding: 10px 0; border-top: 1px solid var(--border); }
-.sp-way:first-child { border-top: 0; }
-.sp-way .sp-l1 b { font-weight: 600; }
-.sp-way .sp-l1 span { font-size: 13px; color: var(--muted); }
+/* the URL lines a way may print: ONE full-width mono line (assets/species.js elides from the middle) */
 .sp-url { display: block; width: 100%; font: 13px var(--mono); color: var(--accent); white-space: nowrap; overflow: hidden; margin-top: 3px; }
-.sp-way pre { margin: 6px 0 0; font: 12.5px/1.5 var(--mono); background: var(--panel); border-radius: var(--radius); padding: 8px 12px; overflow-x: auto; color: var(--fg); }
-
-@media (max-width: 900px) {
-  .sp-cols2 { grid-template-columns: minmax(0, 1fr); }
-  .sp-h { grid-template-columns: minmax(0, 1fr); align-items: start; }
-  .sp-kids { columns: 1; }
-}
 
 /* ── faces (WS-F3) ────────────────────────────────────────────────────────────
-   The face row, the sentence, the glance and the three size figures (plan 2026-09-11 § D1–D5, D8),
-   ported from the mockup CalCOFI Species Faces onto brand v2's tokens. Additive: every rule below
-   is under a class that only exists when _data/taxa_media.json has an entry for the page's taxon,
-   so a page without one is untouched by this block.
+   The glance, the credit line and the three size figures (plan 2026-09-11 § D1–D5, D8), ported
+   from the mockup CalCOFI Species Faces onto brand v2's tokens; all inside the How big fold now.
 
    The one site-local token is --sp-plate-filter: a scanned black-ink plate on a navy ground has to
    be inverted, and brand/v2/theme.css is frozen, so the token lives here. It keys on
@@ -913,45 +921,20 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 :root { --sp-plate-filter: none; }
 :root[data-theme="dark"] { --sp-plate-filter: invert(0.9) hue-rotate(180deg); }
 
-/* the row: the silhouette and its glance beside the photo. Neither column has a minimum that can
-   push the page wide — both are minmax(0, …) and the photo is max-width: 100 %. */
-.sp-face { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: calc(var(--space) * 2.5); align-items: stretch; margin: calc(var(--space) * 2) 0 0; }
-.sp-sil-fig { display: flex; flex-direction: column; justify-content: space-between; gap: var(--space); min-width: 0; margin: 0; }
-.sp-photo-fig { margin: 0; min-width: 0; }
-
-/* the constant: ONE vector, filled with the page's ink, so it needs no second file for dark */
-/* width-driven with the vector's own ratio, capped so a near-square silhouette (a diatom, a
-   copepod) cannot tower over the photo beside it while a long one (a fish) still fills the row */
-.sp-sil { display: block; width: 100%; height: auto; min-height: 72px; max-height: 240px; color: var(--fg); fill: currentColor; max-width: 100%; }
-
 /* the glance: two bars on one scale — the taxon and the nearest familiar object */
-.sp-glance { border-top: 1px solid var(--border); padding-top: var(--space); font-size: 13px; margin: 0; }
-.sp-glance-row { display: grid; grid-template-columns: minmax(0, 96px) minmax(0, 1fr) auto; gap: var(--space); align-items: center; padding: 2px 0; }
+.sp-glance { font-size: 13px; margin: 0 0 var(--space); max-width: 560px; }
+.sp-glance-row { display: grid; grid-template-columns: minmax(0, 120px) minmax(0, 1fr) auto; gap: var(--space); align-items: center; padding: 2px 0; }
 .sp-glance-l { color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .sp-glance-v { font: 12px var(--mono); text-align: right; white-space: nowrap; }
 .sp-bar { display: block; height: 8px; border-radius: 4px; background: var(--accent); min-width: 2px; }
 .sp-bar-ref { background: var(--muted); opacity: 0.55; }
-.sp-glance-none { color: var(--muted); }
-.sp-glance-none .cc-eyebrow { display: inline; }
-
-/* the fade is on the FRAME, not the image: the same file then sits on white and on navy without a
-   second crop, and `object-position` still honours the stored focal point (§ D2) */
-.sp-photo {
-  position: relative; aspect-ratio: 3 / 2; overflow: hidden; border-radius: var(--radius); max-width: 100%;
-  -webkit-mask-image: radial-gradient(ellipse 74% 70% at 50% 50%, #000 40%, transparent 100%);
-  mask-image: radial-gradient(ellipse 74% 70% at 50% 50%, #000 40%, transparent 100%);
-}
-.sp-photo img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.sp-glance-none { color: var(--muted); font-size: 15px; }
 
 /* one credit format everywhere: kind · who · licence · where · what it shows */
 .sp-credit { font: 11.5px/1.5 var(--mono); color: var(--muted); margin: 6px 0 0; }
 .sp-credit a { color: inherit; text-decoration: underline; text-decoration-color: var(--border); }
 .sp-credit a:hover { text-decoration-color: currentColor; }
-
-/* the sentence (round 2 § P1, D6): plain prose, no per-part underline — each part's source is a
-   small `.cc-src` badge instead (style block below), so the old three-style underline + legend is
-   retired along with it. */
-.sp-sent { font-size: 16px; line-height: 1.55; margin: calc(var(--space) * 2) 0 0; max-width: 80ch; }
+.calm-cap.sp-credit { margin: 0; font: 12.5px/1.35 var(--sans); }
 
 /* ── How big is it: the ladder, the beside figure, the plate ─────────────────── */
 /* Each <svg> is hidden until species.js has drawn into it — the `.sp-drawn` rule the years strip
@@ -960,6 +943,7 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 .sp-ladder, .sp-beside { display: none; width: 100%; height: auto; margin: var(--space) 0 0; }
 .sp-ladder.sp-drawn, .sp-beside.sp-drawn { display: block; }
 .sp-ladder { overflow: visible; }
+.sp-beside { max-width: 640px; }
 .sp-ladder .sp-ax { stroke: var(--muted); stroke-width: 1; }
 .sp-ladder .sp-lead, .sp-beside .sp-base { stroke: var(--border); stroke-width: 1; }
 .sp-ladder .sp-tick, .sp-ladder .sp-mval, .sp-beside .sp-bval { font: 11px var(--mono); fill: var(--muted); }
@@ -987,86 +971,69 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 .sp-early b { font-weight: 600; }
 .sp-early .sp-esrc { font: 11.5px var(--mono); color: var(--muted); }
 
-/* the phone: the face row and the plate figure each become one column, and the glance's label
-   column stops being fixed so a long common name cannot push the page sideways */
+@media (max-width: 760px) {
+  .sp-pg .calm-name svg.calm-mark { height: 32px; max-width: 96px; }
+  .sp-kids { columns: 1; }
+}
+/* the phone: the plate figure becomes one column, and the glance's label column stops being fixed
+   so a long common name cannot push the page sideways */
 @media (max-width: 620px) {
-  .sp-face { grid-template-columns: minmax(0, 1fr); }
   .sp-plate-fig { grid-template-columns: minmax(0, 1fr); }
   .sp-glance-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) auto; }
   .sp-early li { grid-template-columns: minmax(0, 1fr); gap: 0; }
 }
 
-/* ── the species catalog's index (/species/): search + tree, the matrix, the icicle ───────────
+/* ── the species catalog's index (/species/): the class list, then the three views ─────────────
    Drawn by assets/species.js from the one inline JSON; the rules below are the mockup's, mapped
    onto brand v2's tokens. The tint of a matrix cell and of an icicle band is ONE sequential ramp
    of --accent mixed into --bg, so nothing here needs a second hue and nothing computes to --warn. */
-/* the head is ONE column and the counts are a row beneath it: a display h1 that wraps to two
-   lines would otherwise leave 350 px of empty page beside it in the second column */
-/* one prose width for a catalog head: the lede, any explanation and the aside end on the same right
-   edge. 78 characters of the lede's 20.7 px type is 44.6 rem; a 78ch cap on each paragraph gave
-   three different widths (802 / 543 / 485 px) and a stepped right edge (Ben, 2026-09-10) */
+/* one prose width for a catalog head (shared with /measurements/, Ben, 2026-09-10) */
 .sp-idx-head, .mm-idx-head { --cc-prose-w: 44.6rem; }
-.sp-idx-head .cc-lede { max-width: var(--cc-prose-w); }
-.sp-counts { display: flex; flex-wrap: wrap; gap: 10px 34px; margin: calc(var(--space) * 2) 0 0; padding: calc(var(--space) * 2) 0 0; border-top: 1px solid var(--border); }
-.sp-counts div { min-width: 0; }
-.sp-counts dd { margin: 0; font: 500 30px/1 var(--display); font-variant-numeric: tabular-nums; }
-.sp-counts dt { font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+.sp-cat { position: relative; }   /* the tooltip is placed against it */
+/* the record's five counts: one quiet line (calm-facts) */
+.sp-counts b { font-weight: 600; color: var(--fg); font-variant-numeric: tabular-nums; }
+.sp-cat .calm-cathead .calm-facts { margin: 0 0 12px; }
+.sp-cat .calm-siblings .cc-i { font-size: 15px; }
 
-.sp-searchrow { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 0 0 calc(var(--space) * 1.75); }
-/* min-width:0 is load-bearing at 375 px: a flex item's automatic minimum size is its MIN-CONTENT,
-   and this label's min-content includes the nowrap count (".sp-n") — so on a machine whose mono
-   fallback is wider than SF Mono (CI's Ubuntu image: DejaVu Sans Mono) the row could not shrink to
-   the container and the document scrolled sideways (PR #13, /species/ at 375: scrollWidth 405). The
-   count now truncates instead of pushing the page wide. */
-.sp-search { flex: 1 1 320px; min-width: 0; display: flex; align-items: center; gap: 8px; background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 7px 12px; }
-.sp-search input { flex: 1; border: 0; background: transparent; color: var(--fg); font: 16px var(--sans); min-width: 0; }
-.sp-search input:focus { outline: 0; }
-.sp-search:focus-within { border-color: var(--accent); }
+/* the class rows (calm-item): a silhouette column wide enough for a 3 : 1 fish */
+.sp-class > summary { grid-template-columns: 56px minmax(0, 1fr) auto 18px; }
+.sp-class .calm-item-g { opacity: 1; }
+.sp-class .calm-item-t, .sp-class .calm-item-s { display: block; }
+.sp-class .calm-item-g svg.sp-csil { width: 52px; height: 30px; fill: currentColor; }
+.sp-class .calm-item-t .sp-cn { font-weight: 400; font-size: 14px; color: var(--muted); margin-left: 6px; white-space: nowrap; }
+.sp-class .calm-item-b { padding-left: 70px; }
+.sp-top-h { font-size: 13.5px; color: var(--muted); margin: 0 0 4px; }
+.sp-top { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); column-gap: 28px; max-width: none; }
+.sp-top .cc-result + .cc-result { border-top: 0; }
+.sp-top .cc-result { border-bottom: 1px solid var(--border); }
+.sp-top-links { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 20px; margin: 10px 0 0; }
+.sp-top-links .cc-text-link { font-size: 11.5px; }
+.sp-top-links button.cc-text-link { background: none; border: 0; border-bottom: 1px solid currentColor; border-radius: 0; padding: 0 0 1px; cursor: pointer; font-family: inherit; }
+.sp-empty, .sp-foot { font-size: var(--fs-sm); color: var(--muted); margin: 12px 0 0; }
+
+/* the Matches list above the views (umbrella D9, I2) */
+#sp-matches { margin: 0 0 calc(var(--space) * 1.5); }
+#sp-matches[hidden] { display: none; }
+.sp-matches-h { font: 600 13px var(--sans); color: var(--muted); margin: 0 0 4px; text-transform: none; letter-spacing: 0; }
+.sp-matches-list { display: flex; flex-direction: column; }
+
+/* the views (calm-views): each panel is today's, unchanged, one click away */
+.sp-views .tabpanel { padding-top: 14px; }
+.sp-views .tabrow { flex-wrap: wrap; }
+.sp-treebar { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; margin: 0 0 12px; }
 .sp-n { font: 12.5px var(--mono); color: var(--muted); white-space: nowrap; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .sp-rankf { display: flex; gap: 6px; flex-wrap: wrap; }
-.sp-rankf button, .sp-seg button { border: 1px solid var(--border); background: var(--panel-2); color: var(--muted); border-radius: 999px; padding: 5px 11px; font: 600 12px var(--sans); cursor: pointer; }
+.sp-rankf button, .sp-seg button { border: 1px solid var(--border); background: var(--panel-2); color: var(--muted); border-radius: 999px; padding: 5px 11px; min-height: 32px; font: 600 12px var(--sans); cursor: pointer; }
 .sp-rankf button[aria-pressed="true"] { background: var(--accent-bg); color: var(--accent); border-color: transparent; }
+.sp-ranks-all { margin-left: 10px; }
+.sp-hint { font-size: 12.5px; color: var(--muted); }
 
-/* the tree beside the matrix: the pane is as tall as the matrix's, and the tree scrolls INSIDE it
-   (species.js syncTree) — no unbounded text beside a fixed-height figure */
-.sp-two { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: calc(var(--space) * 2.5); align-items: start; }
 .sp-pane { background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius-card); overflow: hidden; min-width: 0; }
 .sp-pane-h { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 11px 16px 8px; border-bottom: 1px solid var(--border); }
 .sp-pane-h .cc-eyebrow { font-size: 11.5px; margin: 0; }
 .sp-pane-h .sp-hint { margin-left: auto; }
-/* expand one pane to the full width, or show both (species.js setPanes; ?panes=tree|matrix) */
-.sp-pane-max { flex: none; width: 26px; height: 22px; padding: 0; border: 1px solid var(--border); border-radius: 6px; background: transparent; color: var(--muted); font-size: 13px; line-height: 1; cursor: pointer; }
-.sp-pane-max:hover { color: var(--accent); border-color: var(--accent); }
-/* an expanded pane never removes the other: the collapsed pane folds into a 28 px vertical pill
-   beside it — the Explorer's collapsed-panel idiom (explore/src/style.css .edge-pill): its title in
-   vertical text under a chevron, the whole pill a button that shows both panes again (Ben,
-   2026-09-10: "the pane disappeared completely when I expanded the other — bad UI") */
-.sp-two[data-panes="matrix"] { grid-template-columns: 28px minmax(0, 1fr); }
-.sp-two[data-panes="tree"]   { grid-template-columns: minmax(0, 1fr) 28px; }
-.sp-two[data-panes="tree"] .sp-pane-matrix, .sp-two[data-panes="matrix"] .sp-pane-tree { display: none; }
-.sp-two[data-panes="tree"] .sp-tree { height: min(82vh, 960px); }
-.sp-pane-pill, .sp-pane-pill[hidden] { display: none; }
-.sp-pane-pill:not([hidden]) {
-  display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 6px;
-  align-self: stretch; width: 28px; min-height: 160px; box-sizing: border-box; padding: 8px 0;
-  background: var(--panel-2); border: 1px solid var(--border); border-radius: 6px;
-  box-shadow: 0 3px 12px color-mix(in srgb, var(--fg) 14%, transparent);
-  color: var(--fg); font: inherit; font-size: var(--fs-sm); cursor: pointer; overflow: hidden; white-space: nowrap;
-}
-.sp-pane-pill:hover, .sp-pane-pill:focus-visible { color: var(--accent); border-color: var(--accent); }
-.sp-pane-pill .sp-pill-chev { flex: none; width: 1em; height: 1em; color: var(--muted); }
-.sp-pane-pill:hover .sp-pill-chev { color: var(--accent); }
-.sp-pane-pill .sp-pill-text { writing-mode: vertical-rl; font-weight: 600; letter-spacing: 0.02em; max-height: calc(100% - 24px); overflow: hidden; text-overflow: ellipsis; }
-/* one column: both panes stack and there is nothing to expand */
-@media (max-width: 1000px) {
-  .sp-two[data-panes] { grid-template-columns: minmax(0, 1fr); }
-  .sp-two[data-panes] .sp-pane { display: block; }
-  .sp-pane-max, .sp-pane-pill { display: none !important; }
-}
-.sp-ranks-all { margin-left: 10px; }
-.sp-hint { font-size: 12.5px; color: var(--muted); }
 
-.sp-tree { height: 600px; overflow: auto; padding: 8px 10px 14px; font-size: 14px; }
+.sp-tree { height: min(70vh, 720px); overflow: auto; padding: 8px 10px 14px; font-size: 14px; }
 .sp-tree ul { list-style: none; margin: 0; padding: 0 0 0 14px; }
 .sp-tree > ul { padding-left: 0; }
 .sp-tree li { margin: 0; }
@@ -1101,8 +1068,7 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 .sp-legend { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; margin: 10px 0 0; font-size: 12px; color: var(--muted); }
 .sp-ramp { height: 10px; width: 120px; border-radius: 3px; background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 8%, var(--bg)), var(--accent)); }
 
-/* the icicle: full width under both panes */
-.sp-ice-wrap { margin-top: calc(var(--space) * 2.5); }
+/* the icicle */
 .sp-ice-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin: 0 0 8px; }
 .sp-ice-bar .cc-eyebrow { margin: 0; }
 .sp-seg { display: inline-flex; border: 1px solid var(--border); border-radius: 999px; overflow: hidden; }
@@ -1121,20 +1087,19 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 .sp-ttip b { display: block; }
 .sp-ttip .sp-d { display: block; opacity: 0.85; }
 .sp-ttip .sp-dot { box-shadow: none; margin-top: 0; }
-.sp-body { position: relative; }
 
 /* the twisty is the only thing that moves, and only where motion is welcome */
 @media (prefers-reduced-motion: no-preference) { .sp-tw { transition: transform 0.15s; } }
 
-@media (max-width: 1000px) {
-  .sp-two { grid-template-columns: minmax(0, 1fr); }
+@media (max-width: 760px) {
+  .sp-class > summary { grid-template-columns: 44px minmax(0, 1fr) 18px; }
+  .sp-class .calm-item-g svg.sp-csil { width: 42px; height: 24px; }
+  .sp-class .calm-item-b { padding-left: 0; }
 }
 @media (max-width: 700px) {
   .sp-tree { height: 460px; }
   .sp-tr { grid-template-columns: 20px 26px minmax(0, 1fr) auto; }
   .sp-dots { display: none; }
-  .sp-counts { gap: 6px 16px; }
-  .sp-counts dd { font-size: 24px; }
 }
 
 /* ═══ the front door's six words, tabs and one search (plan 2026-09-10 § D7) ═══════════════════
@@ -1218,9 +1183,6 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
   font-variant-numeric: tabular-nums; color: var(--muted); background: var(--panel-2, var(--panel));
   vertical-align: 1px;
 }
-
-/* ── the sticky section bar: DATA carries three counts, so its numbers read as a phrase ─────── */
-.section-tabs a .n b { color: var(--accent); font-weight: 400; }
 
 /* ── one tabset, three sections ──────────────────────────────────────────────────────────────── */
 .tabset { margin: 0; }
@@ -1308,30 +1270,6 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 .ds-realm-door span { font-size: 12.5px; }
 .ds-realm-door .cc-text-link { font-size: 12.5px; }
 
-/* ── the Observed tile: two counted rows in the cell the Life tile had ───────────────────────── */
-/* the Observed tile keeps the Life tile's six rows, so column 5–6 (log 6 + observed 6 = 21) ends on
-   row line 22 with the other two and the bento's bottom edge is one line (Ben, 2026-09-10: "What's
-   observed protrudes further down"). Two counted rows fit six rows because each is two lines —
-   the number with its qualifier, then the glyphs left and the door right — not three, and the
-   caption is two lines of copy. The bento comment above still reads as a sum: never edit one span. */
-.tile.t-obs { grid-column: 5 / span 2; grid-row: 16 / span 6; }
-.tile.t-obs .obsrow { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 10px; padding: 4px 0; }
-.tile.t-obs .obsrow + .obsrow { border-top: 1px solid var(--border); }
-.tile.t-obs .tile-big { order: 1; font-size: 28px; line-height: 1.05; white-space: nowrap; }
-.tile.t-obs .obsrow .cc-muted { order: 2; }
-/* the line break: a zero-height item that takes the whole row, between the qualifier and the glyphs */
-.tile.t-obs .obsrow::after { content: ""; order: 3; flex-basis: 100%; height: 0; }
-.tile.t-obs .tile-glyphs { order: 4; flex-basis: auto; font-size: 18px; gap: 4px; line-height: 1.2; }
-.tile.t-obs .obs-more { order: 5; flex-basis: auto; margin: 0 0 0 auto; font-size: 12px; letter-spacing: 0.05em; white-space: nowrap; }
-/* two lines of caption at every width the fixed grid runs (1100–1159 px would take a third): the
-   whole sentence stays in the DOM for a screen reader; the box shows two lines */
-.tile.t-obs .tile-cap { margin-top: 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-
-/* the 861–1099 px sum (see the bento block above): the third column is log 7 + observed 8 = 24,
-   the second rel 6 + get 9 = 24 — the same line */
-@media (max-width: 1099px) {
-  .tile.t-obs { grid-row: 16 / span 8; }
-}
 @media (max-width: 900px) {
   .idxtab { grid-template-columns: minmax(0, 1fr); align-items: start; }
 }
@@ -1343,7 +1281,6 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
   .tabrow button { font-size: 12.5px; }
   .idxtab-counts dd { font-size: 22px; }
   .ds-realm-door .cc-text-link { margin-left: 0; flex-basis: 100%; }
-  .tile.t-obs .tile-big { font-size: 26px; }
 }
 
 /* ══ the measurements catalog (/measurements/, /measurements/{key}/) ══════════════
@@ -1355,36 +1292,17 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
    Additive to brand v2: every colour is a token or the record's own dataset colour, which is never
    the only cue — a dot always carries its dataset's name beside it. */
 
-/* the page head: the label once, the ids beside it */
-.mm-crumb { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; font-size: var(--fs-sm); margin: 0 0 var(--space); }
-.mm-crumb .mm-sep { color: var(--muted); }
-.mm-here { color: var(--muted); }
-.mm-h { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space) calc(var(--space) * 4); align-items: end; }
-.mm-h .cc-h1 { margin: 2px 0 4px; }
-.mm-sub { font-size: var(--fs-sm); color: var(--muted); max-width: 72ch; margin: 0 0 4px; }
 .mm-grain { font-size: var(--fs-sm); color: var(--muted); max-width: 72ch; margin: 6px 0 4px; }
 .mm-grain .cc-chip { margin-right: 6px; }
 .mm-ids { display: flex; flex-wrap: wrap; gap: 5px 14px; font-size: 13px; }
 .mm-ids a, .mm-ids .mono { font-family: var(--mono); font-size: 12.5px; }
-.mm-nolabel { margin: 6px 0 0; max-width: 72ch; }
 
-.mm-stat { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: calc(var(--space) * 1.5); margin: calc(var(--space) * 2.5) 0 0; padding: calc(var(--space) * 2) 0 0; border-top: 1px solid var(--border); }
-.mm-stat dd { margin: 0; font-family: var(--display); font-weight: 500; font-size: 30px; line-height: 1; }
-.mm-stat dd.mm-stat-sm { font-family: var(--sans); font-size: 17px; font-weight: 600; line-height: 1.2; }
-.mm-stat dt { font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
 
-.mm-cols2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 calc(var(--space) * 5); align-items: start; }
-.mm-page-body .cc-h3 { margin-top: calc(var(--space) * 3); }
-.mm-page-body .mm-col-main > .cc-h3:first-child, .mm-page-body .mm-col-ways > .cc-h3:first-child { margin-top: 0; }
 .mm-note { font-size: var(--fs-sm); color: var(--muted); max-width: 80ch; margin: var(--space) 0 0; }
 .mm-note .mono, .mm-note code { font-family: var(--mono); font-size: 0.92em; }
 /* a link inside a MUTED note is 1.16:1 against the prose around it, so colour cannot be what
    marks it as a link (Lighthouse's link-in-text-block, measured 2026-09-10): underline it. */
 .mm-note a { text-decoration: underline; text-underline-offset: 2px; }
-/* the flagged heads-up under a measurement's stats band: --warn is the site's "needs attention" colour */
-.mm-flagnote { font-size: var(--fs-sm); line-height: 1.45; max-width: 90ch; margin: calc(var(--space) * 1.5) 0 0; padding: calc(var(--space) * 0.75) 0 calc(var(--space) * 0.75) calc(var(--space) * 1.5); border-left: 3px solid var(--warn); color: var(--fg); }
-.mm-flagnote code { font-family: var(--mono); font-size: 0.92em; }
-.mm-flagnote-k { font-weight: 700; font-size: 0.85em; letter-spacing: 0.08em; text-transform: uppercase; color: var(--warn); margin-right: 0.35em; }
 
 /* one row per SERIES: the dot in the record's colour, the dataset's NAME always beside it */
 .mm-dsrows { list-style: none; margin: var(--space) 0 0; padding: 0; }
@@ -1415,25 +1333,14 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 .mm-sibs .mm-m { font: 12.5px var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .mm-sibs .mm-why { font-size: 13px; }
 
-/* the ways in: ONE row per endpoint, the URL a full-width single mono line (assets/measurements.js
-   elides it from the middle rather than letting it wrap) */
-.mm-ways { list-style: none; margin: var(--space) 0 0; padding: 0; }
-.mm-way { padding: 10px 0; border-top: 1px solid var(--border); }
-.mm-way:first-child { border-top: 0; }
-.mm-way .mm-l1 b { font-weight: 600; }
-.mm-way .mm-l1 span { font-size: 13px; color: var(--muted); }
-.mm-url { display: block; width: 100%; font: 13px var(--mono); color: var(--accent); white-space: nowrap; overflow: hidden; margin-top: 3px; }
-.mm-way pre { margin: 6px 0 0; font: 12.5px/1.5 var(--mono); background: var(--panel); border-radius: var(--radius); padding: 8px 12px; overflow-x: auto; color: var(--fg); }
 
 /* the figure hosts WS-M4 fills. The strip is an <svg>, hidden until the drawing adds .mm-drawn —
    an undrawn <svg> is 300 x 150 by the CSS default, which would leave a hole on every page read
    without JS (the `[viewBox]` trap the species strip hit on 2026-09-09: an attribute selector is
    lowercased in an HTML document and never matches SVG's camelCase attribute). */
-.mm-strip-wrap { overflow-x: auto; margin: var(--space) 0 0; }
-.mm-strip { display: none; width: 100%; min-width: 620px; height: auto; }
+.mm-strip { display: none; width: 100%; height: auto; }
 .mm-strip.mm-drawn { display: block; }
 .mm-strip text { font: 11px var(--mono); fill: var(--muted); }
-.mm-strip .mm-rl { font: 600 12px var(--sans); fill: var(--fg); }
 
 /* by depth: eight bands, one thin bar per series, the end label kept INSIDE the column (the
    .mm-pair right padding is what keeps a "884 k" from hanging off the page at 375 px) */
@@ -1454,7 +1361,6 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 .mm-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12.5px; color: var(--fg); align-items: center; }
 .mm-legend span { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
 .mm-legend .mm-dot { margin-top: 0; }
-.mm-chips button .mm-n { font-weight: 400; margin-left: 4px; }
 
 /* the timeline: one row per measurement, one bar per series, on a 1949 → release-year axis.
    It is WIDER than a phone on purpose (a 78-year axis is not legible at 300 px), so its own
@@ -1507,9 +1413,6 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 .mm-dslist .mm-m { display: block; font: 12.5px var(--mono); color: var(--muted); }
 
 /* the index */
-.mm-idx-head .cc-lede { max-width: var(--cc-prose-w); }
-.mm-idx-head .mm-how { max-width: var(--cc-prose-w); margin: var(--space) 0 0; font-size: var(--fs-sm); line-height: 1.5; }
-.mm-idx-head .mm-how b { font-weight: 700; }
 .ds-head { --cc-prose-w: 34.3rem; }
 .ds-head .cc-lede { max-width: var(--cc-prose-w); }
 /* the technical aside on a catalog index — where the machine-readable form lives — is small print
@@ -1520,14 +1423,6 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 .cc-aside .mono, .cc-aside code { font-family: var(--mono); font-size: 0.92em; }
 .cc-aside a { color: var(--muted); text-decoration: underline; text-underline-offset: 2px; }
 .cc-aside a:hover { color: var(--accent); }
-.mm-counts { display: flex; flex-wrap: wrap; gap: 10px 34px; margin: calc(var(--space) * 2) 0 0; padding: calc(var(--space) * 2) 0 0; border-top: 1px solid var(--border); }
-.mm-counts div { min-width: 0; }
-.mm-counts dd { margin: 0; font: 500 30px/1 var(--display); font-variant-numeric: tabular-nums; }
-.mm-counts dt { font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
-.mm-searchrow { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 0 0 calc(var(--space) * 1.75); }
-.mm-chips { display: flex; gap: 6px; flex-wrap: wrap; }
-.mm-chips button { border: 1px solid var(--border); background: var(--panel-2); color: var(--muted); border-radius: 999px; padding: 5px 11px; font: 600 12px var(--sans); cursor: pointer; }
-.mm-chips button[aria-pressed="true"] { background: var(--accent-bg); color: var(--accent); border-color: transparent; }
 .mm-two { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: calc(var(--space) * 2.5); align-items: start; }
 .mm-pane { background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius-card); overflow: hidden; min-width: 0; margin-top: var(--space); }
 .mm-pane-h { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 11px 16px 8px; border-bottom: 1px solid var(--border); }
@@ -1539,14 +1434,11 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 /* the tooltip is the species index's, one for one: absolute inside the body band, hidden until a
    mark is hovered, and never the only place a fact lives — every mark carries the same text as its
    `title`, so a reader without a mouse still gets it */
-.mm-body { position: relative; }
 .mm-ttip { position: absolute; z-index: 30; pointer-events: none; background: var(--fg); color: var(--bg); font: 13px/1.35 var(--sans); padding: 8px 10px; border-radius: 6px; max-width: 320px; box-shadow: 0 4px 18px rgb(0 0 0 / 25%); display: none; }
 .mm-ttip b { display: block; }
 .mm-ttip .mm-d { display: block; opacity: 0.85; }
 
 @media (max-width: 900px) {
-  .mm-cols2 { grid-template-columns: minmax(0, 1fr); }
-  .mm-h { grid-template-columns: minmax(0, 1fr); align-items: start; }
   .mm-two { grid-template-columns: minmax(0, 1fr); }
   .mm-qgrid { grid-template-columns: minmax(0, 1fr); gap: 2px; }
   .mm-qgrid dd { margin-bottom: 8px; }
@@ -1609,16 +1501,6 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 }
 
 /* ── the face row: What · How · Why, three columns under the stats band ─────── */
-.mmf-face { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: calc(var(--space) * 2.5) 0 0; border-top: 1px solid var(--border); }
-.mmf-col { padding: calc(var(--space) * 1.75) calc(var(--space) * 2) calc(var(--space) * 1.5); min-width: 0; border-left: 1px solid var(--border); display: flex; flex-direction: column; gap: var(--space); }
-.mmf-col:first-child { border-left: 0; padding-left: 0; }
-.mmf-col:last-child { padding-right: 0; }
-@media (max-width: 860px) {
-  .mmf-face { grid-template-columns: 1fr; }
-  .mmf-col { border-left: 0; padding-inline: 0; border-top: 1px solid var(--border); }
-  .mmf-col:first-child { border-top: 0; }
-}
-.mmf-k { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); }
 .mmf-line { font-size: 13.5px; line-height: 1.4; margin: 0; max-width: none; }
 .mmf-line b { font-weight: 600; }
 .mmf-none { font-size: 13px; color: var(--muted); margin: 0; }
@@ -1654,8 +1536,6 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 .mmf-disc { display: inline-grid; place-items: center; }
 .mmf-disc .cc-i { width: 13px; height: 13px; color: var(--accent); vertical-align: 0; }
 .mmf-pin:hover .mmf-disc .cc-i { color: var(--bg); }
-.mmf-q { font-size: 13px; font-style: italic; color: var(--fg); margin: 0; }
-.mmf-q::before { content: "GOOS asks: "; font-style: normal; font-weight: 700; font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
 
 /* the spark: the band with the most values, the strong El Niño years shaded behind it */
 .mmf-spark { display: none; width: 100%; height: 58px; }
@@ -1693,7 +1573,6 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 /* ── What, at length ───────────────────────────────────────────────────────── */
 .mmf-h3 { font-size: 15px; font-weight: 700; letter-spacing: 0.04em; margin: calc(var(--space) * 3) 0 0; }
 .mmf-h4 { font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin: calc(var(--space) * 2) 0 0; }
-.mmf-kindnote { margin-top: var(--space); }
 .mmf-fig { display: none; margin: var(--space) 0 0; }
 .mmf-fig.mmf-drawn { display: block; }
 .mmf-mols { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px 22px; margin: var(--space) 0 0; background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius-card); padding: calc(var(--space) * 2); color: var(--fg); }
@@ -1707,16 +1586,7 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 .mmf-credit { font: 11.5px/1.5 var(--mono); color: var(--muted); margin: 6px 0 0; }
 .mmf-credit a { color: inherit; text-decoration: underline; text-decoration-color: var(--border); }
 .mmf-credit a:hover { text-decoration-color: currentColor; }
-.mmf-nerc-def { font-size: var(--fs-sm); margin: var(--space) 0 0; max-width: 80ch; }
-.mmf-nerc-def .mmf-credit { display: block; }
 
-/* the identity chain: P01 → its parts → the EOV, one row each */
-.mmf-chain { list-style: none; margin: var(--space) 0 0; padding: 0; }
-.mmf-chain li { display: grid; grid-template-columns: 54px minmax(0, 1fr); gap: 12px; padding: 9px 0; border-top: 1px solid var(--border); font-size: 14px; }
-.mmf-chain li:first-child { border-top: 0; }
-.mmf-cc { font: 700 12px var(--mono); color: var(--accent); padding-top: 2px; }
-.mmf-cv b { font-weight: 600; }
-.mmf-cv .mono { font-size: 11.5px; color: var(--muted); overflow-wrap: anywhere; }
 
 /* the sea-salt bar and its table: the formula is written in the block AND in the table row, so a
    reader never has to hold a colour in their head to know which ion is which */
@@ -1743,7 +1613,6 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 .mmf-bf i.on { background: var(--nogo-bg); color: var(--cc-red); outline: 2px solid var(--cc-red); }
 
 /* ── How: one card per series ──────────────────────────────────────────────── */
-.mmf-how-cards { display: flex; flex-direction: column; gap: calc(var(--space) * 2); margin: var(--space) 0 0; }
 .mmf-card { background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius-card); padding: calc(var(--space) * 2); display: flex; flex-direction: column; gap: var(--space); }
 .mmf-card p { font-size: 14.5px; margin: 0; max-width: none; }
 .mmf-card-top { display: flex; gap: 12px; align-items: flex-start; }
@@ -1767,12 +1636,6 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 .mmf-spec .mmf-mk { position: absolute; top: -6px; bottom: -6px; width: 2px; background: var(--fg); }
 .mmf-spec .mmf-mk span { position: absolute; top: -18px; left: 50%; transform: translateX(-50%); font: 600 12px var(--sans); white-space: nowrap; color: var(--fg); }
 .mmf-spec .mmf-ax { position: absolute; top: 22px; font: 10.5px var(--mono); color: var(--muted); transform: translateX(-50%); white-space: nowrap; }
-/* where in the water column: the record's bands, one thin bar per series */
-.mmf-col-fig { display: none; grid-template-columns: 92px minmax(0, 1fr); gap: 3px 10px; align-items: center; margin: var(--space) 0 0; }
-.mmf-col-fig.mmf-drawn { display: grid; }
-.mmf-dl { font: 11.5px var(--mono); color: var(--muted); text-align: right; white-space: nowrap; }
-.mmf-bars { display: flex; flex-direction: column; gap: 2px; }
-.mmf-bar { height: 7px; border-radius: 2px; min-width: 1px; }
 
 /* ── Why: the two charts, the flags, the EOV card ──────────────────────────── */
 /* each chart is hidden until the drawing adds .mmf-drawn — an undrawn <svg> is 300 x 150 by the
@@ -1818,7 +1681,6 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
   .mmf-mol { height: 76px; }
   .mmf-molcard .mmf-mol { height: 120px; }
   .mmf-alts li { grid-template-columns: 1fr; gap: 2px; }
-  .mmf-col-fig { grid-template-columns: 74px minmax(0, 1fr); }
   .mmf-sent { font-size: 15px; }
 }
 
@@ -1974,9 +1836,6 @@ a.cc-chip-lic:hover { color: var(--accent); border-color: var(--accent); text-de
 .mmf-scale-pick label { display: inline-flex; align-items: center; gap: 5px; cursor: pointer; }
 .mmf-scale-pick input { accent-color: var(--accent); margin: 0; }
 
-/* the way down: "6 bands ↓", "2 methods ↓" — the second place links rather than repeating (§ D3) */
-.mmf-rt { font-size: 10.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
-.mmf-rt:hover { color: var(--accent); }
 
 /* M5: the sentence is prose. The three underlines and the legend they needed are retired; the
    spans keep their classes (the JSON-LD and check_layout.py read them) and wear a `.cc-src` badge
@@ -1999,7 +1858,7 @@ a.cc-chip-lic:hover { color: var(--accent); border-color: var(--accent); text-de
 
 /* the flagged stat (M1): same size as its neighbours in .mm-stat, tinted --warn so it reads as the
    one number here worth a second look even before the ⓘ is opened */
-.mm-stat dd.mm-stat-flag { color: var(--warn); }
+.mm-stat dd.mm-stat-flag.mm-warn { color: var(--warn); }
 
 /* an ⓘ inside an UPPERCASE .cc-h3 heading (M1, M13): `font` shorthand on .cc-info > summary (WS-R1)
    does not carry text-transform, so the "i" inherits the heading's and renders as "I" without this */
@@ -2008,7 +1867,6 @@ a.cc-chip-lic:hover { color: var(--accent); border-color: var(--accent); text-de
 
 /* the methods tabset (M8): #ts-how reuses .tabset/.tabrow/.tabpanel as-is; only the card that used
    to sit directly under a heading now sits inside a panel needs no extra rule beyond that */
-.mmf-how-cards + .tabset,
 #ts-how { margin-top: calc(var(--space) * 0.5); }
 
 /* the quality chip line (M11): four scannable facts above the collapsed definition list */
@@ -2079,11 +1937,105 @@ a.cc-chip-lic:hover { color: var(--accent); border-color: var(--accent); text-de
    on a heading, and the flat Matches list above the species tree (umbrella D9, I2). */
 .cc-h3 .cc-info, .cc-lede .cc-info { margin-left: 6px; vertical-align: 2px; }
 
-#sp-matches { margin: 0 0 calc(var(--space) * 1.5); }
-#sp-matches[hidden] { display: none; }
-.sp-matches-h { font: 600 13px var(--sans); color: var(--muted); margin: 0 0 4px; }
-.sp-matches-list { display: flex; flex-direction: column; }
 
-/* ── round 2 · measurement columns as concepts (Ben, 2026-09-16) ─────────────────────────────
-   left "The measurement", right "The record": one eyebrow each, above the first heading */
-.mm-col-eyebrow { font: 700 11px var(--sans); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin: 0 0 -6px; }
+/* ── calm · the measurements catalog and a measurement page (issue #30) ──────────────────────────
+   "calcofi.io, calmer" D8 A, D10 B, D12 A, D13 A, D14 A, on assets/calm.css's shared parts. Only
+   what calm.css does not already carry is here: the catalog's measurement rows and its views, the
+   measurement head's numbers and picture, the per-row years strip, and the folds' figures. The
+   overrides of calm.css (never edited) are marked "override". */
+
+/* the catalog: the numbers line under the sentence, the views, the group heads */
+.mm-idx { position: relative; }                       /* the timeline/matrix tooltip's frame */
+.mm-idx-nums { gap: 4px 18px; }
+.mm-idx-nums b { color: var(--fg); font-weight: 700; }
+.mm-idx-nums a.mono { font-size: 12.5px; }
+.mm-views { margin-top: 6px; }
+.mm-views > .tabrow { margin-bottom: 4px; }
+.mm-grp-h { margin-top: 22px; flex-wrap: wrap; }
+.mm-grp-h:first-child { margin-top: 10px; }
+.mm-grp-h .mm-grp-n { font-weight: 400; text-transform: none; letter-spacing: 0; font-size: 13.5px; }
+.mm-empty { color: var(--muted); padding: 16px 0; margin: 0; }
+
+/* one measurement: name (+ key, + the full label under it) · units · datasets · years, values, chips */
+.mm-rows { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--border); }
+.calm-item-b .mm-rows { border-top: 0; }
+.mm-row { display: grid; grid-template-columns: minmax(0, 1fr) 72px minmax(0, 240px) minmax(0, 330px); gap: 4px 16px; align-items: baseline; padding: 9px 2px; border-bottom: 1px solid var(--border); }
+.calm-item-b .mm-row:last-child { border-bottom: 0; }
+.mm-row[hidden] { display: none; }
+.mm-row-n { min-width: 0; }
+.mm-row-n a { font-size: 16px; font-weight: 700; color: var(--accent); text-decoration: none; }
+.mm-row-n a:hover { text-decoration: underline; }
+.mm-row-n .mm-k { font: 12px var(--mono); color: var(--muted); margin-left: 4px; overflow-wrap: anywhere; }
+.mm-row-s { display: block; font-size: 13px; color: var(--muted); line-height: 1.35; margin-top: 1px; }
+.mm-row-u { font-size: 12.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mm-row-ds { display: flex; flex-wrap: wrap; gap: 2px 10px; font-size: 12.5px; color: var(--muted); min-width: 0; }
+.mm-row-ds span { display: inline-flex; align-items: center; white-space: nowrap; }
+.mm-row-ds .mm-dot { width: 8px; height: 8px; margin: 0 5px 0 0; }
+.mm-row-m { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 4px 10px; font-size: 12.5px; color: var(--fg); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.mm-row-m .cc-chip { font-size: 10px; }
+.mm-cat-item .calm-item-k .mm-cat-plus { color: var(--muted); opacity: .8; }
+.mm-cat-item[hidden] { display: none; }
+/* override: calm.css's item title and line are blocks in its markup; here they are spans (a
+   <summary> holds phrasing content), so they are made blocks to stack and to ellipsize */
+.mm-cat-item .calm-item-t, .mm-cat-item .calm-item-s { display: block; }
+.mm-cat-item .calm-item-b { padding-left: 46px; }
+.mm-cat-item .calm-item-b > p { font-size: 13.5px; }
+
+/* a measurement page: the head's numbers on one line, the one picture, the ids line */
+.mm-head .calm-sub { margin-bottom: 6px; }
+.mm-head .mm-ids { gap: 4px 14px; margin-bottom: 12px; }
+.mm-head .mm-ids a.mono, .mm-head .mm-ids .mono { font-size: 12.5px; }
+.mm-head .mm-ids .cc-chip { font-size: 10.5px; }
+.mm-head .mm-grain { margin: 0 0 12px; }
+.mm-head .calm-sentence.mmf-sent { font-size: 1.05em; margin: 0 0 16px; max-width: 64ch; }
+.mm-stat { gap: 8px 16px; }
+.mm-stat dd { font-size: 23px; }
+.mm-stat dd.mm-sm { font-size: 19px; line-height: 23px; }
+.mm-stat dt .cc-info { text-transform: none; vertical-align: -2px; margin-left: 2px; }
+/* override: calm.css sizes every svg in a figure to its width; a molecule is drawn to a height */
+.mmf-what { align-self: start; gap: 10px; }
+.calm-pic.calm-fig.mmf-what svg.mmf-mol { width: auto; height: 132px; max-width: 100%; margin: 0 auto; }
+.calm-pic.calm-fig.mmf-what .mmf-glyph { justify-content: center; min-height: 0; }
+.calm-pic.calm-fig.mmf-what .mmf-mini svg { height: auto; }
+.mmf-cap { display: flex; flex-direction: column; gap: 4px; }
+.mmf-cap .mmf-line { font-size: 13px; color: var(--fg); }
+
+/* Measured in: the row's own years strip, and the series line under the numbers */
+.mm-measured .calm-row { grid-template-columns: minmax(0, 1fr) minmax(0, 520px); }
+.mm-measured .calm-row-n .mm-dot { margin-top: 0; align-self: center; }
+.mm-measured .calm-row-m { display: block; overflow-wrap: anywhere; }
+.mm-measured .mm-l2 { margin-top: 3px; }
+.mm-measured > h2 .cc-info { text-transform: none; letter-spacing: 0; }
+.calm-strip.mm-strip text { font: 10.5px var(--mono); fill: var(--muted); }
+
+/* the ways line and the folds */
+.mm-ways-line { margin-top: 18px; }
+.mm-pg .calm-folds { margin-top: 18px; }
+.mm-pg .calm-fold > summary { min-height: 32px; }
+.mm-pg .calm-fold > summary .calm-ans { overflow-wrap: anywhere; }
+.mm-pg .calm-body .mmf-h3:first-child { margin-top: 0; }
+.mm-pg .calm-body h3 .cc-info { text-transform: none; }
+.mm-units-line { font-size: 14.5px; }
+.mm-when { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px 40px; align-items: start; }
+.mm-when > div:only-child { grid-column: 1 / -1; max-width: 640px; }
+.mmf-spark-wrap { max-width: 640px; margin: 0 0 6px; }
+.mmf-how .mmf-plat { margin: 0 0 10px; }
+.mmf-whyf .mmf-why-row { margin-top: 10px; }
+
+@media (max-width: 900px) {
+  .mm-row { grid-template-columns: minmax(0, 1fr) auto; }
+  .mm-row-n { grid-column: 1 / -1; }
+  .mm-row-u { order: 2; }
+  .mm-row-ds { grid-column: 1 / -1; order: 3; }
+  .mm-row-m { order: 1; justify-content: flex-start; grid-column: 1; }
+  .mm-when { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 760px) {
+  .mm-cat-item .calm-item-b { padding-left: 0; }
+  .calm-pic.calm-fig.mmf-what svg.mmf-mol { height: 104px; }
+  .mm-stat dd { font-size: 22px; }
+  .mm-measured .calm-row { grid-template-columns: minmax(0, 1fr); }
+  /* the strip's viewBox is ~640 units, drawn at about half on a phone: its year labels are set in
+     units so they still read at ~9 px */
+  .calm-strip.mm-strip text { font-size: 18px; }
+}

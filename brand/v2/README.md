@@ -15,7 +15,7 @@ or behaves is `v3/`.
 | `fonts.css` + `fonts/` | `@font-face` for **Source Sans 3** (variable 200–900, roman + italic) and **Teko** (300–700), self-hosted latin subsets (72 KB), OFL 1.1 (`fonts/OFL-*.txt`). The one file to edit if Brix Sans is licensed |
 | `theme.js` | resolve → apply → persist (an explicit choice only) → toggle → notify; `ccTheme.version === "2"` |
 | `head.html` | the `<head>` block to paste verbatim: favicons, the two font preloads, the pre-paint snippet, `fonts.css`, `theme.css`, `theme.js` |
-| `icons.css` + `icons/` | the 51-glyph sprite and masks, regenerated here from `CalCOFI/explore` (`node scripts/build_icons.mjs ../CalCOFI.github.io/brand/v2`) |
+| `icons.css` + `icons/` | the 111-glyph sprite and masks, regenerated here from `CalCOFI/explore` (`node scripts/build_icons.mjs ../CalCOFI.github.io/brand/v2`) |
 | `logo_calcofi_h.svg` / `logo_calcofi_h_light.svg` | **the horizontal lockup** — the mark + "CalCOFI.io" wordmark (was "CalCOFI" until 2026-09-11), for a dark / light ground; 36 px tall on pages, 28 px in apps |
 | `logo_calcofi.svg` / `logo_calcofi_light.svg` | the mark, as v1 (favicons, cards, a phone header under 480 px) |
 | `favicon.ico` `favicon-32x32.png` `favicon-16x16.png` `apple-touch-icon.png` | the favicon set, unchanged |
@@ -107,6 +107,12 @@ shows each one and computes its contrast from `theme.css`.
 - **Two glyphs**, `ui-copy` and `ui-external`, through `CalCOFI/explore`'s `scripts/build_icons.mjs`
   (49 → 51). `ui-external` shares MDI *open-in-new* with `ui-open` by intent: `ui-open` is an app action,
   `ui-external` marks a link that leaves calcofi.io.
+- **Four glyph families** (issue #30, 2026-10, additive: 54 → 111, every earlier glyph byte-identical):
+  `el-*` a section or fold of a page (map, cite, provenance, size, method…), `view-*` a dense view tab on a
+  catalog (list, tree, matrix, timeline, hierarchy, grid), `way-*` a way in (ERDDAP, R, Python, API, STAC, DOI,
+  file, archive, query…) and `door-*` the front door's seven doors. The same thing wears the same glyph on every
+  page: "Cite" is `el-cite` on a dataset, a species and a measurement alike. All MDI glyphs (outline variants where MDI has one), none sharing
+  a path with each other or with an earlier glyph; reuse `cat-*`, `realm-*`, `lens-*` and `ui-*` where they fit.
 
 ## The contract
 

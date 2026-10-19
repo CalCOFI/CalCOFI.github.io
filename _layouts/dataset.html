@@ -2,304 +2,301 @@
 layout: default
 ---
 {%- comment -%}
-  /datasets/{dataset_key}/ — one dataset (or one holding), in the order D-4 sets:
+  /datasets/{dataset_key}/ — one dataset (or one holding), calmer (issue #30, D1–D17). One column
+  under a head of four things:
 
-    1 head band   the MAP IS THE HERO, beside the title block and bounded to its height. A
-                  two-column region whose columns are an abstract of unknown length and a map of
-                  fixed height can never be made to end together — the first cut left 928 px of
-                  blank page under the CTD casts' abstract — so the map cell stretches to the grid
-                  row and the SVG fits inside it (`meet`, right-aligned). It is exactly as tall as
-                  the text beside it and never taller.
-    2 sub-nav     the sticky uppercase tab row, now brand v2's .cc-tabs
-    3 Overview    ONE COLUMN. Nothing below the head is two columns.
-    4 Coverage    the variables, species and taxa, life stages and what this dataset contributes elsewhere
-    5 Access      a tabset, one tab per group (round 2 S2, WS-R4); compact one-line rows inside a
-                  panel, no URL line (the copy button carries it), the release tables as a table.
-                  Inner grids only — the .cc-container stays one column (check_layout.py's
-                  assertion is on it)
-    6 Cite · Provenance · Related   Cite and Provenance keep two columns: both are short and
-                  bounded (a citation block beside a definition list), with align-items: start
+    head            the category glyph as the mark and the name · the full name · one facts line
+                    (key, provider, licence, DOI, release, stage) · ONE sentence (the record's first,
+                    then what CalCOFI holds) · one line of numbers · the map beside it
+                    (assets/coverage.js's hover card). A holding has a note where the map would be.
+    What is in it   OPEN: the years strip under the map (D15), then one line each for the variables,
+                    the taxa, the life stages and what it contributes to — each line opens to all of
+                    them in place
+    Ways in         one line of links (D12, D16)
+    folds           each titled with its answer (D14) and wearing its el-* glyph: Every endpoint
+                    (the Access tabset, unchanged), Cite, Provenance (Status for a holding),
+                    Related, Open questions, Keywords. No sub-nav (D17): the page is short enough.
 
-  `page.record` is the record verbatim; everything derived — the map, the Access model, the
-  citation, the JSON-LD — is computed in _plugins/datasets.rb. A null field is not rendered: the
-  page degrades, it never invents.
+  `page.record` is the record verbatim; everything derived — the map, the strip, the Access model,
+  the citation, the JSON-LD, the one sentence and the answers — is computed in
+  _plugins/datasets.rb. A null field is not rendered: the page degrades, it never invents.
 {%- endcomment -%}
 {%- assign r = page.record -%}
 {%- assign a = r.attribution -%}
 {%- assign cov = r.coverage -%}
 {%- assign m = page.map -%}
+{%- assign st = r.status -%}
+{%- assign relv = site.data.catalog.release.version -%}
 
-<article class="ds-page">
+<main class="calm-page ds-page">
 
-<section class="cc-band cc-band-alt ds-page-head">
-  <div class="cc-container ds-hero">
-    <div class="ds-hero-main">
-      <nav class="ds-crumb" aria-label="Breadcrumb">
-        <a href="{{ '/datasets/' | relative_url }}">Datasets</a>
-        <span aria-hidden="true">/</span>
-        <span>{{ r.category.name | escape }}</span>
-      </nav>
-      <h1 class="cc-h1 ds-title{% if page.title_long %} ds-title-long{% endif %}{% if page.title_vlong %} ds-title-vlong{% endif %}">
-        <i class="cc-i cc-i-{{ page.icon | escape }}" aria-hidden="true"></i>
-        {{ page.h1 | escape }}
-      </h1>
-      {%- comment -%} the full name becomes the lede when the h1 is the short one {%- endcomment -%}
-      {%- if page.lede %}<p class="cc-lede ds-lede">{{ page.lede | escape }}</p>{% endif -%}
-      <p class="ds-chips">
-        <span class="cc-chip ds-chip-key"{% if r.color %} style="--dot: {{ r.color | escape }}"{% endif %}><i class="ds-dot" aria-hidden="true"></i>{{ r.dataset_key | escape }}</span>
-        {%- if r.provider.short -%}
-        <a class="cc-chip" href="{{ r.provider.url }}">{{ r.provider.short | escape }}</a>
-        {%- endif -%}
-        {%- comment -%} D2 (round 2, WS-R4): the head wears the same licence chip as a homed row —
-          one glyph, one colour, "unstated" dimmed rather than dropped {%- endcomment -%}
-        {% include licence_chip.html license=a.license license_url=a.license_url name=a.license_name %}
-        {%- if a.doi %}<a class="cc-chip" href="https://doi.org/{{ a.doi | escape }}">doi:{{ a.doi | escape }}</a>{% endif -%}
-        {%- unless page.is_holding -%}
-        <a class="cc-chip ds-chip-rel" href="{{ '/datasets/release/' | relative_url }}">{{ site.data.catalog.release.version | escape }}</a>
-        {%- endunless -%}
-        {%- if page.stage_chip -%}
-        <span class="cc-chip {{ page.stage_chip.class }}"{% if page.stage_chip.title %} title="{{ page.stage_chip.title | escape }}"{% endif %}>{{ page.stage_chip.text | escape }}</span>
-        {%- endif -%}
-      </p>
-      {%- if page.is_holding -%}
-      <p class="ds-holding-note cc-prose cc-muted"><strong>Not yet in the integrated database.</strong>
-        CalCOFI holds or tracks this dataset; it has no release tables, no ERDDAP service and no
-        parquet yet. What is below is the record as it stands, and where the data live today.</p>
-      {%- else -%}
-      <dl class="ds-glance">
-        {%- if page.years_span %}<div><dt>years</dt><dd>{{ page.years_span | escape }}</dd></div>{% endif -%}
-        {%- if page.n_obs_fmt %}<div><dt>observations</dt><dd>{{ page.n_obs_fmt | escape }}</dd></div>{% endif -%}
-        {%- if page.n_roots_fmt %}<div><dt>sampling events</dt><dd>{{ page.n_roots_fmt | escape }}</dd></div>{% endif -%}
-        {%- if cov.n_stations > 0 %}<div><dt>stations</dt><dd>{{ cov.n_stations | escape }}</dd></div>{% endif -%}
-        {%- comment -%} species, not taxa (plan 2026-09-09 § D3): page.n_species counts the release's
-          coverage.json taxa[] at rank Species that name THIS dataset, with every taxon it observed in
-          the title. A release with no coverage.json says "taxa" from the record, as before. {%- endcomment -%}
-        {%- if page.n_species %}<div title="{{ page.n_cov_taxa | escape }} taxa in all"><dt>species</dt><dd>{{ page.n_species | escape }}</dd></div>
-        {%- elsif cov.n_taxa > 0 %}<div><dt>taxa</dt><dd>{{ cov.n_taxa | escape }}</dd></div>
-        {%- elsif page.n_types > 0 %}<div><dt>variables</dt><dd>{{ page.n_types | escape }}</dd></div>
-        {%- elsif cov.n_variables > 0 %}<div><dt>variables</dt><dd>{{ cov.n_variables | escape }}</dd></div>{% endif -%}
-        {%- if cov.depth_max_m %}<div><dt>depth</dt><dd>{% if cov.depth_max_m == 0 and cov.depth_min_m == 0 %}surface only{% else %}{{ cov.depth_min_m | default: 0 | escape }}–{{ cov.depth_max_m | escape }} m{% endif %}</dd></div>{% endif -%}
-      </dl>
-      {%- if page.years_bar -%}
-      <figure class="ds-figure ds-spark-fig">
-        {{ page.years_bar }}
-        <figcaption>observations per year, {{ cov.year_min | escape }}–{{ cov.year_max | escape }}</figcaption>
-      </figure>
-      {%- endif -%}
-      {%- endif -%}
-    </div>
-
-    {%- if m -%}
-    <div class="ds-mapwrap">
-      {%- comment -%}
-        The map cell stretches to the grid row; the SVG is absolutely positioned inside it and fits
-        with preserveAspectRatio="xMaxYMin meet", so it is bounded by the title block's height on a
-        wide screen. On a phone the column collapses and the cell takes the drawing's own aspect.
-      {%- endcomment -%}
-      <div class="ds-mapbox" style="--map-ar: {{ m.aspect }}">{{ m.svg }}</div>
-      <figcaption class="ds-mapcap">
-        {%- if m.n_stations > 0 -%}
-        {{ m.n_stations }} CalCOFI station{% unless m.n_stations == 1 %}s{% endunless %} sampled,
-        sized by observations, over the survey grid{% if m.beyond %}; the record’s extent continues beyond the frame{% endif %}.
-        {%- else -%}
-        The CalCOFI survey grid{% if cov.spatial %} · {{ cov.spatial | escape }}{% endif %}.
-        {%- endif -%}
-      </figcaption>
-    </div>
-    {%- endif -%}
-  </div>
-</section>
-
-<nav class="cc-tabs ds-tabs" aria-label="On this page">
-  <div class="cc-container">
-    <a href="#overview">Overview</a>
-    {%- if page.n_types > 0 or cov.taxa.size > 0 or cov.life_stages.size > 0 or cov.contributes_to.size > 0 -%}
-    <a href="#coverage">Coverage{% if page.n_types > 0 %} <span class="n">{{ page.n_types }}</span>{% endif %}</a>
-    {%- endif -%}
-    {%- if page.access.size > 0 -%}<a href="#access">Access <span class="n">{{ page.n_endpoints }}</span></a>{%- endif -%}
-    <a href="#cite">Cite</a>
-    <a href="#provenance">Provenance</a>
-    {%- if page.related.category.size > 0 or page.related.tables.size > 0 -%}<a href="#related">Related</a>{%- endif -%}
-    {%- if page.sources %}<a href="#sources">Sources{% if page.sources.measured %} <span class="n">{{ page.sources.n }}</span>{% endif %}</a>{% endif -%}
-  </div>
+<nav class="calm-crumb" aria-label="Breadcrumb">
+  <a href="{{ '/datasets/' | relative_url }}">Datasets</a><span class="calm-sep-t" aria-hidden="true">›</span>
+  <a href="{{ '/datasets/' | relative_url }}?cat={{ r.category.name | url_encode }}">{{ r.category.name | escape }}</a><span class="calm-sep-t" aria-hidden="true">›</span>
+  <span>{{ r.dataset_name_short | default: r.dataset_key | escape }}</span>
 </nav>
 
-{%- comment -%} ── Overview: one column, 72 ch. Nothing sits beside it. ── {%- endcomment -%}
-<section class="cc-band ds-section ds-one" id="overview">
-  <div class="cc-container">
-    <h2 class="sr-only">Overview</h2>
-    {%- if r.description_md -%}
-    <div class="cc-prose ds-desc">{{ r.description_md | markdownify }}</div>
-    {%- endif -%}
-    {%- assign succ = page.successor -%}
-    {%- if succ -%}
-    {%- comment -%} generated from the release (_plugins/datasets.rb successor_note): this dataset's
-      record ends in cov.year_max, and another dataset carries `btl_<type>` twins of its variables
-      to a later year. Nothing here is typed but the sentence. {%- endcomment -%}
-    <p class="ds-successor cc-prose">This record ends in <strong>{{ succ.last | escape }}</strong>. From {{ succ.last | plus: 1 }} on, the
-      bottle values are the <span class="mono">btl_*</span> variables of
-      <a href="{{ succ.url | relative_url }}">{{ succ.name | escape }}</a>
-      (<span class="mono">{{ succ.key | escape }}</span>) — {{ succ.n }} of this dataset’s variables ({{ succ.types | join: ", " | escape }}), through {{ succ.through | escape }}.</p>
-    {%- endif -%}
-    <dl class="ds-meta">
-      {%- if a.pi_names.size > 0 -%}
-      <div><dt>Principal investigators</dt><dd>{{ a.pi_names | join: " · " | escape }}</dd></div>
+<header class="calm-head ds-head{% unless m or page.is_holding %} calm-head-1{% endunless %}">
+  <div class="calm-head-l">
+    <div class="calm-name">
+      <i class="calm-mark cc-i cc-i-{{ page.icon | escape }}" aria-hidden="true"></i>
+      <h1 class="ds-title{% if page.title_long %} ds-title-long{% endif %}{% if page.title_vlong %} ds-title-vlong{% endif %}">{{ page.h1 | escape }}</h1>
+    </div>
+    {%- comment -%} the full name, when the h1 is the short one; a holding's runs to 416 characters,
+      so past 160 it is cut here and given whole under "What this is" {%- endcomment -%}
+    {%- if page.lede %}<p class="calm-sub" title="{{ page.lede | escape }}">{{ page.lede | truncate: 160, " …" | escape }}</p>{% endif %}
+    <p class="calm-facts ds-facts">
+      <span class="ds-key mono"{% if r.color %} style="--dot: {{ r.color | escape }}"{% endif %}><i class="ds-dot" aria-hidden="true"></i>{{ r.dataset_key | escape }}</span>
+      {%- if r.provider.short -%}
+      <span>{% if r.provider.url %}<a href="{{ r.provider.url }}" title="{{ r.provider.name | escape }}">{{ r.provider.short | escape }}</a>{% else %}{{ r.provider.short | escape }}{% endif %}</span>
       {%- endif -%}
-      {%- if a.creators.size > 0 -%}
-      <div><dt>Creators</dt><dd>
-        {%- for c in a.creators -%}
-        {{ c.name | escape }}{% if c.organization %} <span class="cc-muted">({{ c.organization | escape }})</span>{% endif %}{% unless forloop.last %} · {% endunless %}
-        {%- endfor -%}
-      </dd></div>
+      {%- comment -%} D2 (round 2): the same licence chip as a catalog row {%- endcomment -%}
+      <span>{% include licence_chip.html license=a.license license_url=a.license_url name=a.license_name %}</span>
+      {%- if a.doi %}<span>DOI <a href="https://doi.org/{{ a.doi | escape }}">{{ a.doi | escape }}</a></span>{% endif -%}
+      {%- unless page.is_holding -%}
+      <span>in the release since <a class="mono" href="{{ '/datasets/release/' | relative_url }}">{{ r.since_version | default: relv | escape }}</a></span>
+      {%- endunless -%}
+      {%- if page.stage_chip -%}
+      <span><span class="cc-chip {{ page.stage_chip.class }}"{% if page.stage_chip.title %} title="{{ page.stage_chip.title | escape }}"{% endif %}>{{ page.stage_chip.text | escape }}</span></span>
       {%- endif -%}
-      {%- if a.contact -%}
-      {%- assign contact_addr = a.contact | remove_first: "mailto:" -%}
-      <div><dt>Contact</dt><dd><a href="mailto:{{ contact_addr | escape }}">{{ contact_addr | escape }}</a></dd></div>
-      {%- endif -%}
-      {%- if a.funding -%}<div><dt>Funding</dt><dd>{{ a.funding | escape }}</dd></div>{%- endif -%}
-      {%- if page.keyword_chips.size > 0 -%}
-      {%- comment -%} S1 (round 2, WS-R4): the leaf, not the full GCMD path — the path is the
-        chip's title. data.json and the JSON-LD keep r.keywords, the full strings, untouched. {%- endcomment -%}
-      <div><dt>Keywords</dt><dd class="ds-kw ds-kw-keywords">{% for k in page.keyword_chips %}<span class="cc-chip" title="{{ k.full | escape }}">{{ k.leaf | escape }}</span>{% endfor %}</dd></div>
-      {%- endif -%}
-    </dl>
-    {%- if r.status.questions_dataset.size > 0 -%}
-    <h3 class="cc-h3">Open with the provider</h3>
-    <ul class="ds-questions">
-      {%- for q in r.status.questions_dataset -%}
-      <li><span class="cc-chip">{{ q.label | escape }}</span> {{ q.field | escape }} <span class="cc-muted">— {{ q.status | escape }}</span></li>
-      {%- endfor -%}
-    </ul>
-    {%- endif -%}
-    <p class="ds-headlinks">
-      {%- if r.links.calcofi_org %}<a class="cc-text-link" href="{{ r.links.calcofi_org }}">calcofi.org page ↗</a>{% endif -%}
-      {%- if r.links.data_source %}<a class="cc-text-link" href="{{ r.links.data_source }}">source ↗</a>{% endif -%}
-      {%- if r.links.workflow %}<a class="cc-text-link" href="{{ r.links.workflow }}">ingest notebook ↗</a>{% endif -%}
-      <a class="cc-text-link" href="{{ '/datasets/' | append: r.dataset_key | append: '.json' | relative_url }}">record JSON</a>
-      <a class="cc-text-link" href="{{ '/datasets/' | append: r.dataset_key | append: '.jsonld' | relative_url }}">JSON-LD</a>
     </p>
+    <p class="calm-sentence">{% if page.sentence %}{{ page.sentence | escape }} {% endif %}{{ page.holds | escape }}</p>
+    {%- unless page.is_holding -%}
+    <dl class="calm-nums">
+      {%- if page.years_span %}<div><dd>{{ page.years_span | escape }}</dd><dt>years</dt></div>
+      {%- elsif cov.temporal %}<div><dd>{{ cov.temporal | escape }}</dd><dt>dates</dt></div>{% endif -%}
+      {%- if page.n_obs_fmt %}<div><dd>{{ page.n_obs_fmt | escape }}</dd><dt>observations</dt></div>{% endif -%}
+      {%- if page.n_roots_fmt %}<div><dd>{{ page.n_roots_fmt | escape }}</dd><dt>sampling events</dt></div>{% endif -%}
+      {%- if cov.n_stations > 0 %}<div><dd>{{ cov.n_stations | escape }}</dd><dt>stations</dt></div>{% endif -%}
+      {%- comment -%} species, not taxa (plan 2026-09-09 § D3), where the release's coverage.json says {%- endcomment -%}
+      {%- if page.n_species %}<div title="{{ page.n_cov_taxa | escape }} taxa in all"><dd>{{ page.n_species | escape }}</dd><dt>species</dt></div>
+      {%- elsif cov.n_taxa > 0 %}<div><dd>{{ cov.n_taxa | escape }}</dd><dt>taxa</dt></div>
+      {%- elsif page.n_types > 0 %}<div><dd>{{ page.n_types | escape }}</dd><dt>variables</dt></div>
+      {%- elsif cov.n_variables > 0 %}<div><dd>{{ cov.n_variables | escape }}</dd><dt>variables</dt></div>{% endif -%}
+      {%- if page.depth %}<div><dd>{{ page.depth | escape }}</dd><dt>depth</dt></div>{% endif -%}
+    </dl>
+    {%- endunless -%}
+    {%- comment -%} the whole description and the people, one click away: the sentence above is
+      its first sentence {%- endcomment -%}
+    <details class="ds-more">
+      <summary>What this is <i class="cc-i cc-i-ui-down" aria-hidden="true"></i></summary>
+      <div class="ds-more-b">
+        {%- if page.lede and page.lede.size > 160 %}<p class="ds-fullname"><b>{{ page.lede | escape }}</b></p>{% endif -%}
+        {%- if r.description_md %}<div class="cc-prose ds-desc">{{ r.description_md | markdownify }}</div>{% endif -%}
+        {%- assign succ = page.successor -%}
+        {%- if succ -%}
+        {%- comment -%} generated from the release (_plugins/datasets.rb successor_note) {%- endcomment -%}
+        <p class="ds-successor cc-prose">This record ends in <strong>{{ succ.last | escape }}</strong>. From {{ succ.last | plus: 1 }} on, the
+          bottle values are the <span class="mono">btl_*</span> variables of
+          <a href="{{ succ.url | relative_url }}">{{ succ.name | escape }}</a>
+          (<span class="mono">{{ succ.key | escape }}</span>) — {{ succ.n }} of this dataset’s variables ({{ succ.types | join: ", " | escape }}), through {{ succ.through | escape }}.</p>
+        {%- endif -%}
+        <dl class="ds-meta">
+          {%- if r.provider.name %}<div><dt>Provider</dt><dd>{% if r.provider.url %}<a href="{{ r.provider.url }}">{{ r.provider.name | escape }}</a>{% else %}{{ r.provider.name | escape }}{% endif %}</dd></div>{% endif -%}
+          {%- if a.pi_names.size > 0 -%}
+          <div><dt>Principal investigators</dt><dd>{{ a.pi_names | join: " · " | escape }}</dd></div>
+          {%- endif -%}
+          {%- if a.creators.size > 0 -%}
+          <div><dt>Creators</dt><dd>
+            {%- for c in a.creators -%}
+            {{ c.name | escape }}{% if c.organization %} <span class="cc-muted">({{ c.organization | escape }})</span>{% endif %}{% unless forloop.last %} · {% endunless %}
+            {%- endfor -%}
+          </dd></div>
+          {%- endif -%}
+          {%- if a.contact -%}
+          {%- assign contact_addr = a.contact | remove_first: "mailto:" -%}
+          <div><dt>Contact</dt><dd><a href="mailto:{{ contact_addr | escape }}">{{ contact_addr | escape }}</a></dd></div>
+          {%- endif -%}
+          {%- if a.funding -%}<div><dt>Funding</dt><dd>{{ a.funding | escape }}</dd></div>{%- endif -%}
+          {%- if page.cat_desc -%}<div><dt>{{ r.category.name | escape }}</dt><dd>{{ page.cat_desc | escape }}</dd></div>{%- endif -%}
+        </dl>
+      </div>
+    </details>
   </div>
-</section>
 
-{%- comment -%} ── Coverage band: still one column, the chips flowing full width ── {%- endcomment -%}
-{%- if page.n_types > 0 or cov.taxa.size > 0 or cov.life_stages.size > 0 or cov.contributes_to.size > 0 -%}
-<section class="cc-band cc-band-alt ds-section ds-one" id="coverage">
-  <div class="cc-container">
-    <h2 class="cc-h2">Coverage</h2>
-    {%- if page.n_types > 0 -%}
-    {%- comment -%} each variable links its MEASUREMENT page where the release's measurements.json
-      carries one — site.data.measurements.type_slugs is measurement_type => slug, so a variable the
-      catalog has no page for (a bio variable, or a release without the record) keeps the Explorer
-      link it always had and the slug rule is never guessed here (plan 2026-09-10 § D2, WS-M3)
-    {%- endcomment -%}
-    {%- comment -%} every measurement_type this dataset ships, one group per grain: the profile
-      group (obs_env / obs_bio — a value per depth bin or per taxon) and the per-cast group
-      (sample_measurement — a value per cast or tow). The tables are named beside their group and the
-      counts are the release's own (_data/dataset_measurements.json, coverage.json), CalCOFI.github.io#26.
-      A release without the per-cast sidecar draws the profile group alone. {%- endcomment -%}
-    <h3 class="cc-h3 ds-cov-h">{{ page.n_types }} variable{% unless page.n_types == 1 %}s{% endunless %}</h3>
-    {%- for g in page.variable_groups -%}
-    <div class="ds-vargroup" data-grain="{{ g.id | escape }}">
-      <p class="ds-vargroup-h"><span class="mono ds-vargroup-t">{{ g.table | escape }}</span>
-        <span class="cc-muted">{{ g.summary | escape }}</span></p>
-      <p class="ds-kw ds-varchips">
-        {%- for v in g.variables limit: 16 -%}
-        {% include dataset_variable.html v=v r=r %}
-        {%- endfor -%}
-        {%- if g.variables.size > 16 -%}
-        <details class="ds-details ds-more-vars">
-          <summary>all {{ g.variables.size }}</summary>
-          {%- for v in g.variables offset: 16 -%}
+  {%- if m -%}
+  <figure class="calm-head-r ds-mapfig">
+    <div class="ds-mapbox" style="--map-ar: {{ m.aspect }}">{{ m.svg }}</div>
+    <figcaption class="calm-cap">
+      {%- if m.n_stations > 0 -%}
+      {{ m.n_stations }} CalCOFI station{% unless m.n_stations == 1 %}s{% endunless %} sampled,
+      sized by observations, over the survey grid{% if m.beyond %}; the record’s extent continues beyond the frame{% endif %}.
+      {%- else -%}
+      The CalCOFI survey grid{% if cov.spatial %} · {{ cov.spatial | escape }}{% endif %}.
+      {%- endif -%}
+    </figcaption>
+  </figure>
+  {%- elsif page.is_holding -%}
+  <aside class="calm-head-r ds-heldnote">
+    <p><b>Not yet in the integrated database.</b>
+      {% if st.next_step %}{{ st.next_step | split: ". " | first | split: " -- " | first | escape }}.{% endif %}
+      {%- if st.gh_issue %} <a href="{{ st.gh_issue | escape }}">The issue ↗</a>{% endif %}</p>
+  </aside>
+  {%- endif -%}
+</header>
+
+{%- comment -%} ── What is in it: OPEN. The years strip, then one line per kind of content, each
+  opening in place to all of it (the full lists are the old Coverage band's, unchanged). ── {%- endcomment -%}
+{%- assign has_contents = false -%}
+{%- if page.years_strip or page.n_types > 0 or cov.taxa.size > 0 or cov.life_stages.size > 0 or cov.contributes_to.size > 0 -%}{%- assign has_contents = true -%}{%- endif -%}
+{%- if has_contents -%}
+<section class="calm-sec ds-contents" id="coverage" aria-labelledby="h-contents">
+  <h2 id="h-contents"><i class="cc-i cc-i-el-contents" aria-hidden="true"></i>What is in it</h2>
+  {%- if page.years_strip -%}
+  <figure class="ds-strip-fig"{% if r.color %} style="--dot: {{ r.color | escape }}"{% endif %}>
+    {{ page.years_strip }}
+    <figcaption class="calm-cap">Observations per year, {{ cov.year_min | escape }}–{{ cov.year_max | escape }}.</figcaption>
+  </figure>
+  {%- endif -%}
+
+  {%- if page.n_types > 0 -%}
+  {%- comment -%} every measurement_type this dataset ships, one group per grain: the profile group
+    (obs_env / obs_bio) and the per-cast group (sample_measurement), CalCOFI.github.io#26. Each
+    variable links its MEASUREMENT page where the release's measurements.json carries one. {%- endcomment -%}
+  <details class="ds-line" id="variables">
+    <summary><i class="cc-i cc-i-el-variables" aria-hidden="true"></i><span><b class="ds-cov-h">{{ page.n_types }} variable{% unless page.n_types == 1 %}s{% endunless %}</b>
+      ·{% assign shown = 0 %}{% for g in page.variable_groups %}{% for v in g.variables %}{% if shown < 10 %}{% if shown > 0 %},{% endif %} <span class="mono">{{ v.name | escape }}</span>{% assign shown = shown | plus: 1 %}{% endif %}{% endfor %}{% endfor %}
+      {%- if page.n_types > 10 %} … <span class="ds-line-all">all {{ page.n_types }}</span>{% else %} <span class="ds-line-all">units and counts</span>{% endif %}</span></summary>
+    <div class="ds-line-b">
+      {%- for g in page.variable_groups -%}
+      <div class="ds-vargroup" data-grain="{{ g.id | escape }}">
+        <p class="ds-vargroup-h"><span class="mono ds-vargroup-t">{{ g.table | escape }}</span>
+          <span class="cc-muted">{{ g.summary | escape }}</span></p>
+        <p class="ds-kw ds-varchips">
+          {%- for v in g.variables -%}
           {% include dataset_variable.html v=v r=r %}
           {%- endfor -%}
-        </details>
-        {%- endif -%}
-      </p>
+        </p>
+      </div>
+      {%- endfor -%}
+      {%- assign fullres = site.data.measurements.full_res[page.dataset_key] -%}
+      {%- if fullres.size > 0 -%}
+      <details class="ds-details ds-fullres">
+        <summary>Full resolution only · {{ fullres.size }}</summary>
+        <p class="ds-gloss">Series this dataset carries that are not canonical for any measurement, so the catalog draws
+          no page for them: they ride the full-resolution table
+          (<span class="mono">{{ fullres[0].table | escape }}</span>) at every scan, behind the headline series above.</p>
+        <ul class="ds-taxa">
+          {%- for f in fullres -%}
+          <li><span class="mono">{{ f.measurement_type | escape }}</span>
+            {%- if f.description %} <span class="cc-muted">{{ f.description | escape }}</span>{% endif -%}</li>
+          {%- endfor -%}
+        </ul>
+      </details>
+      {%- endif -%}
     </div>
-    {%- endfor -%}
-    {%- assign fullres = site.data.measurements.full_res[page.dataset_key] -%}
-    {%- if fullres.size > 0 -%}
-    {%- comment -%} the series this dataset carries that are not canonical for any measurement key —
-      the per-sensor and per-unit twins that live only in the full-resolution supplemental table. No
-      page of their own; they are named on the page of the key they belong to and here (plan § D2)
-    {%- endcomment -%}
-    <details class="ds-details ds-fullres">
-      <summary>Full resolution only · {{ fullres.size }}</summary>
-      <p class="ds-gloss">Series this dataset carries that are not canonical for any measurement, so the catalog draws
-        no page for them: they ride the full-resolution table
-        (<span class="mono">{{ fullres[0].table | escape }}</span>) at every scan, behind the headline series above.</p>
+  </details>
+  {%- endif -%}
+
+  {%- if cov.taxa.size > 0 -%}
+  {%- comment -%} each taxon links its page in the species catalog where the release's taxa.json
+    carries one (site.data.species.slugs: taxon_key => slug; never guessed here) {%- endcomment -%}
+  <details class="ds-line" id="taxa">
+    <summary><i class="cc-i cc-i-el-taxa" aria-hidden="true"></i><span><b>{{ cov.n_taxa | default: cov.taxa.size }} taxa</b> ·
+      {%- for t in cov.taxa limit: 6 %} <i>{{ t.scientific_name | default: t.name | escape }}</i>{% if t.common_name %} <span class="cc-muted">{{ t.common_name | downcase | escape }}</span>{% endif %}{% unless forloop.last %},{% endunless %}{% endfor %}
+      … <span class="ds-line-all">the {{ cov.taxa.size }} most observed</span></span></summary>
+    <div class="ds-line-b">
       <ul class="ds-taxa">
-        {%- for f in fullres -%}
-        <li><span class="mono">{{ f.measurement_type | escape }}</span>
-          {%- if f.description %} <span class="cc-muted">{{ f.description | escape }}</span>{% endif -%}</li>
+        {%- for t in cov.taxa limit: 50 -%}
+        {%- assign tslug = site.data.species.slugs[t.taxon_key] -%}
+        <li>{% if tslug %}<a href="{{ '/species/' | append: tslug | append: '/' | relative_url }}"><i>{{ t.scientific_name | default: t.name | escape }}</i></a>{% else %}<i>{{ t.scientific_name | default: t.name | escape }}</i>{% endif %}
+          {%- if t.common_name %} <span class="cc-muted">{{ t.common_name | escape }}</span>{% endif -%}
+          {%- if t.n_obs %} <span class="ds-n">{{ t.n_obs }}</span>{% endif -%}</li>
         {%- endfor -%}
       </ul>
-    </details>
-    {%- endif -%}
-    {%- endif -%}
-    {%- if cov.taxa.size > 0 -%}
-    {%- comment -%} each taxon links to its page in the species catalog when the release's taxa.json
-      carries one — site.data.species.slugs is taxon_key => slug, so a vocabulary-only name (which has
-      no page) stays plain text and the slug rule is never guessed here (plan 2026-09-09 § S2)
-    {%- endcomment -%}
-    <h3 class="cc-h3 ds-cov-h">Species and taxa</h3>
-    <ul class="ds-taxa">
-      {%- for t in cov.taxa limit: 50 -%}
-      {%- assign tslug = site.data.species.slugs[t.taxon_key] -%}
-      <li>{% if tslug %}<a href="{{ '/species/' | append: tslug | append: '/' | relative_url }}"><i>{{ t.scientific_name | default: t.name | escape }}</i></a>{% else %}<i>{{ t.scientific_name | default: t.name | escape }}</i>{% endif %}
-        {%- if t.common_name %} <span class="cc-muted">{{ t.common_name | escape }}</span>{% endif -%}
-        {%- if t.n_obs %} <span class="ds-n">{{ t.n_obs }}</span>{% endif -%}</li>
-      {%- endfor -%}
-    </ul>
-    {%- assign vocab = site.data.species.vocab[page.dataset_key] -%}
-    {%- if vocab.size > 0 -%}
-    {%- comment -%} the names this dataset declares that nothing in the release observes: no page, but
-      a provider wants to know they are in the vocabulary (plan § D6) {%- endcomment -%}
-    <details class="ds-details ds-vocab">
-      <summary>In the vocabulary, not yet observed ({{ vocab.size }})</summary>
-      <p class="ds-gloss">Names this dataset declares in <span class="mono">dataset_taxon</span> that carry no
-        observation anywhere in the release, so the species catalog draws no page for them.</p>
-      <ul class="ds-taxa">
-        {%- for v in vocab -%}
-        <li><i>{{ v.name | default: v.taxon_key | escape }}</i>
-          {%- if v.code %} <span class="cc-muted mono">{{ v.code | escape }}</span>{% endif -%}</li>
+      {%- assign vocab = site.data.species.vocab[page.dataset_key] -%}
+      {%- if vocab.size > 0 -%}
+      <details class="ds-details ds-vocab">
+        <summary>In the vocabulary, not yet observed ({{ vocab.size }})</summary>
+        <p class="ds-gloss">Names this dataset declares in <span class="mono">dataset_taxon</span> that carry no
+          observation anywhere in the release, so the species catalog draws no page for them.</p>
+        <ul class="ds-taxa">
+          {%- for v in vocab -%}
+          <li><i>{{ v.name | default: v.taxon_key | escape }}</i>
+            {%- if v.code %} <span class="cc-muted mono">{{ v.code | escape }}</span>{% endif -%}</li>
+          {%- endfor -%}
+        </ul>
+      </details>
+      {%- endif -%}
+    </div>
+  </details>
+  {%- endif -%}
+
+  {%- if cov.life_stages.size > 0 -%}
+  <p class="ds-line"><i class="cc-i cc-i-el-lifestage" aria-hidden="true"></i><span><b>Life stages</b> · {{ cov.life_stages | join: " · " | escape }}</span></p>
+  {%- endif -%}
+
+  {%- if cov.contributes_to.size > 0 -%}
+  <details class="ds-line" id="contributes">
+    <summary><i class="cc-i cc-i-el-contributes" aria-hidden="true"></i><span><b>Also contributes to</b> ·
+      {%- for ct in cov.contributes_to %} {{ ct.category | escape }} <span class="cc-muted">({{ ct.variables.size }})</span>{% unless forloop.last %} ·{% endunless %}{% endfor %}
+      <span class="ds-line-all">which variables</span></span></summary>
+    <div class="ds-line-b">
+      <ul class="ds-contrib-list">
+        {%- for ct in cov.contributes_to -%}
+        <li>{{ ct.category | escape }} <span class="cc-muted">— {{ ct.variables | join: ", " | escape }}</span></li>
         {%- endfor -%}
       </ul>
-    </details>
-    {%- endif -%}
-    {%- endif -%}
-    {%- if cov.life_stages.size > 0 -%}
-    <h3 class="cc-h3 ds-cov-h">Life stages</h3>
-    <p class="ds-kw">{% for s in cov.life_stages %}<span class="cc-chip">{{ s | escape }}</span>{% endfor %}</p>
-    {%- endif -%}
-    {%- if cov.contributes_to.size > 0 -%}
-    <h3 class="cc-h3 ds-cov-h">Also contributes to</h3>
-    <ul class="ds-contrib-list">
-      {%- for ct in cov.contributes_to -%}
-      <li>{{ ct.category | escape }} <span class="cc-muted">— {{ ct.variables | join: ", " | escape }}</span></li>
-      {%- endfor -%}
-    </ul>
-    {%- endif -%}
-  </div>
+    </div>
+  </details>
+  {%- endif -%}
+
+  {%- assign n_mon = 0 -%}
+  {%- for x in cov.months %}{% if x > 0 %}{% assign n_mon = n_mon | plus: 1 %}{% endif %}{% endfor -%}
+  {%- if n_mon > 0 or cov.spatial or cov.temporal -%}
+  <p class="ds-line ds-line-quiet"><i class="cc-i cc-i-el-map" aria-hidden="true"></i><span>
+    {%- if n_mon == 12 %}Every month of the year{% elsif n_mon > 0 %}{{ n_mon }} of 12 months{% endif -%}
+    {%- if cov.spatial %}{% if n_mon > 0 %} · {% endif %}extent {{ cov.spatial | escape }}{% endif -%}
+    {%- if cov.temporal %} · {{ cov.temporal | escape }}{% endif -%}</span></p>
+  {%- endif -%}
 </section>
 {%- endif -%}
 
-{%- comment -%} ── Access: a tabset, one tab per group (S2, round 2 WS-R4). Each panel is the
-  group's blocks exactly as before; the pair left/right wrapper that used to sit Metadata records
-  beside Archives & portals is gone — a tab panel is one group, and the tab row itself already
-  says the group's name, so it is not repeated inside the panel (D3, "say it once"). The sub-nav's
-  "Access n" total (page.n_endpoints) and each tab's own pill (g.n) are the same sum, computed
-  once in _plugins/datasets.rb. {%- endcomment -%}
+{%- comment -%} ── A holding: where it lives today is what the page is about, so it stays open ── {%- endcomment -%}
+{%- if page.is_holding -%}
+{%- for g in page.access -%}
+{%- if g.id == "source" -%}
+<section class="calm-sec ds-lives" id="lives" aria-labelledby="h-lives">
+  <h2 id="h-lives"><i class="cc-i cc-i-el-holding" aria-hidden="true"></i>Where it lives today</h2>
+  {%- for b in g.blocks -%}{%- for row in b.rows %}{% include access_row.html row=row %}{% endfor -%}{%- endfor -%}
+  {%- comment -%} a holding's ways in ARE the rows above; only the record itself is left to add {%- endcomment -%}
+  <p class="calm-ways">{% for w in page.ways %}{% if w.icon == "ui-data" %}<a href="{{ w.url | escape }}"><i class="cc-i cc-i-{{ w.icon }}" aria-hidden="true"></i>{{ w.label | escape }}</a>{% endif %}{% endfor %}</p>
+</section>
+{%- endif -%}
+{%- endfor -%}
+{%- endif -%}
+
+{%- comment -%} ── Ways in: one line (D12, D16); every endpoint is in the first fold. A holding's
+  are its "Where it lives today" rows. ── {%- endcomment -%}
+{%- if page.ways.size > 0 and page.is_holding != true -%}
+<section class="calm-sec ds-ways-sec" aria-labelledby="h-ways">
+  <h2 id="h-ways">Ways in</h2>
+  <p class="calm-ways ds-ways">
+    {%- for w in page.ways -%}
+    {%- if forloop.index0 > 0 and w.kind != "app" and prev_kind == "app" %}<span class="calm-sep" aria-hidden="true"></span>{% endif -%}
+    <a href="{{ w.url | escape }}"{% if w.kind == "app" %} class="is-app"{% endif %}><i class="cc-i cc-i-{{ w.icon }}" aria-hidden="true"></i>{{ w.label | escape }}</a>
+    {%- assign prev_kind = w.kind -%}
+    {%- endfor -%}
+  </p>
+  {%- if page.samples_only %}<p class="ds-ways-note">No observations yet, so the Explorer has nothing to draw; the sampling events are on ERDDAP and in the <span class="mono">sample</span> table.</p>{% endif -%}
+</section>
+{%- endif -%}
+
+<div class="calm-folds ds-folds">
+
+{%- comment -%} ── Every endpoint · N (D16): the Access tabset, unchanged — one tab per group, the
+  copy buttons, the ERDDAP format matrix, the portals and their status. Each group's own pill
+  (g.n) and the fold's answer (page.n_endpoints) are the same sum, computed once in the plugin. ── {%- endcomment -%}
 {%- if page.access.size > 0 -%}
-<section class="cc-band ds-section ds-one" id="access">
-  <div class="cc-container">
-    <h2 class="cc-h2">Access</h2>
-    <p class="cc-lede cc-prose">{% if page.is_holding %}This dataset is not in the integrated
+<details class="calm-fold" id="access">
+  <summary><i class="cc-i cc-i-el-endpoints" aria-hidden="true"></i>Every endpoint
+    <span class="calm-ans">{{ page.n_endpoints }} · {% for g in page.access %}{% if g.n > 0 %}{{ g.title | downcase | escape }} {{ g.n }}{% unless forloop.last %}, {% endunless %}{% endif %}{% endfor %}</span><i class="calm-chev cc-i cc-i-ui-down" aria-hidden="true"></i></summary>
+  <div class="calm-body">
+    <p class="ds-access-lede cc-prose">{% if page.is_holding %}This dataset is not in the integrated
       database, so nothing below comes from a CalCOFI release. Here is where it lives today.{% else %}Every
       endpoint this dataset can be reached through, grouped by how you would use it. Each name is
       the link; the copy button beside it copies the address. Everything is in the release record and
       was answered when the release was cut.{% endif %}</p>
-
     <div class="tabset" id="ts-ds-access">
       <div class="tabrow" role="tablist" aria-label="Access, by group">
         {%- for g in page.access -%}
@@ -332,135 +329,93 @@ layout: default
       </div>
       {%- endfor -%}
     </div>
-
-    <p class="ds-access-foot cc-prose">
-      Everything here is open — nothing on calcofi.io asks you to register first. If this dataset ends up
-      in something you build or publish, <a href="{{ site.register_use_url }}">register your use</a> so it
-      can be credited and linked back; to hear when a release changes it,
-      <a href="{{ site.stay_informed_url }}">stay informed</a>. Questions:
-      <a href="mailto:{{ site.contact_email | escape }}">{{ site.contact_email | escape }}</a>.
-    </p>
   </div>
-</section>
+</details>
 {%- endif -%}
 
-{%- comment -%}
-  Cite and Provenance keep their two columns: both are short and bounded — a citation block beside
-  a definition list — and `align-items: start` means neither stretches to the other.
-{%- endcomment -%}
-<section class="cc-band cc-band-alt ds-section" id="cite">
-  <div class="cc-container ds-cols">
-    <div class="ds-main">
-      <h2 class="cc-h2">Cite</h2>
-      <p class="cc-prose cc-muted">This dataset's own citation. What to cite, and how, is
-        <a href="https://calcofi.io/docs/cite.html">a chapter of the docs book</a>.</p>
-      {%- unless a.citation_main -%}
-      <p class="cc-prose cc-muted">The provider has not confirmed a citation for this dataset yet
-        {%- if r.status.questions_open %} ({{ r.status.questions_open | escape }} open question{% if r.status.questions_open != 1 %}s{% endif %} with the provider){% endif -%}.
-        Cite the release below, and name the dataset by its key.</p>
-      {%- endunless -%}
-      <div class="ds-copywrap">
-        <pre class="ds-code ds-cite"><code>{{ page.cite_text | escape }}</code></pre>
-        <button class="cc-copy" type="button" data-copy="{{ page.cite_text | escape }}" aria-label="Copy the citation"><i class="cc-i cc-i-ui-copy" aria-hidden="true"></i></button>
-      </div>
-      <details class="ds-details">
-        <summary>BibTeX</summary>
-        <div class="ds-copywrap">
-          <pre class="ds-code"><code>{{ page.bibtex | escape }}</code></pre>
-          <button class="cc-copy" type="button" data-copy="{{ page.bibtex | escape }}" aria-label="Copy the BibTeX"><i class="cc-i cc-i-ui-copy" aria-hidden="true"></i></button>
-        </div>
-      </details>
-      {%- if a.acknowledgement -%}
-      <p class="cc-prose"><strong>Acknowledgement.</strong> {{ a.acknowledgement | escape }}</p>
-      {%- endif -%}
-      {%- unless page.is_holding -%}
-      <h3 class="cc-h3">…and the release it came from</h3>
-      <div class="ds-copywrap">
-        <pre class="ds-code ds-cite"><code>{{ page.release_cite | escape }}</code></pre>
-        <button class="cc-copy" type="button" data-copy="{{ page.release_cite | escape }}" aria-label="Copy the release citation"><i class="cc-i cc-i-ui-copy" aria-hidden="true"></i></button>
-      </div>
-      <details class="ds-details">
-        <summary>BibTeX</summary>
-        <pre class="ds-code"><code>{{ page.release_bibtex }}</code></pre>
-      </details>
-      {%- endunless -%}
-      {%- if a.citation_others.size > 0 -%}
-      <h3 class="cc-h3">Also cite</h3>
-      <ul class="cc-prose">{% for c in a.citation_others %}<li>{{ c | escape }}</li>{% endfor %}</ul>
-      {%- endif -%}
+<details class="calm-fold" id="cite">
+  <summary><i class="cc-i cc-i-el-cite" aria-hidden="true"></i>Cite
+    <span class="calm-ans">{{ page.cite_answer | escape }}</span><i class="calm-chev cc-i cc-i-ui-down" aria-hidden="true"></i></summary>
+  <div class="calm-body">
+    <p class="cc-prose cc-muted">This dataset's own citation. What to cite, and how, is
+      <a href="https://calcofi.io/docs/cite.html">a chapter of the docs book</a>.</p>
+    {%- unless a.citation_main -%}
+    <p class="cc-prose cc-muted">The provider has not confirmed a citation for this dataset yet
+      {%- if st.questions_open %} ({{ st.questions_open | escape }} open question{% if st.questions_open != 1 %}s{% endif %} with the provider){% endif -%}.
+      Cite the release below, and name the dataset by its key.</p>
+    {%- endunless -%}
+    <div class="ds-copywrap">
+      <pre class="ds-code ds-cite"><code>{{ page.cite_text | escape }}</code></pre>
+      <button class="cc-copy" type="button" data-copy="{{ page.cite_text | escape }}" aria-label="Copy the citation"><i class="cc-i cc-i-ui-copy" aria-hidden="true"></i></button>
     </div>
-
-    <aside class="ds-side" id="provenance">
-      <h2 class="cc-h3">Provenance</h2>
-      <dl class="ds-meta">
-        {%- if r.since_version -%}
-        <div><dt>in the database since</dt><dd>{{ r.since_version | escape }}</dd></div>
-        {%- endif -%}
-        {%- if a.source_accessed -%}
-        <div><dt>source accessed</dt><dd>{{ a.source_accessed | escape }}</dd></div>
-        {%- endif -%}
-        {%- if r.status.updated -%}
-        <div><dt>record updated</dt><dd>{{ r.status.updated | escape }}</dd></div>
-        {%- endif -%}
-        {%- if page.tables.size > 0 -%}
-        <div><dt>release tables</dt><dd class="ds-kw">{% for t in page.tables %}<a class="cc-chip" href="https://calcofi.io/db-schema/#{{ t | escape }}">{{ t | escape }}</a>{% endfor %}</dd></div>
-        {%- endif -%}
-        {%- if r.status.blockers -%}
-        <div><dt>blockers</dt><dd>{{ r.status.blockers | escape }}</dd></div>
-        {%- endif -%}
-        {%- if r.status.next_step and page.is_holding == false -%}
-        <div><dt>next step</dt><dd>{{ r.status.next_step | escape }}</dd></div>
-        {%- endif -%}
-        {%- if r.status.gh_issue and page.is_holding == false -%}
-        <div><dt>tracking</dt><dd><a href="{{ r.status.gh_issue | escape }}">{{ r.status.gh_issue | split: "/" | last | prepend: "#" | escape }}</a></dd></div>
-        {%- endif -%}
-      </dl>
-      {%- if page.objects.size > 0 -%}
-      <h3 class="cc-h3 ds-side-h">What changed in {{ site.data.catalog.release.version | escape }}</h3>
-      <ul class="ds-objects">
-        {%- for o in page.objects -%}
-        <li><a href="{{ o.url }}">{{ o.table | escape }}</a>
-          <span class="cc-muted">{{ o.bytes_fmt | escape }}{% if o.since %} · since {{ o.since | escape }}{% endif %}</span></li>
-        {%- endfor -%}
-      </ul>
-      {%- endif -%}
-      <p><a class="cc-text-link" href="https://storage.calcofi.io/calcofi-db/ducklake/releases/RELEASES.html">release changelog ↗</a></p>
-    </aside>
-  </div>
-</section>
-
-{%- assign rel = page.related -%}
-{%- if rel.category.size > 0 or rel.tables.size > 0 -%}
-<section class="cc-band ds-section" id="related">
-  <div class="cc-container">
-    <h2 class="cc-h2">Related</h2>
-    <div class="ds-related">
-      {%- if rel.category.size > 0 -%}
-      <div>
-        <h3 class="cc-h3">Also in {{ rel.category_name | escape }}</h3>
-        <ul>{% for o in rel.category %}<li><a href="{{ o.url | relative_url }}">{{ o.name | default: o.key | escape }}</a></li>{% endfor %}</ul>
+    <details class="ds-details">
+      <summary>BibTeX</summary>
+      <div class="ds-copywrap">
+        <pre class="ds-code"><code>{{ page.bibtex | escape }}</code></pre>
+        <button class="cc-copy" type="button" data-copy="{{ page.bibtex | escape }}" aria-label="Copy the BibTeX"><i class="cc-i cc-i-ui-copy" aria-hidden="true"></i></button>
       </div>
-      {%- endif -%}
-      {%- if rel.tables.size > 0 -%}
-      <div>
-        <h3 class="cc-h3">Shares release tables with</h3>
-        <ul>{% for o in rel.tables %}<li><a href="{{ o.url | relative_url }}">{{ o.name | default: o.key | escape }}</a>
-          <span class="cc-muted">{{ o.tables | join: ", " | escape }}</span></li>{% endfor %}</ul>
-      </div>
-      {%- endif -%}
+    </details>
+    {%- if a.acknowledgement -%}
+    <p class="cc-prose"><strong>Acknowledgement.</strong> {{ a.acknowledgement | escape }}</p>
+    {%- endif -%}
+    {%- unless page.is_holding -%}
+    <h3 class="ds-fold-h">…and the release it came from</h3>
+    <div class="ds-copywrap">
+      <pre class="ds-code ds-cite"><code>{{ page.release_cite | escape }}</code></pre>
+      <button class="cc-copy" type="button" data-copy="{{ page.release_cite | escape }}" aria-label="Copy the release citation"><i class="cc-i cc-i-ui-copy" aria-hidden="true"></i></button>
     </div>
+    <details class="ds-details">
+      <summary>BibTeX</summary>
+      <pre class="ds-code"><code>{{ page.release_bibtex }}</code></pre>
+    </details>
+    {%- endunless -%}
+    {%- if a.citation_others.size > 0 -%}
+    <h3 class="ds-fold-h">Also cite</h3>
+    <ul class="cc-prose">{% for c in a.citation_others %}<li>{{ c | escape }}</li>{% endfor %}</ul>
+    {%- endif -%}
   </div>
-</section>
-{%- endif -%}
+</details>
 
-{%- comment -%} ── Source files: the original inputs the ingest read, as archived on the public
-  files bucket (round 3, 2026-09-06). Small and tight: one mono line per file, capped, the rest
-  collapsed. Measured at build; folder link only when the listing was skipped. ── {%- endcomment -%}
+{%- comment -%} ── Provenance (a holding: Status) — where the record came from, and what this
+  release changed. The source files the ingest read are here too. ── {%- endcomment -%}
 {%- assign src = page.sources -%}
-{%- if src -%}
-<section class="cc-band cc-band-alt ds-section ds-one" id="sources">
-  <div class="cc-container">
-    <h2 class="cc-h3">Source files</h2>
+<details class="calm-fold" id="provenance">
+  <summary><i class="cc-i cc-i-el-provenance" aria-hidden="true"></i>{% if page.is_holding %}Status{% else %}Provenance{% endif %}
+    <span class="calm-ans">
+      {%- if page.is_holding -%}
+      {{ st.stage | default: "held" | escape }}{% if st.priority_caloos %} · {{ st.priority_caloos | escape }}{% endif %}
+      {%- else -%}
+      {% if a.source_accessed %}source read {{ a.source_accessed | escape }} · {% endif %}{{ page.tables.size }} release table{% unless page.tables.size == 1 %}s{% endunless %}{% if page.objects.size > 0 %} · {{ page.objects.size }} changed in {{ relv | escape }}{% endif %}{% if src.measured %} · {{ src.n }} source file{% unless src.n == 1 %}s{% endunless %}{% endif %}
+      {%- endif -%}
+    </span><i class="calm-chev cc-i cc-i-ui-down" aria-hidden="true"></i></summary>
+  <div class="calm-body">
+    <dl class="ds-meta">
+      {%- if r.since_version -%}<div><dt>in the database since</dt><dd>{{ r.since_version | escape }}</dd></div>{%- endif -%}
+      {%- if a.source_accessed -%}<div><dt>source accessed</dt><dd>{{ a.source_accessed | escape }}</dd></div>{%- endif -%}
+      {%- if st.updated -%}<div><dt>record updated</dt><dd>{{ st.updated | escape }}</dd></div>{%- endif -%}
+      {%- if page.tables.size > 0 -%}
+      <div><dt>release tables</dt><dd class="ds-kw">{% for t in page.tables %}<a class="cc-chip" href="https://calcofi.io/db-schema/#{{ t | escape }}">{{ t | escape }}</a>{% endfor %}</dd></div>
+      {%- endif -%}
+      {%- if page.is_holding and st.stage -%}<div><dt>stage</dt><dd>{{ st.stage | escape }}{% if page.stage_chip.title %} <span class="cc-muted">— {{ page.stage_chip.title | escape }}</span>{% endif %}</dd></div>{%- endif -%}
+      {%- if page.is_holding and st.module -%}<div><dt>module</dt><dd>{{ st.module | escape }}</dd></div>{%- endif -%}
+      {%- if st.blockers -%}<div><dt>blockers</dt><dd>{{ st.blockers | escape }}</dd></div>{%- endif -%}
+      {%- if st.next_step -%}<div><dt>next step</dt><dd>{{ st.next_step | escape }}</dd></div>{%- endif -%}
+      {%- if st.publish_policy -%}<div><dt>archive of record</dt><dd>{{ st.publish_policy | escape }}</dd></div>{%- endif -%}
+      {%- if st.gh_issue -%}<div><dt>tracking</dt><dd><a href="{{ st.gh_issue | escape }}">{{ st.gh_issue | split: "/" | last | prepend: "#" | escape }}</a></dd></div>{%- endif -%}
+    </dl>
+    {%- if page.objects.size > 0 -%}
+    <h3 class="ds-fold-h">What changed in {{ relv | escape }}</h3>
+    <ul class="ds-objects">
+      {%- for o in page.objects -%}
+      <li><a href="{{ o.url }}">{{ o.table | escape }}</a>
+        <span class="cc-muted">{{ o.bytes_fmt | escape }}{% if o.since %} · since {{ o.since | escape }}{% endif %}</span></li>
+      {%- endfor -%}
+    </ul>
+    {%- endif -%}
+    {%- if src -%}
+    {%- comment -%} the original inputs the ingest read, as archived on the public files bucket
+      (round 3, 2026-09-06): measured at build; folder link only when the listing was skipped {%- endcomment -%}
+    <h3 class="ds-fold-h" id="sources">Source files</h3>
     <p class="ds-access-lede cc-muted cc-prose">The original inputs the ingest notebook read, {{ src.kind }} to
       <a href="{{ src.folder }}">the public files bucket</a>{% if src.measured %} — {{ src.n }} file{% unless src.n == 1 %}s{% endunless %}, {{ src.bytes }}{% endif %}.
       <button class="cc-copy ds-copy-sm" type="button" data-copy="{{ src.folder | escape }}" aria-label="Copy the folder URL" title="copy the folder URL"><i class="cc-i cc-i-ui-copy" aria-hidden="true"></i></button></p>
@@ -480,11 +435,74 @@ layout: default
     </details>
     {%- endif -%}
     {%- endif -%}
+    {%- endif -%}
+    <p><a class="cc-text-link" href="https://storage.calcofi.io/calcofi-db/ducklake/releases/RELEASES.html">release changelog ↗</a></p>
   </div>
-</section>
+</details>
+
+{%- assign rel = page.related -%}
+{%- if rel.category.size > 0 or rel.tables.size > 0 -%}
+<details class="calm-fold" id="related">
+  <summary><i class="cc-i cc-i-el-related" aria-hidden="true"></i>Related
+    <span class="calm-ans">{% if rel.category.size > 0 %}{{ rel.category.size }} more in {{ rel.category_name | escape }}{% endif %}{% if rel.tables.size > 0 %}{% if rel.category.size > 0 %} · {% endif %}shares release tables with {{ rel.tables.size }}{% endif %}</span><i class="calm-chev cc-i cc-i-ui-down" aria-hidden="true"></i></summary>
+  <div class="calm-body">
+    <div class="ds-related">
+      {%- if rel.category.size > 0 -%}
+      <div>
+        <h3 class="ds-fold-h">Also in {{ rel.category_name | escape }}</h3>
+        <ul>{% for o in rel.category %}<li><a href="{{ o.url | relative_url }}">{{ o.name | default: o.key | escape }}</a></li>{% endfor %}</ul>
+      </div>
+      {%- endif -%}
+      {%- if rel.tables.size > 0 -%}
+      <div>
+        <h3 class="ds-fold-h">Shares release tables with</h3>
+        <ul>{% for o in rel.tables %}<li><a href="{{ o.url | relative_url }}">{{ o.name | default: o.key | escape }}</a>
+          <span class="cc-muted">{{ o.tables | join: ", " | escape }}</span></li>{% endfor %}</ul>
+      </div>
+      {%- endif -%}
+    </div>
+  </div>
+</details>
 {%- endif -%}
 
-</article>
+{%- if st.questions_dataset.size > 0 -%}
+<details class="calm-fold" id="questions">
+  <summary><i class="cc-i cc-i-el-questions" aria-hidden="true"></i>Open questions for the provider
+    <span class="calm-ans">{{ st.questions_dataset.size }} on this dataset{% if st.questions_open %} · {{ st.questions_open }} open in all{% endif %}</span><i class="calm-chev cc-i cc-i-ui-down" aria-hidden="true"></i></summary>
+  <div class="calm-body">
+    <ul class="ds-questions">
+      {%- for q in st.questions_dataset -%}
+      <li><span class="cc-chip">{{ q.label | escape }}</span> {{ q.field | default: "the dataset" | escape }} <span class="cc-muted">— {{ q.status | escape }}</span></li>
+      {%- endfor -%}
+    </ul>
+    <p class="cc-muted ds-fold-note">Each is a field the record proposes and the provider has not yet confirmed.</p>
+  </div>
+</details>
+{%- endif -%}
+
+{%- if page.keyword_chips.size > 0 -%}
+<details class="calm-fold" id="keywords">
+  <summary><i class="cc-i cc-i-el-keywords" aria-hidden="true"></i>Keywords
+    <span class="calm-ans">{{ page.keyword_chips.size }} GCMD</span><i class="calm-chev cc-i cc-i-ui-down" aria-hidden="true"></i></summary>
+  <div class="calm-body">
+    {%- comment -%} S1 (round 2): the leaf, the full GCMD path as the chip's title. data.json and the
+      JSON-LD keep r.keywords, the full strings, untouched. {%- endcomment -%}
+    <p class="ds-kw ds-kw-keywords">{% for k in page.keyword_chips %}<span class="cc-chip" title="{{ k.full | escape }}">{{ k.leaf | escape }}</span>{% endfor %}</p>
+  </div>
+</details>
+{%- endif -%}
+
+</div>
+
+<p class="ds-access-foot cc-prose">
+  Everything here is open; nothing on calcofi.io asks you to register first. If this dataset ends up
+  in something you build or publish, <a href="{{ site.register_use_url }}">register your use</a> so it
+  can be credited and linked back; to hear when a release changes it,
+  <a href="{{ site.stay_informed_url }}">stay informed</a>. Questions:
+  <a href="mailto:{{ site.contact_email | escape }}">{{ site.contact_email | escape }}</a>.
+</p>
+
+</main>
 
 <script src="{{ '/assets/copy.js' | relative_url }}" defer></script>
 <script src="{{ '/assets/coverage.js' | relative_url }}" defer></script>

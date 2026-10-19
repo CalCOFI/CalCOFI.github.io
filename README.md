@@ -31,83 +31,92 @@ retired.
 
 ## The front door (`/`)
 
-The first screen *shows* what CalCOFI does and how far the data reach (plan
-`workflows/.claude/plans/2026-09-07 CalCOFI.io landing re-cut …`), before the catalog, which is
-unchanged below it. Its parts, and where every fact on them comes from:
+**One screen, seven doors** (issue #30, "calcofi.io, calmer"; decisions D2 A, D3 A, D4 B, D5 A, D6 A).
+At 1280 × 645, the screen in Dan Rudnick's report, the whole first screen is visible: on the left, what
+CalCOFI is (the eyebrow, "From ship to screen", one lede, five numbers and the Line 90 section drawn
+**quiet**); on the right, "What do you want to do?" and Dan's seven pathways, in his words, as seven
+doors. The last two doors are drawn smaller. The first screen has no yellow (D6 A). Each door opens one
+full-width panel on the Sand band beneath the first screen, and opening another door closes it (D2 A).
+Every panel has one yellow button to its real destination. With no door open the page is about 920 px
+tall at 1470 px. Nothing was removed; every part moved behind the door it answers:
 
 ```
-assets/section.js        the hero: Line 90 as an oceanographic section, one inline <svg viewBox="0 0 1400 660">
-                         built at load — sky, surface, a five-stop water ramp, the sea floor, the ship with its gear
-                         drawn to the depth the sampling protocol takes it (each depth a constant with a `source:`
-                         comment naming the calcofi.org page), 14 pins for the 13 data categories at the depth that
-                         kind of measurement lives, each a link to its method page on calcofi.org. The copy and the
-                         one yellow CTA are HTML over the sky (≥ 980 px; stacked above it below that).
-_data/line90_floor.json  the sea floor under Line 90 — GEBCO 2025 sampled every 500 m by
-                         calcofi4r::cc_transect_bathy() (scripts/build_line90_floor.R; the same call ctd-transects
-                         draws with). COMMITTED, like land.geojson: cartography, not a dataset fact. Land is 0 m in
-                         the raster, so the headland above the surface is drawn, and the caption says the floor is
-                         GEBCO. Without the file the drawing falls back to a drawn profile and says so.
-assets/reach.js          the reach: the static grid map (218 cells by pattern, the lines) and the years strip (one row per dataset
-                         in the release, one cell per year, opacity by √n_roots; a hatched bar where the record
-                         carries only an asserted span — region-pooled phytoplankton, samples-only PIC tows). The
-                         rows are grouped Biology then Environment by the dataset's HOME category realm, earliest
-                         start year first inside each, and every row carries that category's brand glyph right-
-                         aligned against the year field — the same icon its catalog tile wears. The glyph ids,
-                         names and realms come from the record through _plugins/datasets.rb (`cat`, `cat_name`,
-                         `realm` on each reach dataset); nothing about a category is typed in the script.
-#reach                   ONE inline JSON (~60 KB) the three drawings read — the cells, the coastline rings, every
-                         dataset's measured years, the categories with the release's counts, the floor and the six
-                         numbers — built by _plugins/datasets.rb (`site.data.reach`). No request; grid.geojson never
-                         reaches the browser.
-the numbers band         77 years · 842 cruises · 218 stations · 1,008 species · 1.3 M organism obs. · 316 M
-                         measurements, every one read at build (`site.data.catalog.numbers`; plan 2026-09-09 § D9).
-                         Where each comes from: years = the release year minus the earliest measured year_min over
-                         datasets[]; cruises and stations = reference[].rows for `cruise` and `grid`; species =
-                         the release's own coverage.json (fetched by fetch_release.sh as _data/release_coverage.json,
-                         ~660 KB, build-time only) counted as taxa[] at rank Species — 1,008 of the 1,506 taxa
-                         OBSERVED, which is not the taxon table's 2,614 rows (1,108 of those are lineage ancestors
-                         and vocabulary never observed, so "2,614 taxa" said the wrong thing); organism obs. and
-                         measurements = the release's own catalog.json (fetched as _data/release_catalog.json — NOT
-                         catalog.json, which Jekyll would load over the generator's site.data.catalog), as
-                         tables[obs_bio].rows and tables[obs_env] + [obs_ctd_full] + [obs_mets_full] .rows summed
-                         over the tables that release actually carries. `ships` (49) is the hero's eyebrow now, and
-                         `rows` (release.total_rows, 349 M) stays where it describes the release OBJECT — the release
-                         tile and the release strip, whose cell's title says how much of it is the `obs`
-                         compatibility copy counted twice (26 M). Fmt.millions() is the one rule for a count in
-                         millions: rounded, one decimal under 10 M, so obs_bio reads 1.3 M and not 1 M. A band dt is
-                         one 12 px uppercase line in a 177 px tile, so each new tile's qualifier is its `title`,
-                         computed from the same tables. A value the build cannot read is not rendered — the tile
-                         collapses; nothing is typed.
-the bento                a 6-column grid on 25 px rows: Where (the static map), When (the strip), Latest release, the
-                         ship's log, Explore, Get the data (five snippets behind radio-input tabs, no script) and
-                         What's observed (2026-09-10, was Life: two counted rows — the species count linking
-                         `/species/`, the measurements count linking `/measurements/` — each with its glyphs and its
-                         door). No tile ends in a button: the one CTA is the hero's; every tile ends
-                         in an uppercase text link. The Explore cell is not tile markup — it is the SAME
-                         _includes/product_card.html the Explore section below renders for the `explore` product, so
-                         the tile and the card cannot drift; .t-exp-cell only fits it to the tile. The row unit is
-                         25 px because check_layout.py holds every tile to 1.25x its own content's height and a
-                         150 px unit could not land inside that for more than two of the seven; a tile of n rows is
-                         41n − 16 px and all three columns end on row line 22, so the spans in style.css are a sum —
-                         never edit one alone.
-brand/v2 --cc-sec-*      the 18 tokens the section is painted with (both themes, additive, in the specimen); the map
-                         and strip use --cc-map-*, --cc-stone, --cc-cyan and the record's own dataset colours. The
-                         toggle repaints everything; nothing listens for cc:theme.
+the hero's section + pins   quiet on the first screen (#sec-quiet: ship, gear, floor; no pins, no axes,
+                            no captions); ANNOTATED behind Learn (#sec-full: the 14 pins, the axes)
+the numbers band (6)        five numbers under the lede: years · cruises · stations · species ·
+                            measurements. Organism obs. moved to the species number's title and the
+                            Species tab's counts, and ships to the cruises number's title
+Where / When tiles          Find: the grid map beside the years strip (D4 B), under the panel's head
+DATA section (search, tabs) Find: the one search (_includes/one_search.html, D10 B) and the three catalog
+                            tabs, unchanged. #datasets is this catalog block
+Latest release tile         Find: one release line at the foot (version, date, tables, rows, DOI, links)
+What's observed tile        Find: the class silhouettes beside the Species tab's door; the caption on
+                            the release line
+Explore tile + APPS         Visualize and explore: the Explorer's featured card, the lens key, the
+  Explorer/General          General apps' cards (#explorer, #general)
+Get the data tile + ACCESS  Download programmatically: the five snippets, then Services · Packages as
+                            before (#access)
+BUILD                       Build something: its three cards (#build)
+DOCS card, ship's log tile  Learn how CalCOFI sampling and data work: the annotated section, the docs
+                            book's card, the four newest log entries
+—                           Ocean monitoring throughout California: the products whose products.yml
+                            entry has `doors: [monitor]` (the UCLA map, Offshore Wind Monitoring)
+APPS Dataset + Student      Other data visualizations: the same two tabs, from the same `tab:` keys
+the sticky section bar      retired: the doors do the bar's job (D17 A)
 ```
 
-**The ship's log** (`/news/`, the tile, `/feed.xml`) is news that mostly writes itself — where each
-kind of entry comes from and when it appears is its own section, [News](#news--where-an-entry-comes-from-and-when-it-appears), below.
+**The URL carries the open door.** Opening a door writes `#find` (or `#explore`, `#program`, `#build`,
+`#learn`, `#monitor`, `#viz`). On load, `?door=find` also opens it, and so do `?q=` (the search) and
+`?tab=<one of the Find tabs>`. The old anchors still land: an id inside a panel (`#datasets`, `#access`,
+`#general`) opens that panel and scrolls to the element. A tab id (`#species`, `#student`) opens the
+panel and selects the tab. The retired words `#data`, `#apps`, `#docs`, `#monitoring` and `#students`
+map to their doors. The header's words are the same links (D3 A), so DATA · APPS · ACCESS · BUILD open
+their doors in place, and the open door's word is marked `aria-current`. Each submenu item now links
+`/#<tab id>`, so General lands in Visualize and Student in Other data visualizations. DOCS and NEWS stay
+pages. The logic is one inline script at the foot of `index.html`. It runs before the deferred scripts,
+so a door named in the URL is open before the first paint. Each open fires `cc:door` on the document.
+With JavaScript off, every panel shows (a `<noscript>` rule).
 
-**Motion** (Decision 9, narrowed 2026-09-07): the rosette casts down the CTD wire and back on a 26 s
-loop and the CUFES dots flow — both off under `prefers-reduced-motion`. The map is static: a cruise
-sweep with a year odometer read as one station visited a year, so it went. The site's own `home` capture (`_data/shots.yml pages:`) freezes them so
-the card is the same frame every time.
+**Every product is still drawn.** The cards are `_includes/product_card.html`, unchanged except for a
+`data-key`. `check_layout.py` asserts that every key in `products.yml` is drawn behind some door.
 
-**Checked** by `scripts/check_layout.py` on `/` (plan § D-8): the drawing ≤ 62 vh at 1470 with the
-copy clear of the ship's bounding box and above the surface; no tile drawn > 1.25 × its content; the
-six numbers on the band equal the inline record's; the strip has one row per dataset and the map one
-mark per cell; nothing on the first screen computes to `--warn` but the CTA; every pin's calcofi.org
-page answers a ranged GET. Lighthouse accessibility is 100 on `/` and `/news/` in both themes.
+Where the facts come from is unchanged:
+
+```
+assets/section.js        Line 90 as an oceanographic section. buildSection(host, reach, {quiet}) draws the
+                         quiet version (viewBox 1400 × 600, cropped at the floor line, role=img) or the
+                         annotated one (1400 × 660, the 14 pins as links to calcofi.org method pages).
+                         Gear depths are protocol constants, each with a `source:` comment. Gradient
+                         ids carry a per-drawing suffix, so the two drawings never share a <defs>.
+_data/line90_floor.json  the sea floor (GEBCO 2025 every 500 m), committed cartography; without it the
+                         floor is drawn and the captions say so.
+assets/reach.js          the static grid map and the years strip (unchanged), drawn into #map-host and
+                         #strip-host inside Find.
+#reach                   ONE inline JSON the drawings read (_plugins/datasets.rb, site.data.reach).
+the five numbers         site.data.catalog.numbers. A value the build cannot read is not rendered.
+```
+
+**Motion**: the rosette casts down the CTD wire and the CUFES dots flow. Both stop under
+`prefers-reduced-motion`, and so do the panel's 220 ms entrance and the chevron turn.
+
+**Checked** by `scripts/check_layout.py` on `/`, `/?q=sardine&tab=species` and `/?q=krill`, at 1470
+and 375 px, in both themes. These assertions hold:
+
+- The seven doors are in order, each controls its own panel and is at least 32 px tall.
+- At 1280 px and wider, every door ends above the 645 px fold.
+- On a phone, the head, the doors and the drawing stack in that order.
+- No door is open on load unless the URL names one, and then exactly one is.
+- The page is at most 950 px tall at 1470 with no door open.
+- Opening Find and then Visualize leaves only Visualize open, and a second click closes it.
+- The first screen has no `--warn` and no yellow, and each panel has exactly one yellow button.
+- The quiet drawing has no pins. Learn's drawing has them, and each answers a ranged GET.
+- The five numbers equal the record's.
+- The strip has one row per dataset, and the map has one mark per cell.
+- Every product is drawn.
+- There is no horizontal scroll.
+
+The front door's footer puts the partner strip and the three columns on one row, scoped by
+`#layout:has(.fd-screen)`. The layout's footer is unchanged on every other page.
 
 ### Six words, tabs, and one search over the three indexes
 
@@ -130,8 +139,9 @@ remove it and the header is flat six words again, with no other edit anywhere (t
 question 8).
 
 **The tabs.** Every crowded section is tabbed, each tab with a count pill: DATA is *Datasets ·
-Species · Measurements*, APPS is *Explorer · General · Dataset · Student*, ACCESS is *Services ·
-Packages*; BUILD keeps three cards. A tab is declared in `sections[].tabs[]` (`id`, `title`,
+Species · Measurements*, ACCESS is *Services · Packages* and Other data visualizations is *Dataset ·
+Student* (issue #30 took APPS' Explorer and General out of tabs, into the Visualize door); BUILD keeps
+three cards. A tab is declared in `sections[].tabs[]` (`id`, `title`,
 `blurb`, and an optional `count:` naming a catalog number rather than a card count) and a card joins
 one with `tab:` — tab ids are unique across sections, so a panel selects on `tab:` alone.
 `assets/tabs.js` (≤ 110 lines, no dependency) sets `aria-selected`, hides the other panels, moves on
@@ -189,16 +199,15 @@ build cannot read collapses its pill, its tile row and its door rather than bein
 
 **Where a door leads when the catalog does not exist.** `/species/` exists only where the release
 carries `taxa.json`; `/measurements/` only where it carries `measurements.json`. Without the record
-the band tile, the Observed row, the realm door and the tab all fall back to the Explorer —
+the first screen's number, the realm door and the tab all fall back to the Explorer —
 `…/explore/` for organisms, `…/explore/?var=temperature` for measurements — so a door always leads
 somewhere true.
 
 **Also checked** by `check_layout.py`, in both themes at 1470 and 375: the header reads exactly those
 seven words; each submenu is closed until focused, opens on focus, closes on Escape, and every item
-carries a count; the section bar reads DATA · APPS · ACCESS · BUILD, each counted; every tabset has
+carries a count; every tabset has
 exactly one selected tab and one drawn panel, and a card tabset's pill equals the cards in its panel;
-the band's species and measurements numbers are links; the Observed tile draws both rows and spills
-nothing; the search returns a Species group for "sardine", a Measurements group for "nitrate" and a
+the first screen's species and measurements numbers are links; the search returns a Species group for "sardine", a Measurements group for "nitrate" and a
 Datasets group for "CUFES"; and the DATA section is no more than 120 px taller than it was before the
 tabs (`DATA_SECTION_BASE`, measured on main, is re-stated in the script whenever the furniture
 changes).
@@ -302,6 +311,45 @@ row and no search row.
 (`test_release.qmd` fires it the moment a release is promoted), on a weekly cron and by hand.
 `pages.yml` does the same three steps on a push to main.
 
+### Calmer (issue #30): one list, the dense views one click away
+
+Re-cut to the review's decisions (D1–D17, all as recommended); nothing was removed, it moved:
+
+- **`/datasets/`** (`_layouts/datasets.html`) is `calm.css`'s catalog: the three catalogs as
+  siblings, *Datasets*, one sentence, one line of counts, the ONE search over the three indexes
+  (`_includes/one_search.html`, D10 B) — `assets/catalog.js` also filters this page's rows from
+  `#door-q` — and a **Filter** button (`ui-filter`) that opens the six facets (opened on load when
+  the URL carries one; `?cat=` from a dataset page's crumb lands filtered). Then **one list**, Biology
+  then Environment (`realm-*`), one row per dataset: category glyph · name (category · provider) ·
+  years · obs · licence. A row opens to its first sentence, what is in it (`el-taxa`/`el-variables`,
+  `ui-years`, `el-contributes`, `el-release`) and its ways in (`way-*`). The category's description
+  is the name's hover in the row and the ⓘ (`_includes/info.html`) in the opened row (D9 B).
+- **The tiles are a view tab**: *List* (`view-list`, default) · *By category* (`view-grid`) is
+  `_includes/catalog_grid.html` unchanged (`filters="off"`: the page draws the filter row itself);
+  `?tab=grid` links to it. The holdings (`el-holding`), the reference frame and the release
+  (`el-release`) are folds titled with their answers (D14), their bodies today's includes.
+- **A dataset page** (`_layouts/dataset.html`) is one column under a head of four things: the
+  category glyph as the mark and the short name, the full name, one facts line (key, provider,
+  licence chip, DOI, release, stage), ONE sentence (the record's first sentence, then what CalCOFI
+  holds — `Catalog#first_sentence` / `#holds_sentence`, cut and counted, never typed), the map
+  beside it at its own aspect (`assets/coverage.js`), one line of numbers. *What this is* folds the
+  whole description and the people. **What is in it** stays open (`el-contents`): the years strip on
+  the release's own axis under the map (D15, `Catalog#years_strip`), then one line each for the
+  variables, taxa, life stages and contributes-to, each opening in place to all of them (the old
+  Coverage band's lists). **Ways in** is one line (`Catalog#ways`, D12/D16). Then folds, each
+  wearing its `el-*` glyph and titled with its answer: *Every endpoint · N* (the Access tabset,
+  unchanged), *Cite* (`Catalog#cite_answer`), *Provenance* (a holding: *Status*; the source files
+  moved in here), *Related*, *Open questions*, *Keywords*. No sub-nav (D17). A holding keeps *Where
+  it lives today* open; a dataset with sampling events only says the Explorer has nothing to draw.
+- `check_layout.py` asserts, on both: a height ceiling at 1470 with nothing open (`MAX_DS_H`),
+  every fold and row closed on load, the list equal to the record's datasets, and no multi-column
+  block under a dataset page's head. The filter, variables, ERDDAP-once (inside *Every endpoint*)
+  and URL assertions keep their intent; the hero's "two columns end together" is gone with the hero.
+  Heights at 1280 with nothing open: `/datasets/` 3,523 → ~2,220 px; `calcofi_bottle` 4,165 →
+  ~2,020; `swfsc_ichthyo` 5,096 → ~2,080; `calcofi_prodo` 3,029 → ~1,580.
+
+The sections below are the record of the rules the grid and the Access model were built on.
+
 ### The grid: an emphasis ladder, packed, with the reference frame in its own band
 
 The catalog's layout follows four rules, and `scripts/check_layout.py` is what keeps them true
@@ -338,17 +386,15 @@ The catalog's layout follows four rules, and `scripts/check_layout.py` is what k
 from the next release. `Catalog#normalize_variables` is the one place that knows, so the tiles, the
 search index and `page.variables` all read one shape; a build against either renders.
 
-### A dataset page: the map is the hero, and nothing below the head is two columns
+### A dataset page: the map, and nothing below the head is two columns
 
-`/datasets/{key}/` follows D-4 to D-7 of the same plan:
+`/datasets/{key}/` followed D-4 to D-7 of the same plan; issue #30 (above) re-cut its layout:
 
-1. **The head band is the only two-column region**, and its second column is a map of where the
-   dataset was actually sampled. It is bounded to the title block's height *by construction* — the
-   cell stretches to the grid row and the SVG fits inside it (`preserveAspectRatio="xMaxYMin meet"`,
-   `position: absolute; inset: 0`) — so the two columns end together whatever the abstract's
-   length. The first cut put a 418 px column beside a 1,346 px one and left **928 px of blank page**
-   under the abstract; two columns whose contents differ that much cannot be made to end together,
-   so everything below the head is one column.
+1. **The head is the only two-column region**, and its second column is a map of where the
+   dataset was actually sampled — since issue #30 at the drawing's own aspect, as `calm.css`'s head
+   picture, rather than stretched to the title block. The first cut put a 418 px column beside a
+   1,346 px one and left **928 px of blank page** under the abstract; two columns whose contents
+   differ that much cannot be made to end together, so everything below the head is one column.
 2. **The map** (`Catalog#map_svg`) is a static inline SVG drawn at build time — no library, no tile
    server, no external asset, every colour a `--cc-map-*` token so the theme toggle repaints it.
    The frame is **the standard + extended grid ∪ the cells this dataset sampled**, padded 6 % —
@@ -367,7 +413,7 @@ search index and `page.variables` all read one shape; a build against either ren
      the same way: its `taxa[]` gives the front door its species count and each dataset page its
      own — the taxa it observed at rank Species, with every taxon it observed in the tooltip
      (plan 2026-09-09 § D3/D4). Without it a page says "taxa" from the record, as it did before.
-3. **Access is a tabset, one tab per group (round 2 S2, WS-R4).** Each row is two lines: label ·
+3. **Access is a tabset, one tab per group (round 2 S2, WS-R4)**, inside the *Every endpoint* fold since issue #30. Each row is two lines: label ·
    chips · meta · copy, and no URL line (2026-09-06): the label is the link, the chips and
    identifier say which endpoint it is, and the copy button beside every row copies the address.
    *Tables from the release* is a table (table · holds · rows · size · since · sha256); *Code*
@@ -470,9 +516,9 @@ identification is a real taxon with data); the unobserved minor ranks of the WoR
 (subphylum, infraphylum, parvphylum, gigaclass, superclass, subclass, superorder, subfamily …) are
 folded out of the display and their shown descendants attach to the nearest shown ancestor.
 Counts never change — every rollup is over the full tree. **all ranks** (`?ranks=all`) shows
-everything. And either pane — the tree or the matrix — can be **expanded to the full width**
-with the ⤢ button in its header (`?panes=tree|matrix` in the URL — not remembered across visits since 2026-09-10, when a remembered matrix followed Ben around with the tree gone). The collapsed pane folds into a 28 px vertical pill beside the expanded one — the Explorer's collapsed-panel idiom — and the pill, like ⤡, shows both again; a search with matches shows the tree again if it was folded. The
-⤡ button restores both. With both shown the tree pane is still exactly the matrix pane's height.
+everything. (The tree and the matrix used to share one row, with ⤢ / ⤡ to widen either and
+`?panes=` in the URL; since issue #30 each is its own view tab at the full width, so the panes and
+their pills are gone.)
 
 **The inline JSON.** `/species/` inlines **one** payload (284 KB, 56 KB gzipped): every node with
 its key, name, common name, rank, parent, direct observations and per-dataset observations
@@ -487,11 +533,38 @@ WoRMS LSID `urn:lsid:marinespecies.org:taxname:{id}`, or ITIS's TSN page) and th
 none, and none is invented); `parentTaxon` exactly where the record has a parent, read back from the
 sidecar so a page cannot claim a lineage the record lacks; `/species/` one `CollectionPage`; and the
 species sitemap equal to the pages that exist. `check_layout.py`: the index's five counts equal the
-inline record's, the matrix has exactly rows × datasets cells, the tree pane is exactly the matrix
-pane's height (the tree scrolls **inside** it, so no unbounded text sits beside a fixed-height
-figure), every `.sp-url` is one line and actually elided, and on a taxon page the *Observed in* rows
-are the record's `datasets[]` with its counts, the lineage is a chain of species links, and the
-Explorer link opens prefilled.
+inline record's and its h1 carries no digit, the class list is the record's classes by observations,
+the matrix has exactly rows × datasets cells, a search's hits fill the flat Matches list, every
+`.sp-url` is one line and actually elided, and on a taxon page the *Observed in* rows are the
+record's `datasets[]` with its counts and one drawn strip each, the lineage is a chain of species
+links, and the Explorer link opens prefilled. Since issue #30 it also asserts nothing is open on load
+(no class row, one view panel, every fold closed), every fold's title carries an answer, no sub-nav,
+and a height ceiling at 1470 with nothing open (the content, header to last fold: index ≤ 2,220 px,
+a taxon page ≤ 1,500 px — the mockups' 1,775 and ~1,200 plus a quarter).
+
+### Issue #30 · calmer (what moved where)
+
+Both pages are built from `assets/calm.css`; nothing was removed, it moved (D1–D17, all A unless noted).
+
+- **`/species/`** — the catalog head (the three siblings, *Species*, one sentence with the old lede in
+  its ⓘ, the five counts as one quiet line, and the ONE search, `one_search.html`, D10 B). Then ONE
+  list (D7 A): the 22 classes with their PhyloPic silhouettes, most observed first, each a
+  `calm-item` that opens to its six most-observed taxa as R1 result rows, plus *Open*, *Explorer* and
+  *In the tree*. The tree (with its rank folds and *all ranks*), the matrix and the icicle are view
+  tabs (`?tab=tree|matrix|hierarchy`), each today's panel unchanged; the icicle is drawn the first
+  time its tab is chosen. `species.js` listens to `#door-q`: the hits fill `#sp-matches` above the
+  views, the class list keeps the classes holding one, and the tree folds to them (`?q=`).
+- **A taxon page** — one column, no sub-nav (D17). The head is the silhouette as the mark, the name
+  (italic for genus and below), the common name, a facts line (rank · status · ids · key · groups),
+  the sentence, ONE picture (D11: the photo; the silhouette where there is none) with its credit as the
+  caption, and one line of numbers that now carries the max length (`el-size`). *Observed in* stays
+  open, each dataset a row with its own years strip. The ways are one line (Explorer · db-query ·
+  ERDDAP | R · Python · JSON, D12); the code and URLs are the first fold, with `ways_tabs.html`
+  inside. Everything else is a fold titled with its answer (D14, `page.fold` from
+  `Taxa#folds`): *Code and endpoints*, *How big is it · 39.5 cm max · egg 1.34–2.05 mm* (the glance,
+  ladder, beside figure, plate), *Under it · 38 taxa · … most observed*, *Life stages*, *Lineage ·
+  12 ranks · Biota to Sardinops* (the crumb shows the last three; its "N ranks" opens this fold),
+  *Credits*, *Elsewhere* (Wikidata, iNaturalist, FishBase … from the sidecar's links) and *Cite*.
 
 **The `TAXA_RELEASE_URL` bridge.** `fetch_release.sh` takes the promoted release's own `taxa.json`
 first. Until a promoted release carries one, `TAXA_RELEASE_URL` names a staging record — a full
@@ -588,7 +661,7 @@ _data/taxa_media.json     scripts/fetch_species_media.py → the silhouette, the
 _data/size_reference.csv  key,label,m,note,source — the ladder's six reference objects
 _plugins/species.rb       composes page.face / page.glance / page.sentence / page.credits /
                           page.size_data, all nil-safe; and the JSON-LD `image`
-_includes/species_face.html   the face row, the sentence, the credit line (server-side: content)
+_includes/species_face.html   the mark, the picture, the sentence, the glance (server-side: content)
 _includes/species_size.html   the How big section's hosts and its one inline payload
 _includes/species_credit.html the ONE credit format: kind · who · licence · where · what it shows
 assets/species.js         the ladder, the beside figure and the plate (figures: drawn in the browser)
@@ -657,6 +730,35 @@ highlighting already computes, sorted by observations — so which taxa matched 
 their folded-open ancestors; the tree keeps its own fold and highlight below it.
 
 ## The measurements catalog (`/measurements/`, `/measurements/{key}/`)
+
+### Calmer (issue #30, 2026-10)
+
+Re-cut on `assets/calm.css` by the review's decisions; **nothing was removed, it moved**:
+
+- **`/measurements/`** — one column: the catalog head (Datasets · Species · Measurements, the name,
+  one sentence with the counting ⓘ, one line of numbers, the ONE search over the three indexes,
+  D10 B). The default view is a **list** (D8 A), rendered by Liquid from `site.data.measurements.list`
+  (`catalog_groups` in `_plugins/measurements.rb`): the keys unified across datasets on top, then the
+  five categories as rows that open in place, **collapsed**, each to its keys (`?cat=` opens one). The
+  old stats band went into the numbers line and the ⓘ; the chips into the categories. The timeline
+  table and the category × dataset matrix (with the datasets list) are view tabs, unchanged, and
+  `#door-q` filters both the list and the timeline (`row_hay` = the timeline's haystack).
+- **Short label** (D13 A): `short_label` where the record has one, else the heading cut at its first
+  comma or colon outside parentheses (`MeasurementsRecord.cut_label`, tested in
+  `_test/measurements_short_label_test.rb`). It is the catalog row's name, the h1, the crumb and the
+  one search's name; the full label is the sub line under it.
+- **A measurement page** — one column. The head: category glyph + short label, the full label, the
+  ids, the face's ONE sentence, one line of numbers, and ONE picture: the face's What column (the
+  molecule, the ion bar, the scale ramp, the Beaufort strip or the organism) with NERC's definition
+  as its caption. **Measured in** stays open, each series row with its own years strip. The ways in
+  are one line of links; every endpoint and the code are the *Every way in* fold (D12 A,
+  `ways_tabs.html` inside). Everything else is a fold, closed on load and titled with its answer
+  (D14 A): The structure · How it is measured (the How column + the methods tabset) · Why it matters
+  (the spark, the EOV card, CalCOFI's words, the other ways to say why) · The record's own history
+  (the anomaly) · Units and range (range & quality + the familiar scale) · By depth · by month ·
+  Related measurements · Cite. A figure in a fold is drawn when the fold opens, at its width.
+- `check_layout.py` reads the folds closed on load, then opens them and checks every face rule as
+  before; heights at 1470 px with nothing open are capped at 1,625 px (catalog) and 1,850 px (a page).
 
 The species catalog's pattern with `obs_env.measurement_type` in the place of `obs_bio.taxon_key`:
 one record, one generator, one page per key, and **not one measurement fact written in this repo**.

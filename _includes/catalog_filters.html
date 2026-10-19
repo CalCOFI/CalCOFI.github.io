@@ -8,10 +8,14 @@
   #door-q (and from ?q= on load) wherever that element exists, and simply has no live text search
   on a page that renders this filter row without a #door-search (e.g. the standalone /datasets/
   page) — the six selects still work there, and a ?q= on the URL still filters once on load.
+
+  include params: hidden (optional, true) — render the form hidden, behind /datasets/'s "Filter"
+  button (#ds-filter-btn, issue #30); assets/catalog.js opens it, and opens it on load when the URL
+  carries a facet, so a reader always sees why rows are missing.
 {%- endcomment -%}
 {%- assign f = site.data.catalog.facets -%}
 <form class="ds-filters" id="ds-filters" role="search" aria-label="Filter datasets"
-      onsubmit="return false">
+      onsubmit="return false"{% if include.hidden %} hidden{% endif %}>
   <div class="ds-filter">
     <label for="ds-cat">Category</label>
     <select id="ds-cat" data-facet="cat">
