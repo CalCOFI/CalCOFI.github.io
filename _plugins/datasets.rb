@@ -868,7 +868,7 @@ module CalCOFI
                          end,
         "since"      => d["since_version"],
         "contrib"    => (cov["contributes_to"] || []).map { |ct| { "category" => ct["category"], "n" => (ct["variables"] || []).size } },
-        "ways"    => ways(d).select { |w| %w[way-explorer way-erddap ui-data].include?(w["icon"]) }
+        "ways"    => ways(d).select { |w| w["kind"] == "source" || %w[way-explorer way-erddap ui-data].include?(w["icon"]) }
       }
     end
 
@@ -946,13 +946,16 @@ module CalCOFI
     # the ways in, as ONE line of links (D12, D16): the app that opens on this dataset, the SQL
     # shell, then each kind of endpoint once — its first current address in the record. Every
     # endpoint is still listed, all of them, in the page's "Every endpoint" fold; this is the
-    # shortlist. `kind` is "app" for the two buttons that lead the line.
+    # shortlist. `kind` is "app" for the two buttons that lead the line, "source" for the dataset's
+    # original page (Erin, 2026-10-19: EDI, the ZooScan DB, NCEI …), which follows them. A URL is
+    # listed once: the original page, when it is also calcofi.org's, is not repeated at the end.
     def ways(r)
       key  = r["dataset_key"]
       dist = r["distributions"] || []
       out  = []
       add  = lambda do |label, url, icon, kind = nil|
-        out << { "label" => label, "url" => url, "icon" => icon, "kind" => kind } if Fmt.present(url)
+        return unless Fmt.present(url) && out.none? { |w| w["url"] == url }
+        out << { "label" => label, "url" => url, "icon" => icon, "kind" => kind }
       end
       live = ->(pred) { dist.find { |x| x["status"] != "superseded" && pred.call(x) }&.dig("url") }
       if holding?(r)
@@ -972,6 +975,9 @@ module CalCOFI
           add.call("db-query", saved ? "https://calcofi.io/db-query/##{saved}" :
                    query_shell_url("SELECT *\nFROM __TBL:#{tbl}__\nWHERE dataset_key = '#{key}'\nLIMIT 100;"),
                    "way-query", "app")
+        end
+        if (src = r.dig("links", "data_source")) && src.match?(%r{\Ahttps?://})
+          add.call("Original at #{source_name(r, src)}", src, "way-portal", "source")
         end
         add.call("ERDDAP", erddap_current(dist).first&.dig("url"), "way-erddap")
         add.call("Parquet", live.call(->(x) { x["format"] == "parquet" }), "way-file")
@@ -1759,6 +1765,25 @@ module CalCOFI
       "calcofi.org" => "the CalCOFI program's own site",
       "gcs" => "the release's own cloud storage"
     }.freeze
+    # where a dataset's original page lives, as a short name: an app the URL names (SOURCE_NAMES),
+    # else the portal of the distribution at that URL or of the longest portal address it starts
+    # with (the record's portals[]), else the host
+    SOURCE_NAMES = {
+      "oceaninformatics.ucsd.edu/zooscandb" => "ZooScan DB", "oceaninformatics.ucsd.edu/zoodb" => "ZooDB",
+      "oceaninformatics.ucsd.edu/datazoo"   => "DataZoo",    "oceanview.pfeg.noaa.gov/erddap" => "NOAA ERDDAP",
+      "coastwatch.pfeg.noaa.gov/erddap"     => "NOAA ERDDAP", "gbif.org" => "GBIF", "data.cnra.ca.gov" => "CNRA Open Data"
+    }.freeze
+    def source_name(r, url)
+      bare = url.sub(%r{\Ahttps?://(www\.)?}, "")
+      hit  = SOURCE_NAMES.keys.select { |k| bare.start_with?(k) }.max_by(&:length)
+      return SOURCE_NAMES[hit] if hit
+      pt = (r["distributions"] || []).find { |x| x["url"] == url && !%w[other].include?(x["portal"].to_s) }&.dig("portal")
+      pt ||= (rec["portals"] || []).select { |x| Fmt.present(x["url"]) && bare.start_with?(x["url"].sub(%r{\Ahttps?://(www\.)?}, "")) }
+                                   .max_by { |x| x["url"].length }&.dig("portal")
+      return PORTAL_NAMES[pt] || portal_name(pt) if Fmt.present(pt)
+      bare.split("/").first
+    end
+
     def portal_name(p)
       (rec["portals"] || []).find { |x| x["portal"] == p }&.dig("name") || PORTAL_NAMES[p] || p
     end
