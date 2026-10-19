@@ -1355,36 +1355,17 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
    Additive to brand v2: every colour is a token or the record's own dataset colour, which is never
    the only cue — a dot always carries its dataset's name beside it. */
 
-/* the page head: the label once, the ids beside it */
-.mm-crumb { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; font-size: var(--fs-sm); margin: 0 0 var(--space); }
-.mm-crumb .mm-sep { color: var(--muted); }
-.mm-here { color: var(--muted); }
-.mm-h { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space) calc(var(--space) * 4); align-items: end; }
-.mm-h .cc-h1 { margin: 2px 0 4px; }
-.mm-sub { font-size: var(--fs-sm); color: var(--muted); max-width: 72ch; margin: 0 0 4px; }
 .mm-grain { font-size: var(--fs-sm); color: var(--muted); max-width: 72ch; margin: 6px 0 4px; }
 .mm-grain .cc-chip { margin-right: 6px; }
 .mm-ids { display: flex; flex-wrap: wrap; gap: 5px 14px; font-size: 13px; }
 .mm-ids a, .mm-ids .mono { font-family: var(--mono); font-size: 12.5px; }
-.mm-nolabel { margin: 6px 0 0; max-width: 72ch; }
 
-.mm-stat { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: calc(var(--space) * 1.5); margin: calc(var(--space) * 2.5) 0 0; padding: calc(var(--space) * 2) 0 0; border-top: 1px solid var(--border); }
-.mm-stat dd { margin: 0; font-family: var(--display); font-weight: 500; font-size: 30px; line-height: 1; }
-.mm-stat dd.mm-stat-sm { font-family: var(--sans); font-size: 17px; font-weight: 600; line-height: 1.2; }
-.mm-stat dt { font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
 
-.mm-cols2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 calc(var(--space) * 5); align-items: start; }
-.mm-page-body .cc-h3 { margin-top: calc(var(--space) * 3); }
-.mm-page-body .mm-col-main > .cc-h3:first-child, .mm-page-body .mm-col-ways > .cc-h3:first-child { margin-top: 0; }
 .mm-note { font-size: var(--fs-sm); color: var(--muted); max-width: 80ch; margin: var(--space) 0 0; }
 .mm-note .mono, .mm-note code { font-family: var(--mono); font-size: 0.92em; }
 /* a link inside a MUTED note is 1.16:1 against the prose around it, so colour cannot be what
    marks it as a link (Lighthouse's link-in-text-block, measured 2026-09-10): underline it. */
 .mm-note a { text-decoration: underline; text-underline-offset: 2px; }
-/* the flagged heads-up under a measurement's stats band: --warn is the site's "needs attention" colour */
-.mm-flagnote { font-size: var(--fs-sm); line-height: 1.45; max-width: 90ch; margin: calc(var(--space) * 1.5) 0 0; padding: calc(var(--space) * 0.75) 0 calc(var(--space) * 0.75) calc(var(--space) * 1.5); border-left: 3px solid var(--warn); color: var(--fg); }
-.mm-flagnote code { font-family: var(--mono); font-size: 0.92em; }
-.mm-flagnote-k { font-weight: 700; font-size: 0.85em; letter-spacing: 0.08em; text-transform: uppercase; color: var(--warn); margin-right: 0.35em; }
 
 /* one row per SERIES: the dot in the record's colour, the dataset's NAME always beside it */
 .mm-dsrows { list-style: none; margin: var(--space) 0 0; padding: 0; }
@@ -1415,25 +1396,14 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 .mm-sibs .mm-m { font: 12.5px var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .mm-sibs .mm-why { font-size: 13px; }
 
-/* the ways in: ONE row per endpoint, the URL a full-width single mono line (assets/measurements.js
-   elides it from the middle rather than letting it wrap) */
-.mm-ways { list-style: none; margin: var(--space) 0 0; padding: 0; }
-.mm-way { padding: 10px 0; border-top: 1px solid var(--border); }
-.mm-way:first-child { border-top: 0; }
-.mm-way .mm-l1 b { font-weight: 600; }
-.mm-way .mm-l1 span { font-size: 13px; color: var(--muted); }
-.mm-url { display: block; width: 100%; font: 13px var(--mono); color: var(--accent); white-space: nowrap; overflow: hidden; margin-top: 3px; }
-.mm-way pre { margin: 6px 0 0; font: 12.5px/1.5 var(--mono); background: var(--panel); border-radius: var(--radius); padding: 8px 12px; overflow-x: auto; color: var(--fg); }
 
 /* the figure hosts WS-M4 fills. The strip is an <svg>, hidden until the drawing adds .mm-drawn —
    an undrawn <svg> is 300 x 150 by the CSS default, which would leave a hole on every page read
    without JS (the `[viewBox]` trap the species strip hit on 2026-09-09: an attribute selector is
    lowercased in an HTML document and never matches SVG's camelCase attribute). */
-.mm-strip-wrap { overflow-x: auto; margin: var(--space) 0 0; }
-.mm-strip { display: none; width: 100%; min-width: 620px; height: auto; }
+.mm-strip { display: none; width: 100%; height: auto; }
 .mm-strip.mm-drawn { display: block; }
 .mm-strip text { font: 11px var(--mono); fill: var(--muted); }
-.mm-strip .mm-rl { font: 600 12px var(--sans); fill: var(--fg); }
 
 /* by depth: eight bands, one thin bar per series, the end label kept INSIDE the column (the
    .mm-pair right padding is what keeps a "884 k" from hanging off the page at 375 px) */
@@ -1454,7 +1424,6 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 .mm-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12.5px; color: var(--fg); align-items: center; }
 .mm-legend span { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
 .mm-legend .mm-dot { margin-top: 0; }
-.mm-chips button .mm-n { font-weight: 400; margin-left: 4px; }
 
 /* the timeline: one row per measurement, one bar per series, on a 1949 → release-year axis.
    It is WIDER than a phone on purpose (a 78-year axis is not legible at 300 px), so its own
@@ -1507,9 +1476,6 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 .mm-dslist .mm-m { display: block; font: 12.5px var(--mono); color: var(--muted); }
 
 /* the index */
-.mm-idx-head .cc-lede { max-width: var(--cc-prose-w); }
-.mm-idx-head .mm-how { max-width: var(--cc-prose-w); margin: var(--space) 0 0; font-size: var(--fs-sm); line-height: 1.5; }
-.mm-idx-head .mm-how b { font-weight: 700; }
 .ds-head { --cc-prose-w: 34.3rem; }
 .ds-head .cc-lede { max-width: var(--cc-prose-w); }
 /* the technical aside on a catalog index — where the machine-readable form lives — is small print
@@ -1520,14 +1486,6 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 .cc-aside .mono, .cc-aside code { font-family: var(--mono); font-size: 0.92em; }
 .cc-aside a { color: var(--muted); text-decoration: underline; text-underline-offset: 2px; }
 .cc-aside a:hover { color: var(--accent); }
-.mm-counts { display: flex; flex-wrap: wrap; gap: 10px 34px; margin: calc(var(--space) * 2) 0 0; padding: calc(var(--space) * 2) 0 0; border-top: 1px solid var(--border); }
-.mm-counts div { min-width: 0; }
-.mm-counts dd { margin: 0; font: 500 30px/1 var(--display); font-variant-numeric: tabular-nums; }
-.mm-counts dt { font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
-.mm-searchrow { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 0 0 calc(var(--space) * 1.75); }
-.mm-chips { display: flex; gap: 6px; flex-wrap: wrap; }
-.mm-chips button { border: 1px solid var(--border); background: var(--panel-2); color: var(--muted); border-radius: 999px; padding: 5px 11px; font: 600 12px var(--sans); cursor: pointer; }
-.mm-chips button[aria-pressed="true"] { background: var(--accent-bg); color: var(--accent); border-color: transparent; }
 .mm-two { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: calc(var(--space) * 2.5); align-items: start; }
 .mm-pane { background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius-card); overflow: hidden; min-width: 0; margin-top: var(--space); }
 .mm-pane-h { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 11px 16px 8px; border-bottom: 1px solid var(--border); }
@@ -1539,14 +1497,11 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 /* the tooltip is the species index's, one for one: absolute inside the body band, hidden until a
    mark is hovered, and never the only place a fact lives — every mark carries the same text as its
    `title`, so a reader without a mouse still gets it */
-.mm-body { position: relative; }
 .mm-ttip { position: absolute; z-index: 30; pointer-events: none; background: var(--fg); color: var(--bg); font: 13px/1.35 var(--sans); padding: 8px 10px; border-radius: 6px; max-width: 320px; box-shadow: 0 4px 18px rgb(0 0 0 / 25%); display: none; }
 .mm-ttip b { display: block; }
 .mm-ttip .mm-d { display: block; opacity: 0.85; }
 
 @media (max-width: 900px) {
-  .mm-cols2 { grid-template-columns: minmax(0, 1fr); }
-  .mm-h { grid-template-columns: minmax(0, 1fr); align-items: start; }
   .mm-two { grid-template-columns: minmax(0, 1fr); }
   .mm-qgrid { grid-template-columns: minmax(0, 1fr); gap: 2px; }
   .mm-qgrid dd { margin-bottom: 8px; }
@@ -1609,16 +1564,6 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 }
 
 /* ── the face row: What · How · Why, three columns under the stats band ─────── */
-.mmf-face { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: calc(var(--space) * 2.5) 0 0; border-top: 1px solid var(--border); }
-.mmf-col { padding: calc(var(--space) * 1.75) calc(var(--space) * 2) calc(var(--space) * 1.5); min-width: 0; border-left: 1px solid var(--border); display: flex; flex-direction: column; gap: var(--space); }
-.mmf-col:first-child { border-left: 0; padding-left: 0; }
-.mmf-col:last-child { padding-right: 0; }
-@media (max-width: 860px) {
-  .mmf-face { grid-template-columns: 1fr; }
-  .mmf-col { border-left: 0; padding-inline: 0; border-top: 1px solid var(--border); }
-  .mmf-col:first-child { border-top: 0; }
-}
-.mmf-k { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); }
 .mmf-line { font-size: 13.5px; line-height: 1.4; margin: 0; max-width: none; }
 .mmf-line b { font-weight: 600; }
 .mmf-none { font-size: 13px; color: var(--muted); margin: 0; }
@@ -1654,8 +1599,6 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 .mmf-disc { display: inline-grid; place-items: center; }
 .mmf-disc .cc-i { width: 13px; height: 13px; color: var(--accent); vertical-align: 0; }
 .mmf-pin:hover .mmf-disc .cc-i { color: var(--bg); }
-.mmf-q { font-size: 13px; font-style: italic; color: var(--fg); margin: 0; }
-.mmf-q::before { content: "GOOS asks: "; font-style: normal; font-weight: 700; font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
 
 /* the spark: the band with the most values, the strong El Niño years shaded behind it */
 .mmf-spark { display: none; width: 100%; height: 58px; }
@@ -1693,7 +1636,6 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 /* ── What, at length ───────────────────────────────────────────────────────── */
 .mmf-h3 { font-size: 15px; font-weight: 700; letter-spacing: 0.04em; margin: calc(var(--space) * 3) 0 0; }
 .mmf-h4 { font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin: calc(var(--space) * 2) 0 0; }
-.mmf-kindnote { margin-top: var(--space); }
 .mmf-fig { display: none; margin: var(--space) 0 0; }
 .mmf-fig.mmf-drawn { display: block; }
 .mmf-mols { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px 22px; margin: var(--space) 0 0; background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius-card); padding: calc(var(--space) * 2); color: var(--fg); }
@@ -1707,16 +1649,7 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 .mmf-credit { font: 11.5px/1.5 var(--mono); color: var(--muted); margin: 6px 0 0; }
 .mmf-credit a { color: inherit; text-decoration: underline; text-decoration-color: var(--border); }
 .mmf-credit a:hover { text-decoration-color: currentColor; }
-.mmf-nerc-def { font-size: var(--fs-sm); margin: var(--space) 0 0; max-width: 80ch; }
-.mmf-nerc-def .mmf-credit { display: block; }
 
-/* the identity chain: P01 → its parts → the EOV, one row each */
-.mmf-chain { list-style: none; margin: var(--space) 0 0; padding: 0; }
-.mmf-chain li { display: grid; grid-template-columns: 54px minmax(0, 1fr); gap: 12px; padding: 9px 0; border-top: 1px solid var(--border); font-size: 14px; }
-.mmf-chain li:first-child { border-top: 0; }
-.mmf-cc { font: 700 12px var(--mono); color: var(--accent); padding-top: 2px; }
-.mmf-cv b { font-weight: 600; }
-.mmf-cv .mono { font-size: 11.5px; color: var(--muted); overflow-wrap: anywhere; }
 
 /* the sea-salt bar and its table: the formula is written in the block AND in the table row, so a
    reader never has to hold a colour in their head to know which ion is which */
@@ -1743,7 +1676,6 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 .mmf-bf i.on { background: var(--nogo-bg); color: var(--cc-red); outline: 2px solid var(--cc-red); }
 
 /* ── How: one card per series ──────────────────────────────────────────────── */
-.mmf-how-cards { display: flex; flex-direction: column; gap: calc(var(--space) * 2); margin: var(--space) 0 0; }
 .mmf-card { background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius-card); padding: calc(var(--space) * 2); display: flex; flex-direction: column; gap: var(--space); }
 .mmf-card p { font-size: 14.5px; margin: 0; max-width: none; }
 .mmf-card-top { display: flex; gap: 12px; align-items: flex-start; }
@@ -1767,12 +1699,6 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 .mmf-spec .mmf-mk { position: absolute; top: -6px; bottom: -6px; width: 2px; background: var(--fg); }
 .mmf-spec .mmf-mk span { position: absolute; top: -18px; left: 50%; transform: translateX(-50%); font: 600 12px var(--sans); white-space: nowrap; color: var(--fg); }
 .mmf-spec .mmf-ax { position: absolute; top: 22px; font: 10.5px var(--mono); color: var(--muted); transform: translateX(-50%); white-space: nowrap; }
-/* where in the water column: the record's bands, one thin bar per series */
-.mmf-col-fig { display: none; grid-template-columns: 92px minmax(0, 1fr); gap: 3px 10px; align-items: center; margin: var(--space) 0 0; }
-.mmf-col-fig.mmf-drawn { display: grid; }
-.mmf-dl { font: 11.5px var(--mono); color: var(--muted); text-align: right; white-space: nowrap; }
-.mmf-bars { display: flex; flex-direction: column; gap: 2px; }
-.mmf-bar { height: 7px; border-radius: 2px; min-width: 1px; }
 
 /* ── Why: the two charts, the flags, the EOV card ──────────────────────────── */
 /* each chart is hidden until the drawing adds .mmf-drawn — an undrawn <svg> is 300 x 150 by the
@@ -1818,7 +1744,6 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
   .mmf-mol { height: 76px; }
   .mmf-molcard .mmf-mol { height: 120px; }
   .mmf-alts li { grid-template-columns: 1fr; gap: 2px; }
-  .mmf-col-fig { grid-template-columns: 74px minmax(0, 1fr); }
   .mmf-sent { font-size: 15px; }
 }
 
@@ -1974,9 +1899,6 @@ a.cc-chip-lic:hover { color: var(--accent); border-color: var(--accent); text-de
 .mmf-scale-pick label { display: inline-flex; align-items: center; gap: 5px; cursor: pointer; }
 .mmf-scale-pick input { accent-color: var(--accent); margin: 0; }
 
-/* the way down: "6 bands ↓", "2 methods ↓" — the second place links rather than repeating (§ D3) */
-.mmf-rt { font-size: 10.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
-.mmf-rt:hover { color: var(--accent); }
 
 /* M5: the sentence is prose. The three underlines and the legend they needed are retired; the
    spans keep their classes (the JSON-LD and check_layout.py read them) and wear a `.cc-src` badge
@@ -1999,7 +1921,7 @@ a.cc-chip-lic:hover { color: var(--accent); border-color: var(--accent); text-de
 
 /* the flagged stat (M1): same size as its neighbours in .mm-stat, tinted --warn so it reads as the
    one number here worth a second look even before the ⓘ is opened */
-.mm-stat dd.mm-stat-flag { color: var(--warn); }
+.mm-stat dd.mm-stat-flag.mm-warn { color: var(--warn); }
 
 /* an ⓘ inside an UPPERCASE .cc-h3 heading (M1, M13): `font` shorthand on .cc-info > summary (WS-R1)
    does not carry text-transform, so the "i" inherits the heading's and renders as "I" without this */
@@ -2008,7 +1930,6 @@ a.cc-chip-lic:hover { color: var(--accent); border-color: var(--accent); text-de
 
 /* the methods tabset (M8): #ts-how reuses .tabset/.tabrow/.tabpanel as-is; only the card that used
    to sit directly under a heading now sits inside a panel needs no extra rule beyond that */
-.mmf-how-cards + .tabset,
 #ts-how { margin-top: calc(var(--space) * 0.5); }
 
 /* the quality chip line (M11): four scannable facts above the collapsed definition list */
@@ -2084,6 +2005,104 @@ a.cc-chip-lic:hover { color: var(--accent); border-color: var(--accent); text-de
 .sp-matches-h { font: 600 13px var(--sans); color: var(--muted); margin: 0 0 4px; }
 .sp-matches-list { display: flex; flex-direction: column; }
 
-/* ── round 2 · measurement columns as concepts (Ben, 2026-09-16) ─────────────────────────────
-   left "The measurement", right "The record": one eyebrow each, above the first heading */
-.mm-col-eyebrow { font: 700 11px var(--sans); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin: 0 0 -6px; }
+/* ── calm · the measurements catalog and a measurement page (issue #30) ──────────────────────────
+   "calcofi.io, calmer" D8 A, D10 B, D12 A, D13 A, D14 A, on assets/calm.css's shared parts. Only
+   what calm.css does not already carry is here: the catalog's measurement rows and its views, the
+   measurement head's numbers and picture, the per-row years strip, and the folds' figures. The
+   overrides of calm.css (never edited) are marked "override". */
+
+/* the catalog: the numbers line under the sentence, the views, the group heads */
+.mm-idx { position: relative; }                       /* the timeline/matrix tooltip's frame */
+.mm-idx-nums { gap: 4px 18px; }
+.mm-idx-nums b { color: var(--fg); font-weight: 700; }
+.mm-idx-nums a.mono { font-size: 12.5px; }
+.mm-views { margin-top: 6px; }
+.mm-views > .tabrow { margin-bottom: 4px; }
+.mm-grp-h { margin-top: 22px; flex-wrap: wrap; }
+.mm-grp-h:first-child { margin-top: 10px; }
+.mm-grp-h .mm-grp-n { font-weight: 400; text-transform: none; letter-spacing: 0; font-size: 13.5px; }
+.mm-empty { color: var(--muted); padding: 16px 0; margin: 0; }
+
+/* one measurement: name (+ key, + the full label under it) · units · datasets · years, values, chips */
+.mm-rows { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--border); }
+.calm-item-b .mm-rows { border-top: 0; }
+.mm-row { display: grid; grid-template-columns: minmax(0, 1fr) 72px minmax(0, 240px) minmax(0, 330px); gap: 4px 16px; align-items: baseline; padding: 9px 2px; border-bottom: 1px solid var(--border); }
+.calm-item-b .mm-row:last-child { border-bottom: 0; }
+.mm-row[hidden] { display: none; }
+.mm-row-n { min-width: 0; }
+.mm-row-n a { font-size: 16px; font-weight: 700; color: var(--accent); text-decoration: none; }
+.mm-row-n a:hover { text-decoration: underline; }
+.mm-row-n .mm-k { font: 12px var(--mono); color: var(--muted); margin-left: 4px; overflow-wrap: anywhere; }
+.mm-row-s { display: block; font-size: 13px; color: var(--muted); line-height: 1.35; margin-top: 1px; }
+.mm-row-u { font-size: 12.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mm-row-ds { display: flex; flex-wrap: wrap; gap: 2px 10px; font-size: 12.5px; color: var(--muted); min-width: 0; }
+.mm-row-ds span { display: inline-flex; align-items: center; white-space: nowrap; }
+.mm-row-ds .mm-dot { width: 8px; height: 8px; margin: 0 5px 0 0; }
+.mm-row-m { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 4px 10px; font-size: 12.5px; color: var(--fg); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.mm-row-m .cc-chip { font-size: 10px; }
+.mm-cat-item .calm-item-k .mm-cat-plus { color: var(--muted); opacity: .8; }
+.mm-cat-item[hidden] { display: none; }
+/* override: calm.css's item title and line are blocks in its markup; here they are spans (a
+   <summary> holds phrasing content), so they are made blocks to stack and to ellipsize */
+.mm-cat-item .calm-item-t, .mm-cat-item .calm-item-s { display: block; }
+.mm-cat-item .calm-item-b { padding-left: 46px; }
+.mm-cat-item .calm-item-b > p { font-size: 13.5px; }
+
+/* a measurement page: the head's numbers on one line, the one picture, the ids line */
+.mm-head .calm-sub { margin-bottom: 6px; }
+.mm-head .mm-ids { gap: 4px 14px; margin-bottom: 12px; }
+.mm-head .mm-ids a.mono, .mm-head .mm-ids .mono { font-size: 12.5px; }
+.mm-head .mm-ids .cc-chip { font-size: 10.5px; }
+.mm-head .mm-grain { margin: 0 0 12px; }
+.mm-head .calm-sentence.mmf-sent { font-size: 1.05em; margin: 0 0 16px; max-width: 64ch; }
+.mm-stat { gap: 8px 16px; }
+.mm-stat dd { font-size: 23px; }
+.mm-stat dd.mm-sm { font-size: 19px; line-height: 23px; }
+.mm-stat dt .cc-info { text-transform: none; vertical-align: -2px; margin-left: 2px; }
+/* override: calm.css sizes every svg in a figure to its width; a molecule is drawn to a height */
+.mmf-what { align-self: start; gap: 10px; }
+.calm-pic.calm-fig.mmf-what svg.mmf-mol { width: auto; height: 132px; max-width: 100%; margin: 0 auto; }
+.calm-pic.calm-fig.mmf-what .mmf-glyph { justify-content: center; min-height: 0; }
+.calm-pic.calm-fig.mmf-what .mmf-mini svg { height: auto; }
+.mmf-cap { display: flex; flex-direction: column; gap: 4px; }
+.mmf-cap .mmf-line { font-size: 13px; color: var(--fg); }
+
+/* Measured in: the row's own years strip, and the series line under the numbers */
+.mm-measured .calm-row { grid-template-columns: minmax(0, 1fr) minmax(0, 520px); }
+.mm-measured .calm-row-n .mm-dot { margin-top: 0; align-self: center; }
+.mm-measured .calm-row-m { display: block; overflow-wrap: anywhere; }
+.mm-measured .mm-l2 { margin-top: 3px; }
+.mm-measured > h2 .cc-info { text-transform: none; letter-spacing: 0; }
+.calm-strip.mm-strip text { font: 10.5px var(--mono); fill: var(--muted); }
+
+/* the ways line and the folds */
+.mm-ways-line { margin-top: 18px; }
+.mm-pg .calm-folds { margin-top: 18px; }
+.mm-pg .calm-fold > summary { min-height: 32px; }
+.mm-pg .calm-fold > summary .calm-ans { overflow-wrap: anywhere; }
+.mm-pg .calm-body .mmf-h3:first-child { margin-top: 0; }
+.mm-pg .calm-body h3 .cc-info { text-transform: none; }
+.mm-units-line { font-size: 14.5px; }
+.mm-when { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px 40px; align-items: start; }
+.mm-when > div:only-child { grid-column: 1 / -1; max-width: 640px; }
+.mmf-spark-wrap { max-width: 640px; margin: 0 0 6px; }
+.mmf-how .mmf-plat { margin: 0 0 10px; }
+.mmf-whyf .mmf-why-row { margin-top: 10px; }
+
+@media (max-width: 900px) {
+  .mm-row { grid-template-columns: minmax(0, 1fr) auto; }
+  .mm-row-n { grid-column: 1 / -1; }
+  .mm-row-u { order: 2; }
+  .mm-row-ds { grid-column: 1 / -1; order: 3; }
+  .mm-row-m { order: 1; justify-content: flex-start; grid-column: 1; }
+  .mm-when { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 760px) {
+  .mm-cat-item .calm-item-b { padding-left: 0; }
+  .calm-pic.calm-fig.mmf-what svg.mmf-mol { height: 104px; }
+  .mm-stat dd { font-size: 22px; }
+  .mm-measured .calm-row { grid-template-columns: minmax(0, 1fr); }
+  /* the strip's viewBox is ~640 units, drawn at about half on a phone: its year labels are set in
+     units so they still read at ~9 px */
+  .calm-strip.mm-strip text { font-size: 18px; }
+}

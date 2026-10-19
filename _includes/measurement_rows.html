@@ -1,35 +1,42 @@
 {%- comment -%}
+  "Measured in" on /measurements/{key}/ — open, because it is what the page is about (issue #30).
   One row per SERIES — one dataset × one measurement_type — most values first (the record's own
   order): the dataset · its values · its sampling roots · its years · its depths · its grid cells ·
   its cruises, then what the SOURCE calls it: the measurement_type, the source column, the flag
-  column, and a quiet pill for every flag the record raises on that series.
+  column, and a quiet pill for every flag the record raises on that series. On the right, the row's
+  own YEARS STRIP (one cell per year, darker with more values), drawn by assets/measurements.js
+  into `svg.mm-strip[data-i]` from #mm-strip-data's row of the same index — the plugin writes both
+  from `m.series` in the same order.
 
   The dot carries the dataset's colour from the record, and the dataset's NAME is always beside it —
   identity is never colour alone.
 
   include measurement_rows.html rows=page.ds_rows
 {%- endcomment -%}
-<ul class="mm-dsrows">
+<ul class="calm-rows mm-dsrows">
   {%- for d in include.rows -%}
-  <li class="mm-dsrow">
-    <i class="mm-dot" style="background:{{ d.color | default: 'var(--muted)' }}" aria-hidden="true"></i>
-    <div>
-      <div class="mm-l1">
+  <li class="calm-row mm-dsrow">
+    <div class="calm-row-l">
+      <div class="calm-row-n mm-l1">
+        <i class="mm-dot" style="background:{{ d.color | default: 'var(--muted)' }}" aria-hidden="true"></i>
         <a href="{{ d.url | relative_url }}">{{ d.name | escape }}</a>
-        <span class="mm-meta tab">{{ d.meta }}</span>
       </div>
+      <div class="calm-row-m mm-meta">{{ d.meta }}</div>
       <div class="mm-l2">
         series <code>{{ d.type | escape }}</code>
         {%- if d.source_column %} · source column <code>{{ d.source_column | escape }}</code>{% endif -%}
         {%- if d.qual_column %} · flag column <code>{{ d.qual_column | escape }}</code>{% endif -%}
         {%- comment -%} the unit is written the way a reader writes it (Fmt.units); the registry's
-          own ASCII spelling stays in the title and in the ids line above {%- endcomment -%}
+          own ASCII spelling stays in the title {%- endcomment -%}
         {%- if d.units and d.units != page.units %} · <span class="mono" title="{{ d.units_raw | escape }} in metadata/measurement_type.csv">{{ d.units | escape }}</span>{% endif -%}
         {%- for c in d.chips %} <span class="cc-chip cc-chip-na" title="{{ c.title | escape }}">{{ c.label | escape }}</span>{% endfor -%}
       </div>
       {%- comment -%} the series' own registry description, only where it says something the title
-        and the subtitle do not already say {%- endcomment -%}
-      {%- if d.desc and d.desc != page.sub and d.desc != page.h1 %}<div class="mm-l3 cc-muted">{{ d.desc | escape }}</div>{% endif -%}
+        and the sub line do not already say {%- endcomment -%}
+      {%- if d.desc and d.desc != page.sub and d.desc != page.h1 and d.desc != page.full_label %}<div class="mm-l3 cc-muted">{{ d.desc | escape }}</div>{% endif -%}
+    </div>
+    <div class="calm-row-r">
+      <svg class="mm-strip calm-strip" data-i="{{ forloop.index0 }}" role="img" aria-label="{{ d.name | escape }}: values per year"></svg>
     </div>
   </li>
   {%- endfor -%}

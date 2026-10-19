@@ -2,110 +2,150 @@
 layout: default
 ---
 {%- comment -%}
-  /measurements/ — the measurements catalog's index (plan 2026-09-10 § D5, D6).
+  /measurements/ — the measurements catalog (plan 2026-09-10 § D5, D6; re-cut for issue #30,
+  "calcofi.io, calmer", D8 A · D10 B · D13 A · D17 A).
 
-  Nothing here is authored: the counts, the timeline of every measurement by dataset, the
-  category × dataset matrix and the datasets list are drawn by assets/measurements.js (WS-M4) from
-  the ONE inline JSON _plugins/measurements.rb builds out of the release's measurements.json. A
-  release without that record generates no page at all, so this layout never has to say "no data".
+  One column: the catalog head (siblings, name, one sentence, one line of numbers, the ONE search
+  over the three indexes), then the default view, a LIST — the keys one name unifies across datasets
+  on top, then the five categories as rows that open in place, collapsed, each to its keys (D8 A).
+  The dense views stay one click away and unchanged: the timeline (every measurement × dataset ×
+  year) and the category × dataset matrix with the datasets, as view tabs.
+
+  Nothing here is authored. The list is `site.data.measurements.list` (_plugins/measurements.rb's
+  `catalog_groups`), rendered here so it is on the page with JavaScript off; the timeline, the matrix
+  and the datasets are drawn by assets/measurements.js from the ONE inline JSON the plugin builds out
+  of the release's measurements.json, which also filters the list as the one search is typed into.
 {%- endcomment -%}
 {%- assign mm = site.data.measurements -%}
 {%- assign c = mm.counts_fmt -%}
+{%- assign L = mm.list -%}
 
-<section class="cc-band cc-band-alt mm-head">
-  <div class="cc-container">
-    <div class="mm-idx-head">
-      <div class="cc-eyebrow">Measurements · {{ mm.release.version | escape }} · one name per quantity across datasets</div>
-      <h1 class="cc-h1">Everything measured in the water and the air above it</h1>
-      <p class="cc-lede cc-prose">Temperature and salinity from the bottle casts of 1949 to this year's CTD profiles,
-        nutrients, carbon, pigments and light, the underway weather, the picoplankton counted by flow cytometry —
-        keyed to one name, so the same measurement means the same thing in every dataset. Start from the overview
-        below, search, filter by category, or start from a dataset; every measurement has its own page.
-        {%- comment -%} how the count works, and the machine-readable form, folded into one ⓘ (§ I1): every number
-          read from the record (Ben, 2026-09-10: the total must be plain, and how a shared NERC concept is what
-          folds two datasets' series into one measurement) — said once, in the band below, not twice on this page. {%- endcomment -%}
-        {%- capture mm_idx_info -%}
-        <p>A <b>measurement</b> is one quantity under one name; a <b>series</b> is one dataset's
-          column for it. Two datasets' series count as one measurement only where they carry the same NERC P01 concept
-          for the same kind of sample — {{ c.n_unified }} do today:
-          {%- for u in mm.unified %} <a href="{{ u.url | relative_url }}">{{ u.label }}</a>{% unless forloop.last %},{% endunless %}{% endfor %} —
-          so {{ c.series }} series make {{ c.measurements }} measurements. {{ c.n_p01 }} of the {{ c.measurements }} carry a
-          NERC P01 concept; {{ c.n_no_p01 }} carry none and keep their own names, because an empty concept means no
-          concept says exactly this, never that nobody looked.</p>
-        <p>The machine-readable form is one JSON per measurement
-          (<span class="mono">/measurements/{key}.json</span>) and
-          <a href="{{ '/measurements/sitemap.xml' | relative_url }}">sitemap.xml</a>.</p>
-        {%- endcapture -%}
-        {% include info.html label="What counts as one measurement, and the machine-readable form" body=mm_idx_info align="right" %}</p>
-      <dl class="mm-counts">
-        <div><dd class="tab">{{ c.measurements }}</dd><dt>measurements</dt></div>
-        <div><dd class="tab">{{ c.series }}</dd><dt>series</dt></div>
-        <div><dd class="tab">{{ c.datasets }}</dd><dt>datasets</dt></div>
-        <div title="rows of obs_env — one measurement × one sample"><dd class="tab">{{ c.obs_env_rows_m }} M</dd><dt>values · release grain</dt></div>
-        {% if mm.counts.sample_measurement_rows > 0 %}<div title="rows of sample_measurement — one value per cast (the mixed-layer depths and chlorophyll maximum and integral), counted apart from the depth observations"><dd class="tab">{{ c.sample_measurement_rows }}</dd><dt>values · one per cast</dt></div>
-        {% endif %}<div title="with the two full-resolution supplementals, obs_ctd_full and obs_mets_full"><dd class="tab">{{ c.full_rows_m }} M</dd><dt>with full resolution</dt></div>
-        <div title="the other {{ c.n_no_p01 }} carry no NERC P01 concept and are listed under their own names"><dd class="tab">{{ c.n_p01 }}</dd><dt>with a NERC concept</dt></div>
-      </dl>
+<div class="calm-page mm-idx">
+  <header class="calm-cathead mm-idx-head">
+    <nav class="calm-siblings" aria-label="The three catalogs">
+      <a href="{{ '/datasets/' | relative_url }}"><i class="cc-i cc-i-ui-data" aria-hidden="true"></i>Datasets</a>
+      <a href="{{ '/species/' | relative_url }}"><i class="cc-i cc-i-realm-bio" aria-hidden="true"></i>Species</a>
+      <a href="{{ '/measurements/' | relative_url }}" aria-current="page"><i class="cc-i cc-i-el-measured" aria-hidden="true"></i>Measurements</a>
+    </nav>
+    <h1>Measurements</h1>
+    {%- comment -%} how the count works, and the machine-readable form, folded into one ⓘ (§ I1):
+      every number read from the record (Ben, 2026-09-10) {%- endcomment -%}
+    {%- capture mm_idx_info -%}
+    <p>A <b>measurement</b> is one quantity under one name; a <b>series</b> is one dataset's
+      column for it. Two datasets' series count as one measurement only where they carry the same NERC P01 concept
+      for the same kind of sample — {{ c.n_unified }} do today:
+      {%- for u in mm.unified %} <a href="{{ u.url | relative_url }}">{{ u.label }}</a>{% unless forloop.last %},{% endunless %}{% endfor %} —
+      so {{ c.series }} series make {{ c.measurements }} measurements. {{ c.n_p01 }} of the {{ c.measurements }} carry a
+      NERC P01 concept; {{ c.n_no_p01 }} carry none and keep their own names, because an empty concept means no
+      concept says exactly this, never that nobody looked.</p>
+    <p>Values: {{ c.obs_env_rows_m }} M at the release grain (rows of <span class="mono">obs_env</span>, one measurement × one sample)
+      {%- if mm.counts.sample_measurement_rows > 0 %}, {{ c.sample_measurement_rows }} one per cast (rows of <span class="mono">sample_measurement</span>: the mixed-layer depths and the chlorophyll maximum and integral){% endif %},
+      {{ c.full_rows_m }} M with the two full-resolution supplementals, <span class="mono">obs_ctd_full</span> and <span class="mono">obs_mets_full</span>.</p>
+    <p>The machine-readable form is one JSON per measurement
+      (<span class="mono">/measurements/{key}.json</span>) and
+      <a href="{{ '/measurements/sitemap.xml' | relative_url }}">sitemap.xml</a>.</p>
+    {%- endcapture -%}
+    {%- comment -%} a div, not a p: the ⓘ is a <details>, which would close a paragraph early {%- endcomment -%}
+    <div class="calm-sentence">Everything measured in the water and the air above it, under one name across datasets.
+      {% include info.html label="What counts as one measurement, and the machine-readable form" body=mm_idx_info align="right" %}</div>
+    <p class="calm-facts mm-idx-nums">
+      <span><b class="tab">{{ c.measurements }}</b> measurements</span>
+      <span><b class="tab">{{ c.series }}</b> series</span>
+      <span><b class="tab">{{ c.datasets }}</b> datasets</span>
+      <span title="rows of obs_env — one measurement × one sample"><b class="tab">{{ c.obs_env_rows_m }} M</b> values</span>
+      <span title="{{ c.n_no_p01 }} carry no NERC P01 concept and are listed under their own names"><b class="tab">{{ c.n_p01 }}</b> with a NERC concept</span>
+      <a href="{{ '/datasets/release/' | relative_url }}" class="mono">{{ mm.release.version | escape }}</a>
+    </p>
+    {% include one_search.html placeholder="temperature · nitrate · chlorophyll · CTD · TEMPPR01 · µmol/kg …" hint=c.measurements %}
+  </header>
+
+  {%- comment -%} D8 A: the list is the default; the timeline and the matrix are views, unchanged.
+    `data-url-tab` makes this the page's one tabset that writes ?tab= (assets/tabs.js) {%- endcomment -%}
+  <div class="tabset calm-views mm-views" id="ts-mm" data-url-tab>
+    <div class="tabrow" role="tablist" aria-label="Views">
+      <button type="button" role="tab" data-tab="list" aria-selected="true"><i class="cc-i cc-i-view-list" aria-hidden="true"></i>By category</button>
+      <button type="button" role="tab" data-tab="timeline" aria-selected="false"><i class="cc-i cc-i-view-timeline" aria-hidden="true"></i>Timeline</button>
+      <button type="button" role="tab" data-tab="matrix" aria-selected="false"><i class="cc-i cc-i-view-matrix" aria-hidden="true"></i>Which, in which datasets</button>
     </div>
-  </div>
-</section>
 
-<section class="cc-band mm-body">
-  <div class="cc-container">
-    {%- comment -%} the overview first (Ben, 2026-09-10): the category × dataset matrix and the datasets,
-      then the search and the timeline they summarise — WS-M4 draws all of it from the inline record {%- endcomment -%}
-    <div class="mm-two">
-      <div class="mm-pane">
-        <div class="mm-pane-h">
-          <h2 class="cc-eyebrow">Which measurements, in which datasets</h2>
-          <span class="mm-hint">measurements · category × dataset</span>
-        </div>
-        <div class="mm-matrix" id="mm-matrix"></div>
-      </div>
-      <div class="mm-pane">
-        <div class="mm-pane-h">
-          <h2 class="cc-eyebrow">The datasets</h2>
-          <span class="mm-hint">series · years · values</span>
-        </div>
-        <ul class="mm-dslist" id="mm-dslist"></ul>
-      </div>
-    </div>
-    <p class="mm-note">Category is the registry's (<span class="mono">metadata/category.csv</span>, the same the
-      Explorer folds its picker by); <i>Picoplankton &amp; Bacteria</i> is a biology category whose cell counts are
-      measurements — rows of <span class="mono">obs_env</span>, not organisms with a taxon — so they are listed here and
-      nowhere in the species catalog. Dataset colour is never the only cue: the name is always beside the dot, and the
-      matrix is one sequential ramp.</p>
+    <div class="tabpanel" data-panel="list" role="tabpanel">
+      <h2 class="calm-group mm-grp-h" id="mm-unified-h"><i class="cc-i cc-i-el-measured" aria-hidden="true"></i>Measured across datasets
+        <span class="mm-grp-n">{{ L.unified.size }} keys, bottle and CTD alike</span></h2>
+      <ul class="mm-rows mm-unified" id="mm-unified">
+        {%- for r in L.unified %}{% include measurement_row.html r=r %}{% endfor -%}
+      </ul>
 
-    <div class="mm-searchrow">
-      <label class="mm-search sp-search">
-        <span class="cc-muted" aria-hidden="true">⌕</span>
-        <input id="mm-q" type="search" autocomplete="off" spellcheck="false"
-               placeholder="temperature · nitrate · chlorophyll · CTD · TEMPPR01 · umol/kg …"
-               aria-label="Search measurements, series, datasets, units and NERC ids">
-        <span class="sp-n" id="mm-qn" role="status"></span>
-      </label>
-      <div class="mm-chips" id="mm-chips" role="group" aria-label="Filter by category"></div>
+      <h2 class="calm-group mm-grp-h"><i class="cc-i cc-i-view-list" aria-hidden="true"></i>By category
+        <span class="mm-grp-n">{{ L.categories.size }} categories · open one to list its measurements</span></h2>
+      <div class="calm-list mm-cats" id="mm-cats">
+        {%- for g in L.categories %}
+        <details class="calm-item mm-cat-item" data-cat="{{ g.name | escape }}" id="cat-{{ g.name | slugify }}">
+          <summary>
+            <span class="calm-item-g" aria-hidden="true"><i class="cc-i cc-i-{{ g.icon }}"></i></span>
+            <span class="calm-item-tx">
+              <span class="calm-item-t">{{ g.name | escape }}</span>
+              {%- if g.desc %}<span class="calm-item-s" title="{{ g.desc | escape }}">{{ g.desc | escape }}</span>{% endif -%}
+            </span>
+            <span class="calm-item-k"><span class="mm-cat-n" data-n="{{ g.rows.size }}">{{ g.rows.size }}</span> measurement{% if g.rows.size != 1 %}s{% endif %}{% if g.n_unified > 0 %} <span class="mm-cat-plus">+ {{ g.n_unified }} above</span>{% endif %}</span>
+            <i class="calm-chev cc-i cc-i-ui-down" aria-hidden="true"></i>
+          </summary>
+          <div class="calm-item-b">
+            {%- if g.realm == "bio" %}<p class="cc-muted">A biology category whose cell counts are measurements — rows of <span class="mono">obs_env</span>, not organisms with a taxon.</p>{% endif -%}
+            <ul class="mm-rows">
+              {%- for r in g.rows %}{% include measurement_row.html r=r %}{% endfor -%}
+            </ul>
+          </div>
+        </details>
+        {%- endfor %}
+      </div>
+      <p class="mm-empty" id="mm-empty" hidden>No measurement matches — try a variable, a series name, a dataset, a unit or a NERC id.</p>
+      <p class="mm-note">Category is the registry's (<span class="mono">metadata/category.csv</span>, the same the
+        Explorer folds its picker by). A key is the registry's variable where the crosswalk unifies two series, else
+        the measurement type itself; {{ c.n_p01 }} keys carry a NERC P01 concept.</p>
     </div>
 
     {%- comment -%} the timeline: one row per measurement, one bar per dataset that carries it,
-      1949 → the release year — WS-M4 draws it into #mm-tl from the inline record {%- endcomment -%}
-    <div class="mm-pane mm-tl-wrap">
-      <div class="mm-pane-h">
-        <h2 class="cc-eyebrow">Which measurements, in which datasets, in which years</h2>
-        <span class="mm-legend" id="mm-legend"></span>
+      1949 → the release year — assets/measurements.js draws it into #mm-tl from the inline record {%- endcomment -%}
+    <div class="tabpanel" data-panel="timeline" role="tabpanel" hidden>
+      <div class="mm-pane mm-tl-wrap">
+        <div class="mm-pane-h">
+          <h2 class="cc-eyebrow">Which measurements, in which datasets, in which years</h2>
+          <span class="mm-legend" id="mm-legend"></span>
+        </div>
+        <div class="mm-tl-scroll"><div class="mm-tl" id="mm-tl" role="table" aria-label="Measurements by dataset over time"></div></div>
       </div>
-      <div class="mm-tl-scroll"><div class="mm-tl" id="mm-tl" role="table" aria-label="Measurements by dataset over time"></div></div>
+      <p class="mm-note">One row per measurement, one bar per dataset that carries it, 1949 on the left and the release
+        year on the right; hover a bar for the dataset, its series, years, values, sampling events and depths. Two bars in
+        a row are two datasets measuring the same thing — the bottle's <span class="mono">temperature</span> and the CTD's
+        <span class="mono">temperature_ave</span>, comparable across datasets — never a dataset's own bottle samples
+        beside its sensor (the CTD files' <span class="mono">btl_*</span> series stay their own rows, so the bottle
+        dataset is not counted twice). The values column is the release grain
+        (<span class="mono">obs_env</span>); the CTD and METS full-resolution tables carry more behind the same names.</p>
     </div>
-    <p class="mm-note">One row per measurement, one bar per dataset that carries it, 1949 on the left and the release
-      year on the right; hover a bar for the dataset, its series, years, values, sampling events and depths. Two bars in
-      a row are two datasets measuring the same thing — the bottle's <span class="mono">temperature</span> and the CTD's
-      <span class="mono">temperature_ave</span>, comparable across datasets — never a dataset's own bottle samples
-      beside its sensor (the CTD files' <span class="mono">btl_*</span> series stay their own rows, so the bottle
-      dataset is not counted twice). The values column is the release grain
-      (<span class="mono">obs_env</span>); the CTD and METS full-resolution tables carry more behind the same names.</p>
+
+    <div class="tabpanel" data-panel="matrix" role="tabpanel" hidden>
+      <div class="mm-two">
+        <div class="mm-pane">
+          <div class="mm-pane-h">
+            <h2 class="cc-eyebrow">Which measurements, in which datasets</h2>
+            <span class="mm-hint">measurements · category × dataset</span>
+          </div>
+          <div class="mm-matrix" id="mm-matrix"></div>
+        </div>
+        <div class="mm-pane">
+          <div class="mm-pane-h">
+            <h2 class="cc-eyebrow">The datasets</h2>
+            <span class="mm-hint">series · years · values</span>
+          </div>
+          <ul class="mm-dslist" id="mm-dslist"></ul>
+        </div>
+      </div>
+      <p class="mm-note">Dataset colour is never the only cue: the name is always beside the dot, and the
+        matrix is one sequential ramp.</p>
+    </div>
   </div>
   <div class="mm-ttip" id="mm-ttip" role="tooltip" aria-hidden="true"></div>
-</section>
+</div>
 
 <script id="mm-data" type="application/json">{{ mm.inline }}</script>
 <script defer src="{{ '/assets/measurements.js' | relative_url }}"></script>

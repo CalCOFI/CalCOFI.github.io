@@ -75,9 +75,11 @@ can only pass by the layout actually being fixed:
              datasets with every cell drawn and the counts summing to the series; every timeline bar
              has its dataset NAMED in the row (identity is never colour alone); the timeline is
              wider than a phone on purpose, so its own container scrolls and the page does not; the
-             chips carry the record's counts and one is pressed; the search finds "nitrate",
-             "NTRAZZXX", "µmol/kg" and "METS". On a measurement page the years strip is DRAWN
-             (`.mm-drawn`, the `[viewBox]` trap again) with one labelled row per series and one cell
+             default view is the LIST (issue #30 D8 A) — the unified keys, then the categories,
+             collapsed, holding every key once; the one search finds "nitrate", "NTRAZZXX",
+             "µmol/kg" and "METS" in the list and the timeline. On a measurement page every fold is
+             closed on load and titled with its answer, then opened and measured; the years strip is
+             DRAWN (`.mm-drawn`, the `[viewBox]` trap again) in one row per series, with one cell
              per year the record counts, the depth bars are the record's bands × its series with
              every end label inside its column, the month strip is 12 cells per series, and each
              `.mm-url` is one line elided from the middle.
@@ -772,22 +774,48 @@ PROBE = r"""
   // the drawing with the data it was drawn from and never against a number typed here.
   const mmData = d.getElementById("mm-data");
   const mmStrip = d.getElementById("mm-strip-data");
+  // issue #30 (calm re-cut): a measurement page's folds are read CLOSED on load (docHeight above is
+  // the page with nothing open), then every .calm-fold is opened and the figures inside are read
+  // once they have drawn at their fold's width. "Other ways to say why" is not a .calm-fold, so it
+  // stays as the page left it.
+  const mmFoldsProbe = () => {
+    const folds = [...d.querySelectorAll("details.calm-fold")];
+    out.mmFolds = {
+      ids: folds.map(f => f.id || "?"),
+      openOnLoad: folds.filter(f => f.open).map(f => f.id || "?"),
+      // D14: every fold is titled with its answer
+      noAnswer: folds.filter(f => !((f.querySelector(":scope > summary .calm-ans") || {}).textContent || "").trim())
+        .map(f => f.id || "?"),
+      titles: folds.map(f => {
+        const c = f.querySelector(":scope > summary").cloneNode(true);
+        [...c.querySelectorAll(".calm-ans, .cc-i")].forEach(x => x.remove());
+        return c.textContent.replace(/\s+/g, " ").trim();
+      }),
+      measuredOpen: !!d.querySelector("section#measured") && !d.querySelector("section#measured").closest("details"),
+      waysLine: d.querySelectorAll(".calm-ways > a").length,
+      headPic: !!d.querySelector(".calm-head .mmf-what")
+    };
+    folds.forEach(f => { f.open = true; });
+  };
+  const mmPageProbe = () => {
   if (mmStrip) {
     let S = null; try { S = JSON.parse(mmStrip.textContent); } catch (e) {}
     let DP = null; try { DP = JSON.parse(d.getElementById("mm-depth-data").textContent); } catch (e) {}
     let MO = null; try { MO = JSON.parse(d.getElementById("mm-months-data").textContent); } catch (e) {}
-    const strip = d.getElementById("mm-strip"), dep = d.getElementById("mm-depth"), mon = d.getElementById("mm-months");
-    const bars = [...dep.querySelectorAll(".mm-b")];
+    // issue #30: one strip per series, in that series' own row of "Measured in"
+    const strips = [...d.querySelectorAll("svg.mm-strip[data-i]")], dep = d.getElementById("mm-depth"), mon = d.getElementById("mm-months");
+    // a per-cast key (grain "sample") has no depth figure at all, so #mm-depth may be absent
+    const bars = dep ? [...dep.querySelectorAll(".mm-b")] : [];
     out.mmPage = {
       key: S && S.key,
       recRows: S ? S.rows.length : 0,
       // DRAWN, not merely populated — the `[viewBox]` trap the species strip hit on 2026-09-09
-      stripDrawn: strip.classList.contains("mm-drawn"),
-      stripH: px(strip.getBoundingClientRect().height),
-      stripRows: strip.querySelectorAll("text.mm-rl").length,
-      stripRects: strip.querySelectorAll("rect").length,
+      stripDrawn: strips.length > 0 && strips.every(x => x.classList.contains("mm-drawn")),
+      stripH: strips.length ? Math.min(...strips.map(x => px(x.getBoundingClientRect().height))) : 0,
+      stripRows: strips.filter(x => x.classList.contains("mm-drawn")).length,
+      stripRects: strips.reduce((a, x) => a + x.querySelectorAll("rect").length, 0),
       recRects: S ? S.rows.reduce((a, r) => a + Object.keys(r.y || {}).filter(k => r.y[k] > 0).length, 0) : 0,
-      depthBands: dep.querySelectorAll(".mm-lb").length,
+      depthBands: dep ? dep.querySelectorAll(".mm-lb").length : 0,
       recBands: DP ? (DP.bands || []).length : 0,
       depthBars: bars.length,
       // an end label that hangs outside its own column is the failure this padding exists for
@@ -811,7 +839,7 @@ PROBE = r"""
       noWhat: !d.getElementById("what"),
       noCol: !d.getElementById("mmf-col"),
       howPanels: (() => {
-        const how = d.getElementById("how"), ts = how && how.nextElementSibling;
+        const ts = d.getElementById("ts-how");
         if (!ts || !ts.classList.contains("tabset")) return null;
         const row = ts.querySelector(".tabrow");
         return { panels: ts.querySelectorAll(".tabpanel").length,
@@ -832,17 +860,30 @@ PROBE = r"""
     overflow: a.scrollWidth > a.clientWidth + 1,
     t: (a.textContent || "").trim().slice(0, 48)
   }));
+  };
 
   if (mmData) {
     let rec = null; try { rec = JSON.parse(mmData.textContent); } catch (e) {}
     const tl = d.getElementById("mm-tl"), mx = d.querySelector(".mm-mx");
     const cells = mx ? [...mx.querySelectorAll(".mm-cell")] : [];
+    // issue #30 D8 A / D10 B: the list is the default view and the ONE search (#door-q) filters it
+    // and the timeline alike; a search reads both
     const read = () => ({
       rows: tl.querySelectorAll(".mm-nm").length,
-      n: (d.getElementById("mm-qn") || {}).textContent
+      list: d.querySelectorAll("#ts-mm .mm-row[data-q]:not([hidden])").length,
+      n: ((d.querySelector("#door-search .dsearch-k") || {}).textContent || "").trim()
     });
+    const catItems = [...d.querySelectorAll("#mm-cats > details.mm-cat-item")];
     out.mm = {
-      h1: (d.querySelector(".mm-idx-head h1") || {}).textContent || null,
+      h1: (d.querySelector(".calm-cathead h1") || {}).textContent || null,
+      listCats: catItems.map(g => ({ cat: g.getAttribute("data-cat"), open: g.open,
+        rows: g.querySelectorAll(".mm-row[data-q]").length,
+        n: +((g.querySelector(".mm-cat-n") || {}).textContent || "").replace(/[^0-9]/g, "") })),
+      listUnified: d.querySelectorAll("#mm-unified > .mm-row[data-q]").length,
+      listRowsNoName: [...d.querySelectorAll("#ts-mm .mm-row[data-q]")].filter(li =>
+        [...li.querySelectorAll(".mm-row-ds .mm-dot")].some(dot => !(dot.parentElement.textContent || "").trim())).length,
+      viewTabs: [...d.querySelectorAll("#ts-mm > .tabrow > button")].map(b => b.getAttribute("data-tab")),
+      listShown: !((d.querySelector('#ts-mm > .tabpanel[data-panel="list"]') || {}).hidden),
       rec: rec && rec.counts,
       cats: rec ? rec.cats.length : 0,
       ds: rec ? rec.ds.length : 0,
@@ -859,10 +900,6 @@ PROBE = r"""
       mxHeads: mx ? mx.querySelectorAll(".mm-mh").length : 0,
       mxRows: mx ? mx.querySelectorAll(".mm-rl2").length : 0,
       dsRows: d.querySelectorAll("#mm-dslist li").length,
-      chips: [...d.querySelectorAll("#mm-chips button")].map(b => ({
-        cat: b.getAttribute("data-cat"), pressed: b.getAttribute("aria-pressed"),
-        n: +String((b.querySelector(".mm-n") || {}).textContent || "").replace(/[^0-9]/g, "")
-      })),
       legend: d.querySelectorAll("#mm-legend span").length,
       tlRole: tl.getAttribute("role"),
       tipRole: (d.getElementById("mm-ttip") || {}).getAttribute ? d.getElementById("mm-ttip").getAttribute("role") : null,
@@ -870,7 +907,7 @@ PROBE = r"""
       barsWithoutName: [...tl.querySelectorAll(".mm-bar")].length -
                        [...tl.querySelectorAll(".mm-ds span")].length
     };
-    const q = d.getElementById("mm-q");
+    const q = d.getElementById("door-q");
     const MM_TERMS = ["nitrate", "NTRAZZXX", "µmol/kg", "METS"];
     const mtype = t => new Promise(res => {
       q.value = t;
@@ -885,6 +922,7 @@ PROBE = r"""
   // (plan 2026-09-11 "Measurement faces …" § D1–D7, § Verification MF5). Everything is read back
   // against the page's OWN #mm-face payload, so the check compares the drawing with the data it
   // was drawn from and never with a number typed here.
+  const mfProbe = () => {
   const mf = d.getElementById("mm-face");
   if (mf) {
     let P = null;
@@ -900,14 +938,10 @@ PROBE = r"""
     out.mfaces = {
       payload: P,
       kind: P && P.kind,
-      // the column's NAME only: round 2 hangs a way down ("6 bands \u2193", "2 methods \u2193") off the
-      // same line, and that link is not part of what the column is called
-      cols: [...d.querySelectorAll(".mmf-face > .mmf-col > .mmf-k")].map(e => {
-        const c = e.cloneNode(true);
-        [...c.querySelectorAll(".mmf-rt")].forEach(x => x.remove());
-        return c.textContent.trim();
-      }),
-      mols: [...d.querySelectorAll(".mmf-face .mmf-mol")].map(s => Object.assign(box(s), {
+      // issue #30: the face row's What column is the head's ONE picture; How and Why are folds
+      what: !!d.querySelector(".calm-head .mmf-what"),
+      folds: [...d.querySelectorAll("details.calm-fold")].map(f => f.id),
+      mols: [...d.querySelectorAll(".mmf-what .mmf-mol")].map(s => Object.assign(box(s), {
         label: s.getAttribute("aria-label"), role: s.getAttribute("role"),
         paths: s.querySelectorAll("path,line,circle,polygon,text").length
       })),
@@ -915,18 +949,18 @@ PROBE = r"""
       stands: (d.querySelector(".mmf-stands") || {}).textContent || null,
       // the ids row of the head: a stand-in must show none of the face it borrows
       ids: (d.querySelector(".mm-ids") || {}).textContent || "",
-      plat: d.querySelectorAll(".mmf-face .mmf-pg svg").length,
+      plat: d.querySelectorAll(".mmf-how .mmf-pg svg").length,
       pins: d.querySelectorAll(".mmf-pin").length,
       spark: !!(d.getElementById("mmf-spark") && d.getElementById("mmf-spark").classList.contains("mmf-drawn")),
       // round 2 (WS-R2, plan § D4): a figure has a ramp or an axis, labels on it, and a hover
       sparkTicks: d.querySelectorAll("#mmf-spark text.mmf-tick").length,
       sparkStretch: (d.getElementById("mmf-spark") || {}).getAttribute
         ? d.getElementById("mmf-spark").getAttribute("preserveAspectRatio") : null,
-      ramp: d.querySelectorAll(".mmf-face svg.mmf-ramp").length,
-      rampGrad: d.querySelectorAll(".mmf-face svg.mmf-ramp linearGradient").length,
-      rampMarks: d.querySelectorAll(".mmf-face svg.mmf-ramp text.mmf-mklab").length,
+      ramp: d.querySelectorAll(".mmf-what svg.mmf-ramp").length,
+      rampGrad: d.querySelectorAll(".mmf-what svg.mmf-ramp linearGradient").length,
+      rampMarks: d.querySelectorAll(".mmf-what svg.mmf-ramp text.mmf-mklab").length,
       // the pin's href, so the check can see it reaches calcofi.org and not a column that is not there
-      pinHrefs: [...d.querySelectorAll(".mmf-face a.mmf-pin")].map(a => a.getAttribute("href")),
+      pinHrefs: [...d.querySelectorAll("#how a.mmf-pin")].map(a => a.getAttribute("href")),
       tip: d.querySelectorAll("body > .mmf-tip").length,
       // the history's own scale per row: a ± label beside every band, and the toggle above it
       anomPm: anom ? [...anom.querySelectorAll("text.mmf-tick")].filter(t => t.textContent.trim().startsWith("\u00b1")).length : 0,
@@ -947,14 +981,28 @@ PROBE = r"""
       col: !!(d.getElementById("mmf-col") && d.getElementById("mmf-col").classList.contains("mmf-drawn")),
       colRows: d.querySelectorAll("#mmf-col .mmf-dl").length,
       eovQs: d.querySelectorAll(".mmf-eov .mmf-qs li").length,
-      // the three sections, in order
-      heads: [...d.querySelectorAll(".mm-col-main h2.cc-h3")].map(h => h.textContent.trim()),
+      // the folds' titles, in order (issue #30: the sections became folds titled with their answer)
+      heads: [...d.querySelectorAll("details.calm-fold > summary")].map(sm => {
+        const c = sm.cloneNode(true);
+        [...c.querySelectorAll(".calm-ans, .cc-i")].forEach(x => x.remove());
+        return c.textContent.replace(/\s+/g, " ").trim();
+      }),
       // nothing on the page may be wider than the page (each chart scrolls in its OWN wrapper)
-      wide: [...d.querySelectorAll(".mmf-face, .mmf-sent, .mmf-alts, .mmf-card, .mmf-eov")]
+      wide: [...d.querySelectorAll(".mmf-what, .mmf-sent, .mmf-alts, .mmf-card, .mmf-eov")]
         .filter(e => e.scrollWidth > e.clientWidth + 1)
         .map(e => String(e.className) + " " + e.scrollWidth + ">" + e.clientWidth)
     };
   }
+  };
+  if (mmStrip) {
+    mmFoldsProbe();
+    return new Promise(res => setTimeout(() => {
+      try { mmPageProbe(); mfProbe(); } catch (e) { out.mmError = String(e); }
+      res(out);
+    }, 700));
+  }
+  mmPageProbe();
+  mfProbe();
 
   // ── the one search over the three indexes (plan 2026-09-10 § D7 (3)) ───────
   // assets/door-search.js fetches the three records on the FIRST focus, so the box has to be
@@ -1048,6 +1096,11 @@ MAX_HERO_GAP = 120    # px between the head band's two columns
 MAX_GRID_H = 4400     # px at 1470 with the staging record (was 4,910)
 MAX_HERO_VH = 62      # the front door's drawing at 1470: the catalog must start within reach
 MAX_TILE_STRETCH = 1.25
+# issue #30 (calm re-cut): full-page heights at 1470 px with nothing open, header and footer included.
+# The mockups measured /measurements/ at 1,300 px and their heaviest measurement page (temperature,
+# two series) at 1,476 px; the ceilings are those + 25 %.
+MAX_MM_INDEX_H = 1625
+MAX_MM_PAGE_H = 1850
 
 # ── the front door's navigation (plan 2026-09-10 § D7, WS-M0) ─────────────────
 # The six words plus calcofi.org ↗ — seven items, as before D7. DOCS and NEWS are pages, so the
@@ -1458,7 +1511,8 @@ def check(path, r, width, theme, fails, notes):
             fails.append(f"{where}: the measurements index h1 carries a digit: {mm['h1']!r}")
         notes.append(f"{where}: timeline {mm['tlRows']} rows / {mm['tlBars']} bars in {mm['tlCats']} categories, "
                      f"matrix {mm['mxRows']}x{mm['ds']} = {mm['mxCells']} cells ({mm['mxFilled']} with a series, "
-                     f"summing {mm['mxSum']}), {mm['dsRows']} datasets, {len(mm['chips'])} chips")
+                     f"summing {mm['mxSum']}), {mm['dsRows']} datasets, list {mm['listUnified']} unified + "
+                     f"{len(mm['listCats'])} categories, {r.get('docHeight')}px")
         if mm["tlRows"] != rec.get("measurements"):
             fails.append(f"{where}: the timeline draws {mm['tlRows']} rows, the record has "
                          f"{rec.get('measurements')} measurements")
@@ -1491,19 +1545,57 @@ def check(path, r, width, theme, fails, notes):
             fails.append(f"{where}: the timeline's role is {mm['tlRole']!r}, expected 'table'")
         if mm["tipRole"] != "tooltip":
             fails.append(f"{where}: the tooltip's role is {mm['tipRole']!r}, expected 'tooltip'")
-        chips = mm["chips"]
-        if not chips or chips[0]["cat"] != "" or chips[0]["n"] != rec.get("measurements"):
-            fails.append(f"{where}: the first chip is not 'all' with the record's {rec.get('measurements')}")
-        if sum(c["n"] for c in chips[1:]) != rec.get("measurements"):
-            fails.append(f"{where}: the category chips count {sum(c['n'] for c in chips[1:])}, the record "
-                         f"has {rec.get('measurements')} measurements")
-        if not any(c["pressed"] == "true" for c in chips):
-            fails.append(f"{where}: no chip carries aria-pressed=true")
+        # issue #30 D8 A: the default view is the LIST — the unified keys on top, then one row per
+        # category, collapsed on load, each opening to its keys; every key once, counts the record's
+        lc = mm["listCats"]
+        if not mm["listShown"] or mm["viewTabs"][:1] != ["list"]:
+            fails.append(f"{where}: the list is not the default view (tabs {mm['viewTabs']!r})")
+        if "timeline" not in mm["viewTabs"] or "matrix" not in mm["viewTabs"]:
+            fails.append(f"{where}: the timeline and the matrix are not view tabs ({mm['viewTabs']!r})")
+        if len(lc) != mm["cats"]:
+            fails.append(f"{where}: the list has {len(lc)} category rows for {mm['cats']} categories")
+        if mm["listUnified"] != rec.get("n_unified"):
+            fails.append(f"{where}: {mm['listUnified']} unified keys on top, the record has {rec.get('n_unified')}")
+        if mm["listUnified"] + sum(c["rows"] for c in lc) != rec.get("measurements"):
+            fails.append(f"{where}: the list holds {mm['listUnified'] + sum(c['rows'] for c in lc)} keys, the "
+                         f"record has {rec.get('measurements')} measurements")
+        for c in lc:
+            if c["n"] != c["rows"]:
+                fails.append(f"{where}: category {c['cat']!r} says {c['n']} but lists {c['rows']}")
+        opened = [c["cat"] for c in lc if c["open"]]
+        if opened:
+            fails.append(f"{where}: categories open on load: {opened!r} (D8 A: collapsed)")
+        if mm["listRowsNoName"]:
+            fails.append(f"{where}: {mm['listRowsNoName']} list row(s) with a dataset dot and no name")
+        if width >= 1400 and (r.get("docHeight") or 0) > MAX_MM_INDEX_H:
+            fails.append(f"{where}: the catalog is {r.get('docHeight')}px with nothing open, max {MAX_MM_INDEX_H}")
         s = mm.get("search") or {}
-        notes.append(f"{where}: search " + " · ".join(f"{t}: {v['rows']}" for t, v in s.items()))
+        notes.append(f"{where}: search " + " · ".join(f"{t}: {v['list']} listed / {v['rows']} timeline" for t, v in s.items()))
         for term in ("nitrate", "NTRAZZXX", "µmol/kg", "METS"):
             if s.get(term, {}).get("rows", 0) < 1:
-                fails.append(f"{where}: the index search finds nothing for {term!r}")
+                fails.append(f"{where}: the index search finds nothing for {term!r} in the timeline")
+            if s.get(term, {}).get("list", 0) < 1:
+                fails.append(f"{where}: the one search finds nothing for {term!r} in the list")
+
+    if r.get("mmError"):
+        fails.append(f"{where}: the measurement-page probe threw: {r['mmError']}")
+    mfo = r.get("mmFolds")
+    if mfo:
+        # issue #30: one column; Measured in open; the ways one line; everything else a fold, closed
+        # on load and titled with its answer (D14); the page within its height with nothing open
+        notes.append(f"{where}: {len(mfo['ids'])} folds {mfo['titles']!r}, {r.get('docHeight')}px")
+        if mfo["openOnLoad"]:
+            fails.append(f"{where}: folds open on load: {mfo['openOnLoad']!r}")
+        if mfo["noAnswer"]:
+            fails.append(f"{where}: folds with no answer in their title: {mfo['noAnswer']!r} (D14)")
+        if not mfo["measuredOpen"]:
+            fails.append(f"{where}: 'Measured in' is not an open section")
+        if mfo["waysLine"] < 3:
+            fails.append(f"{where}: the ways line has {mfo['waysLine']} link(s)")
+        if "ways" not in mfo["ids"] or "cite" not in mfo["ids"]:
+            fails.append(f"{where}: no 'Every way in' or 'Cite' fold ({mfo['ids']!r})")
+        if width >= 1400 and (r.get("docHeight") or 0) > MAX_MM_PAGE_H:
+            fails.append(f"{where}: the page is {r.get('docHeight')}px with nothing open, max {MAX_MM_PAGE_H}")
 
     mp = r.get("mmPage")
     if mp:
@@ -1514,7 +1606,7 @@ def check(path, r, width, theme, fails, notes):
             fails.append(f"{where}: the years strip is not drawn (.mm-drawn {mp['stripDrawn']}, "
                          f"{mp['stripH']}px tall)")
         if mp["stripRows"] != mp["recRows"]:
-            fails.append(f"{where}: the strip labels {mp['stripRows']} rows, the record has {mp['recRows']} series")
+            fails.append(f"{where}: {mp['stripRows']} row(s) draw a years strip, the record has {mp['recRows']} series")
         if mp["stripRects"] != mp["recRects"]:
             fails.append(f"{where}: the strip draws {mp['stripRects']} year cells, the record counts "
                          f"{mp['recRects']} years with a value")
@@ -1574,10 +1666,14 @@ def check(path, r, width, theme, fails, notes):
     if mfa:
         P = mfa.get("payload") or {}
         kind = mfa.get("kind")
-        # the row: three columns, always in this order — a reader who has read one page has read all
-        if mfa["cols"] != ["What", "How", "Why"]:
-            fails.append(f"{where}: the face row's columns are {mfa['cols']!r}, expected What · How · Why")
-        # the WHAT column is never empty: a drawn structure, or a small figure in its place
+        # issue #30: the face row's What column is the head's ONE picture, and How then Why are folds,
+        # always in that order — a reader who has read one page has read all
+        if not mfa["what"]:
+            fails.append(f"{where}: the head carries no picture (.calm-head .mmf-what) though the page has a face")
+        fo = [f for f in mfa["folds"] if f in ("how", "why")]
+        if fo != ["how", "why"]:
+            fails.append(f"{where}: the face's folds are {fo!r}, expected how · why")
+        # the WHAT picture is never empty: a drawn structure, or a small figure in its place
         if not mfa["mols"] and not mfa["mini"]:
             fails.append(f"{where}: the What column draws neither a structure nor a figure "
                          f"(face kind {kind!r})")
@@ -1711,8 +1807,8 @@ def check(path, r, width, theme, fails, notes):
         # falsy now, kept only so an older record replayed through this probe stays harmless.
         if mfa["col"] and mfa["colRows"] < 1:
             fails.append(f"{where}: the water-column figure is drawn with no bands")
-        # § M7: "What it is" is retired (the definition and the chain moved to the face's own What
-        # column, R2); "How it is measured" and "Why it matters" remain, in order
+        # § M7: "What it is" is retired (the definition moved to the head picture's caption, R2 and
+        # issue #30); "How it is measured" and "Why it matters" remain as folds, in order
         if "What it is" in mfa["heads"]:
             fails.append(f"{where}: 'What it is' section still present ({mfa['heads']!r})")
         for h in ("How it is measured", "Why it matters"):
