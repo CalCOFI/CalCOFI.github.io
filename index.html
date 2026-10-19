@@ -14,7 +14,8 @@ layout: default
   carries which (#find, or ?door=find), and the old anchors still land: #datasets opens Find,
   #explore Visualize, #access Download programmatically, #build Build — so does the header, whose
   words are the same links (D3 A). No yellow on the first screen (D6 A): each panel carries one
-  yellow button to its real destination.
+  yellow button to its real destination, except Download programmatically, where Get the data is the
+  destination (Erin, 2026-10-19).
 
   Every number on the first screen is read at build (site.data.catalog.numbers, site.data.reach);
   none is typed.
@@ -79,13 +80,12 @@ layout: default
 
   <div class="fd-ask">
     <h2 class="cc-h2">What do you want to do?</h2>
-    <p class="fd-hint">Each door opens below, one at a time.</p>
     {%- comment -%} Dan's seven pathways (issue #30), in his words; the last two drawn smaller (D5 A) {%- endcomment -%}
     <ul class="fd-doors" id="doors">
       <li><button type="button" class="fd-door" id="door-find" data-door="find" aria-expanded="false" aria-controls="find">
         <i class="cc-i cc-i-door-find fd-door-i" aria-hidden="true"></i>
         <span class="fd-door-t">Find and download data</span>
-        <span class="fd-door-b">Biological, physical and chemical observations by dataset, species or measurement.</span>
+        <span class="fd-door-b">Biological, physical and chemical observations by station, dataset, species or measurement.</span>
         <i class="cc-i cc-i-ui-down fd-door-chev" aria-hidden="true"></i>
       </button></li>
       <li><button type="button" class="fd-door" id="door-explore" data-door="explore" aria-expanded="false" aria-controls="explore">
@@ -133,6 +133,10 @@ layout: default
   The id the old anchor named — #datasets — is the catalog block inside it.
 {%- endcomment -%}
 {%- assign rel = site.data.catalog.release -%}
+{%- comment -%} The Data Finder: Erin's name for the station app (db-viz-station), map-first and dataset-first,
+  reviewed by the committee. Its product card carries the address; the fallback is the same address. {%- endcomment -%}
+{%- assign finder = data.products | where: "key", "db-viz-station" | first -%}
+{%- assign finder_url = finder.live_url | default: "https://app.calcofi.io/station/" -%}
 {%- assign relv = site.data.catalog.versions | where: "version", rel.version | first -%}
 <section class="fd-panel" id="find" hidden aria-labelledby="find-h">
   <div class="cc-container">
@@ -147,6 +151,7 @@ layout: default
         <p class="blurb">{{ ds_section.blurb }} Every dataset page lists who collected it, its coverage, every endpoint, the licence and how to cite it.</p>
         <p class="fd-pact">
           <a class="cc-btn cc-btn-cta" href="{{ '/datasets/' | relative_url }}">Browse the data catalog</a>
+          <a class="cc-btn cc-btn-primary" href="{{ finder_url }}" title="{{ finder.title | default: 'Station Explorer' | escape }}: what was sampled at each station, by dataset">Open the Data Finder</a>
           <a class="cc-text-link" href="{{ '/data.json' | relative_url }}">data.json</a>
         </p>
       </div>
@@ -159,7 +164,7 @@ layout: default
 
       <figure class="fd-map">
         <div class="cc-eyebrow">Where{% if nums.stations %} · {{ nums.stations }} stations{% endif %}</div>
-        <div id="map-host" data-href="https://app.calcofi.io/station/"></div>
+        <div id="map-host" data-href="{{ finder_url }}"></div>
         <figcaption>
           <span class="fd-cap">
           {%- if nums.stations %}{{ nums.stations }} grid cells{% endif -%}
@@ -168,7 +173,7 @@ layout: default
           {%- if nums.grid.historical %} · {{ nums.grid.historical }} historical{% endif -%}
           {%- if nums.since %} · occupied {{ nums.since }} – {{ nums.date | slice: 0, 4 }}{% endif -%}
           </span>
-          <a class="cc-text-link" href="https://app.calcofi.io/station/">Open the Station Explorer →</a>
+          <a class="cc-text-link" href="{{ finder_url }}">Open the Data Finder →</a>
         </figcaption>
       </figure>
 
@@ -373,7 +378,6 @@ layout: default
       <div class="cc-eyebrow">{{ acs.title }}{% for t in acs.tabs %}{% capture tn %}{% include tab_count.html s=acs t=t %}{% endcapture %} · {{ tn }} {{ t.title | downcase }}{% endfor %}</div>
       <h2 class="cc-h2" id="program-h">Download programmatically</h2>
       <p class="blurb">{{ acs.blurb }} Every route reads the frozen release directly: no server to stand up, no credentials.</p>
-      <p class="fd-pact"><a class="cc-btn cc-btn-cta" href="https://calcofi.io/docs/">Choose an access method</a></p>
     </div>
     <div id="access">
     <div class="fd-get">
@@ -495,7 +499,7 @@ SELECT * FROM read_json('{{ rel.catalog_url }}')</pre>
         {%- if docs_p -%}{% include product_card.html p=docs_p section="Docs" %}{%- endif -%}
       </div>
       <div class="fd-log">
-        <div class="cc-eyebrow">Ship's log · what's new</div>
+        <div class="cc-eyebrow">What's new · updates and recent developments to CalCOFI data systems</div>
         {% include log.html n=4 %}
         <p class="fd-links">
           <a class="cc-text-link" href="{{ '/news/' | relative_url }}">All entries →</a>

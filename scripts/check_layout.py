@@ -91,11 +91,12 @@ can only pass by the layout actually being fixed:
 
   front door (/, issue #30: one screen, seven doors) the seven doors, in order, each controlling
              its own panel and >= 32 px tall, end above the 1280 x 645 fold at >= 1280; on a phone the
-             head, the doors and the quiet drawing stack in that order; no door is open on load unless
+             head, the quiet drawing and the doors stack in that order (the ship stays at the top); no door is open on load unless
              the URL names one (#door, ?door=, ?q=, ?tab=), and then exactly one is; the page is
              <= 950 px at 1470 with none open; opening Find then Visualize leaves only Visualize open
              and a second click closes it; nothing on the first screen is --warn or yellow, and each
-             panel carries exactly one yellow button; the quiet drawing has no pins and the Learn
+             panel carries exactly one yellow button, except #program, which carries none (Get the
+             data is its destination); the quiet drawing has no pins and the Learn
              panel's has them, each answering 200/206 to a ranged GET (checked once, not per theme);
              the five numbers equal the inline #reach record's; the years strip has
              datasets.length rows and the map stations.length marks; every product key in
@@ -450,7 +451,7 @@ PROBE = r"""
         top: px(top(b)), bottom: px(bot(b)), h: px(b.getBoundingClientRect().height), w: px(b.getBoundingClientRect().width),
         controls: b.getAttribute("aria-controls"), expanded: b.getAttribute("aria-expanded") })),
       screenBottom: px(bot(fds)),
-      order: who && ask && fig ? { whoBottom: px(bot(who)), askTop: px(top(ask)), askBottom: px(bot(ask)), figTop: px(top(fig)) } : null,
+      order: who && ask && fig ? { whoBottom: px(bot(who)), askTop: px(top(ask)), askBottom: px(bot(ask)), figTop: px(top(fig)), figBottom: px(bot(fig)) } : null,
       openOnLoad: openNow(),
       heightOnLoad: d.documentElement.scrollHeight,
       panelCtas: panels.map(p => ({ id: p.id, n: p.querySelectorAll(".cc-btn-cta").length })),
@@ -1896,10 +1897,10 @@ def check(path, r, width, theme, fails, notes):
             late = [x["id"] for x in doors if x["bottom"] > FOLD_H]
             if late:
                 fails.append(f"{where}: door(s) {late} end below the {FOLD_H}px fold (first screen ends at {fr['screenBottom']}px)")
-        # on a phone the doors stack under the head and the drawing drops below them
+        # on a phone the drawing stays at the top, under the head, and the doors stack below it
         o = fr.get("order")
-        if o and width < 900 and not (o["askTop"] >= o["whoBottom"] - 1 and o["figTop"] >= o["askBottom"] - 1):
-            fails.append(f"{where}: on a phone the head, the doors and the drawing do not stack in that order ({o})")
+        if o and width < 900 and not (o["figTop"] >= o["whoBottom"] - 1 and o["askTop"] >= o["figBottom"] - 1):
+            fails.append(f"{where}: on a phone the head, the drawing and the doors do not stack in that order ({o})")
         # no door open on load unless the URL names one (a hash, ?door=, ?q= or ?tab=)
         names_one = bool(re.search(r"#.|[?&](door|q|tab)=", path))
         if not names_one and fr["openOnLoad"]:
@@ -1919,14 +1920,16 @@ def check(path, r, width, theme, fails, notes):
                 fails.append(f"{where}: a second click on the open door left {dv['afterClose']} open")
             if dv["restored"] != fr["openOnLoad"]:
                 fails.append(f"{where}: the probe could not put the doors back ({dv['restored']} vs {fr['openOnLoad']})")
-        # D6 A: no yellow and no --warn on the first screen; each panel carries exactly one yellow
+        # D6 A: no yellow and no --warn on the first screen; each panel carries exactly one yellow,
+        # but Download programmatically none: its destination is the Get the data box (Erin, 2026-10-19)
         if fr["warnEls"]:
             fails.append(f"{where}: --warn on the first screen: {', '.join(sorted(set(fr['warnEls']))[:4])}")
         if fr["ctaEls"]:
             fails.append(f"{where}: {len(fr['ctaEls'])} yellow (--cta-bg) element(s) on the first screen, expected none (D6)")
         for p in fr["panelCtas"]:
-            if p["n"] != 1:
-                fails.append(f"{where}: the {p['id']!r} panel carries {p['n']} yellow buttons, expected exactly one")
+            want = 0 if p["id"] == "program" else 1
+            if p["n"] != want:
+                fails.append(f"{where}: the {p['id']!r} panel carries {p['n']} yellow buttons, expected {want}")
         # the drawing: quiet on the first screen, annotated behind Learn
         if not fr["quietDrawn"]:
             fails.append(f"{where}: the quiet section drawing (#sec-quiet) was not drawn")

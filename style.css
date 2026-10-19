@@ -38,7 +38,7 @@ main#panel { width: 100%; }
    section drawn quiet by assets/section.js into #sec-quiet) and "What do you want to do?" with seven
    doors on the right. A door opens ONE full-width panel on the Sand band beneath the first screen
    (the inline script at the foot of index.html); everything the page carried before lives in one of
-   them. No yellow on the first screen: each panel carries its one .cc-btn-cta. Every rule here is
+   them. No yellow on the first screen: each panel but #program carries its one .cc-btn-cta. Every rule here is
    prefixed fd- or scoped under .fd-panel, except the shared .sec / .map / .strip / .tile-tabs / .log
    drawings below, which the panels reuse unchanged. */
 .fd-screen {
@@ -65,8 +65,7 @@ main#panel { width: 100%; }
 .sec-quiet .btl { r: 3.6; }
 
 /* the seven doors: a disclosure list, the last two drawn smaller (D5 A) */
-.fd-ask .cc-h2 { margin: 0.1em 0 0.15em; }
-.fd-hint { margin: 0 0 10px; font-size: 15px; color: var(--muted); }
+.fd-ask .cc-h2 { margin: 0.1em 0 0.4em; }
 .fd-doors { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--border); }
 .fd-door {
   display: grid; grid-template-columns: 28px minmax(0, 1fr) 18px; grid-template-rows: auto auto; column-gap: 14px; row-gap: 1px; align-items: center;
@@ -150,8 +149,9 @@ main#panel { width: 100%; }
 @media (max-width: 900px) {
   .fd-screen { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto; gap: 18px; padding-top: 20px; }
   .fd-who { grid-column: 1; grid-row: auto; order: 1; }
-  .fd-ask { grid-column: 1; grid-row: auto; order: 2; }
-  .fd-fig { grid-column: 1; grid-row: auto; order: 3; }
+  /* the ship stays at the top on a phone, under the numbers, before the doors (Erin, 2026-10-19) */
+  .fd-fig { grid-column: 1; grid-row: auto; order: 2; }
+  .fd-ask { grid-column: 1; grid-row: auto; order: 3; }
   .fd-find { grid-template-columns: minmax(0, 1fr); grid-template-areas: "head" "cat" "years" "map"; }
   .fd-years, .fd-map { margin-top: 20px; }
   .fd-two { grid-template-columns: minmax(0, 1fr); }

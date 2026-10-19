@@ -26,6 +26,8 @@ if [ -z "${CC_SKIP_TESTS:-}" ]; then
   ruby _test/measurements_short_label_test.rb >/dev/null || { echo "FAIL: _test/measurements_short_label_test.rb" >&2; exit 1; }
   # a licence the provider has not stated yet reads as pending in the citation and is absent from JSON-LD
   ruby _test/licence_pending_test.rb >/dev/null || { echo "FAIL: _test/licence_pending_test.rb" >&2; exit 1; }
+  # a dataset's original page is one "Original at …" way, after the apps, before ERDDAP
+  ruby _test/source_way_test.rb >/dev/null || { echo "FAIL: _test/source_way_test.rb" >&2; exit 1; }
 fi
 
 scripts/fetch_release.sh
