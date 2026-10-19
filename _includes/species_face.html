@@ -1,79 +1,72 @@
 {%- comment -%}
-  The face row, the sentence and the credit line — plan 2026-09-11 § D1–D4, D8, D9.
+  A taxon page's face, in the parts the calm head (issue #30, D11 A) places separately — plan
+  2026-09-11 § D1–D4, D8, D9 for what each part is.
 
   Everything here is composed server-side in _plugins/species.rb from _data/taxa_media.json and
   _data/size_reference.csv: this include only lays it out. It is CONTENT, not a figure, so no part
-  of it waits for JavaScript.
+  of it waits for JavaScript, and a taxon with no sidecar entry renders nothing from any part.
 
-  Three slots, each independently absent:
-    · the silhouette — the constant (§ D1). Inline SVG filled with `currentColor`, so one 2–12 KB
-      vector is navy on white and bone on navy. Drawn only when the sidecar carries normalised
-      markup; a silhouette drawn from an ancestor says so.
-    · the photo — the enrichment (§ D2). A fixed 3 : 2 crop with the stored focal point, the radial
-      fade applied to the FRAME so the picture dissolves into whatever ground the page has. A
-      non-commercial licence is accepted and labelled (§ D7).
-    · the glance — two bars, the taxon's length and the nearest familiar reference (§ D3), or one
-      line saying no length is on record. Never a typed number.
+    part="mark"      the silhouette as the calm-mark beside the name — the constant (§ D1). Inline SVG
+                     filled with `currentColor`, so one 2–12 KB vector is navy on white and bone on
+                     navy. Its credit is in the Credits fold.
+    part="pic"       the head's ONE picture: the photo (§ D2), or — where the sidecar has no photo —
+                     the silhouette drawn large. The credit line sits under it as the calm-cap; the
+                     photo's long "(c) … uploaded by …" string is the line's `title`, not printed.
+    part="sentence"  the sentence (round 2 § P1, D6): each part keeps its span for JSON-LD and
+                     check_layout.py and ends in one small `.cc-src` badge whose `title` is its source.
+    part="glance"    two bars, the taxon's length and the nearest familiar reference (§ D3), or one
+                     line saying no length is on record. Never a typed number. In the How big fold.
 
-  A taxon with no sidecar entry renders nothing at all from here, and the page keeps the spacing it
-  had before this include existed.
-
-  Round 2 (§ P1, D6): the sentence's parts keep their spans (JSON-LD and check_layout.py read them)
-  but end in a small `.cc-src` badge instead of an underline + legend; the silhouette's stand-in
-  caption folds into its own one-line `.sp-credit` rather than a separate figcaption; the photo's
-  long "(c) … uploaded by …" string moves to the credit line's `title` instead of being printed.
-
-  include species_face.html face=page.face glance=page.glance sentence=page.sentence
+  include species_face.html part="pic" face=page.face
+  include species_face.html part="sentence" sentence=page.sentence
+  include species_face.html part="glance" glance=page.glance face=page.face
 {%- endcomment -%}
-{%- assign f = include.face -%}
-{%- assign g = include.glance -%}
-{%- assign s = include.sentence -%}
+{%- assign sf_ = include.face -%}
+{%- assign sg_ = include.glance -%}
+{%- assign ss_ = include.sentence -%}
 
-{%- if f.sil or f.photo or g -%}
-<div class="sp-face">
-  {%- if f.sil or g -%}
-  <figure class="sp-sil-fig">
-    {%- if f.sil -%}
-    <svg class="sp-sil" viewBox="{{ f.sil.viewBox }}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="{{ f.sil.label | escape }}">{{ f.sil.inner }}</svg>
-    {%- if f.sil.credit -%}
-    <figcaption class="sp-credit">{% include species_credit.html c=f.sil.credit %}</figcaption>
-    {%- endif -%}
-    {%- endif -%}
-    {%- if g -%}
-    <div class="sp-glance">
-      <div class="sp-glance-row"><span class="sp-glance-l">{{ g.org_label | escape }}</span><i class="sp-bar" style="width:{{ g.org_w }}%"></i><span class="sp-glance-v tab">{{ g.org_len }}</span></div>
-      <div class="sp-glance-row"{% if g.ref_note %} title="{{ g.ref_note | escape }}"{% endif %}><span class="sp-glance-l">{{ g.ref_label | escape }}</span><i class="sp-bar sp-bar-ref" style="width:{{ g.ref_w }}%"></i><span class="sp-glance-v tab">{{ g.ref_len }}</span></div>
-      <p class="sp-credit">{% if g.kind %}{{ g.kind | escape }}{% endif %}{% if g.source %} · {% if g.url %}<a href="{{ g.url }}" rel="external">{{ g.source | escape }}</a>{% else %}{{ g.source | escape }}{% endif %}{% endif %}</p>
-    </div>
-    {%- else -%}
-    <p class="sp-glance sp-glance-none"><span class="cc-eyebrow">Size</span> · not on record: no authority the fetcher reads carries a length for this taxon{% if page.rank != "Species" %} (a genus page could show the range of its species){% endif %}.</p>
-    {%- endif -%}
-  </figure>
+{%- if include.part == "mark" and sf_.sil -%}
+<svg class="calm-mark sp-sil" viewBox="{{ sf_.sil.viewBox }}" preserveAspectRatio="xMidYMid meet"{% if sf_.sil.aspect %} style="aspect-ratio:{{ sf_.sil.aspect }}"{% endif %} role="img" aria-label="{{ sf_.sil.label | escape }}">{{ sf_.sil.inner }}</svg>
+
+{%- elsif include.part == "pic" -%}
+  {%- if sf_.photo -%}
+<figure class="calm-head-r sp-photo-fig">
+  <div class="calm-pic sp-photo">
+    <img src="{{ sf_.photo.src }}" alt="{{ sf_.photo.alt | escape }}"{% if sf_.photo.w %} width="{{ sf_.photo.w }}"{% endif %}{% if sf_.photo.h %} height="{{ sf_.photo.h }}"{% endif %} loading="lazy" decoding="async" style="object-position:{{ sf_.photo.pos }}">
+  </div>
+  <figcaption class="calm-cap sp-credit"{% if sf_.photo.credit.by_full %} title="{{ sf_.photo.credit.by_full | escape }}"{% endif %}>
+    {%- include species_credit.html c=sf_.photo.credit -%}
+    {%- if sf_.photo.nc %} <span class="cc-chip cc-chip-na" title="a non-commercial Creative Commons licence: allowed here, ranked last, and named so a re-user knows the terms">NC</span>{% endif -%}
+  </figcaption>
+</figure>
+  {%- elsif sf_.sil -%}
+<figure class="calm-head-r sp-sil-fig">
+  <div class="calm-pic calm-fig sp-sil-pic">
+    <svg viewBox="{{ sf_.sil.viewBox }}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="{{ sf_.sil.label | escape }}">{{ sf_.sil.inner }}</svg>
+  </div>
+  {%- if sf_.sil.credit -%}
+  <figcaption class="calm-cap sp-credit">{% include species_credit.html c=sf_.sil.credit %}</figcaption>
+  {%- endif -%}
+</figure>
   {%- endif -%}
 
-  {%- if f.photo -%}
-  <figure class="sp-photo-fig">
-    <div class="sp-photo">
-      <img src="{{ f.photo.src }}" alt="{{ f.photo.alt | escape }}"{% if f.photo.w %} width="{{ f.photo.w }}"{% endif %}{% if f.photo.h %} height="{{ f.photo.h }}"{% endif %} loading="lazy" decoding="async" style="object-position:{{ f.photo.pos }}">
-    </div>
-    <figcaption class="sp-credit"{% if f.photo.credit.by_full %} title="{{ f.photo.credit.by_full | escape }}"{% endif %}>
-      {%- include species_credit.html c=f.photo.credit -%}
-      {%- if f.photo.nc %} <span class="cc-chip cc-chip-na" title="a non-commercial Creative Commons licence: allowed here, ranked last, and named so a re-user knows the terms">NC</span>{% endif -%}
-    </figcaption>
-  </figure>
-  {%- endif -%}
-</div>
-{%- endif -%}
-
-{%- comment -%}
-  The sentence (§ P1, D6): each part keeps its span for JSON-LD and check_layout.py, and ends in a
-  small `.cc-src` badge whose `title` is the source the sentence used to spell out in a legend below
-  it — one badge, one hover, nothing typed twice.
-{%- endcomment -%}
-{%- if s.wp or s.rec or s.au -%}
-<p class="sp-sent">
-  {%- if s.wp %}<span class="s-wp">{{ s.wp | escape }}</span>{% if s.wp_badge %}<span class="cc-src cc-src-wp" title="{{ s.wp_badge | escape }}">W</span>{% endif %} {% endif -%}
-  {%- if s.rec %}<span class="s-rec">{{ s.rec | escape }}</span>{% if s.rec_badge %}<span class="cc-src cc-src-rec" title="{{ s.rec_badge | escape }}">R</span>{% endif %}{% endif -%}
-  {%- if s.au %} <span class="s-au">{{ s.au | escape }}</span>{% if s.au_badge %}<span class="cc-src cc-src-nerc" title="{{ s.au_badge | escape }}">A</span>{% endif %}{% endif -%}
+{%- elsif include.part == "sentence" -%}
+  {%- if ss_.wp or ss_.rec or ss_.au -%}
+<p class="calm-sentence sp-sent">
+  {%- if ss_.wp %}<span class="s-wp">{{ ss_.wp | escape }}</span>{% if ss_.wp_badge %}<span class="cc-src cc-src-wp" title="{{ ss_.wp_badge | escape }}">W</span>{% endif %} {% endif -%}
+  {%- if ss_.rec %}<span class="s-rec">{{ ss_.rec | escape }}</span>{% if ss_.rec_badge %}<span class="cc-src cc-src-rec" title="{{ ss_.rec_badge | escape }}">R</span>{% endif %}{% endif -%}
+  {%- if ss_.au %} <span class="s-au">{{ ss_.au | escape }}</span>{% if ss_.au_badge %}<span class="cc-src cc-src-nerc" title="{{ ss_.au_badge | escape }}">A</span>{% endif %}{% endif -%}
 </p>
+  {%- endif -%}
+
+{%- elsif include.part == "glance" -%}
+  {%- if sg_ -%}
+<div class="sp-glance">
+  <div class="sp-glance-row"><span class="sp-glance-l">{{ sg_.org_label | escape }}</span><i class="sp-bar" style="width:{{ sg_.org_w }}%"></i><span class="sp-glance-v tab">{{ sg_.org_len }}</span></div>
+  <div class="sp-glance-row"{% if sg_.ref_note %} title="{{ sg_.ref_note | escape }}"{% endif %}><span class="sp-glance-l">{{ sg_.ref_label | escape }}</span><i class="sp-bar sp-bar-ref" style="width:{{ sg_.ref_w }}%"></i><span class="sp-glance-v tab">{{ sg_.ref_len }}</span></div>
+  <p class="sp-credit">{% if sg_.kind %}{{ sg_.kind | escape }}{% endif %}{% if sg_.source %} · {% if sg_.url %}<a href="{{ sg_.url }}" rel="external">{{ sg_.source | escape }}</a>{% else %}{{ sg_.source | escape }}{% endif %}{% endif %}</p>
+</div>
+  {%- elsif sf_ -%}
+<p class="sp-glance sp-glance-none">Not on record: no authority the fetcher reads carries a length for this taxon{% if page.rank != "Species" %} (a genus page could show the range of its species){% endif %}.</p>
+  {%- endif -%}
 {%- endif -%}

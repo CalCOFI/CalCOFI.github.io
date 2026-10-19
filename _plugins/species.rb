@@ -742,6 +742,91 @@ module CalCOFI
       !(j["size"].nil? && j["early"].empty? && j["plate"].nil?)
     end
 
+    # ══ the folds (issue #30, D14): every fold is titled with its answer ═════
+    # One short phrase per fold of a taxon page, read from the same record and sidecar the fold's
+    # body is drawn from, so a reader can skip a fold without opening it. Only the TITLES (and the
+    # two short lists the credits and "elsewhere" folds print) are composed here: the bodies are the
+    # sections the page already had — the size figures, the taxa under it, the lineage, the ways.
+    ELSEWHERE = [
+      ["wikidata", "Wikidata",    "https://www.wikidata.org/wiki/%s"],
+      ["inat",     "iNaturalist", "https://www.inaturalist.org/taxa/%s"],
+      ["fishbase", "FishBase",    "https://www.fishbase.se/summary/%s"],
+      ["gbif",     "GBIF",        "https://www.gbif.org/species/%s"],
+      ["ebird",    "eBird",       "https://ebird.org/species/%s"]
+    ].freeze
+
+    def fmt_mm(v) = format("%g", v.to_f)
+
+    def folds(t, kids, ancestors)
+      j   = size_json(t)
+      sz  = j["size"]
+      fc  = face(t) || {}
+      out = {}
+
+      # How big is it · 39.5 cm max · egg 1.34–2.05 mm
+      bits = []
+      bits << "#{fmt_len(sz['m'])} #{sz['kind'] || 'long'}" if sz
+      if (e = j["early"].first)
+        lo, hi = e["mm"]
+        bits << "#{e['stage']} #{fmt_mm(lo)}#{hi && hi != lo ? "–#{fmt_mm(hi)}" : ''} mm"
+      end
+      out["size"] = bits.empty? ? "not on record" : bits.join(" · ")
+
+      # Under it · 38 taxa · Sebastes jordani most observed (the record's own order: rollup obs)
+      unless kids.empty?
+        out["under"] = "#{Fmt.num(kids.size)} #{kids.size == 1 ? 'taxon' : 'taxa'}" \
+                       "#{kids.size > 1 ? " · #{name_of(kids.first)} most observed" : ''}"
+      end
+
+      # Lineage · 12 ranks · Biota to Sardinops
+      unless ancestors.empty?
+        n = ancestors.size
+        out["lineage"] = "#{n} #{n == 1 ? 'rank' : 'ranks'} · " +
+                         (n == 1 ? name_of(ancestors.first) : "#{name_of(ancestors.first)} to #{name_of(ancestors.last)}")
+      end
+
+      # Life stages · egg · larva — the stages the datasets record, in their own order
+      st = j["stages"].flat_map { |x| x["stages"] }.uniq
+      out["stages"] = st.join(" · ") unless st.empty?
+      out["stage_rows"] = j["stages"] unless st.empty?
+
+      # Credits · silhouette, photo, text, length — one line per thing the page borrowed
+      cr = []
+      cr << fc.dig("sil", "credit") if fc["sil"]
+      cr << fc.dig("photo", "credit") if fc["photo"]
+      if (x = fc["text"])
+        cr << { "kind" => "Text", "by" => x["title"] && "Wikipedia, “#{x['title']}”", "license" => x["license"],
+                "page" => x["page"], "rev" => x["revision"] }.compact
+      end
+      if sz && sz["source"]
+        cr << { "kind" => "Length", "by" => sz["source"], "page" => sz["url"] }.compact
+      end
+      cr << j.dig("plate", "credit") if j["plate"]
+      unless cr.empty?
+        out["credits"] = cr
+        out["credits_ans"] = cr.map { |c| c["kind"].to_s.downcase }.uniq.join(" · ")
+      end
+
+      # Elsewhere · Wikidata · iNaturalist · FishBase — the sidecar's links, minus an id the head
+      # already links (GBIF is usually one)
+      have = id_rows(t).map { |r| r["label"] }
+      links = (face_of(t) || {})["links"] || {}
+      ex = ELSEWHERE.filter_map do |k, label, pat|
+        v = links[k]
+        next if v.nil? || v.to_s.empty? || have.include?(label)
+        { "label" => label, "url" => format(pat, v) }
+      end
+      unless ex.empty?
+        out["elsewhere"] = ex
+        out["elsewhere_ans"] = ex.map { |x| x["label"] }.join(" · ")
+      end
+
+      # the code routes behind the ways line: ERDDAP · R · Python · JSON
+      out["code"] = ways(t).reject { |w| w["group"] == "app" }.map { |w| w["name"] }.join(" · ")
+      out["cite"] = "the release, #{release['version']}"
+      out
+    end
+
     # ── one row per dataset that observed it: what it counted, and the name it uses
     def dataset_rows(t)
       (t["datasets"] || []).map do |x|
@@ -1027,6 +1112,8 @@ module CalCOFI
         end,
         "groups"     => t["groups"] || [],
         "ways"       => tx.ways(t),
+        # issue #30 (D14): the folds' titles carry their answers
+        "fold"       => tx.folds(t, kids, ancestors),
         "jsonld"     => JSON.pretty_generate(tx.jsonld(t))
       )
       [page, json_page(site, "/species/", "#{t['slug']}.json", JSON.pretty_generate(t))]

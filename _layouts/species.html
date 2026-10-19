@@ -2,104 +2,158 @@
 layout: default
 ---
 {%- comment -%}
-  /species/{slug}/ — one page per taxon_key (plan 2026-09-09 § D6, D8.4).
+  /species/{slug}/ — one page per taxon_key (plan 2026-09-09 § D6, D8.4), re-cut calm (issue #30).
 
   The integrated database integrates: a species has ONE page however many datasets carry it, headed
   by the accepted name once, with the names the datasets use listed under it and flagged where the
   authority says otherwise. Every value on the page comes from _plugins/species.rb, which reads the
-  release's taxa.json and nothing else.
+  release's taxa.json (and the faces sidecar) and nothing else.
+
+  The calm shape (assets/calm.css; D1, D11, D12, D14, D17): one column, no sub-nav. The head is four
+  things — the silhouette as the mark beside the name, one sentence, ONE picture (the photo; the
+  silhouette where there is no photo) and one line of numbers. "Observed in" stays open, each row
+  carrying its own years strip; the ways in are one line of links with the code behind a fold; and
+  everything else is a fold titled with its answer (page.fold, computed in the plugin). Nothing that
+  was on the page is gone: it moved into a fold.
 {%- endcomment -%}
 {%- assign t = page.taxon -%}
+{%- assign f = page.face -%}
+{%- assign fo = page.fold -%}
+{%- assign has_pic = false -%}
+{%- if f.photo or f.sil -%}{%- assign has_pic = true -%}{%- endif -%}
 
-<section class="cc-band cc-band-alt sp-page-head">
-  <div class="cc-container">
-    {%- if page.lineage.size > 0 -%}
-    <nav class="sp-lineage" aria-label="Lineage">
-      {%- for a in page.lineage -%}
-      {%- unless forloop.first %}<span class="sp-sep" aria-hidden="true">›</span>{% endunless -%}
-      <span><span class="sp-r" title="{{ a.rank | escape }}">{{ a.abbr | escape }}</span><a href="{{ a.url | relative_url }}"{% if a.italic %} class="sp-it"{% endif %}>{{ a.name | escape }}</a></span>
-      {%- endfor -%}
-      <span class="sp-sep" aria-hidden="true">›</span>
-      <span><span class="sp-r" title="{{ page.rank | default: 'dataset-local class' | escape }}">{{ page.rank_abbr | escape }}</span><span class="sp-here{% if page.italic %} sp-it{% endif %}">{{ page.h1 | escape }}</span></span>
-    </nav>
+<div class="calm-page sp-pg">
+  {%- comment -%} the crumb: the catalog, the last three ancestors and the taxon; the whole chain
+    is the Lineage fold below, and the "N ranks" link opens it {%- endcomment -%}
+  <nav class="calm-crumb" aria-label="Breadcrumb">
+    <a href="{{ '/species/' | relative_url }}">Species</a><span class="calm-sep-t" aria-hidden="true">›</span>
+    {%- assign n_anc = page.lineage.size -%}{%- assign n_hid = 0 -%}
+    {%- if n_anc > 3 -%}
+    {%- assign n_hid = n_anc | minus: 3 -%}
+    <a href="#lineage" class="sp-more-ranks">{{ n_hid }} ranks</a><span class="calm-sep-t" aria-hidden="true">›</span>
     {%- endif -%}
+    {%- for a in page.lineage offset: n_hid -%}
+    <span><span class="calm-rank" title="{{ a.rank | escape }}">{{ a.abbr | escape }}</span><a href="{{ a.url | relative_url }}"{% if a.italic %} class="sp-it"{% endif %}>{{ a.name | escape }}</a></span><span class="calm-sep-t" aria-hidden="true">›</span>
+    {%- endfor -%}
+    <span><span class="calm-rank" title="{{ page.rank | default: 'dataset-local class' | escape }}">{{ page.rank_abbr | escape }}</span><span class="sp-here{% if page.italic %} sp-it{% endif %}">{{ page.h1 | escape }}</span></span>
+  </nav>
 
-    <div class="sp-h">
-      <div class="sp-h-main">
-        <div class="cc-eyebrow">
-          {%- if page.rank %}{{ page.rank | escape }}{% else %}Dataset-local class{% endif -%}
-          {%- if page.status %} · {{ page.status | escape }}{% endif -%}
-          {%- if page.checked %} · checked {{ page.checked | escape }}{% endif -%}
-        </div>
-        <h1 class="cc-h1{% if page.italic %} sp-it{% endif %}">{{ page.h1 | escape }}</h1>
-        {%- comment -%} the common name is its OWN line, not a <small> inside the h1: a display h1
-          at 54 px wrapping around a 28 px tail leaves a 50 px hole on any page whose name is long,
-          and 2,410 names run from "Aves" to "Nannobrachium ritteri" {%- endcomment -%}
-        {%- if t.common_name %}<p class="sp-common">{{ t.common_name | escape }}</p>{% endif -%}
-        {%- if page.status_odd -%}
-        <p class="sp-status"><span class="cc-chip cc-chip-na" title="the authority's own status for this name, from the release's taxon table">{{ page.status | escape }}</span>
-          <span class="cc-muted">the authority does not list this name as accepted; the datasets below still key their observations to it.</span></p>
-        {%- endif -%}
-        {%- if page.is_local -%}
-        <p class="sp-local">A class of <a href="{{ page.local_url | relative_url }}">{{ page.local_ds | escape }}</a>'s own vocabulary — not a WoRMS or ITIS taxon,
-          so it has no lineage and no authority id. It is on this page because the dataset counts organisms under it.
-          {%- if t.local.code %} Its code in that dataset is <code>{{ t.local.code | escape }}</code>.{% endif -%}</p>
-        {%- endif -%}
+  <header class="calm-head{% unless has_pic %} calm-head-1{% endunless %}">
+    <div class="calm-head-l">
+      <div class="calm-name">
+        {%- include species_face.html part="mark" face=f -%}
+        <h1{% if page.italic %} class="calm-it"{% endif %}>{{ page.h1 | escape }}</h1>
       </div>
-      <div class="sp-ids">
+      {%- comment -%} the common name is its OWN line, not a <small> inside the h1 {%- endcomment -%}
+      {%- if t.common_name %}<p class="calm-common">{{ t.common_name | escape }}</p>{% endif %}
+      <div class="calm-facts sp-ids">
+        <span>{% if page.rank %}{{ page.rank | escape }}{% else %}Dataset-local class{% endif %}</span>
+        {%- if page.status %}<span>{{ page.status | escape }}{% if page.checked %} · checked {{ page.checked | escape }}{% endif %}</span>{% endif -%}
         {%- for i in page.ids -%}
-        <span><span class="cc-muted">{{ i.label }}</span> <a href="{{ i.url }}" rel="external">{{ i.id }}</a></span>
+        <span>{{ i.label }} <a href="{{ i.url }}" rel="external">{{ i.id }}</a></span>
         {%- endfor -%}
-        <span><span class="cc-muted">key</span> <span class="mono">{{ page.taxon_key | escape }}</span></span>
+        <span>key <span class="mono">{{ page.taxon_key | escape }}</span>
         {%- if t.notes -%}
         {%- capture crosswalk_info -%}<p>{{ t.notes | escape }}</p>{%- endcapture -%}
         {% include info.html label="Note from the crosswalk" body=crosswalk_info %}
-        {%- endif -%}
+        {%- endif -%}</span>
+        {%- for g in page.groups -%}
+        <span class="cc-chip cc-chip-na mono" title="a taxon_group of the release's taxon_group table">{{ g | escape }}</span>
+        {%- endfor -%}
       </div>
+      {%- if page.status_odd -%}
+      <p class="calm-sub sp-status"><span class="cc-chip cc-chip-na" title="the authority's own status for this name, from the release's taxon table">{{ page.status | escape }}</span>
+        the authority does not list this name as accepted; the datasets below still key their observations to it.</p>
+      {%- endif -%}
+      {%- if page.is_local -%}
+      <p class="calm-sub sp-local">A class of <a href="{{ page.local_url | relative_url }}">{{ page.local_ds | escape }}</a>'s own vocabulary — not a WoRMS or ITIS taxon,
+        so it has no lineage and no authority id. It is on this page because the dataset counts organisms under it.
+        {%- if t.local.code %} Its code in that dataset is <code>{{ t.local.code | escape }}</code>.{% endif -%}</p>
+      {%- endif -%}
+      {% include species_face.html part="sentence" sentence=page.sentence %}
+      {%- if page.stats.size > 0 or page.glance -%}
+      <dl class="calm-nums sp-stat">
+        {%- for s in page.stats -%}
+        <div{% if s.title %} title="{{ s.title | escape }}"{% endif %}><dd class="tab{% if s.small %} sp-stat-sm{% endif %}">{{ s.dd | escape }}</dd><dt>{{ s.dt }}</dt></div>
+        {%- endfor -%}
+        {%- if page.glance -%}
+        <div title="{{ page.glance.source | escape }}"><dd class="tab">{{ page.glance.org_len }}</dd><dt><i class="cc-i cc-i-el-size" aria-hidden="true"></i>{% if page.glance.kind == 'max' %}max length{% else %}{{ page.glance.kind | default: 'length' | escape }}{% endif %}</dt></div>
+        {%- endif -%}
+      </dl>
+      {%- endif -%}
     </div>
-
-    {%- comment -%} the face row, the sentence and the credit line (plan 2026-09-11 § D1–D4, D8).
-      Absent in full for a taxon the media sidecar has no entry for. {%- endcomment -%}
-    {% include species_face.html face=page.face glance=page.glance sentence=page.sentence %}
-
-    {%- if page.stats.size > 0 -%}
-    <dl class="sp-stat">
-      {%- for s in page.stats -%}
-      <div{% if s.title %} title="{{ s.title | escape }}"{% endif %}><dd class="tab{% if s.small %} sp-stat-sm{% endif %}">{{ s.dd | escape }}</dd><dt>{{ s.dt }}</dt></div>
-      {%- endfor -%}
-    </dl>
+    {%- if has_pic -%}
+    {% include species_face.html part="pic" face=f %}
     {%- endif -%}
-  </div>
-</section>
+  </header>
 
-<section class="cc-band sp-page-body">
-  <div class="cc-container">
-    <div class="sp-cols2">
-      <div class="sp-col-obs">
-        {%- if page.ds_rows.size > 0 -%}
-        <h2 class="cc-h3">Observed in
-          {%- capture obs_info -%}
-          <p>One row per dataset, one cell per year, darker with more observations — the same strip the front
-            door draws per dataset. Each row ends with the name that dataset uses (<span class="mono">dataset_taxon</span>);
-            the accepted name is written once, in the title above. A quiet pill marks a name the authority does not accept.</p>
-          {%- endcapture -%}
-          {% include info.html label="How to read the rows" body=obs_info %}
-        </h2>
-        {% include species_rows.html rows=page.ds_rows %}
-        <svg class="sp-strip" id="sp-strip" role="img" aria-label="Observations per year in each dataset"></svg>
-        {%- else -%}
-        <h2 class="cc-h3">Observed in</h2>
-        <p class="sp-note">Nothing is keyed to this taxon directly — every observation under it belongs to one of the
-          taxa below.</p>
-        {%- endif -%}
+  {%- comment -%} what the page is about stays open: the datasets that observed it {%- endcomment -%}
+  <section class="calm-sec sp-obs" aria-labelledby="sp-obs-h">
+    {%- if page.ds_rows.size > 0 -%}
+    <h2 id="sp-obs-h"><i class="cc-i cc-i-el-observed" aria-hidden="true"></i>Observed in <span class="calm-ans">{{ page.ds_rows.size }} {% if page.ds_rows.size == 1 %}dataset{% else %}datasets{% endif %}</span>
+      {%- capture obs_info -%}
+      <p>One row per dataset, and beside it one cell per year, darker with more observations — the same
+        strip the front door draws per dataset. Each row ends with the name that dataset uses
+        (<span class="mono">dataset_taxon</span>); the accepted name is written once, in the title above. A quiet
+        pill marks a name the authority does not accept.</p>
+      {%- endcapture -%}
+      {% include info.html label="How to read the rows" body=obs_info %}
+    </h2>
+    {% include species_rows.html rows=page.ds_rows %}
+    {%- else -%}
+    <h2 id="sp-obs-h"><i class="cc-i cc-i-el-observed" aria-hidden="true"></i>Observed in <span class="calm-ans">nothing keyed to it directly</span></h2>
+    <p class="sp-note">Every observation under it belongs to one of the taxa under it{% if fo.under %} — {{ fo.under | escape }}, in the fold below{% endif %}.</p>
+    {%- endif -%}
+  </section>
 
-        {%- comment -%} How big is it — the ladder, the beside figure and the plate (§ D3, D5) {%- endcomment -%}
-        {%- if page.has_size -%}
-        {% include species_size.html data=page.size_data %}
-        {%- endif -%}
+  {%- comment -%} the ways in: ONE line of links (D12 A); the code and the endpoint URLs are the
+    first fold, and the R / Python links open it {%- endcomment -%}
+  <p class="calm-ways sp-ways">
+    <span class="calm-lab">Ways in</span>
+    {%- for w in page.ways -%}
+    {%- if w.group == "app" -%}
+    <a href="{{ w.url }}" rel="external"{% if w.about %} title="{{ w.about | escape }}"{% endif %}><i class="cc-i {% if w.name == 'db-query' %}cc-i-way-query{% else %}cc-i-way-explorer{% endif %}" aria-hidden="true"></i>{{ w.name | escape }}</a>
+    {%- elsif w.group == "erddap" -%}
+    <a href="{{ w.url }}" rel="external" title="{{ w.about | escape }}"><i class="cc-i cc-i-way-erddap" aria-hidden="true"></i>ERDDAP</a>
+    {%- endif -%}
+    {%- endfor -%}
+    <span class="calm-sep" aria-hidden="true"></span>
+    {%- for w in page.ways -%}
+    {%- if w.group == "r" -%}
+    <a href="#ways"><i class="cc-i cc-i-way-r" aria-hidden="true"></i>R</a>
+    {%- elsif w.group == "python" -%}
+    <a href="#ways"><i class="cc-i cc-i-way-python" aria-hidden="true"></i>Python</a>
+    {%- elsif w.group == "json" -%}
+    <a href="{{ w.url }}" title="{{ w.about | escape }}"><i class="cc-i cc-i-way-file" aria-hidden="true"></i>This page as JSON</a>
+    {%- endif -%}
+    {%- endfor -%}
+  </p>
 
-        {%- if page.children.size > 0 -%}
-        <h2 class="cc-h3">Under it · {{ page.children.size }} {% if page.children.size == 1 %}taxon{% else %}taxa{% endif %}</h2>
+  {%- comment -%} everything else: a fold titled with its answer (D14), closed on load {%- endcomment -%}
+  <div class="calm-folds">
+    {%- assign code_ways = page.ways | where_exp: "w", "w.group != 'app'" -%}
+    <details class="calm-fold" id="ways">
+      <summary><i class="cc-i cc-i-ui-code" aria-hidden="true"></i>Code and endpoints <span class="calm-ans">{{ fo.code | escape }}</span><i class="calm-chev cc-i cc-i-ui-down" aria-hidden="true"></i></summary>
+      <div class="calm-body sp-ways-code">
+        {% include ways_tabs.html ways=code_ways %}
+        <p class="sp-note">Read from <span class="mono">taxa.json</span> of release
+          <a href="{{ '/datasets/release/' | relative_url }}">{{ site.data.species.release.version }}</a>, written at release
+          by <span class="mono">calcofi4db::build_taxa_catalog()</span>. The catalog's index is
+          <a href="{{ '/species/' | relative_url }}">/species/</a>.</p>
+      </div>
+    </details>
+
+    {%- if page.has_size or f -%}
+    <details class="calm-fold" id="how-big">
+      <summary><i class="cc-i cc-i-el-size" aria-hidden="true"></i>How big is it <span class="calm-ans">{{ fo.size | escape }}</span><i class="calm-chev cc-i cc-i-ui-down" aria-hidden="true"></i></summary>
+      <div class="calm-body">{% include species_size.html data=page.size_data %}</div>
+    </details>
+    {%- endif -%}
+
+    {%- if page.children.size > 0 -%}
+    <details class="calm-fold" id="under">
+      <summary><i class="cc-i cc-i-el-tree" aria-hidden="true"></i>Under it <span class="calm-ans">{{ fo.under | escape }}</span><i class="calm-chev cc-i cc-i-ui-down" aria-hidden="true"></i></summary>
+      <div class="calm-body">
         <ul class="sp-kids">
           {%- for k in page.children limit: 30 -%}
           <li><span class="sp-r" title="{{ k.rank | default: 'dataset-local class' | escape }}">{{ k.abbr | escape }}</span>
@@ -121,29 +175,82 @@ layout: default
           </ul>
         </details>
         {%- endif -%}
-        {%- endif -%}
-
-        {%- if page.groups.size > 0 -%}
-        <h2 class="cc-h3">Groups</h2>
-        <p class="sp-chips">{% for g in page.groups %}<span class="cc-chip cc-chip-na mono" title="a taxon_group of the release's taxon_group table">{{ g | escape }}</span>{% endfor %}</p>
-        {%- endif -%}
       </div>
+    </details>
+    {%- endif -%}
 
-      <div class="sp-col-ways">
-        <h2 class="cc-h3">Ways in
-          {%- capture ways_info -%}
-          <p>Read from <span class="mono">taxa.json</span> of release
-            <a href="{{ '/datasets/release/' | relative_url }}">{{ site.data.species.release.version }}</a>, written at release
-            by <span class="mono">calcofi4db::build_taxa_catalog()</span>. The catalog's index is
-            <a href="{{ '/species/' | relative_url }}">/species/</a>.</p>
-          {%- endcapture -%}
-          {% include info.html label="About these ways in" body=ways_info %}
-        </h2>
-        {% include ways_tabs.html ways=page.ways %}
+    {%- if fo.stages -%}
+    <details class="calm-fold" id="stages">
+      <summary><i class="cc-i cc-i-el-lifestage" aria-hidden="true"></i>Life stages <span class="calm-ans">{{ fo.stages | escape }}</span><i class="calm-chev cc-i cc-i-ui-down" aria-hidden="true"></i></summary>
+      <div class="calm-body">
+        <ul class="sp-stage-rows">
+          {%- for x in fo.stage_rows -%}
+          <li><b>{{ x.name | escape }}</b> <span>{{ x.stages | join: ' · ' | escape }}</span></li>
+          {%- endfor -%}
+        </ul>
+        <p class="sp-note">The stages each dataset records for it, from the release's <span class="mono">obs_bio.life_stage</span>.
+          {%- if page.has_size %} Their lengths are under <a href="#how-big">How big is it</a>.{% endif %}</p>
       </div>
-    </div>
+    </details>
+    {%- endif -%}
+
+    {%- if page.lineage.size > 0 -%}
+    <details class="calm-fold" id="lineage">
+      <summary><i class="cc-i cc-i-el-tree" aria-hidden="true"></i>Lineage <span class="calm-ans">{{ fo.lineage | escape }}</span><i class="calm-chev cc-i cc-i-ui-down" aria-hidden="true"></i></summary>
+      <div class="calm-body">
+        <nav class="sp-lineage" aria-label="Lineage">
+          {%- for a in page.lineage -%}
+          {%- unless forloop.first %}<span class="sp-sep" aria-hidden="true">›</span>{% endunless -%}
+          <span><span class="sp-r" title="{{ a.rank | escape }}">{{ a.abbr | escape }}</span><a href="{{ a.url | relative_url }}"{% if a.italic %} class="sp-it"{% endif %}>{{ a.name | escape }}</a></span>
+          {%- endfor -%}
+          <span class="sp-sep" aria-hidden="true">›</span>
+          <span><span class="sp-r" title="{{ page.rank | default: 'dataset-local class' | escape }}">{{ page.rank_abbr | escape }}</span><span class="sp-here{% if page.italic %} sp-it{% endif %}">{{ page.h1 | escape }}</span></span>
+        </nav>
+      </div>
+    </details>
+    {%- endif -%}
+
+    {%- if fo.credits -%}
+    <details class="calm-fold" id="credits">
+      <summary><i class="cc-i cc-i-el-photo" aria-hidden="true"></i>Credits <span class="calm-ans">{{ fo.credits_ans | escape }}</span><i class="calm-chev cc-i cc-i-ui-down" aria-hidden="true"></i></summary>
+      <div class="calm-body">
+        <ul class="sp-credits">
+          {%- for c in fo.credits -%}
+          <li class="sp-credit"{% if c.by_full %} title="{{ c.by_full | escape }}"{% endif %}>
+            {%- if c.kind == "Text" -%}
+            Text · {% if c.page %}<a href="{{ c.page }}" rel="external">{{ c.by | escape }}</a>{% else %}{{ c.by | escape }}{% endif %}{% if c.license %} · {{ c.license | escape }}{% endif %}{% if c.rev %} · revision {{ c.rev | escape }}{% endif %}
+            {%- elsif c.kind == "Length" -%}
+            Length · {% if c.page %}<a href="{{ c.page }}" rel="external">{{ c.by | escape }}</a>{% else %}{{ c.by | escape }}{% endif %}
+            {%- else -%}
+            {%- include species_credit.html c=c -%}
+            {%- if c.page %} · <a href="{{ c.page }}" rel="external">source</a>{% endif -%}
+            {%- endif -%}
+          </li>
+          {%- endfor -%}
+        </ul>
+      </div>
+    </details>
+    {%- endif -%}
+
+    {%- if fo.elsewhere -%}
+    <details class="calm-fold" id="elsewhere">
+      <summary><i class="cc-i cc-i-el-related" aria-hidden="true"></i>Elsewhere <span class="calm-ans">{{ fo.elsewhere_ans | escape }}</span><i class="calm-chev cc-i cc-i-ui-down" aria-hidden="true"></i></summary>
+      <div class="calm-body">
+        <p class="sp-elsewhere">{% for x in fo.elsewhere %}<a href="{{ x.url }}" rel="external">{{ x.label }}</a>{% unless forloop.last %}<span aria-hidden="true"> · </span>{% endunless %}{% endfor %}</p>
+        <p class="sp-note">The same organism on the services the faces were fetched from; the authorities' own pages are the ids in the head.</p>
+      </div>
+    </details>
+    {%- endif -%}
+
+    <details class="calm-fold" id="cite">
+      <summary><i class="cc-i cc-i-el-cite" aria-hidden="true"></i>Cite <span class="calm-ans">{{ fo.cite | escape }}</span><i class="calm-chev cc-i cc-i-ui-down" aria-hidden="true"></i></summary>
+      <div class="calm-body">
+        <p>Cite the release, <a href="{{ '/datasets/release/' | relative_url }}">{{ site.data.species.release.version }}</a>;
+          each dataset's own citation, licence and DOI are on its page. <a href="https://calcofi.io/docs/cite.html" rel="external">How to cite ↗</a></p>
+      </div>
+    </details>
   </div>
-</section>
+</div>
 
 <script id="sp-strip-data" type="application/json">{{ page.strip }}</script>
 <script defer src="{{ '/assets/species.js' | relative_url }}"></script>

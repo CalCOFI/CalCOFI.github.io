@@ -817,94 +817,85 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 .ds-arow-k[href]:hover, .ds-parts a:hover, .ds-related li a:hover, .ds-matrix-f a:hover { text-decoration-color: currentColor; }
 
 /* ══ the species catalog (/species/, /species/{slug}/) ════════════════════════════
-   Additive to brand v2: every colour is a token or the record's own dataset colour, which is
-   never the only cue (the record's ten biology colours fail the CVD check on two pairs, so a dot
-   always has its dataset's name beside it and the matrix is one sequential ramp). The species
-   PAGE is below; the index's tree, matrix, icicle and years strip follow in the next block.
-   Ported from the mockup species_catalog_mockup.html (2026-09-09), classes prefixed `sp-` so
-   nothing here can collide with the dataset catalog's `ds-` rules or the front door's. */
+   Additive to brand v2 and to assets/calm.css (issue #30): the page shape — the head, the open
+   section, the ways line, the folds, the catalog head and its list — is calm.css's; the rules here
+   are only what the species pages draw INSIDE that shape (the mark, the strips, the class rows, the
+   tree, the matrix, the icicle, the size figures). Every colour is a token or the record's own
+   dataset colour, which is never the only cue (the record's ten biology colours fail the CVD check
+   on two pairs, so a dot always has its dataset's name beside it and the matrix is one sequential
+   ramp). Classes prefixed `sp-` so nothing here can collide with the dataset catalog's `ds-` rules
+   or the front door's. */
 
-/* the lineage breadcrumb: every ancestor with a page is a link, each behind its rank's abbreviation */
-.sp-lineage { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; font-size: var(--fs-sm); margin: 0 0 var(--space); }
+/* the lineage chain (the Lineage fold): every ancestor with a page is a link, each behind its rank's abbreviation */
+.sp-lineage { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; font-size: var(--fs-sm); margin: 0; }
 .sp-lineage .sp-sep { color: var(--muted); }
 .sp-r { font: 700 10px var(--mono); color: var(--muted); letter-spacing: 0.04em; text-transform: uppercase; margin-right: 3px; }
 .sp-here { color: var(--muted); }
 .sp-it { font-style: italic; }
+.sp-pg .calm-crumb .sp-it { font-style: italic; }
 
-/* the head: the accepted name once, the ids beside it */
-.sp-h { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space) calc(var(--space) * 4); align-items: end; }
-.sp-h .cc-h1 { margin: 2px 0 4px; }
-.sp-common { font-style: normal; font-family: var(--display); font-weight: 500; font-size: clamp(20px, 2.2vw, 28px); line-height: 1; color: var(--muted); margin: 0 0 4px; }
-.sp-ids { display: flex; flex-wrap: wrap; gap: 5px 14px; font-size: 13px; }
-.sp-ids a, .sp-ids .mono { font-family: var(--mono); font-size: 12.5px; }
-.sp-status { margin: 4px 0 0; font-size: var(--fs-sm); }
-.sp-local { margin: 6px 0 0; font-size: var(--fs-sm); max-width: 72ch; }
+/* the head (calm-head): the silhouette is the mark, as wide as its own aspect wants up to a cap —
+   calm.css's 56 x 44 box would draw a 3 : 1 fish 18 px tall */
+.sp-pg .calm-name svg.calm-mark { width: auto; height: 44px; max-width: 150px; color: var(--fg); fill: currentColor; }
+.sp-pg .calm-facts .mono { font-family: var(--mono); font-size: 12.5px; }
+.sp-pg .calm-facts a { font-family: var(--mono); font-size: 12.5px; }
+.sp-pg .calm-facts .cc-chip { white-space: normal; overflow-wrap: anywhere; }
+.sp-pg .calm-sub .cc-chip { margin-right: 4px; }
 .sp-local code { font-family: var(--mono); font-size: 0.92em; }
+.sp-pg .calm-sentence { font-size: 1.05em; }
+.sp-pg .calm-nums { margin-top: 4px; gap: 6px 22px; }
+.sp-pg .calm-facts .cc-info { margin-left: 4px; }
+.sp-pg .calm-nums dd.sp-stat-sm { font-size: 22px; padding-top: 6px; }
+.sp-pg .calm-nums dt .cc-i { margin-right: 4px; vertical-align: -2px; }
+/* the one picture: the photo in calm.css's rounded 3 : 2 frame; or, with no photo, the silhouette
+   drawn large in the figure frame, capped so a near-square one (a diatom, a copepod) stays modest */
+.sp-photo-fig, .sp-sil-fig { margin: 0; min-width: 0; }
+.sp-photo img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.sp-sil-pic { display: flex; align-items: center; justify-content: center; }
+.sp-sil-pic svg { display: block; width: 100%; height: auto; max-height: 220px; color: var(--fg); fill: currentColor; }
 
 /* the years strip is drawn by assets/species.js, which adds .sp-drawn when it has: before that an
    <svg> is 300 x 150 by the CSS default, which would leave a hole here and on a page read without
    JS. The class, NOT an attribute selector: a CSS attribute name is lowercased in an HTML document,
    so `:not([viewBox])` is written `[viewbox]`, never matches SVG's camelCase attribute, and hid
-   the strip on every species page (measured 2026-09-09). */
-.sp-strip { display: none; width: 100%; height: auto; margin: var(--space) 0 0; }
+   the strip on every species page (measured 2026-09-09). One strip per "Observed in" row now. */
+.sp-strip { display: none; width: 100%; height: auto; }
 .sp-strip.sp-drawn { display: block; }
 .sp-strip text { font: 11px var(--mono); fill: var(--muted); }
+.sp-strip .sp-sax { stroke: var(--border); stroke-width: 1; }
 
-/* the stat row: observations · sampling events · years · datasets · life stages */
-.sp-stat { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: calc(var(--space) * 1.5); margin: calc(var(--space) * 2.5) 0 0; padding: calc(var(--space) * 2) 0 0; border-top: 1px solid var(--border); }
-.sp-stat dd { margin: 0; font-family: var(--display); font-weight: 500; font-size: 30px; line-height: 1; }
-.sp-stat dd.sp-stat-sm { font-family: var(--sans); font-size: 17px; font-weight: 600; line-height: 1.2; }
-.sp-stat dt { font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
-
-/* two columns: what was observed, and the ways in. No unbounded text beside a fixed figure —
-   both columns are prose-width and the strip is drawn to the left column's width. */
-.sp-cols2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 calc(var(--space) * 5); align-items: start; }
-.sp-page-body .cc-h3 { margin-top: calc(var(--space) * 3); }
-.sp-page-body .sp-col-obs > .cc-h3:first-child, .sp-page-body .sp-col-ways > .cc-h3:first-child { margin-top: 0; }
+/* one row per dataset (calm-row): the dot in the record's colour, the dataset's NAME always beside it */
+.sp-dsrow .calm-row-n { align-items: center; }
+.sp-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex: none; box-shadow: 0 0 0 1px var(--bg); }
+.sp-l2 { font-size: 13.5px; color: var(--muted); margin-top: 2px; }
+.sp-l2 code { font: 12px var(--mono); color: var(--fg); background: var(--panel); padding: 1px 5px; border-radius: 4px; }
+.sp-l2 .cc-chip { margin-left: 2px; }
 .sp-note { font-size: var(--fs-sm); color: var(--muted); max-width: 80ch; margin: var(--space) 0 0; }
 .sp-note .mono, .sp-note code { font-family: var(--mono); font-size: 0.92em; }
 
-/* one row per dataset: the dot in the record's colour, the dataset's NAME always beside it */
-.sp-dsrows { list-style: none; margin: var(--space) 0 0; padding: 0; }
-.sp-dsrow { display: grid; grid-template-columns: 14px minmax(0, 1fr); gap: 10px; padding: 10px 0; border-top: 1px solid var(--border); align-items: start; }
-.sp-dsrow:first-child { border-top: 0; }
-.sp-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-top: 6px; box-shadow: 0 0 0 1px var(--bg); }
-.sp-l1 { display: flex; flex-wrap: wrap; gap: 3px 14px; align-items: baseline; }
-.sp-l1 a { font-weight: 600; }
-.sp-meta { font: 12.5px var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; }
-.sp-l2 { font-size: 13px; color: var(--muted); margin-top: 2px; }
-.sp-l2 code { font: 12px var(--mono); color: var(--fg); background: var(--panel); padding: 1px 5px; border-radius: 4px; }
-.sp-l2 .cc-chip { margin-left: 2px; }
+/* the ways line: R and Python open the Code fold; the fold carries the ways_tabs.html tabset */
+.sp-ways-code .tabset { margin-top: 4px; }
+.sp-ways-code .sp-note { margin-top: 12px; }
 
-/* the taxa under a higher taxon, most observed first; past 30 they fold */
-.sp-kids { list-style: none; margin: var(--space) 0 0; padding: 0; font-size: 15px; columns: 2; column-gap: calc(var(--space) * 4); }
-.sp-kids li { break-inside: avoid; padding: 2px 0; display: flex; align-items: baseline; gap: 5px; }
+/* the taxa under a higher taxon (the Under it fold), most observed first; past 30 they fold */
+.sp-kids { list-style: none; margin: 0; padding: 0; font-size: 15px; columns: 2; column-gap: calc(var(--space) * 4); }
+.sp-kids li { break-inside: avoid; padding: 3px 0; display: flex; align-items: baseline; gap: 5px; border-bottom: 1px solid var(--border); }
 .sp-kn { margin-left: auto; font: 12px var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; }
 .sp-more > summary { cursor: pointer; font-size: var(--fs-sm); color: var(--accent); margin-top: var(--space); }
-.sp-chips { display: flex; flex-wrap: wrap; gap: 5px; margin: var(--space) 0 0; }
-.sp-chips .cc-chip { white-space: normal; overflow-wrap: anywhere; }
+/* the Life stages, Credits and Elsewhere folds */
+.sp-stage-rows, .sp-credits { list-style: none; margin: 0; padding: 0; }
+.sp-stage-rows li { padding: 4px 0; display: flex; flex-wrap: wrap; gap: 2px 12px; }
+.sp-stage-rows span { color: var(--muted); }
+.sp-credits li { padding: 3px 0; }
+.sp-elsewhere { display: flex; flex-wrap: wrap; gap: 4px 8px; margin: 0 0 8px; }
+.sp-elsewhere > span { color: var(--muted); }
 
-/* the ways in: ONE row per endpoint, the URL a full-width single mono line (assets/species.js
-   elides it from the middle rather than letting it wrap) */
-.sp-ways { list-style: none; margin: var(--space) 0 0; padding: 0; }
-.sp-way { padding: 10px 0; border-top: 1px solid var(--border); }
-.sp-way:first-child { border-top: 0; }
-.sp-way .sp-l1 b { font-weight: 600; }
-.sp-way .sp-l1 span { font-size: 13px; color: var(--muted); }
+/* the URL lines a way may print: ONE full-width mono line (assets/species.js elides from the middle) */
 .sp-url { display: block; width: 100%; font: 13px var(--mono); color: var(--accent); white-space: nowrap; overflow: hidden; margin-top: 3px; }
-.sp-way pre { margin: 6px 0 0; font: 12.5px/1.5 var(--mono); background: var(--panel); border-radius: var(--radius); padding: 8px 12px; overflow-x: auto; color: var(--fg); }
-
-@media (max-width: 900px) {
-  .sp-cols2 { grid-template-columns: minmax(0, 1fr); }
-  .sp-h { grid-template-columns: minmax(0, 1fr); align-items: start; }
-  .sp-kids { columns: 1; }
-}
 
 /* ── faces (WS-F3) ────────────────────────────────────────────────────────────
-   The face row, the sentence, the glance and the three size figures (plan 2026-09-11 § D1–D5, D8),
-   ported from the mockup CalCOFI Species Faces onto brand v2's tokens. Additive: every rule below
-   is under a class that only exists when _data/taxa_media.json has an entry for the page's taxon,
-   so a page without one is untouched by this block.
+   The glance, the credit line and the three size figures (plan 2026-09-11 § D1–D5, D8), ported
+   from the mockup CalCOFI Species Faces onto brand v2's tokens; all inside the How big fold now.
 
    The one site-local token is --sp-plate-filter: a scanned black-ink plate on a navy ground has to
    be inverted, and brand/v2/theme.css is frozen, so the token lives here. It keys on
@@ -913,45 +904,20 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 :root { --sp-plate-filter: none; }
 :root[data-theme="dark"] { --sp-plate-filter: invert(0.9) hue-rotate(180deg); }
 
-/* the row: the silhouette and its glance beside the photo. Neither column has a minimum that can
-   push the page wide — both are minmax(0, …) and the photo is max-width: 100 %. */
-.sp-face { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: calc(var(--space) * 2.5); align-items: stretch; margin: calc(var(--space) * 2) 0 0; }
-.sp-sil-fig { display: flex; flex-direction: column; justify-content: space-between; gap: var(--space); min-width: 0; margin: 0; }
-.sp-photo-fig { margin: 0; min-width: 0; }
-
-/* the constant: ONE vector, filled with the page's ink, so it needs no second file for dark */
-/* width-driven with the vector's own ratio, capped so a near-square silhouette (a diatom, a
-   copepod) cannot tower over the photo beside it while a long one (a fish) still fills the row */
-.sp-sil { display: block; width: 100%; height: auto; min-height: 72px; max-height: 240px; color: var(--fg); fill: currentColor; max-width: 100%; }
-
 /* the glance: two bars on one scale — the taxon and the nearest familiar object */
-.sp-glance { border-top: 1px solid var(--border); padding-top: var(--space); font-size: 13px; margin: 0; }
-.sp-glance-row { display: grid; grid-template-columns: minmax(0, 96px) minmax(0, 1fr) auto; gap: var(--space); align-items: center; padding: 2px 0; }
+.sp-glance { font-size: 13px; margin: 0 0 var(--space); max-width: 560px; }
+.sp-glance-row { display: grid; grid-template-columns: minmax(0, 120px) minmax(0, 1fr) auto; gap: var(--space); align-items: center; padding: 2px 0; }
 .sp-glance-l { color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .sp-glance-v { font: 12px var(--mono); text-align: right; white-space: nowrap; }
 .sp-bar { display: block; height: 8px; border-radius: 4px; background: var(--accent); min-width: 2px; }
 .sp-bar-ref { background: var(--muted); opacity: 0.55; }
-.sp-glance-none { color: var(--muted); }
-.sp-glance-none .cc-eyebrow { display: inline; }
-
-/* the fade is on the FRAME, not the image: the same file then sits on white and on navy without a
-   second crop, and `object-position` still honours the stored focal point (§ D2) */
-.sp-photo {
-  position: relative; aspect-ratio: 3 / 2; overflow: hidden; border-radius: var(--radius); max-width: 100%;
-  -webkit-mask-image: radial-gradient(ellipse 74% 70% at 50% 50%, #000 40%, transparent 100%);
-  mask-image: radial-gradient(ellipse 74% 70% at 50% 50%, #000 40%, transparent 100%);
-}
-.sp-photo img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.sp-glance-none { color: var(--muted); font-size: 15px; }
 
 /* one credit format everywhere: kind · who · licence · where · what it shows */
 .sp-credit { font: 11.5px/1.5 var(--mono); color: var(--muted); margin: 6px 0 0; }
 .sp-credit a { color: inherit; text-decoration: underline; text-decoration-color: var(--border); }
 .sp-credit a:hover { text-decoration-color: currentColor; }
-
-/* the sentence (round 2 § P1, D6): plain prose, no per-part underline — each part's source is a
-   small `.cc-src` badge instead (style block below), so the old three-style underline + legend is
-   retired along with it. */
-.sp-sent { font-size: 16px; line-height: 1.55; margin: calc(var(--space) * 2) 0 0; max-width: 80ch; }
+.calm-cap.sp-credit { margin: 0; font: 12.5px/1.35 var(--sans); }
 
 /* ── How big is it: the ladder, the beside figure, the plate ─────────────────── */
 /* Each <svg> is hidden until species.js has drawn into it — the `.sp-drawn` rule the years strip
@@ -960,6 +926,7 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 .sp-ladder, .sp-beside { display: none; width: 100%; height: auto; margin: var(--space) 0 0; }
 .sp-ladder.sp-drawn, .sp-beside.sp-drawn { display: block; }
 .sp-ladder { overflow: visible; }
+.sp-beside { max-width: 640px; }
 .sp-ladder .sp-ax { stroke: var(--muted); stroke-width: 1; }
 .sp-ladder .sp-lead, .sp-beside .sp-base { stroke: var(--border); stroke-width: 1; }
 .sp-ladder .sp-tick, .sp-ladder .sp-mval, .sp-beside .sp-bval { font: 11px var(--mono); fill: var(--muted); }
@@ -987,86 +954,69 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 .sp-early b { font-weight: 600; }
 .sp-early .sp-esrc { font: 11.5px var(--mono); color: var(--muted); }
 
-/* the phone: the face row and the plate figure each become one column, and the glance's label
-   column stops being fixed so a long common name cannot push the page sideways */
+@media (max-width: 760px) {
+  .sp-pg .calm-name svg.calm-mark { height: 32px; max-width: 96px; }
+  .sp-kids { columns: 1; }
+}
+/* the phone: the plate figure becomes one column, and the glance's label column stops being fixed
+   so a long common name cannot push the page sideways */
 @media (max-width: 620px) {
-  .sp-face { grid-template-columns: minmax(0, 1fr); }
   .sp-plate-fig { grid-template-columns: minmax(0, 1fr); }
   .sp-glance-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) auto; }
   .sp-early li { grid-template-columns: minmax(0, 1fr); gap: 0; }
 }
 
-/* ── the species catalog's index (/species/): search + tree, the matrix, the icicle ───────────
+/* ── the species catalog's index (/species/): the class list, then the three views ─────────────
    Drawn by assets/species.js from the one inline JSON; the rules below are the mockup's, mapped
    onto brand v2's tokens. The tint of a matrix cell and of an icicle band is ONE sequential ramp
    of --accent mixed into --bg, so nothing here needs a second hue and nothing computes to --warn. */
-/* the head is ONE column and the counts are a row beneath it: a display h1 that wraps to two
-   lines would otherwise leave 350 px of empty page beside it in the second column */
-/* one prose width for a catalog head: the lede, any explanation and the aside end on the same right
-   edge. 78 characters of the lede's 20.7 px type is 44.6 rem; a 78ch cap on each paragraph gave
-   three different widths (802 / 543 / 485 px) and a stepped right edge (Ben, 2026-09-10) */
+/* one prose width for a catalog head (shared with /measurements/, Ben, 2026-09-10) */
 .sp-idx-head, .mm-idx-head { --cc-prose-w: 44.6rem; }
-.sp-idx-head .cc-lede { max-width: var(--cc-prose-w); }
-.sp-counts { display: flex; flex-wrap: wrap; gap: 10px 34px; margin: calc(var(--space) * 2) 0 0; padding: calc(var(--space) * 2) 0 0; border-top: 1px solid var(--border); }
-.sp-counts div { min-width: 0; }
-.sp-counts dd { margin: 0; font: 500 30px/1 var(--display); font-variant-numeric: tabular-nums; }
-.sp-counts dt { font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+.sp-cat { position: relative; }   /* the tooltip is placed against it */
+/* the record's five counts: one quiet line (calm-facts) */
+.sp-counts b { font-weight: 600; color: var(--fg); font-variant-numeric: tabular-nums; }
+.sp-cat .calm-cathead .calm-facts { margin: 0 0 12px; }
+.sp-cat .calm-siblings .cc-i { font-size: 15px; }
 
-.sp-searchrow { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 0 0 calc(var(--space) * 1.75); }
-/* min-width:0 is load-bearing at 375 px: a flex item's automatic minimum size is its MIN-CONTENT,
-   and this label's min-content includes the nowrap count (".sp-n") — so on a machine whose mono
-   fallback is wider than SF Mono (CI's Ubuntu image: DejaVu Sans Mono) the row could not shrink to
-   the container and the document scrolled sideways (PR #13, /species/ at 375: scrollWidth 405). The
-   count now truncates instead of pushing the page wide. */
-.sp-search { flex: 1 1 320px; min-width: 0; display: flex; align-items: center; gap: 8px; background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 7px 12px; }
-.sp-search input { flex: 1; border: 0; background: transparent; color: var(--fg); font: 16px var(--sans); min-width: 0; }
-.sp-search input:focus { outline: 0; }
-.sp-search:focus-within { border-color: var(--accent); }
+/* the class rows (calm-item): a silhouette column wide enough for a 3 : 1 fish */
+.sp-class > summary { grid-template-columns: 56px minmax(0, 1fr) auto 18px; }
+.sp-class .calm-item-g { opacity: 1; }
+.sp-class .calm-item-t, .sp-class .calm-item-s { display: block; }
+.sp-class .calm-item-g svg.sp-csil { width: 52px; height: 30px; fill: currentColor; }
+.sp-class .calm-item-t .sp-cn { font-weight: 400; font-size: 14px; color: var(--muted); margin-left: 6px; white-space: nowrap; }
+.sp-class .calm-item-b { padding-left: 70px; }
+.sp-top-h { font-size: 13.5px; color: var(--muted); margin: 0 0 4px; }
+.sp-top { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); column-gap: 28px; max-width: none; }
+.sp-top .cc-result + .cc-result { border-top: 0; }
+.sp-top .cc-result { border-bottom: 1px solid var(--border); }
+.sp-top-links { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 20px; margin: 10px 0 0; }
+.sp-top-links .cc-text-link { font-size: 11.5px; }
+.sp-top-links button.cc-text-link { background: none; border: 0; border-bottom: 1px solid currentColor; border-radius: 0; padding: 0 0 1px; cursor: pointer; font-family: inherit; }
+.sp-empty, .sp-foot { font-size: var(--fs-sm); color: var(--muted); margin: 12px 0 0; }
+
+/* the Matches list above the views (umbrella D9, I2) */
+#sp-matches { margin: 0 0 calc(var(--space) * 1.5); }
+#sp-matches[hidden] { display: none; }
+.sp-matches-h { font: 600 13px var(--sans); color: var(--muted); margin: 0 0 4px; text-transform: none; letter-spacing: 0; }
+.sp-matches-list { display: flex; flex-direction: column; }
+
+/* the views (calm-views): each panel is today's, unchanged, one click away */
+.sp-views .tabpanel { padding-top: 14px; }
+.sp-views .tabrow { flex-wrap: wrap; }
+.sp-treebar { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; margin: 0 0 12px; }
 .sp-n { font: 12.5px var(--mono); color: var(--muted); white-space: nowrap; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .sp-rankf { display: flex; gap: 6px; flex-wrap: wrap; }
-.sp-rankf button, .sp-seg button { border: 1px solid var(--border); background: var(--panel-2); color: var(--muted); border-radius: 999px; padding: 5px 11px; font: 600 12px var(--sans); cursor: pointer; }
+.sp-rankf button, .sp-seg button { border: 1px solid var(--border); background: var(--panel-2); color: var(--muted); border-radius: 999px; padding: 5px 11px; min-height: 32px; font: 600 12px var(--sans); cursor: pointer; }
 .sp-rankf button[aria-pressed="true"] { background: var(--accent-bg); color: var(--accent); border-color: transparent; }
+.sp-ranks-all { margin-left: 10px; }
+.sp-hint { font-size: 12.5px; color: var(--muted); }
 
-/* the tree beside the matrix: the pane is as tall as the matrix's, and the tree scrolls INSIDE it
-   (species.js syncTree) — no unbounded text beside a fixed-height figure */
-.sp-two { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: calc(var(--space) * 2.5); align-items: start; }
 .sp-pane { background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius-card); overflow: hidden; min-width: 0; }
 .sp-pane-h { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 11px 16px 8px; border-bottom: 1px solid var(--border); }
 .sp-pane-h .cc-eyebrow { font-size: 11.5px; margin: 0; }
 .sp-pane-h .sp-hint { margin-left: auto; }
-/* expand one pane to the full width, or show both (species.js setPanes; ?panes=tree|matrix) */
-.sp-pane-max { flex: none; width: 26px; height: 22px; padding: 0; border: 1px solid var(--border); border-radius: 6px; background: transparent; color: var(--muted); font-size: 13px; line-height: 1; cursor: pointer; }
-.sp-pane-max:hover { color: var(--accent); border-color: var(--accent); }
-/* an expanded pane never removes the other: the collapsed pane folds into a 28 px vertical pill
-   beside it — the Explorer's collapsed-panel idiom (explore/src/style.css .edge-pill): its title in
-   vertical text under a chevron, the whole pill a button that shows both panes again (Ben,
-   2026-09-10: "the pane disappeared completely when I expanded the other — bad UI") */
-.sp-two[data-panes="matrix"] { grid-template-columns: 28px minmax(0, 1fr); }
-.sp-two[data-panes="tree"]   { grid-template-columns: minmax(0, 1fr) 28px; }
-.sp-two[data-panes="tree"] .sp-pane-matrix, .sp-two[data-panes="matrix"] .sp-pane-tree { display: none; }
-.sp-two[data-panes="tree"] .sp-tree { height: min(82vh, 960px); }
-.sp-pane-pill, .sp-pane-pill[hidden] { display: none; }
-.sp-pane-pill:not([hidden]) {
-  display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 6px;
-  align-self: stretch; width: 28px; min-height: 160px; box-sizing: border-box; padding: 8px 0;
-  background: var(--panel-2); border: 1px solid var(--border); border-radius: 6px;
-  box-shadow: 0 3px 12px color-mix(in srgb, var(--fg) 14%, transparent);
-  color: var(--fg); font: inherit; font-size: var(--fs-sm); cursor: pointer; overflow: hidden; white-space: nowrap;
-}
-.sp-pane-pill:hover, .sp-pane-pill:focus-visible { color: var(--accent); border-color: var(--accent); }
-.sp-pane-pill .sp-pill-chev { flex: none; width: 1em; height: 1em; color: var(--muted); }
-.sp-pane-pill:hover .sp-pill-chev { color: var(--accent); }
-.sp-pane-pill .sp-pill-text { writing-mode: vertical-rl; font-weight: 600; letter-spacing: 0.02em; max-height: calc(100% - 24px); overflow: hidden; text-overflow: ellipsis; }
-/* one column: both panes stack and there is nothing to expand */
-@media (max-width: 1000px) {
-  .sp-two[data-panes] { grid-template-columns: minmax(0, 1fr); }
-  .sp-two[data-panes] .sp-pane { display: block; }
-  .sp-pane-max, .sp-pane-pill { display: none !important; }
-}
-.sp-ranks-all { margin-left: 10px; }
-.sp-hint { font-size: 12.5px; color: var(--muted); }
 
-.sp-tree { height: 600px; overflow: auto; padding: 8px 10px 14px; font-size: 14px; }
+.sp-tree { height: min(70vh, 720px); overflow: auto; padding: 8px 10px 14px; font-size: 14px; }
 .sp-tree ul { list-style: none; margin: 0; padding: 0 0 0 14px; }
 .sp-tree > ul { padding-left: 0; }
 .sp-tree li { margin: 0; }
@@ -1101,8 +1051,7 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 .sp-legend { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; margin: 10px 0 0; font-size: 12px; color: var(--muted); }
 .sp-ramp { height: 10px; width: 120px; border-radius: 3px; background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 8%, var(--bg)), var(--accent)); }
 
-/* the icicle: full width under both panes */
-.sp-ice-wrap { margin-top: calc(var(--space) * 2.5); }
+/* the icicle */
 .sp-ice-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin: 0 0 8px; }
 .sp-ice-bar .cc-eyebrow { margin: 0; }
 .sp-seg { display: inline-flex; border: 1px solid var(--border); border-radius: 999px; overflow: hidden; }
@@ -1121,20 +1070,19 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 .sp-ttip b { display: block; }
 .sp-ttip .sp-d { display: block; opacity: 0.85; }
 .sp-ttip .sp-dot { box-shadow: none; margin-top: 0; }
-.sp-body { position: relative; }
 
 /* the twisty is the only thing that moves, and only where motion is welcome */
 @media (prefers-reduced-motion: no-preference) { .sp-tw { transition: transform 0.15s; } }
 
-@media (max-width: 1000px) {
-  .sp-two { grid-template-columns: minmax(0, 1fr); }
+@media (max-width: 760px) {
+  .sp-class > summary { grid-template-columns: 44px minmax(0, 1fr) 18px; }
+  .sp-class .calm-item-g svg.sp-csil { width: 42px; height: 24px; }
+  .sp-class .calm-item-b { padding-left: 0; }
 }
 @media (max-width: 700px) {
   .sp-tree { height: 460px; }
   .sp-tr { grid-template-columns: 20px 26px minmax(0, 1fr) auto; }
   .sp-dots { display: none; }
-  .sp-counts { gap: 6px 16px; }
-  .sp-counts dd { font-size: 24px; }
 }
 
 /* ═══ the front door's six words, tabs and one search (plan 2026-09-10 § D7) ═══════════════════
@@ -2079,10 +2027,6 @@ a.cc-chip-lic:hover { color: var(--accent); border-color: var(--accent); text-de
    on a heading, and the flat Matches list above the species tree (umbrella D9, I2). */
 .cc-h3 .cc-info, .cc-lede .cc-info { margin-left: 6px; vertical-align: 2px; }
 
-#sp-matches { margin: 0 0 calc(var(--space) * 1.5); }
-#sp-matches[hidden] { display: none; }
-.sp-matches-h { font: 600 13px var(--sans); color: var(--muted); margin: 0 0 4px; }
-.sp-matches-list { display: flex; flex-direction: column; }
 
 /* ── round 2 · measurement columns as concepts (Ben, 2026-09-16) ─────────────────────────────
    left "The measurement", right "The record": one eyebrow each, above the first heading */
