@@ -1,4 +1,5 @@
-/* assets/coverage.js — the hover / tap card over a dataset page's two figures (2026-09-07):
+/* assets/coverage.js — the hover / tap card over a dataset page's two figures (2026-09-07; issue #30:
+   the map is the head's picture, .ds-mapfig, and the bars are the years strip under it, .ds-strip-fig):
    the observations-per-year bars (year · n) and the extent map's sampled stations (station · n ·
    the years it was sampled · obs per sampled year). Hover on a pointer, tap on a phone (a second
    tap or a tap elsewhere closes it), focus + arrow keys on the map's stations. Plain JS; without it
@@ -43,11 +44,12 @@
     host.addEventListener("focusout", hide);
     document.addEventListener("click", function (e) { if (!host.contains(e.target)) hide(); });
   }
-  var fig = document.querySelector(".ds-spark-fig");
+  // the years strip under the map (issue #30 D15; .ds-spark-fig was the head's spark before it)
+  var fig = document.querySelector(".ds-strip-fig, .ds-spark-fig");
   if (fig) wire(fig, "rect[data-year]", function (el) {
     return "<b>" + el.dataset.year + "</b> · " + num(el.dataset.n) + " obs";
   });
-  var map = document.querySelector(".ds-mapwrap");
+  var map = document.querySelector(".ds-mapfig, .ds-mapwrap");
   if (map) wire(map, ".st-on[data-key]", function (el) {
     var d = el.dataset, per = d.nyr > 0 ? Math.round(d.n / d.nyr) : d.n;
     return "<b>" + d.key + "</b> · " + num(d.n) + " obs<br>" + d.ymin + "–" + d.ymax + " · " +

@@ -302,6 +302,45 @@ row and no search row.
 (`test_release.qmd` fires it the moment a release is promoted), on a weekly cron and by hand.
 `pages.yml` does the same three steps on a push to main.
 
+### Calmer (issue #30): one list, the dense views one click away
+
+Re-cut to the review's decisions (D1–D17, all as recommended); nothing was removed, it moved:
+
+- **`/datasets/`** (`_layouts/datasets.html`) is `calm.css`'s catalog: the three catalogs as
+  siblings, *Datasets*, one sentence, one line of counts, the ONE search over the three indexes
+  (`_includes/one_search.html`, D10 B) — `assets/catalog.js` also filters this page's rows from
+  `#door-q` — and a **Filter** button (`ui-filter`) that opens the six facets (opened on load when
+  the URL carries one; `?cat=` from a dataset page's crumb lands filtered). Then **one list**, Biology
+  then Environment (`realm-*`), one row per dataset: category glyph · name (category · provider) ·
+  years · obs · licence. A row opens to its first sentence, what is in it (`el-taxa`/`el-variables`,
+  `ui-years`, `el-contributes`, `el-release`) and its ways in (`way-*`). The category's description
+  is the name's hover in the row and the ⓘ (`_includes/info.html`) in the opened row (D9 B).
+- **The tiles are a view tab**: *List* (`view-list`, default) · *By category* (`view-grid`) is
+  `_includes/catalog_grid.html` unchanged (`filters="off"`: the page draws the filter row itself);
+  `?tab=grid` links to it. The holdings (`el-holding`), the reference frame and the release
+  (`el-release`) are folds titled with their answers (D14), their bodies today's includes.
+- **A dataset page** (`_layouts/dataset.html`) is one column under a head of four things: the
+  category glyph as the mark and the short name, the full name, one facts line (key, provider,
+  licence chip, DOI, release, stage), ONE sentence (the record's first sentence, then what CalCOFI
+  holds — `Catalog#first_sentence` / `#holds_sentence`, cut and counted, never typed), the map
+  beside it at its own aspect (`assets/coverage.js`), one line of numbers. *What this is* folds the
+  whole description and the people. **What is in it** stays open (`el-contents`): the years strip on
+  the release's own axis under the map (D15, `Catalog#years_strip`), then one line each for the
+  variables, taxa, life stages and contributes-to, each opening in place to all of them (the old
+  Coverage band's lists). **Ways in** is one line (`Catalog#ways`, D12/D16). Then folds, each
+  wearing its `el-*` glyph and titled with its answer: *Every endpoint · N* (the Access tabset,
+  unchanged), *Cite* (`Catalog#cite_answer`), *Provenance* (a holding: *Status*; the source files
+  moved in here), *Related*, *Open questions*, *Keywords*. No sub-nav (D17). A holding keeps *Where
+  it lives today* open; a dataset with sampling events only says the Explorer has nothing to draw.
+- `check_layout.py` asserts, on both: a height ceiling at 1470 with nothing open (`MAX_DS_H`),
+  every fold and row closed on load, the list equal to the record's datasets, and no multi-column
+  block under a dataset page's head. The filter, variables, ERDDAP-once (inside *Every endpoint*)
+  and URL assertions keep their intent; the hero's "two columns end together" is gone with the hero.
+  Heights at 1280 with nothing open: `/datasets/` 3,523 → ~2,220 px; `calcofi_bottle` 4,165 →
+  ~2,020; `swfsc_ichthyo` 5,096 → ~2,080; `calcofi_prodo` 3,029 → ~1,580.
+
+The sections below are the record of the rules the grid and the Access model were built on.
+
 ### The grid: an emphasis ladder, packed, with the reference frame in its own band
 
 The catalog's layout follows four rules, and `scripts/check_layout.py` is what keeps them true
@@ -338,17 +377,15 @@ The catalog's layout follows four rules, and `scripts/check_layout.py` is what k
 from the next release. `Catalog#normalize_variables` is the one place that knows, so the tiles, the
 search index and `page.variables` all read one shape; a build against either renders.
 
-### A dataset page: the map is the hero, and nothing below the head is two columns
+### A dataset page: the map, and nothing below the head is two columns
 
-`/datasets/{key}/` follows D-4 to D-7 of the same plan:
+`/datasets/{key}/` followed D-4 to D-7 of the same plan; issue #30 (above) re-cut its layout:
 
-1. **The head band is the only two-column region**, and its second column is a map of where the
-   dataset was actually sampled. It is bounded to the title block's height *by construction* — the
-   cell stretches to the grid row and the SVG fits inside it (`preserveAspectRatio="xMaxYMin meet"`,
-   `position: absolute; inset: 0`) — so the two columns end together whatever the abstract's
-   length. The first cut put a 418 px column beside a 1,346 px one and left **928 px of blank page**
-   under the abstract; two columns whose contents differ that much cannot be made to end together,
-   so everything below the head is one column.
+1. **The head is the only two-column region**, and its second column is a map of where the
+   dataset was actually sampled — since issue #30 at the drawing's own aspect, as `calm.css`'s head
+   picture, rather than stretched to the title block. The first cut put a 418 px column beside a
+   1,346 px one and left **928 px of blank page** under the abstract; two columns whose contents
+   differ that much cannot be made to end together, so everything below the head is one column.
 2. **The map** (`Catalog#map_svg`) is a static inline SVG drawn at build time — no library, no tile
    server, no external asset, every colour a `--cc-map-*` token so the theme toggle repaints it.
    The frame is **the standard + extended grid ∪ the cells this dataset sampled**, padded 6 % —
@@ -367,7 +404,7 @@ search index and `page.variables` all read one shape; a build against either ren
      the same way: its `taxa[]` gives the front door its species count and each dataset page its
      own — the taxa it observed at rank Species, with every taxon it observed in the tooltip
      (plan 2026-09-09 § D3/D4). Without it a page says "taxa" from the record, as it did before.
-3. **Access is a tabset, one tab per group (round 2 S2, WS-R4).** Each row is two lines: label ·
+3. **Access is a tabset, one tab per group (round 2 S2, WS-R4)**, inside the *Every endpoint* fold since issue #30. Each row is two lines: label ·
    chips · meta · copy, and no URL line (2026-09-06): the label is the link, the chips and
    identifier say which endpoint it is, and the copy button beside every row copies the address.
    *Tables from the release* is a table (table · holds · rows · size · since · sha256); *Code*

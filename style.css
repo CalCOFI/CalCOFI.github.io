@@ -548,79 +548,142 @@ svg.strip { display: block; width: 100%; height: auto; }
 .ds-row-ref .ds-row-name { font-weight: 400; color: var(--accent); }
 .ds-refband .ds-ref-desc { flex-basis: 100%; margin-left: 0; font-size: var(--fs-sm); color: var(--muted); max-width: 60ch; }
 
-/* ── a dataset page (plan D-4 to D-7) ─────────────────────────────────────────
-   The first cut put an abstract of unknown length beside a sidebar of 33 variable chips: the main
-   column measured 418 px against 1,346 px, so 928 px of blank page sat between the abstract and
-   Access. Two columns whose contents are that different can never be made to end together.
-
-   So: the head band is the ONLY two-column region, its second column is the map, and the map is
-   bounded to the first column's height by construction — the cell stretches to the grid row and
-   the SVG fits inside it. Everything below the head is one column. */
+/* ── the release page's head band (/datasets/release/, _layouts/release.html) ──────────────────
+   These were the dataset page's head before issue #30; the release page still draws them. The
+   dataset page itself is the calm block below. */
 .ds-page-head { padding-top: calc(var(--band-pad) * 1.1); }
-.ds-hero { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: calc(var(--space) * 3); align-items: stretch; }
-.ds-hero-main { min-width: 0; }
-/* the map cell: a row that takes the leftover height, and a caption under it */
-.ds-mapwrap { display: grid; grid-template-rows: minmax(0, 1fr) auto; gap: 4px; min-height: 0; min-width: 0; justify-self: end; width: 100%; }
-/* The box IS the drawing. It used to be the whole cell, and `meet` fitted a portrait drawing by
-   height inside it: on swfsc_ichthyo the box measured 467 px wide and the map 256 px, so 211 px of
-   rounded, --cc-map-water-cornered box sat empty to the left of the coast, and the element's 8 px
-   radius curved around nothing while the square water rect inside it did not. `aspect-ratio` from
-   the drawing's own viewBox (the generator writes it as --map-ar) makes the box exactly the map:
-   the water fills it corner to corner, and the radius is the map's. */
-.ds-mapbox { position: relative; min-height: 0; margin-left: auto; aspect-ratio: var(--map-ar); max-width: 100%; }
-.ds-mapbox .cc-map { position: absolute; inset: 0; width: 100%; height: 100%; }
-/* The drawing is portrait and the cell is landscape, so `meet` fits it by height and leaves the
-   slack on the LEFT (the SVG is `xMaxYMin`, flush right against the container edge). A caption
-   starting at the cell's left edge therefore floated 211 px away from the map it captions
-   (measured on swfsc_ichthyo at 1470 px). Push it right so its right edge is the map's right
-   edge — both flush to the container, which is what makes them read as one figure. */
-/* The caption belongs to a figure that hugs the container's right edge, and the figure is only as
-   wide as the drawing — narrower than a comfortable measure for two lines of prose. So the caption
-   keeps its own measure and is set ragged-left: every line ENDS on the map's right edge, which is
-   what makes the two read as one figure whatever the drawing's shape. */
-.ds-mapcap { font-size: var(--fs-sm); color: var(--muted); max-width: 46ch; margin-left: auto; text-align: right; }
 
 .ds-crumb { display: flex; gap: 8px; font-size: var(--fs-sm); color: var(--muted); margin-bottom: var(--space); }
-.ds-title { display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--space) * 2); font-size: clamp(30px, 5vw, 60px); overflow-wrap: anywhere; }
-.ds-title .cc-i { font-size: 0.8em; color: var(--accent); flex: none; }
-/* a record whose only name runs past 80 characters would be six lines of Teko caps at the h1 size
-   (the EDI holdings' names run 40–60 words) — the generator flags it, this sets it at the h2 size */
-.ds-title-long { font-size: clamp(26px, 3.4vw, 38px); }
-/* past 180 characters the name is a sentence, and uppercase Teko is unreadable at that length
-   whatever the size — so it becomes a sans title in the record's own case (calcofi_prodo's name is
-   416 characters). Nothing is hidden: the whole name is the h1. */
-.ds-title-vlong { font-family: var(--sans); font-weight: 700; font-size: clamp(21px, 2vw, 27px); line-height: 1.25; letter-spacing: 0; text-transform: none; max-width: 46ch; }
-/* a block, not the h1's flex row: at 46ch the icon and the first words cannot share a line, so
-   the flex row put the icon alone above the title */
-.ds-title-vlong { display: block; }
-.ds-title-vlong .cc-i { font-size: 1.1em; vertical-align: -0.1em; margin-right: 0.4em; }
-.ds-lede { margin: 0 0 calc(var(--space) * 1.5); color: var(--muted); max-width: 68ch; }
 .ds-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: calc(var(--space) * 1.5) 0 0; }
 .ds-chips .cc-chip { font-size: 0.8em; }
 a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decoration: none; }
 .ds-chip-key { font-weight: 700; }
-.ds-holding-note { margin-top: calc(var(--space) * 2); max-width: 70ch; }
+/* ── /datasets/, calmer (issue #30): the catalog head, the one list, the folds ──────────────────
+   Built on assets/calm.css (calm-cathead, calm-list/calm-item, calm-views, calm-folds); what is here
+   is only what the dataset catalog adds. The tiles above stay: they are the "By category" view. */
+.ds-cathead-g { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 14px 56px; align-items: end; }
+.ds-cathead-l, .ds-cathead-r { min-width: 0; }
+.ds-cathead .calm-sentence { font-size: 1.08em; max-width: 46ch; margin-bottom: 8px; }
+.ds-counts { margin: 0; font-size: var(--fs-sm); color: var(--muted); font-variant-numeric: tabular-nums; }
+.ds-counts a { color: var(--muted); font-family: var(--mono); }
+.ds-cathead-r .dsearch { max-width: none; margin: 0; }
+.ds-tools { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 18px; margin-top: 10px; font-size: var(--fs-sm); color: var(--muted); }
+.ds-filter-btn { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 4px 0 2px; background: none; border: 0; border-bottom: 1px solid currentColor; color: var(--fg); font: 700 11.5px/1.3 var(--sans); text-transform: uppercase; letter-spacing: 0.08em; cursor: pointer; }
+.ds-filter-btn:hover, .ds-filter-btn[aria-expanded="true"] { color: var(--accent); }
+.ds-filter-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.ds-cat .ds-filters { margin: 4px 0 14px; padding: 14px 16px; background: var(--panel); border-radius: var(--radius-card); }
+/* "What this is": the catalog's long lede and a dataset's whole description, one click away */
+.ds-more { margin: 8px 0 0; }
+.ds-more > summary { display: inline-flex; align-items: center; gap: 6px; min-height: 28px; cursor: pointer; list-style: none; font-size: var(--fs-sm); font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.ds-more > summary::-webkit-details-marker { display: none; }
+.ds-more > summary:hover { color: var(--accent); }
+.ds-more > summary .cc-i { transition: transform 200ms; }
+.ds-more[open] > summary .cc-i { transform: rotate(180deg); }
+.ds-more > p { margin: 8px 0 0; max-width: 60ch; color: var(--muted); font-size: 15.5px; }
+.ds-views { margin-top: 10px; }
+.ds-views > .tabrow button { display: inline-flex; align-items: center; }
+.ds-realm-h { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; margin: 26px 0 6px; }
+.ds-realm-grp:first-child .ds-realm-h { margin-top: 14px; }
+.ds-realm-h h2 { margin: 0; display: inline-flex; align-items: center; gap: 8px; font-family: var(--display); font-weight: 500; font-size: 28px; line-height: 1; text-transform: uppercase; letter-spacing: 0.03em; }
+.ds-realm-h h2 .cc-i { font-size: 24px; color: var(--accent); }
+/* name, then "category · provider" beside it on one line (the mockup's row); stacked on a phone */
+.ds-item .calm-item-tx { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 14px; }
+.ds-item .calm-item-t { color: var(--accent); }
+.ds-item .calm-item-s { flex: 1 1 14em; min-width: 0; }
+.ds-item > summary:hover { background: var(--panel); }
+/* 19 rows: calm.css's 56 px row is a little generous for a list this long — 48 px, the mockup's */
+.ds-item > summary { min-height: 48px; padding-block: 8px; }
+.ds-item .calm-item-k { display: flex; align-items: center; gap: 4px 14px; }
+.ds-item .calm-item-k .cc-chip { font-size: 11px; }
+.ds-item-what { display: flex; flex-wrap: wrap; gap: 4px 20px; margin: 0 0 4px; font-size: 14px; color: var(--muted); }
+.ds-item-what > span { display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: 0 6px; min-width: 0; max-width: 100%; }
+.ds-item-what > span > .cc-i { align-self: center; }
+.ds-item-what b { color: var(--fg); font-weight: 600; }
+.ds-item-what .mono { font-size: 12.5px; overflow-wrap: anywhere; }
+.ds-item-cat { color: var(--fg); }
+.ds-item .calm-ways { margin-top: 10px; }
+.ds-cat-folds { margin-top: 30px; }
+.ds-fold-lede { color: var(--muted); font-size: 14.5px; }
+.ds-cat-folds .ds-release, .ds-cat-folds .ds-refband { margin: 0; }
 
-/* at a glance: 3 x 2, the numbers in mono, under the chips */
-.ds-glance { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: calc(var(--space) * 1.5) calc(var(--space) * 2); margin: calc(var(--space) * 2.5) 0 var(--space); }
-.ds-glance div { min-width: 0; }
-.ds-glance dt { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
-.ds-glance dd { margin: 0; font-family: var(--mono); font-size: 1.05em; font-weight: 600; font-variant-numeric: tabular-nums; }
-.ds-spark-fig { margin: var(--space) 0 0; position: relative; }
-/* the hover / tap card over the years bars and the map's stations (assets/coverage.js) */
-.ds-figure .ds-spark rect, .ds-mapbox .st-on { cursor: pointer; }
-.ds-figure .ds-spark rect:hover, .ds-figure .ds-spark rect.is-on { fill: var(--cc-yellow, #FFCD00); }
+/* ── a dataset page, calmer (issue #30) ──────────────────────────────────────────────────────────
+   One column under calm.css's head of four things: the name, one sentence, the map (the head's one
+   picture, as tall as its own aspect, never stretched to the text) and one line of numbers. What
+   is in it stays open; the ways in are one line; everything else is a fold titled with its answer. */
+.ds-page .calm-name .calm-mark { color: var(--accent); }
+/* a record whose only name runs past 80 characters would be six lines of Teko caps at the h1 size
+   (the EDI holdings' names run 40–60 words) — the generator flags it, this sets it at the h2 size */
+.calm-name h1.ds-title-long { font-size: clamp(26px, 3.4vw, 40px); }
+/* past 180 characters the name is a sentence, and uppercase Teko is unreadable at that length
+   whatever the size — so it becomes a sans title in the record's own case. Nothing is hidden. */
+.calm-name h1.ds-title-vlong { font-family: var(--sans); font-weight: 700; font-size: clamp(21px, 2vw, 27px); line-height: 1.25; letter-spacing: 0; text-transform: none; max-width: 46ch; }
+.ds-key { display: inline-flex; align-items: center; font-size: 13px; color: var(--fg); }
+.ds-facts .cc-chip { font-size: 11px; }
+.ds-facts { gap: 4px 0; }
+.ds-facts > * + *::before { content: "·"; margin: 0 9px; color: var(--muted); }
+.ds-page > .ds-access-foot { margin-top: 22px; max-width: 88ch; font-size: 14.5px; color: var(--muted); }
+.ds-more-b { margin-top: 8px; }
+.ds-desc { max-width: 70ch; color: var(--fg); font-size: 15.5px; }
+.ds-fullname { margin: 0 0 6px; max-width: 70ch; }
+/* the map: the head's picture. The box IS the drawing — `aspect-ratio` from the drawing's own
+   viewBox (the generator writes it as --map-ar) — so the water fills it corner to corner. */
+.ds-mapfig { position: relative; }
+.ds-mapbox { position: relative; width: 100%; aspect-ratio: var(--map-ar, 360 / 387); max-height: 640px; border-radius: var(--radius-card, 12px); overflow: hidden; }
+.ds-mapbox .cc-map { position: absolute; inset: 0; width: 100%; height: 100%; }
+.ds-heldnote { padding: 14px 16px; background: var(--panel); border-radius: var(--radius-card); font-size: 15px; line-height: 1.45; }
+.ds-heldnote p { margin: 0; }
+/* the years strip under the map (D15), on the release's own axis; the bars wear the dataset's colour */
+.ds-strip-fig { position: relative; margin: 2px 0 12px; max-width: 760px; }
+.ds-strip { display: block; width: 100%; height: auto; overflow: visible; }
+.ds-strip rect { fill: var(--dot, var(--accent)); cursor: pointer; }
+.ds-strip-axis { stroke: var(--border); stroke-width: 1; }
+.ds-strip-tk text { font-family: var(--mono); font-size: 12px; fill: var(--muted); }
+/* the hover / tap card over the strip's bars and the map's stations (assets/coverage.js) */
+.ds-mapbox .st-on { cursor: pointer; }
+.ds-strip rect:hover, .ds-strip rect.is-on { fill: var(--cc-yellow, #FFCD00); }
 .ds-mapbox .st-on:hover, .ds-mapbox .st-on.is-on, .ds-mapbox .st-on:focus-visible { stroke: var(--cc-yellow, #FFCD00); stroke-width: 2px; outline: none; }
 .ds-tip { position: absolute; z-index: 5; pointer-events: none; background: var(--fg); color: var(--bg); font-size: 12.5px; line-height: 1.35; padding: 5px 8px; border-radius: var(--radius); white-space: nowrap; box-shadow: 0 2px 8px rgba(0,0,0,.25); }
 .ds-tip b { font-family: var(--mono); font-weight: 600; }
-.ds-mapwrap { position: relative; }
+/* What is in it: one line per kind of content, each opening to all of it in place */
+.ds-line { margin: 8px 0 0; font-size: 15.5px; line-height: 1.5; }
+.ds-line > summary, p.ds-line { display: flex; align-items: baseline; gap: 10px; }
+.ds-line > summary { cursor: pointer; list-style: none; padding: 2px 0; }
+.ds-line > summary::-webkit-details-marker { display: none; }
+.ds-line > summary > .cc-i, p.ds-line > .cc-i { flex: none; align-self: flex-start; margin-top: 4px; color: var(--muted); font-size: 17px; }
+.ds-line > summary > span, p.ds-line > span { min-width: 0; overflow-wrap: anywhere; }
+.ds-line .mono { font-size: 13.5px; }
+.ds-line-all { color: var(--accent); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.15em; white-space: nowrap; }
+.ds-line > summary:hover .ds-line-all { text-decoration-thickness: 2px; }
+.ds-line[open] > summary .ds-line-all::after { content: " ▴"; }
+.ds-line-b { padding: 6px 0 8px 27px; }
+.ds-line-quiet { color: var(--muted); font-size: 14px; }
+.ds-line-b .ds-vargroup:first-child { margin-top: 0; }
+/* a holding's open section, and the ways line */
+.ds-lives .ds-arow:first-of-type { border-top: 0; }
+.ds-ways a.is-app { color: var(--accent); }
+.ds-ways-note { margin: 10px 0 0; font-size: 14.5px; color: var(--muted); max-width: 72ch; }
+.ds-fold-h { margin: 16px 0 6px; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+.ds-fold-note { font-size: 14px; }
+.ds-folds .ds-access-lede:first-child { margin-bottom: 12px; }
+/* override of calm.css's .calm-fold summary on these two pages: on a phone the answer wraps under
+   the title and the chevron (margin-left: auto in a wrapping flex row) fell to a third line of its
+   own. Pinned to the summary's right edge instead, so the fold stays two lines. */
+.ds-page .calm-fold > summary, .ds-cat .calm-fold > summary { position: relative; padding-right: 30px; }
+.ds-page .calm-fold > summary .calm-chev, .ds-cat .calm-fold > summary .calm-chev { position: absolute; right: 4px; top: 17px; margin: 0; }
+@media (max-width: 760px) {
+  .ds-cathead-g { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  .ds-realm-h h2 { font-size: 24px; }
+  .ds-item .calm-item-k { flex-wrap: wrap; gap: 2px 12px; }
+  .ds-item .calm-item-tx { display: block; }
+  /* the strip is drawn in viewBox units: a phone needs its decade labels drawn larger */
+  .ds-strip-tk text { font-size: 20px; } .ds-strip-tk text.o { display: none; }
+  .ds-taxa { columns: 1; }
+  .ds-line-b { padding-left: 0; }
+  .ds-mapbox { max-height: none; }
+}
 
-.ds-tabs { z-index: 1010; }
+
 .ds-section { scroll-margin-top: calc(var(--header-h) + 56px); }
-/* one column, and the assertion in check_layout.py says so: no grid with more than one column
-   sits between the head band and Cite */
-.ds-one > .cc-container { display: block; }
-.ds-desc { max-width: 72ch; }
 .ds-cols { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: calc(var(--space) * 5); align-items: start; }
 .ds-meta, .ds-stats { margin: calc(var(--space) * 2) 0; max-width: 88ch; }
 .ds-meta div, .ds-stats div { display: flex; flex-wrap: wrap; gap: 4px 12px; padding: 5px 0; border-top: 1px solid var(--border); }
@@ -632,14 +695,6 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
    chip is nowrap, so let these wrap or a phone gets a horizontally scrolling page */
 .ds-kw .cc-chip, .ds-chips .cc-chip { white-space: normal; overflow-wrap: anywhere; }
 .ds-varchips .cc-chip small { color: var(--muted); margin-left: 0.35em; font-family: var(--sans); }
-/* "all 33" reads as a link, not as a heading — .ds-details' summary is uppercase and muted */
-.ds-more-vars { display: inline; }
-.ds-more-vars > summary { display: inline; cursor: pointer; list-style: none; font: inherit; font-size: var(--fs-sm); text-transform: none; letter-spacing: 0; font-weight: 400; color: var(--accent); }
-.ds-more-vars > summary::-webkit-details-marker { display: none; }
-.ds-more-vars > summary::after { content: " ▸"; }
-.ds-more-vars[open] > summary::after { content: " ▾"; }
-.ds-more-vars .cc-chip { margin: 2px 2px 0 0; }
-.ds-cov-h { margin-top: calc(var(--space) * 3); }
 /* a dataset's variables, one group per grain (CalCOFI.github.io#26): the release table named beside
    its group, the measured counts in muted type. A per-cast chip with no page is a span, not a link. */
 .ds-vargroup { margin-top: calc(var(--space) * 2); }
@@ -651,11 +706,6 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 .ds-successor { margin: calc(var(--space) * 2) 0; padding: 6px 0 6px 12px; border-left: 3px solid var(--accent); max-width: 72ch; }
 .ds-taxa { list-style: none; margin: var(--space) 0; padding: 0; columns: 2; column-gap: calc(var(--space) * 5); font-size: 15px; }
 .ds-taxa li { break-inside: avoid; padding: 2px 0; }
-.ds-headlinks { display: flex; flex-wrap: wrap; gap: calc(var(--space) * 2); margin-top: calc(var(--space) * 2); }
-.ds-side-h { margin-top: calc(var(--space) * 3); }
-.ds-figure { margin: calc(var(--space) * 2) 0; }
-.ds-figure figcaption { margin-top: 4px; font-size: var(--fs-sm); color: var(--muted); }
-.ds-figure .ds-spark { width: 100%; height: 44px; fill: var(--accent); display: block; }
 .ds-contrib-list, .ds-questions, .ds-objects, .ds-versions, .ds-parts { list-style: none; margin: var(--space) 0; padding: 0; font-size: 15px; }
 .ds-contrib-list li, .ds-questions li, .ds-objects li, .ds-versions li, .ds-parts li { padding: 4px 0; border-top: 1px solid var(--border); }
 .ds-versions li { display: flex; flex-wrap: wrap; gap: 4px 8px; }
@@ -759,17 +809,6 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 @media (max-width: 900px) {
   .ds-cols { grid-template-columns: 1fr; gap: calc(var(--space) * 3); }
 }
-/* the head band collapses; the map is no longer bounded by a neighbour, so it takes the drawing's
-   own aspect ratio, written on the element by the generator */
-@media (max-width: 820px) {
-  .ds-hero { grid-template-columns: 1fr; }
-  /* the column has collapsed, so there is no row height for the aspect ratio to read a width from
-     — take the full width and let the ratio give the height instead. Without this the auto margin
-     leaves the box with an auto width AND an auto height, and the map disappears. */
-  .ds-mapbox { width: 100%; margin-left: 0; aspect-ratio: var(--map-ar, 360 / 387); }
-  .ds-mapcap { text-align: left; }
-  .ds-taxa { columns: 1; }
-}
 /* the ERDDAP matrix and the tables table fold to one field per line */
 @media (max-width: 520px) {
   .ds-tbl { grid-template-columns: 1fr; gap: 2px 0; }
@@ -797,9 +836,6 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
   .ds-release-links { margin-left: 0; }
   .ds-row { flex-direction: column; align-items: flex-start; }
   .ds-row-meta { margin-left: 0; }
-  .ds-glance { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .ds-title { font-size: clamp(26px, 8vw, 36px); }
-  .ds-title-long { font-size: clamp(22px, 6vw, 28px); }
   .ds-meta dt, .ds-stats dt { min-width: 0; flex-basis: 100%; }
   .ds-ref-desc { max-width: 100%; }
   .ds-filters { gap: var(--space); }
