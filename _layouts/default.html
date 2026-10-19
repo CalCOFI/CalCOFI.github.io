@@ -116,6 +116,9 @@
             (`url:` + `data:` on the tab in products.yml; Ben, 2026-09-10). Datasets stays a homepage
             tab because the whole grid IS on the homepage. Without the record the item falls back to
             the tab, whose head links the Explorer.
+            Issue #30 (D3 A): a homepage item links /#<tab id>, not /#<section id> — the front door's
+            doors resolve it to the door that now holds that tab (General → Visualize, Student →
+            Other data visualizations …); data-go still selects the tab where a tabset carries it.
           {%- endcomment -%}
           {%- assign t_page = nil -%}
           {%- if t.url -%}
@@ -126,7 +129,7 @@
             {%- if tn != "" %}<span class="pill">{{ tn }}</span>{% endif -%}
           </a></li>
           {%- else -%}
-          <li><a href="{{ '/' | relative_url }}#{{ s.id }}" data-go="{{ s.id }}:{{ t.id }}">{{ t.title }}
+          <li><a href="{{ '/' | relative_url }}#{{ t.id }}" data-go="{{ s.id }}:{{ t.id }}">{{ t.title }}
             {%- if tn != "" %}<span class="pill">{{ tn }}</span>{% endif -%}
           </a></li>
           {%- endif -%}

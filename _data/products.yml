@@ -17,6 +17,9 @@
 #               existed under their old keys since 2026-06-10). The ship's log (_plugins/news.rb)
 #               makes a "New: <title>" entry of it, and the header's News link wears a dot for 30 days
 # credits:      {org, year, team[]} — shown on student contributions
+# doors:        [monitor] — ALSO drawn behind that front-door door (issue #30 D5: "Ocean monitoring
+#               throughout California"), beside wherever its `tab:` draws it. The one key a door
+#               reads that a section does not; the card is the same include either way.
 # tab:          the section tab this card is drawn in (sections[].tabs[].id) — the ONE thing that
 #               places a card on the front door since 2026-09-10 (D7). Tab ids are unique across
 #               sections, so a panel selects on `tab:` alone.
@@ -524,6 +527,7 @@ products:
     usage: ucla-monitoring-map
     section: students
     tab: student
+    doors: [monitor]
     lenses: [hexagons]
     live_url: https://calcofi.io/2026-ucla-cal-ocean-coastal-monitoring-map/
     source_url: https://github.com/CalCOFI/2026-ucla-cal-ocean-coastal-monitoring-map
@@ -643,6 +647,7 @@ products:
     title: Offshore Wind Monitoring
     section: students
     tab: student
+    doors: [monitor]
     live_url: https://elizathomas.shinyapps.io/california_ofw_monitoring/
     img: images/offshore-wind-monitoring.png
     description: >-

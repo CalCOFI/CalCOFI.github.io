@@ -4,9 +4,11 @@
   name from the naming thread) under it; the open ↗ · source ↗ row as text-links; status · usage
   muted at the right. Same data as product_card.html (v1, untouched until the flip).
   include params: p (the product), section (its section's title), featured
+  `data-key` carries the product key, so check_layout.py can assert every product is drawn on the
+  front door (issue #30: nothing removed, it moved behind a door).
 {%- endcomment -%}
 {%- assign p = include.p -%}
-<article class="prod-card cc-card{% if include.featured %} featured{% endif %}{% if p.status == 'superseded' or p.status == 'archived' %} demoted{% endif %}">
+<article data-key="{{ p.key | escape }}" class="prod-card cc-card{% if include.featured %} featured{% endif %}{% if p.status == 'superseded' or p.status == 'archived' %} demoted{% endif %}">
   <a class="cc-card-shot" href="{{ p.live_url }}" aria-label="Open {{ p.title | escape }}">
     {%- comment -%}
       `shots: themed` = the product honours ?theme= and has been captured twice (scripts/shots.py).

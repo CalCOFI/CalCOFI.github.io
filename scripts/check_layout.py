@@ -85,14 +85,17 @@ can only pass by the layout actually being fixed:
              every end label inside its column, the month strip is 12 cells per series, and each
              `.mm-url` is one line elided from the middle.
 
-  front door (/, plan 2026-09-07 § D-8) the hero's SVG is drawn <= 62 vh at 1470 and the copy's
-             text does not overlap the ship's bounding box; no .tile is drawn > 1.25 x its natural
-             height; the six numbers on the band (years · cruises · stations · species · organism
-             obs. · measurements) equal the inline #reach record's, and measurements + organism
-             observations never exceed the release's own row count; the years strip has
-             exactly datasets.length rows; the map has exactly stations.length marks; nothing on the
-             first screen computes to --warn except the one CTA; every pin href answers 200/206 to
-             a ranged GET (the way build_workflows_index.R probes; checked once, not per theme).
+  front door (/, issue #30: one screen, seven doors) the seven doors, in order, each controlling
+             its own panel and >= 32 px tall, end above the 1280 x 645 fold at >= 1280; on a phone the
+             head, the doors and the quiet drawing stack in that order; no door is open on load unless
+             the URL names one (#door, ?door=, ?q=, ?tab=), and then exactly one is; the page is
+             <= 950 px at 1470 with none open; opening Find then Visualize leaves only Visualize open
+             and a second click closes it; nothing on the first screen is --warn or yellow, and each
+             panel carries exactly one yellow button; the quiet drawing has no pins and the Learn
+             panel's has them, each answering 200/206 to a ranged GET (checked once, not per theme);
+             the five numbers equal the inline #reach record's; the years strip has
+             datasets.length rows and the map stations.length marks; every product key in
+             _data/products.yml is drawn as a card behind some door; no horizontal scroll.
 
 Lighthouse is NOT run here (it needs its own Chrome and ~30 s a page); README says how, and
 .github/workflows/check-brand.yml runs this script weekly and on a pull request.
@@ -102,7 +105,7 @@ Needs shot-scraper (`pipx install shot-scraper && shot-scraper install`).
 import argparse, json, os, re, subprocess, sys
 
 DEFAULT_PATHS = [
-    "/",                             # the front door: the section, the numbers, the bento (plan 2026-09-07)
+    "/",                             # the front door: one screen, seven doors, none open (issue #30)
     "/?q=sardine&tab=species",       # D9 (round 2, WS-R4): a shared link lands on the Species tab
                                      #   with the box filled and >= 1 .cc-result already rendered
     "/?q=krill",                     # …and on the Datasets tab, the same box still filters the grid
@@ -195,6 +198,15 @@ def resolve_face_exemplars(paths, record, media, notes=None):
             notes.append(f"{p}: not in this record and no key of face kind {kind!r} is — "
                          f"the {kind} face is not exercised on this record")
     return out
+
+
+def _product_keys():
+    """Every product key in _data/products.yml (the front door must draw each one behind a door)."""
+    try:
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "_data", "products.yml")) as f:
+            return re.findall(r"^  - key: *([\w.-]+)", f.read(), re.M)
+    except OSError:
+        return []
 
 
 def _read_json(path):
@@ -392,58 +404,64 @@ PROBE = r"""
     };
   });
 
-  // ── the front door (plan 2026-09-07 § D-8) ─────────────────────────────────
-  const sec = d.querySelector("svg.sec");
-  if (sec) {
-    const r = sec.getBoundingClientRect(), sc = r.width / 1400;
-    const ship = sec.querySelector(".ship") && sec.querySelector(".ship").getBoundingClientRect();
-    // the copy's TEXT, not its blocks: a block spans the column even where the words stop
-    const texts = [...d.querySelectorAll(".hero-copy .cc-eyebrow, .hero-copy h1, .hero-copy .hero-lede, .hero-copy .hero-actions a")]
-      .map(e => { if (e.tagName === "A") return e.getBoundingClientRect(); const rg = d.createRange(); rg.selectNodeContents(e); return rg.getBoundingClientRect(); });
-    const copyAbs = cs(d.querySelector(".hero-copy")).position === "absolute";
+  // ── the front door (issue #30: one screen, seven doors; D2 A · D5 A · D6 A) ──
+  // The first screen (.fd-screen) and its seven doors, measured at load with the page scrolled to
+  // the top; then the doors are DRIVEN — open one, open another, close it — and the page is put back
+  // the way it loaded, so everything measured after this (the tabsets, the search) sees the URL's own
+  // state. Document coordinates, so "inside 645 px" means the first screen of a 645 px window.
+  const fds = d.querySelector(".fd-screen");
+  if (fds) {
+    w.scrollTo(0, 0);
+    const top = el => el.getBoundingClientRect().top + w.scrollY;
+    const bot = el => el.getBoundingClientRect().bottom + w.scrollY;
+    const doorEls = [...d.querySelectorAll(".fd-door")];
+    const panels = [...d.querySelectorAll(".fd-panel")];
+    const openNow = () => panels.filter(p => !p.hidden).map(p => p.id);
     let reach = null; try { reach = JSON.parse(d.getElementById("reach").textContent); } catch (e) {}
-    const num = s => +String(s || "").replace(/[^0-9.]/g, "");
-    const band = [...d.querySelectorAll(".nums > div")].map(el => ({ label: el.querySelector("dt").textContent.trim(), value: el.querySelector("dd").textContent.trim() }));
-    // the first screen: everything above the tab row; --warn may appear only on the CTA
-    const tabs = d.querySelector(".section-tabs");
-    const warnEls = [...d.querySelectorAll("body *")].filter(el => {
-      if (tabs && !(tabs.compareDocumentPosition(el) & 2 /* PRECEDING */)) return false;
-      if (el.closest(".cc-header") || el.classList.contains("cc-btn-cta")) return false;   // the one CTA: in dark --warn IS the yellow
-      const s = cs(el);
-      const w = out.warn;
-      return s.color.replace(/\s/g, "") === w || s.backgroundColor.replace(/\s/g, "") === w || s.borderTopColor.replace(/\s/g, "") === w;
-    }).map(el => String(el.className || el.tagName));
+    const band = [...d.querySelectorAll(".fd-nums > div")].map(el => ({ label: el.querySelector("dt").textContent.trim(), value: el.querySelector("dd").textContent.trim(),
+      href: el.querySelector("dd a") ? el.querySelector("dd a").getAttribute("href") : null }));
+    // the first screen: no --warn and no yellow at all (D6 A: each panel carries its own)
+    const first = [...fds.querySelectorAll("*")];
+    const warnEls = first.filter(el => { const s = cs(el), wv = out.warn;
+      return s.color.replace(/\s/g, "") === wv || s.backgroundColor.replace(/\s/g, "") === wv || s.borderTopColor.replace(/\s/g, "") === wv; })
+      .map(el => String(el.className || el.tagName));
     const cta = tok("--cta-bg");
-    const ctaEls = [...d.querySelectorAll("body *")].filter(el => {
-      if (tabs && !(tabs.compareDocumentPosition(el) & 2)) return false;
-      if (el.closest(".cc-header")) return false;
-      return cs(el).backgroundColor.replace(/\s/g, "") === cta;
-    }).map(el => String(el.className || el.tagName));
+    const ctaEls = first.filter(el => cs(el).backgroundColor.replace(/\s/g, "") === cta).map(el => String(el.className || el.tagName));
+    const who = d.querySelector(".fd-who"), ask = d.querySelector(".fd-ask"), fig = d.querySelector(".fd-fig");
+    const full = d.querySelector("#sec-full svg.sec");
     out.front = {
-      svgVh: +(r.height / w.innerHeight * 100).toFixed(1),
-      copyAbs,
-      copyOverlapsShip: !!ship && copyAbs && texts.some(b => !(b.right < ship.left || b.left > ship.right || b.bottom < ship.top || b.top > ship.bottom)),
-      copyBottomUnits: +(Math.max(...texts.map(b => b.bottom)) - r.top).toFixed(0) / sc,
-      pins: [...sec.querySelectorAll("a.pin")].map(a => a.getAttribute("href")),
+      doors: doorEls.map(b => ({ id: b.dataset.door, title: (b.querySelector(".fd-door-t") || b).textContent.replace(/\s+/g, " ").trim(),
+        top: px(top(b)), bottom: px(bot(b)), h: px(b.getBoundingClientRect().height), w: px(b.getBoundingClientRect().width),
+        controls: b.getAttribute("aria-controls"), expanded: b.getAttribute("aria-expanded") })),
+      screenBottom: px(bot(fds)),
+      order: who && ask && fig ? { whoBottom: px(bot(who)), askTop: px(top(ask)), askBottom: px(bot(ask)), figTop: px(top(fig)) } : null,
+      openOnLoad: openNow(),
+      heightOnLoad: d.documentElement.scrollHeight,
+      panelCtas: panels.map(p => ({ id: p.id, n: p.querySelectorAll(".cc-btn-cta").length })),
+      quietPins: d.querySelectorAll("#sec-quiet a.pin").length,
+      quietDrawn: !!d.querySelector("#sec-quiet svg.sec"),
+      pins: full ? [...full.querySelectorAll("a.pin")].map(a => a.getAttribute("href")) : [],
       band, reachNumbers: reach && reach.numbers,
       stripRows: d.querySelectorAll("svg.strip a.rowlink").length, datasets: reach && reach.datasets.length,
       mapMarks: d.querySelectorAll("svg.map .st").length - d.querySelectorAll("svg.map .keyg .st").length, stations: reach && reach.stations.length,
-      warnEls, ctaEls,
-      // natural = the tile taken out of the grid at its own width, its flexing fill let be its
-      // content's height (the map's drawing at the tile's width, the strip at its aspect)
-      tiles: [...d.querySelectorAll(".tile")].map(t => {
-        const b = t.getBoundingClientRect(), drawn = b.height;
-        const was = t.getAttribute("style") || "";
-        const fills = [...t.querySelectorAll(".fill")].map(f => [f, f.getAttribute("style") || ""]);
-        const svgs = [...t.querySelectorAll(".fill > svg")].map(s => [s, s.getAttribute("style") || ""]);
-        t.style.cssText = was + ";position:absolute;left:0;top:0;width:" + b.width + "px;height:auto;grid-row:auto;grid-column:auto";
-        fills.forEach(([f]) => { f.style.flex = "none"; f.style.minHeight = "0"; });
-        svgs.forEach(([s]) => { s.style.position = "static"; s.style.width = "100%"; s.style.height = "auto"; });
-        const natural = t.getBoundingClientRect().height;
-        t.setAttribute("style", was); fills.forEach(([f, s]) => f.setAttribute("style", s)); svgs.forEach(([s, st]) => s.setAttribute("style", st));
-        return { name: (t.querySelector(".cc-eyebrow") || {}).textContent || t.className, drawn: px(drawn), natural: px(natural), ratio: natural > 0 ? +(drawn / natural).toFixed(3) : 1 };
-      })
+      cardKeys: [...new Set([...d.querySelectorAll(".prod-card[data-key]")].map(c => c.dataset.key))],
+      warnEls, ctaEls
     };
+    // drive the doors: one opens, a second closes the first, a click on the open one closes it
+    const door = k => d.getElementById("door-" + k);
+    if (door("find") && door("explore")) {
+      const was = openNow();
+      was.forEach(k => door(k) && door(k).click());              // start from every door closed
+      door("find").click();
+      const a = openNow();
+      door("explore").click();
+      const b = openNow(), findExp = door("find").getAttribute("aria-expanded"), expExp = door("explore").getAttribute("aria-expanded");
+      door("explore").click();
+      const c = openNow();
+      if (was.length && door(was[0])) door(was[0]).click();      // put back what the URL opened
+      out.front.drive = { afterFind: a, afterExplore: b, findExpanded: findExp, exploreExpanded: expExp, afterClose: c, restored: openNow() };
+      w.scrollTo(0, 0);
+    }
   }
 
   // ── the front door's navigation (plan 2026-09-10 § D7, WS-M0) ──────────────
@@ -521,15 +539,7 @@ PROBE = r"""
     try { const x = new w.XMLHttpRequest(); x.open("HEAD", p, false); x.send(); out.pageExists[p] = x.status >= 200 && x.status < 400; } catch (e) { out.pageExists[p] = false; }
   }
 
-  // the sticky section bar and the tabsets
-  const bar = d.querySelector(".section-tabs");
-  if (bar) {
-    out.sections = [...bar.querySelectorAll("a")].map(a => ({
-      title: a.firstChild ? a.firstChild.textContent.trim() : a.textContent.trim(),
-      n: (a.querySelector(".n") || {}).textContent.replace(/\s+/g, " ").trim(),
-      href: a.getAttribute("href")
-    }));
-  }
+  // the tabsets (inside the front door's panels too: `hidden` is read, not the drawn box)
   const sets = [...d.querySelectorAll(".tabset")];
   if (sets.length) {
     out.tabsets = sets.map(ts => ({
@@ -582,35 +592,6 @@ PROBE = r"""
       boxW: doorBox ? px(doorBox.getBoundingClientRect().width) : null,
       containerW: doorBox ? px(doorBox.closest(".cc-container").getBoundingClientRect().width) : null
     };
-  }
-
-  // the band's two counted things are doors now
-  out.bandLinks = [...d.querySelectorAll(".nums > div")]
-    .map(el => ({ label: el.querySelector("dt").textContent.trim(),
-                  href: (el.querySelector("dd a") || {}).getAttribute ? el.querySelector("dd a").getAttribute("href") : null }));
-
-  // the Observed tile: both rows drawn, nothing spilling out of the cell
-  const obs = d.querySelector(".tile.t-obs");
-  if (obs) {
-    const b = obs.getBoundingClientRect();
-    out.observed = {
-      rows: [...obs.querySelectorAll(".obsrow")].map(r => r.textContent.replace(/\s+/g, " ").trim()),
-      links: [...obs.querySelectorAll(".obsrow a")].map(a => a.getAttribute("href")),
-      overflow: Math.max(0, px(obs.scrollHeight - obs.clientHeight)),
-      spill: [...obs.querySelectorAll("*")].filter(e2 => {
-        const r2 = e2.getBoundingClientRect();
-        return r2.height > 0 && (r2.bottom > b.bottom + 1 || r2.right > b.right + 1);
-      }).length
-    };
-    // WS-F4: the species row's silhouette strip (.sp-glyphs) must fit the tile's EXISTING height
-    // budget — the line-height the shared `.tile-glyphs` rule already allocated for the six
-    // decorative icons this strip replaces, read from the class rather than a synthetic "emptied"
-    // state (the row was never actually empty: it always drew six glyphs, none or 0-6 today)
-    const glyphs = obs.querySelector(".sp-glyphs");
-    if (glyphs) {
-      out.observed.glyphsH = px(glyphs.getBoundingClientRect().height);
-      out.observed.glyphsBudget = px(parseFloat(cs(glyphs).lineHeight) || 0);
-    }
   }
 
   // ── the species catalog (plan 2026-09-09 § S3; issue #30 D7 A, D10 B, D17) ─
@@ -1079,20 +1060,22 @@ def probe(url, width, theme, browser, wait):
 MAX_STRETCH = 1.25    # a tile drawn more than a quarter taller than its content is stretch
 MAX_HERO_GAP = 120    # px between the head band's two columns
 MAX_GRID_H = 4400     # px at 1470 with the staging record (was 4,910)
-MAX_HERO_VH = 62      # the front door's drawing at 1470: the catalog must start within reach
-MAX_TILE_STRETCH = 1.25
 MAX_SPECIES_INDEX_H = 2220   # issue #30: /species/ at 1470, nothing open — the mockup's 1,775 + 25 %
 MAX_SPECIES_PAGE_H = 1500    # issue #30: a taxon page at 1470, nothing open — ~1,200 + 25 %
+# the front door (issue #30): Dan's screen, the seven doors in order, and the page with none open
+FOLD_W, FOLD_H = 1280, 645
+FRONT_DOORS = ["find", "explore", "program", "build", "learn", "monitor", "viz"]
+FRONT_MAX_H = 950     # px at 1470 with no door open (the mockup's ~750 + 25 %, with the site's footer)
+MIN_TAP = 32
 
 # ── the front door's navigation (plan 2026-09-10 § D7, WS-M0) ─────────────────
 # The six words plus calcofi.org ↗ — seven items, as before D7. DOCS and NEWS are pages, so the
 # section bar draws four; the header draws all six and the outbound link.
 NAV_WORDS = ["Data", "Apps", "Access", "Build", "Docs", "News", "calcofi.org ↗"]
-SECTION_WORDS = ["Data", "Apps", "Access", "Build"]
 # the sections whose tabs are CARDS, so a pill must equal the number of cards in its panel. DATA's
 # three pills count datasets, species and measurements — the release's numbers, checked against the
 # page's own inline record instead (the band assertions above already do it).
-CARD_TABSETS = ("ts-explore", "ts-access")
+CARD_TABSETS = ("ts-access", "ts-viz")
 # The Data section at 1470 px, measured on main's own build before D7 (2026-09-10, the v2026.09.06
 # record, light): 2,974 px. D7 adds one search box (48), one tab row (43) and one door line in each
 # realm head (35) and must not add a screen — plan § Risks, WS-M0's gate. Measured after: 3,078 px,
@@ -1766,31 +1749,68 @@ def check(path, r, width, theme, fails, notes):
         for wtxt in mfa["wide"]:
             fails.append(f"{where}: a face block overflows its column: {wtxt}")
 
-    # ── the front door (plan 2026-09-07 § D-8) ────────────────────────────────
+    # ── the front door (issue #30: one screen, seven doors; D2 A · D5 A · D6 A) ─────────────────
     fr = r.get("front")
     if fr:
-        notes.append(f"{where}: hero {fr['svgVh']}vh, copy {'over the sky' if fr['copyAbs'] else 'stacked'} "
-                     f"ending at y {fr['copyBottomUnits']:.0f}/200, {len(fr['pins'])} pins, strip {fr['stripRows']} rows, "
-                     f"map {fr['mapMarks']} marks, worst tile stretch "
-                     f"{max((t['ratio'] for t in fr['tiles']), default=1)}x")
-        if width >= 1400 and fr["svgVh"] > MAX_HERO_VH:
-            fails.append(f"{where}: the hero's drawing is {fr['svgVh']}vh, max {MAX_HERO_VH}")
-        if fr["copyOverlapsShip"]:
-            fails.append(f"{where}: the hero copy overlaps the ship's bounding box")
-        if fr["copyAbs"] and fr["copyBottomUnits"] > 200:
-            fails.append(f"{where}: the hero copy ends at drawing y {fr['copyBottomUnits']:.0f}, below the surface (200)")
-        for t in fr["tiles"]:
-            if t["ratio"] > MAX_TILE_STRETCH:
-                fails.append(f"{where}: tile {t['name'].strip()!r} drawn {t['drawn']}px for {t['natural']}px of content ({t['ratio']}x)")
+        doors = fr["doors"]
+        notes.append(f"{where}: {len(doors)} doors, the last ending at {max((x['bottom'] for x in doors), default=0)}px; "
+                     f"page {fr['heightOnLoad']}px with {fr['openOnLoad'] or 'no'} door open; strip {fr['stripRows']} rows, "
+                     f"map {fr['mapMarks']} marks, {len(fr['pins'])} pins behind Learn")
+        if [x["id"] for x in doors] != FRONT_DOORS:
+            fails.append(f"{where}: the doors are {[x['id'] for x in doors]}, expected {FRONT_DOORS}")
+        for x in doors:
+            if x["controls"] != x["id"]:
+                fails.append(f"{where}: the {x['id']!r} door controls {x['controls']!r}, not its own panel")
+            if x["h"] < MIN_TAP:
+                fails.append(f"{where}: the {x['id']!r} door is {x['h']}px tall, under the {MIN_TAP}px tap target")
+        # the first screen fits 1280 x 645 with all seven doors visible (the container stops growing
+        # at 1170 px, so 1470 draws the same column as 1280)
+        if width >= FOLD_W:
+            late = [x["id"] for x in doors if x["bottom"] > FOLD_H]
+            if late:
+                fails.append(f"{where}: door(s) {late} end below the {FOLD_H}px fold (first screen ends at {fr['screenBottom']}px)")
+        # on a phone the doors stack under the head and the drawing drops below them
+        o = fr.get("order")
+        if o and width < 900 and not (o["askTop"] >= o["whoBottom"] - 1 and o["figTop"] >= o["askBottom"] - 1):
+            fails.append(f"{where}: on a phone the head, the doors and the drawing do not stack in that order ({o})")
+        # no door open on load unless the URL names one (a hash, ?door=, ?q= or ?tab=)
+        names_one = bool(re.search(r"#.|[?&](door|q|tab)=", path))
+        if not names_one and fr["openOnLoad"]:
+            fails.append(f"{where}: {fr['openOnLoad']} open on load; the front door opens with every door closed")
+        if names_one and len(fr["openOnLoad"]) != 1:
+            fails.append(f"{where}: the URL names a door but {fr['openOnLoad'] or 'none'} opened")
+        if not names_one and width >= 1400 and fr["heightOnLoad"] > FRONT_MAX_H:
+            fails.append(f"{where}: the front door is {fr['heightOnLoad']}px tall with no door open, max {FRONT_MAX_H}")
+        dv = fr.get("drive")
+        if dv:
+            if dv["afterFind"] != ["find"]:
+                fails.append(f"{where}: opening Find left {dv['afterFind']} open")
+            if dv["afterExplore"] != ["explore"] or dv["findExpanded"] != "false" or dv["exploreExpanded"] != "true":
+                fails.append(f"{where}: opening Visualize did not close Find ({dv['afterExplore']}, "
+                             f"find aria-expanded={dv['findExpanded']}, explore={dv['exploreExpanded']})")
+            if dv["afterClose"]:
+                fails.append(f"{where}: a second click on the open door left {dv['afterClose']} open")
+            if dv["restored"] != fr["openOnLoad"]:
+                fails.append(f"{where}: the probe could not put the doors back ({dv['restored']} vs {fr['openOnLoad']})")
+        # D6 A: no yellow and no --warn on the first screen; each panel carries exactly one yellow
+        if fr["warnEls"]:
+            fails.append(f"{where}: --warn on the first screen: {', '.join(sorted(set(fr['warnEls']))[:4])}")
+        if fr["ctaEls"]:
+            fails.append(f"{where}: {len(fr['ctaEls'])} yellow (--cta-bg) element(s) on the first screen, expected none (D6)")
+        for p in fr["panelCtas"]:
+            if p["n"] != 1:
+                fails.append(f"{where}: the {p['id']!r} panel carries {p['n']} yellow buttons, expected exactly one")
+        # the drawing: quiet on the first screen, annotated behind Learn
+        if not fr["quietDrawn"]:
+            fails.append(f"{where}: the quiet section drawing (#sec-quiet) was not drawn")
+        if fr["quietPins"]:
+            fails.append(f"{where}: the first screen's drawing carries {fr['quietPins']} pins; it is drawn quiet")
+        if not fr["pins"]:
+            fails.append(f"{where}: the Learn panel's annotated drawing carries no pins")
+        # the five numbers equal the record's (organism obs. moved to the species number's title)
         n = fr.get("reachNumbers") or {}
-        # the band (plan 2026-09-09 § D9): years · cruises · stations · species · organism obs. ·
-        # measurements. `ships` left the band for the hero's eyebrow and `rows` for the release strip
-        # and the release tile — a "row" is 78 % one full-resolution CTD table and counts the `obs`
-        # compatibility copy twice, so it says nothing about what CalCOFI holds. The keys are the
-        # dt's leading words; the value is the dd, parsed.
         want = {"years": n.get("years"), "cruises": n.get("cruises"), "stations": n.get("stations"),
-                "species": n.get("species"), "organism obs": n.get("organism_obs_m"),
-                "measurements": n.get("measurements_m")}
+                "species": n.get("species"), "measurements": n.get("measurements_m")}
         seen = {}
         for b in fr["band"]:
             key = next((k for k in want if b["label"].startswith(k)), None)
@@ -1798,16 +1818,17 @@ def check(path, r, width, theme, fails, notes):
                 seen[key] = float(b["value"].replace(",", "").replace(" M", ""))
         for k, v in want.items():
             if v is None:
-                continue          # the record cannot supply it: the tile must be absent, and is
+                continue          # the record cannot supply it: the number must be absent, and is
             if k not in seen:
-                fails.append(f"{where}: the numbers band has no {k!r} tile though the record carries {v}")
+                fails.append(f"{where}: the first screen has no {k!r} number though the record carries {v}")
             elif seen[k] != v:
-                fails.append(f"{where}: the band says {k} = {seen[k]:g}, the record says {v}")
+                fails.append(f"{where}: the first screen says {k} = {seen[k]:g}, the record says {v}")
         for k in seen:
             if want.get(k) is None:
-                fails.append(f"{where}: the band shows {k!r} = {seen[k]:g} but the record carries no value")
-        # both are sums over the same catalog tables[] the release's total_rows is summed from, so
-        # neither the band nor a future re-cut of `numbers` can claim more rows than the release has
+                fails.append(f"{where}: the first screen shows {k!r} = {seen[k]:g} but the record carries no value")
+        for b in fr["band"]:
+            if b["label"].split()[0] in ("species", "measurements") and not b["href"]:
+                fails.append(f"{where}: the {b['label']!r} number is not a link")
         mm, om, rm = n.get("measurements_m"), n.get("organism_obs_m"), n.get("rows_m")
         if None not in (mm, om, rm) and mm + om > rm:
             fails.append(f"{where}: measurements {mm} M + organism observations {om} M "
@@ -1816,42 +1837,21 @@ def check(path, r, width, theme, fails, notes):
             fails.append(f"{where}: the years strip has {fr['stripRows']} rows for {fr['datasets']} datasets")
         if fr["stations"] is not None and fr["mapMarks"] != fr["stations"]:
             fails.append(f"{where}: the map has {fr['mapMarks']} marks for {fr['stations']} grid cells")
-        if fr["warnEls"]:
-            fails.append(f"{where}: --warn on the first screen: {', '.join(sorted(set(fr['warnEls']))[:4])}")
-        if len(fr["ctaEls"]) != 1:
-            fails.append(f"{where}: {len(fr['ctaEls'])} yellow (--cta-bg) elements on the first screen, expected exactly one")
-        # ── D7: the band's two counted things are doors ──────────────────────
-        want_link = {"species": True, "measurements": True}
-        for b in r.get("bandLinks") or []:
-            key = next((k for k in want_link if b["label"].startswith(k)), None)
-            if key and not b["href"]:
-                fails.append(f"{where}: the band's {key!r} number is not a link")
+        # nothing removed: every product in products.yml is drawn behind some door
+        keys = _product_keys()
+        if keys:
+            missing = [k for k in keys if k not in set(fr["cardKeys"])]
+            if missing:
+                fails.append(f"{where}: product(s) {missing} are drawn behind no door")
+        if r.get("scrollWidth") and r["scrollWidth"] > width:
+            fails.append(f"{where}: the front door scrolls horizontally — scrollWidth {r['scrollWidth']} > {width}")
 
-        # ── D7: the Observed tile shows both counted rows and spills nothing ──
-        ob = r.get("observed")
-        if ob:
-            notes.append(f"{where}: observed tile {len(ob['rows'])} rows, "
-                         f"overflow {ob['overflow']}px, {ob['spill']} spilling children")
-            if len(ob["rows"]) < 2:
-                fails.append(f"{where}: the Observed tile draws {len(ob['rows'])} rows, expected species and measurements")
-            if any(not h for h in ob["links"]):
-                fails.append(f"{where}: an Observed row has no way in")
-            if ob["overflow"] > 2 or ob["spill"]:
-                fails.append(f"{where}: the Observed tile overflows its cell "
-                             f"({ob['overflow']}px, {ob['spill']} children outside)")
-            # WS-F4: the species row's silhouette strip must fit the tile's existing height budget
-            # — the shared .tile-glyphs rule's own line-height, the room the six decorative icons
-            # this strip replaces already had (0-6 real glyphs today; the WS-F4 fixture draws none)
-            if ob.get("glyphsBudget") and ob["glyphsH"] > ob["glyphsBudget"] + 1:
-                fails.append(f"{where}: the species silhouette strip is {ob['glyphsH']}px, taller "
-                             f"than the tile's existing {ob['glyphsBudget']}px glyph row")
-
-        # ── D7: the Data section must not grow by a screen ────────────────────
+        # ── D7: the Data catalog (#datasets, inside Find) must not grow by a screen ──
         h = r.get("dataSectionH")
-        if h is not None and width >= 1400:
-            notes.append(f"{where}: the Data section is {h}px (main measured {DATA_SECTION_BASE}px)")
+        if h and width >= 1400:
+            notes.append(f"{where}: the Data catalog is {h}px (main measured {DATA_SECTION_BASE}px)")
             if h > DATA_SECTION_BASE + DATA_SECTION_GROWTH:
-                fails.append(f"{where}: the Data section is {h}px, more than "
+                fails.append(f"{where}: the Data catalog is {h}px, more than "
                              f"{DATA_SECTION_GROWTH}px taller than main's {DATA_SECTION_BASE}px")
 
         if width >= 1400 and theme == "light":      # once per run
@@ -1922,17 +1922,6 @@ def check(path, r, width, theme, fails, notes):
                 notes.append(f"{where}: the phone menu opens with {pm['wordsOpen']} items and {pm['subsOpen']} submenus inline, no horizontal scroll, closes on Escape")
     elif pm and pm["buttonShown"]:
         fails.append(f"{where}: the phone menu button is visible at {width}px; it belongs under 480px only")
-
-    # ── the sticky section bar: the four ON-PAGE sections, each counted ────────────────────────
-    secs = r.get("sections")
-    if secs is not None:
-        got = [s["title"] for s in secs]
-        notes.append(f"{where}: section bar {' · '.join(s['title'] + ' ' + s['n'] for s in secs)}")
-        if got != SECTION_WORDS:
-            fails.append(f"{where}: the section bar reads {got}, expected {SECTION_WORDS}")
-        for s in secs:
-            if not s["n"]:
-                fails.append(f"{where}: the section bar's {s['title']!r} carries no count")
 
     # ── the tabsets: one selected tab, one drawn panel, and a pill that is the panel's own count ─
     for ts in r.get("tabsets") or []:

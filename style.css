@@ -33,27 +33,149 @@ code, .mono { font-family: var(--mono); font-size: 0.9em; }
 #layout { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr auto auto; min-height: 100vh; }
 main#panel { width: 100%; }
 
-/* ── hero: the section (plan 2026-09-07 § D-1) ─────────────────────────────────
-   Line 90 as an oceanographic section, drawn at page load by assets/section.js into #sec-host as
-   one <svg viewBox="0 0 1400 660"> that is `width: 100%; height: auto`, so it scales as one unit and
-   the mockup's positions hold at any width. The copy — eyebrow, the Teko h1, the one-line lede, the
-   one yellow CTA and two text links — is HTML, absolutely positioned over the SKY (the top 30 % of
-   the drawing) at ≥ 980 px so it wraps, sizes with the drawing (cqw) and stays selectable; below
-   that it stacks above the drawing. The drawing is tokens only (--cc-sec-*), so the toggle repaints
-   it with no JS. The old Sand hero and its dead `.hero.has-photo` hook went with the re-cut. */
-.hero-sec { position: relative; container-type: inline-size; max-width: var(--container); margin: 0 auto; padding: 0 calc(var(--space) * 3); }
-.hero-drawing { position: relative; }
-.hero-drawing svg.sec { display: block; width: 100%; height: auto; font-family: var(--sans); border-radius: var(--radius-card) var(--radius-card) 0 0; }
-/* the copy: over the sky, left edge at the drawing's x = 90 (6.4 % of the container, past the section's own padding); everything sized from the
-   container so it keeps its place in the sky as the drawing scales (measured at 1170 px: the copy
-   ends 9 px above the surface line; see check_layout.py's hero assertion) */
-.hero-copy { position: absolute; z-index: 2; left: calc(var(--space) * 3 + 6.4cqw); top: 1.2cqw; width: 64cqw; max-width: 760px; }
-.hero-copy .cc-eyebrow { font-size: max(11.5px, 0.95cqw); margin-bottom: 0.15em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.hero-copy .cc-h1 { font-size: 4.6cqw; line-height: 0.92; margin: 0 0 0.06em; letter-spacing: 0.01em; }
-.hero-copy .hero-lede { margin: 0 0 0.4em; font-size: max(13px, 1.2cqw); line-height: 1.3; white-space: nowrap; }
-.hero-copy .hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6em 1.3em; margin: 0; }
-.hero-copy .cc-btn { min-height: max(30px, 3cqw); min-width: 0; padding: 0.3em 1em; font-size: max(12px, 1.1cqw); }
-.hero-copy .cc-text-link { font-size: max(11.5px, 1cqw); }
+/* ══ the front door (issue #30, "calcofi.io, calmer": D2 A · D3 A · D4 B · D5 A · D6 A) ═════════
+   ONE screen at 1280 × 645: what CalCOFI is on the left (eyebrow, h1, lede, five numbers, the Line 90
+   section drawn quiet by assets/section.js into #sec-quiet) and "What do you want to do?" with seven
+   doors on the right. A door opens ONE full-width panel on the Sand band beneath the first screen
+   (the inline script at the foot of index.html); everything the page carried before lives in one of
+   them. No yellow on the first screen: each panel carries its one .cc-btn-cta. Every rule here is
+   prefixed fd- or scoped under .fd-panel, except the shared .sec / .map / .strip / .tile-tabs / .log
+   drawings below, which the panels reuse unchanged. */
+.fd-screen {
+  max-width: var(--container); margin: 0 auto; padding: 26px calc(var(--space) * 3) 28px;
+  display: grid; grid-template-columns: minmax(0, 10fr) minmax(0, 12fr); grid-template-rows: auto 1fr;
+  gap: 14px 56px; align-items: start;
+}
+.fd-who { grid-column: 1; grid-row: 1; min-width: 0; }
+.fd-fig { grid-column: 1; grid-row: 2; min-width: 0; margin: 0; }
+.fd-ask { grid-column: 2; grid-row: 1 / span 2; min-width: 0; }
+.fd-who .cc-h1 { margin: 0.12em 0 0.1em; font-size: clamp(44px, 4.8vw, 60px); }
+.fd-lede { margin: 0 0 14px; font-size: 1.05em; line-height: 1.35; max-width: 44ch; }
+.fd-nums { display: flex; flex-wrap: wrap; gap: 6px 22px; margin: 0; }
+.fd-nums > div { display: flex; flex-direction: column; min-width: 0; }
+.fd-nums dd { margin: 0; font-family: var(--display); font-weight: 500; font-size: 30px; line-height: 1; letter-spacing: 0.02em; font-variant-numeric: tabular-nums; }
+.fd-nums dd a { color: var(--accent); }
+.fd-nums dt { font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+.fd-sec { border: 1px solid var(--border); border-radius: var(--radius-card); overflow: hidden; background: var(--panel); }
+.fd-sec svg.sec { display: block; width: 100%; height: auto; font-family: var(--sans); }
+.fd-cap { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 14px; margin: 8px 0 0; font-size: 13.5px; line-height: 1.35; color: var(--muted); }
+.fd-cap .cc-text-link { font-size: 11.5px; }
+/* the quiet drawing: the gear reads at a third of the size, so its strokes are heavier */
+.sec-quiet .wire, .sec-quiet .net, .sec-quiet .ros, .sec-quiet .cufes, .sec-quiet .thin { stroke-width: 2; }
+.sec-quiet .btl { r: 3.6; }
+
+/* the seven doors: a disclosure list, the last two drawn smaller (D5 A) */
+.fd-ask .cc-h2 { margin: 0.1em 0 0.15em; }
+.fd-hint { margin: 0 0 10px; font-size: 15px; color: var(--muted); }
+.fd-doors { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--border); }
+.fd-door {
+  display: grid; grid-template-columns: 28px minmax(0, 1fr) 18px; grid-template-rows: auto auto; column-gap: 14px; row-gap: 1px; align-items: center;
+  width: 100%; min-height: 44px; padding: 10px 8px 10px 4px; margin: 0; background: none; border: 0; border-bottom: 1px solid var(--border); border-radius: 0;
+  text-align: left; font: inherit; color: var(--fg); cursor: pointer; transition: background-color 120ms;
+}
+.fd-door:hover { background: var(--panel); }
+.fd-door:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.fd-door-i { grid-column: 1; grid-row: 1 / span 2; font-size: 26px; color: var(--accent); justify-self: center; }
+.fd-door-t { grid-column: 2; grid-row: 1; font-weight: 700; font-size: 19px; line-height: 1.2; }
+.fd-door-b { grid-column: 2; grid-row: 2; font-size: 15px; line-height: 1.3; color: var(--muted); }
+.fd-door-chev { grid-column: 3; grid-row: 1 / span 2; font-size: 18px; color: var(--muted); transition: transform 200ms; }
+.fd-door[aria-expanded="true"] { background: var(--panel); }
+.fd-door[aria-expanded="true"] .fd-door-t { color: var(--accent); }
+.fd-door[aria-expanded="true"] .fd-door-chev { transform: rotate(180deg); color: var(--accent); }
+.fd-door-sm { grid-template-rows: auto; padding: 8px 8px 8px 4px; }
+.fd-door-sm .fd-door-i, .fd-door-sm .fd-door-chev { grid-row: 1; }
+.fd-door-sm .fd-door-i { font-size: 20px; }
+.fd-door-sm .fd-door-t { font-size: 16px; font-weight: 600; }
+.fd-door-q { font-weight: 400; font-size: 14.5px; color: var(--muted); }
+
+/* a door's panel: full width on the Sand band, beneath the first screen; one open at a time */
+.fd-panel { background: var(--band); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); scroll-margin-top: var(--header-h); }
+.fd-panel > .cc-container { position: relative; padding-top: 30px; padding-bottom: 40px; }
+@keyframes fd-in { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+.fd-panel:not([hidden]) { animation: fd-in 220ms ease-out; }
+.fd-close {
+  position: absolute; top: 26px; right: calc(var(--space) * 3); z-index: 2; display: inline-flex; align-items: center; gap: 6px;
+  min-height: 32px; padding: 4px 0; background: none; border: 0; font: inherit; font-size: 14px; color: var(--muted); cursor: pointer;
+}
+.fd-close:hover { color: var(--accent); }
+.fd-close:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.fd-phead { margin-bottom: 26px; }
+.fd-phead .cc-eyebrow { padding-right: 90px; }
+.fd-phead .cc-h2 { margin: 0.1em 0 0.15em; }
+.fd-phead .blurb { margin: 0 0 14px; max-width: 66ch; }
+.fd-pact { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 22px; margin: 0; }
+.fd-panel .cc-card { background: var(--panel-2); }
+.fd-panel .tabrow { margin-bottom: calc(var(--space) * 2); }
+.fd-h3 { display: flex; align-items: center; gap: 10px; margin: 30px 0 6px; font-weight: 700; font-size: 1.05em; line-height: 1.2; text-transform: uppercase; letter-spacing: 0.04em; }
+.fd-foot { margin: 26px 0 0; font-size: var(--fs-sm); color: var(--muted); }
+.fd-foot a { color: var(--fg); text-decoration: underline; text-decoration-color: var(--border); text-underline-offset: 0.15em; }
+.fd-foot a:hover { color: var(--accent); }
+.fd-links { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 10px 0 0; }
+.fd-links .cc-text-link { font-size: 12.5px; }
+.fd-two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: calc(var(--space) * 4); align-items: start; }
+
+/* Find: the head and the years strip on the left, the grid map on the right (D4 B), then the one
+   search and the three catalog tabs at full width */
+.fd-find { display: grid; grid-template-columns: minmax(0, 8fr) minmax(0, 4fr); grid-template-areas: "head map" "years map" "cat cat"; column-gap: 40px; }
+.fd-find > .fd-phead { grid-area: head; }
+.fd-years { grid-area: years; margin: 0; align-self: end; }
+.fd-map { grid-area: map; margin: 44px 0 0; }
+.fd-catalog { grid-area: cat; margin-top: 28px; }
+.fd-years, .fd-map, .fd-get, .fd-log { background: var(--panel-2); border-radius: var(--radius-card); padding: 14px 16px; min-width: 0; }
+.fd-years .cc-eyebrow, .fd-map .cc-eyebrow, .fd-get .cc-eyebrow, .fd-log .cc-eyebrow { font-size: 11.5px; margin-bottom: 6px; }
+.fd-years figcaption, .fd-map figcaption { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 14px; margin-top: 6px; font-size: 12.5px; color: var(--muted); }
+.fd-years figcaption .cc-text-link, .fd-map figcaption .cc-text-link { font-size: 12px; }
+.fd-map .fd-cap { margin: 0; font-size: 12.5px; }
+.fd-catalog .dsearch { margin-bottom: calc(var(--space) * 2); }
+/* the species row's silhouettes and the measurement glyphs, beside each index's door */
+.tile-glyphs { display: inline-flex; align-items: center; gap: 8px; color: var(--accent); font-size: 22px; line-height: 1.2; }
+.tile-glyphs .tile-sil { fill: currentColor; }
+/* Download programmatically: the five snippets (radio tabs, no script) above Services · Packages */
+.fd-get { max-width: 820px; margin-bottom: 30px; }
+.fd-get .tile-tabs { flex: none; }
+/* Learn: the annotated section, then the docs book's card beside the ship's log */
+.fd-secfull { margin: 0 0 26px; }
+.fd-secfull .fd-sec { background: var(--panel-2); }
+.fd-log .log { margin-top: 4px; }
+
+/* the front door's footer: the partner strip and the three columns share one row, so the page
+   with no door open stays within one screen and a half (the layout's footer is untouched elsewhere) */
+#layout:has(.fd-screen) .v2-footer { padding: 28px 0; }
+#layout:has(.fd-screen) .v2-footer > .cc-container { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 20px 40px; align-items: center; }
+#layout:has(.fd-screen) .v2-footer .partners { margin-bottom: 0; gap: 14px 20px; }
+#layout:has(.fd-screen) .v2-footer .partners img { height: 46px; }
+#layout:has(.fd-screen) .v2-footer .cols { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+#layout:has(.fd-screen) .v2-footer .cols .cc-h3 { margin-top: 0; }
+
+@media (max-width: 900px) {
+  .fd-screen { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto; gap: 18px; padding-top: 20px; }
+  .fd-who { grid-column: 1; grid-row: auto; order: 1; }
+  .fd-ask { grid-column: 1; grid-row: auto; order: 2; }
+  .fd-fig { grid-column: 1; grid-row: auto; order: 3; }
+  .fd-find { grid-template-columns: minmax(0, 1fr); grid-template-areas: "head" "cat" "years" "map"; }
+  .fd-years, .fd-map { margin-top: 20px; }
+  .fd-two { grid-template-columns: minmax(0, 1fr); }
+  #layout:has(.fd-screen) .v2-footer > .cc-container { grid-template-columns: minmax(0, 1fr); }
+  #layout:has(.fd-screen) .v2-footer .cols { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+}
+@media (max-width: 640px) {
+  /* the strip is 1000 units wide: on a phone it scrolls inside its card at a readable size rather
+     than shrinking to 3 px type (the page body never scrolls sideways) */
+  .fd-strip { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .fd-strip svg.strip { min-width: 680px; }
+}
+@media (max-width: 520px) {
+  .fd-who .cc-h1 { font-size: clamp(40px, 12vw, 56px); }
+  .fd-door-t { font-size: 17px; }
+  .fd-door-sm .fd-door-t { font-size: 15.5px; }
+  .fd-panel > .cc-container { padding-top: 22px; }
+  .fd-close { top: 18px; }
+  .fd-pact .cc-btn { min-width: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fd-panel:not([hidden]) { animation: none; }
+  .fd-door, .fd-door-chev { transition: none; }
+}
 
 /* the drawing's parts — every colour a --cc-sec-* token (brand/v2/theme.css, additions 2026-09-07) */
 .sec .axis-ground { fill: var(--bg); }
@@ -96,83 +218,11 @@ main#panel { width: 100%; }
   .sec .rosette, .sec .cufes { animation: none; }
   html { scroll-behavior: auto; }
 }
-/* below 980 px the sky is too short for the copy: it stacks above the drawing on the page ground */
-@media (max-width: 979px) {
-  .hero-copy { position: static; width: auto; max-width: none; padding: calc(var(--band-pad) * 0.8) 0 calc(var(--space) * 3); }
-  .hero-copy .cc-h1 { font-size: clamp(44px, 9vw, 72px); }
-  .hero-copy .hero-lede { font-size: 1.05em; max-width: 60ch; white-space: normal; }
-  .hero-copy .cc-btn { min-height: 42px; font-size: 15px; padding: 0.4em 1.5em; }
-  .hero-copy .cc-text-link { font-size: 0.8em; }
-  .hero-copy .cc-eyebrow { font-size: var(--fs-sm); white-space: normal; }
-}
 /* below 700 px the labels and gear captions hide (the pins and their <title>s stay); below 500 px
    the axes' tick labels go too — the drawing scales as one unit, so the text would be unreadable */
 @media (max-width: 699px) { .sec .lab { display: none; } }
 @media (max-width: 499px) { .sec .ax, .sec .axt { display: none; } }
 
-/* ── the bento: ways in (plan § D-4), and the reach's two drawings (§ D-3) ──────────
-   A 6-column grid between the hero and the catalog; a tile is a bordered panel whose content sets
-   its height, and no tile ends in a button — the one CTA is the hero's. Where (2 columns) is the
-   static grid map; When (4 columns) is the years strip. Two columns at ≤ 860 px, one at ≤ 640 px,
-   and the rows go auto so nothing is clipped. */
-.bento-wrap { max-width: var(--container); margin: 0 auto; padding: calc(var(--space) * 3) calc(var(--space) * 3) calc(var(--space) * 4); }
-.bento { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); grid-auto-rows: 25px; gap: calc(var(--space) * 2); }
-.tile {
-  position: relative; display: flex; flex-direction: column; gap: 6px; min-width: 0; overflow: hidden;
-  padding: 14px 16px; border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--panel-2);
-}
-.tile .cc-eyebrow { font-size: 11.5px; }
-.tile .fill { flex: 1; min-height: 0; position: relative; }
-.tile .tile-cap { margin: 0; font-size: 12.5px; line-height: 1.3; color: var(--muted); }
-.tile .tile-more { margin-top: auto; font-size: 12.5px; align-self: flex-start; }
-/* The row unit is 25 px, not the original 150 (2026-09-08). Every tile is drawn within a quarter
-   of its own content's height (check_layout.py's 1.25x stretch rule), and on a 150 px unit only
-   two of the seven could be: the ship's log had to give a step back and the Life tile take one,
-   and neither is a whole 150 px. A tile of n rows is 41n − 16 px (25 px rows, a 16 px gap), and
-   all three columns end on row line 22 — so read these spans as a sum, never edit one alone:
-     1–2  map 10 + Explorer card 11                              (a gap between = 21 rows)
-     3–4  years 9 + release 4 + get 8                            = 21
-     5–6  years 9 + ship's log 6 + life 6                        = 21
-   The Explorer's cell is a real product card, not tile markup, so it carries no .tile rules. */
-.tile.t-map { grid-column: 1 / span 2; grid-row: 1 / span 10; }
-.t-exp-cell { grid-column: 1 / span 2; grid-row: 11 / span 11; }
-.tile.t-years { grid-column: 3 / span 4; grid-row: 1 / span 9; }
-.tile.t-rel { grid-column: 3 / span 2; grid-row: 10 / span 4; }
-.tile.t-get { grid-column: 3 / span 2; grid-row: 14 / span 8; }
-.tile.t-log { grid-column: 5 / span 2; grid-row: 10 / span 6; }
-/* the Life tile keeps a deeper foot: the six organism glyphs and "From diatoms to whales →" were
-   reading as if they had fallen off the tile's bottom edge. The room is PADDING, not grid rows, so
-   the tile's natural height grows with it and the stretch rule still holds. */
-.tile.t-life { grid-column: 5 / span 2; grid-row: 16 / span 6; padding-bottom: 34px; }
-.tile.t-life .tile-row { margin-bottom: 4px; }
-/* the numbers band (§ D-2): Teko numerals with uppercase labels on the Sand band */
-.numsband { padding: calc(var(--space) * 2.5) 0; }
-.nums { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: calc(var(--space) * 1.5); margin: 0 auto; }
-.nums > div { border-left: 2px solid var(--border); padding-left: 12px; min-width: 0; }
-.nums dd { margin: 0; font-family: var(--display); font-size: clamp(34px, 3.4vw, 50px); line-height: 0.95; font-weight: 500; color: var(--fg); font-variant-numeric: tabular-nums; }
-.nums dt { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-/* the release tile */
-.tile .tile-v { font: 700 22px var(--mono); color: var(--accent); }
-.tile .tile-dl { display: flex; flex-wrap: wrap; gap: 4px 18px; margin: 0; }
-.tile .tile-dl div { min-width: 0; }
-.tile .tile-dl dt { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
-.tile .tile-dl dd { margin: 0; font-family: var(--mono); font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.tile .tile-links { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: auto 0 0; }
-.tile .tile-links .cc-text-link { font-size: 12.5px; }
-/* the Explore tile IS the Explorer's product card (_includes/product_card.html, the same include
-   the catalog renders below), so the two can never drift. The bento only fits it to a tile: the
-   tile's border and ground, a shorter crop of the shot, a clamped description, and no dataset chip
-   row — a 6-column tile is not a card grid. Everything it SAYS comes from products.yml. */
-.t-exp-cell { display: flex; min-width: 0; }
-.t-exp-cell .prod-card {
-  flex: 1; min-width: 0; font-size: 15px; overflow: hidden;
-  border: 1px solid var(--border); background: var(--panel-2);
-}
-.t-exp-cell .cc-card-shot { border-bottom: 1px solid var(--border); }
-.t-exp-cell .cc-card-shot img { aspect-ratio: auto; height: 176px; }
-.t-exp-cell .cc-card-body { padding: 12px 16px 14px; }
-.t-exp-cell .prod-card .desc { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 0.6em; }
-.t-exp-cell .prod-card .card-datasets { display: none; }
 /* the Get-the-data tile: radio tabs, no JS — the checked input's sibling <pre> shows */
 .tile-tabs { display: flex; flex-wrap: wrap; align-content: flex-start; align-items: flex-end; gap: 0 14px; position: relative; min-height: 0; flex: 1; }
 .tile-tabs input { position: absolute; width: 1px; height: 1px; margin: -1px; opacity: 0; }
@@ -217,12 +267,6 @@ main#panel { width: 100%; }
   .log-e .log-b { grid-column: 1 / -1; }
 }
 
-/* the Life tile */
-.tile .tile-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
-.tile .tile-big { font-family: var(--display); font-size: 40px; line-height: 0.9; font-weight: 500; }
-.tile .tile-glyphs { display: inline-flex; gap: 8px; color: var(--accent); font-size: 24px; }
-.tile.t-map .fill svg { position: absolute; inset: 0; width: 100%; height: 100%; }
-
 /* the map: the brand's --cc-map-* tokens, the stations by pattern — static (Ben, 2026-09-07: a sweep
    read as one station visited a year) */
 svg.map { display: block; width: 100%; height: auto; border-radius: var(--radius); }
@@ -258,61 +302,6 @@ svg.strip { display: block; width: 100%; height: auto; }
 .strip .gl { font: 700 9px var(--sans); letter-spacing: 0.09em; fill: var(--muted); }
 .strip .gh .gr { fill: var(--fg); opacity: 0.55; }
 .strip .gsep { stroke: var(--fg); opacity: 0.14; stroke-width: 1; }
-/* Below --container (1170 px) the tiles start losing width, and a tile that loses width gains
-   height: by 1060 px the release tile's list needs 181 px where 141 px sufficed, so the desktop
-   spans above would CLIP it. One second sum, tuned to the widest content measured anywhere in
-   861–1099 px (release 203, log 239, get 324, life 238, years 284, card 479 — measured, not
-   guessed; 1100–1169 still fits the desktop sum, which is why the query stops at 1099):
-     1–2  map 10 + Explorer card 13                                         = 23 rows
-     3–4  years 8 + release 6 + get 9                                       = 23
-     5–6  years 8 + ship's log 7 + life 8                                   = 23
-   Same rule as above — the three columns are a sum, so never edit one span alone. */
-@media (max-width: 1099px) {
-  .tile.t-map { grid-row: 1 / span 10; }
-  .t-exp-cell { grid-row: 11 / span 13; }
-  .tile.t-years { grid-row: 1 / span 8; }
-  .tile.t-rel { grid-row: 9 / span 6; }
-  .tile.t-get { grid-row: 15 / span 9; }
-  .tile.t-log { grid-row: 9 / span 7; }
-  .tile.t-life { grid-row: 16 / span 8; }
-}
-@media (max-width: 860px) {
-  .nums { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .bento { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: auto; }
-  .tile, .t-exp-cell { grid-column: auto / span 2 !important; grid-row: auto !important; }
-  /* off the fixed grid the card is a card again: its own crop, its whole description */
-  .t-exp-cell .cc-card-shot img { aspect-ratio: 16 / 10; height: auto; }
-  .t-exp-cell .prod-card .desc { display: block; overflow: visible; }
-  .tile.t-map .fill { min-height: 420px; }
-  .tile.t-years .fill { min-height: 0; }
-}
-@media (max-width: 640px) {
-  .nums { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .bento { grid-template-columns: minmax(0, 1fr); }
-  .tile, .t-exp-cell { grid-column: auto / span 1 !important; }
-  .tile.t-map .fill { min-height: 360px; }
-  /* the strip is 1000 units wide: on a phone it scrolls inside its tile at a readable size rather
-     than shrinking to 3 px type (the page body never scrolls sideways) */
-  .tile.t-years .fill { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  .tile.t-years svg.strip { min-width: 680px; }
-}
-
-/* ── section nav: the SIO uppercase tab row under the hero ────────────────
-   Moved into the brand contract as `.cc-tabs` (theme.css, additions 2026-09-05) so the dataset
-   page's sub-nav is the same row. `.section-tabs` stays as an alias for one release — the markup
-   carries both classes — and these rules are the alias, not a second definition: they repeat what
-   .cc-tabs says so a page that has not been updated still renders. */
-
-.section-tabs { position: sticky; top: var(--header-h); z-index: 1010; background: var(--bg); border-bottom: 1px solid var(--border); }
-.section-tabs .cc-container { display: flex; flex-wrap: wrap; gap: 0 calc(var(--space) * 3); }
-.section-tabs a {
-  display: inline-block; padding: calc(var(--space) * 1.5) 0;
-  font-weight: 700; font-size: var(--nav-fs); letter-spacing: 0.06em; text-transform: uppercase;
-  color: var(--fg); border-bottom: 3px solid transparent; margin-bottom: -1px;
-}
-.section-tabs a:hover { color: var(--accent); border-bottom-color: var(--accent); text-decoration: none; }
-.section-tabs a .n { color: var(--muted); font-weight: 400; margin-left: 0.4em; font-variant-numeric: tabular-nums; }
-
 /* ── product sections: alternating bands ────────────────────────────────── */
 
 .prod-section { scroll-margin-top: calc(var(--header-h) + 48px); }
@@ -391,9 +380,6 @@ svg.strip { display: block; width: 100%; height: auto; }
 
 @media (max-width: 640px) {
   :root { --band-pad: 28px; }
-  .hero-copy .cc-h1 { font-size: clamp(40px, 12vw, 56px); }
-  .section-tabs .cc-container { gap: 0 calc(var(--space) * 2); }
-  .section-tabs a { font-size: 13px; padding: 10px 0; }
   .card-grid, .card-grid.featured-grid { grid-template-columns: 1fr; }
   .cc-header .cc-title small { display: none; }
 }
@@ -1167,9 +1153,6 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
   vertical-align: 1px;
 }
 
-/* ── the sticky section bar: DATA carries three counts, so its numbers read as a phrase ─────── */
-.section-tabs a .n b { color: var(--accent); font-weight: 400; }
-
 /* ── one tabset, three sections ──────────────────────────────────────────────────────────────── */
 .tabset { margin: 0; }
 .tabrow {
@@ -1256,30 +1239,6 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 .ds-realm-door span { font-size: 12.5px; }
 .ds-realm-door .cc-text-link { font-size: 12.5px; }
 
-/* ── the Observed tile: two counted rows in the cell the Life tile had ───────────────────────── */
-/* the Observed tile keeps the Life tile's six rows, so column 5–6 (log 6 + observed 6 = 21) ends on
-   row line 22 with the other two and the bento's bottom edge is one line (Ben, 2026-09-10: "What's
-   observed protrudes further down"). Two counted rows fit six rows because each is two lines —
-   the number with its qualifier, then the glyphs left and the door right — not three, and the
-   caption is two lines of copy. The bento comment above still reads as a sum: never edit one span. */
-.tile.t-obs { grid-column: 5 / span 2; grid-row: 16 / span 6; }
-.tile.t-obs .obsrow { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 10px; padding: 4px 0; }
-.tile.t-obs .obsrow + .obsrow { border-top: 1px solid var(--border); }
-.tile.t-obs .tile-big { order: 1; font-size: 28px; line-height: 1.05; white-space: nowrap; }
-.tile.t-obs .obsrow .cc-muted { order: 2; }
-/* the line break: a zero-height item that takes the whole row, between the qualifier and the glyphs */
-.tile.t-obs .obsrow::after { content: ""; order: 3; flex-basis: 100%; height: 0; }
-.tile.t-obs .tile-glyphs { order: 4; flex-basis: auto; font-size: 18px; gap: 4px; line-height: 1.2; }
-.tile.t-obs .obs-more { order: 5; flex-basis: auto; margin: 0 0 0 auto; font-size: 12px; letter-spacing: 0.05em; white-space: nowrap; }
-/* two lines of caption at every width the fixed grid runs (1100–1159 px would take a third): the
-   whole sentence stays in the DOM for a screen reader; the box shows two lines */
-.tile.t-obs .tile-cap { margin-top: 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-
-/* the 861–1099 px sum (see the bento block above): the third column is log 7 + observed 8 = 24,
-   the second rel 6 + get 9 = 24 — the same line */
-@media (max-width: 1099px) {
-  .tile.t-obs { grid-row: 16 / span 8; }
-}
 @media (max-width: 900px) {
   .idxtab { grid-template-columns: minmax(0, 1fr); align-items: start; }
 }
@@ -1291,7 +1250,6 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
   .tabrow button { font-size: 12.5px; }
   .idxtab-counts dd { font-size: 22px; }
   .ds-realm-door .cc-text-link { margin-left: 0; flex-basis: 100%; }
-  .tile.t-obs .tile-big { font-size: 26px; }
 }
 
 /* ══ the measurements catalog (/measurements/, /measurements/{key}/) ══════════════
