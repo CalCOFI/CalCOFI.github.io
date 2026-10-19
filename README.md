@@ -31,83 +31,92 @@ retired.
 
 ## The front door (`/`)
 
-The first screen *shows* what CalCOFI does and how far the data reach (plan
-`workflows/.claude/plans/2026-09-07 CalCOFI.io landing re-cut …`), before the catalog, which is
-unchanged below it. Its parts, and where every fact on them comes from:
+**One screen, seven doors** (issue #30, "calcofi.io, calmer"; decisions D2 A, D3 A, D4 B, D5 A, D6 A).
+At 1280 × 645, the screen in Dan Rudnick's report, the whole first screen is visible: on the left, what
+CalCOFI is (the eyebrow, "From ship to screen", one lede, five numbers and the Line 90 section drawn
+**quiet**); on the right, "What do you want to do?" and Dan's seven pathways, in his words, as seven
+doors. The last two doors are drawn smaller. The first screen has no yellow (D6 A). Each door opens one
+full-width panel on the Sand band beneath the first screen, and opening another door closes it (D2 A).
+Every panel has one yellow button to its real destination. With no door open the page is about 920 px
+tall at 1470 px. Nothing was removed; every part moved behind the door it answers:
 
 ```
-assets/section.js        the hero: Line 90 as an oceanographic section, one inline <svg viewBox="0 0 1400 660">
-                         built at load — sky, surface, a five-stop water ramp, the sea floor, the ship with its gear
-                         drawn to the depth the sampling protocol takes it (each depth a constant with a `source:`
-                         comment naming the calcofi.org page), 14 pins for the 13 data categories at the depth that
-                         kind of measurement lives, each a link to its method page on calcofi.org. The copy and the
-                         one yellow CTA are HTML over the sky (≥ 980 px; stacked above it below that).
-_data/line90_floor.json  the sea floor under Line 90 — GEBCO 2025 sampled every 500 m by
-                         calcofi4r::cc_transect_bathy() (scripts/build_line90_floor.R; the same call ctd-transects
-                         draws with). COMMITTED, like land.geojson: cartography, not a dataset fact. Land is 0 m in
-                         the raster, so the headland above the surface is drawn, and the caption says the floor is
-                         GEBCO. Without the file the drawing falls back to a drawn profile and says so.
-assets/reach.js          the reach: the static grid map (218 cells by pattern, the lines) and the years strip (one row per dataset
-                         in the release, one cell per year, opacity by √n_roots; a hatched bar where the record
-                         carries only an asserted span — region-pooled phytoplankton, samples-only PIC tows). The
-                         rows are grouped Biology then Environment by the dataset's HOME category realm, earliest
-                         start year first inside each, and every row carries that category's brand glyph right-
-                         aligned against the year field — the same icon its catalog tile wears. The glyph ids,
-                         names and realms come from the record through _plugins/datasets.rb (`cat`, `cat_name`,
-                         `realm` on each reach dataset); nothing about a category is typed in the script.
-#reach                   ONE inline JSON (~60 KB) the three drawings read — the cells, the coastline rings, every
-                         dataset's measured years, the categories with the release's counts, the floor and the six
-                         numbers — built by _plugins/datasets.rb (`site.data.reach`). No request; grid.geojson never
-                         reaches the browser.
-the numbers band         77 years · 842 cruises · 218 stations · 1,008 species · 1.3 M organism obs. · 316 M
-                         measurements, every one read at build (`site.data.catalog.numbers`; plan 2026-09-09 § D9).
-                         Where each comes from: years = the release year minus the earliest measured year_min over
-                         datasets[]; cruises and stations = reference[].rows for `cruise` and `grid`; species =
-                         the release's own coverage.json (fetched by fetch_release.sh as _data/release_coverage.json,
-                         ~660 KB, build-time only) counted as taxa[] at rank Species — 1,008 of the 1,506 taxa
-                         OBSERVED, which is not the taxon table's 2,614 rows (1,108 of those are lineage ancestors
-                         and vocabulary never observed, so "2,614 taxa" said the wrong thing); organism obs. and
-                         measurements = the release's own catalog.json (fetched as _data/release_catalog.json — NOT
-                         catalog.json, which Jekyll would load over the generator's site.data.catalog), as
-                         tables[obs_bio].rows and tables[obs_env] + [obs_ctd_full] + [obs_mets_full] .rows summed
-                         over the tables that release actually carries. `ships` (49) is the hero's eyebrow now, and
-                         `rows` (release.total_rows, 349 M) stays where it describes the release OBJECT — the release
-                         tile and the release strip, whose cell's title says how much of it is the `obs`
-                         compatibility copy counted twice (26 M). Fmt.millions() is the one rule for a count in
-                         millions: rounded, one decimal under 10 M, so obs_bio reads 1.3 M and not 1 M. A band dt is
-                         one 12 px uppercase line in a 177 px tile, so each new tile's qualifier is its `title`,
-                         computed from the same tables. A value the build cannot read is not rendered — the tile
-                         collapses; nothing is typed.
-the bento                a 6-column grid on 25 px rows: Where (the static map), When (the strip), Latest release, the
-                         ship's log, Explore, Get the data (five snippets behind radio-input tabs, no script) and
-                         What's observed (2026-09-10, was Life: two counted rows — the species count linking
-                         `/species/`, the measurements count linking `/measurements/` — each with its glyphs and its
-                         door). No tile ends in a button: the one CTA is the hero's; every tile ends
-                         in an uppercase text link. The Explore cell is not tile markup — it is the SAME
-                         _includes/product_card.html the Explore section below renders for the `explore` product, so
-                         the tile and the card cannot drift; .t-exp-cell only fits it to the tile. The row unit is
-                         25 px because check_layout.py holds every tile to 1.25x its own content's height and a
-                         150 px unit could not land inside that for more than two of the seven; a tile of n rows is
-                         41n − 16 px and all three columns end on row line 22, so the spans in style.css are a sum —
-                         never edit one alone.
-brand/v2 --cc-sec-*      the 18 tokens the section is painted with (both themes, additive, in the specimen); the map
-                         and strip use --cc-map-*, --cc-stone, --cc-cyan and the record's own dataset colours. The
-                         toggle repaints everything; nothing listens for cc:theme.
+the hero's section + pins   quiet on the first screen (#sec-quiet: ship, gear, floor; no pins, no axes,
+                            no captions); ANNOTATED behind Learn (#sec-full: the 14 pins, the axes)
+the numbers band (6)        five numbers under the lede: years · cruises · stations · species ·
+                            measurements. Organism obs. moved to the species number's title and the
+                            Species tab's counts, and ships to the cruises number's title
+Where / When tiles          Find: the grid map beside the years strip (D4 B), under the panel's head
+DATA section (search, tabs) Find: the one search (_includes/one_search.html, D10 B) and the three catalog
+                            tabs, unchanged. #datasets is this catalog block
+Latest release tile         Find: one release line at the foot (version, date, tables, rows, DOI, links)
+What's observed tile        Find: the class silhouettes beside the Species tab's door; the caption on
+                            the release line
+Explore tile + APPS         Visualize and explore: the Explorer's featured card, the lens key, the
+  Explorer/General          General apps' cards (#explorer, #general)
+Get the data tile + ACCESS  Download programmatically: the five snippets, then Services · Packages as
+                            before (#access)
+BUILD                       Build something: its three cards (#build)
+DOCS card, ship's log tile  Learn how CalCOFI sampling and data work: the annotated section, the docs
+                            book's card, the four newest log entries
+—                           Ocean monitoring throughout California: the products whose products.yml
+                            entry has `doors: [monitor]` (the UCLA map, Offshore Wind Monitoring)
+APPS Dataset + Student      Other data visualizations: the same two tabs, from the same `tab:` keys
+the sticky section bar      retired: the doors do the bar's job (D17 A)
 ```
 
-**The ship's log** (`/news/`, the tile, `/feed.xml`) is news that mostly writes itself — where each
-kind of entry comes from and when it appears is its own section, [News](#news--where-an-entry-comes-from-and-when-it-appears), below.
+**The URL carries the open door.** Opening a door writes `#find` (or `#explore`, `#program`, `#build`,
+`#learn`, `#monitor`, `#viz`). On load, `?door=find` also opens it, and so do `?q=` (the search) and
+`?tab=<one of the Find tabs>`. The old anchors still land: an id inside a panel (`#datasets`, `#access`,
+`#general`) opens that panel and scrolls to the element. A tab id (`#species`, `#student`) opens the
+panel and selects the tab. The retired words `#data`, `#apps`, `#docs`, `#monitoring` and `#students`
+map to their doors. The header's words are the same links (D3 A), so DATA · APPS · ACCESS · BUILD open
+their doors in place, and the open door's word is marked `aria-current`. Each submenu item now links
+`/#<tab id>`, so General lands in Visualize and Student in Other data visualizations. DOCS and NEWS stay
+pages. The logic is one inline script at the foot of `index.html`. It runs before the deferred scripts,
+so a door named in the URL is open before the first paint. Each open fires `cc:door` on the document.
+With JavaScript off, every panel shows (a `<noscript>` rule).
 
-**Motion** (Decision 9, narrowed 2026-09-07): the rosette casts down the CTD wire and back on a 26 s
-loop and the CUFES dots flow — both off under `prefers-reduced-motion`. The map is static: a cruise
-sweep with a year odometer read as one station visited a year, so it went. The site's own `home` capture (`_data/shots.yml pages:`) freezes them so
-the card is the same frame every time.
+**Every product is still drawn.** The cards are `_includes/product_card.html`, unchanged except for a
+`data-key`. `check_layout.py` asserts that every key in `products.yml` is drawn behind some door.
 
-**Checked** by `scripts/check_layout.py` on `/` (plan § D-8): the drawing ≤ 62 vh at 1470 with the
-copy clear of the ship's bounding box and above the surface; no tile drawn > 1.25 × its content; the
-six numbers on the band equal the inline record's; the strip has one row per dataset and the map one
-mark per cell; nothing on the first screen computes to `--warn` but the CTA; every pin's calcofi.org
-page answers a ranged GET. Lighthouse accessibility is 100 on `/` and `/news/` in both themes.
+Where the facts come from is unchanged:
+
+```
+assets/section.js        Line 90 as an oceanographic section. buildSection(host, reach, {quiet}) draws the
+                         quiet version (viewBox 1400 × 600, cropped at the floor line, role=img) or the
+                         annotated one (1400 × 660, the 14 pins as links to calcofi.org method pages).
+                         Gear depths are protocol constants, each with a `source:` comment. Gradient
+                         ids carry a per-drawing suffix, so the two drawings never share a <defs>.
+_data/line90_floor.json  the sea floor (GEBCO 2025 every 500 m), committed cartography; without it the
+                         floor is drawn and the captions say so.
+assets/reach.js          the static grid map and the years strip (unchanged), drawn into #map-host and
+                         #strip-host inside Find.
+#reach                   ONE inline JSON the drawings read (_plugins/datasets.rb, site.data.reach).
+the five numbers         site.data.catalog.numbers. A value the build cannot read is not rendered.
+```
+
+**Motion**: the rosette casts down the CTD wire and the CUFES dots flow. Both stop under
+`prefers-reduced-motion`, and so do the panel's 220 ms entrance and the chevron turn.
+
+**Checked** by `scripts/check_layout.py` on `/`, `/?q=sardine&tab=species` and `/?q=krill`, at 1470
+and 375 px, in both themes. These assertions hold:
+
+- The seven doors are in order, each controls its own panel and is at least 32 px tall.
+- At 1280 px and wider, every door ends above the 645 px fold.
+- On a phone, the head, the doors and the drawing stack in that order.
+- No door is open on load unless the URL names one, and then exactly one is.
+- The page is at most 950 px tall at 1470 with no door open.
+- Opening Find and then Visualize leaves only Visualize open, and a second click closes it.
+- The first screen has no `--warn` and no yellow, and each panel has exactly one yellow button.
+- The quiet drawing has no pins. Learn's drawing has them, and each answers a ranged GET.
+- The five numbers equal the record's.
+- The strip has one row per dataset, and the map has one mark per cell.
+- Every product is drawn.
+- There is no horizontal scroll.
+
+The front door's footer puts the partner strip and the three columns on one row, scoped by
+`#layout:has(.fd-screen)`. The layout's footer is unchanged on every other page.
 
 ### Six words, tabs, and one search over the three indexes
 
@@ -130,8 +139,9 @@ remove it and the header is flat six words again, with no other edit anywhere (t
 question 8).
 
 **The tabs.** Every crowded section is tabbed, each tab with a count pill: DATA is *Datasets ·
-Species · Measurements*, APPS is *Explorer · General · Dataset · Student*, ACCESS is *Services ·
-Packages*; BUILD keeps three cards. A tab is declared in `sections[].tabs[]` (`id`, `title`,
+Species · Measurements*, ACCESS is *Services · Packages* and Other data visualizations is *Dataset ·
+Student* (issue #30 took APPS' Explorer and General out of tabs, into the Visualize door); BUILD keeps
+three cards. A tab is declared in `sections[].tabs[]` (`id`, `title`,
 `blurb`, and an optional `count:` naming a catalog number rather than a card count) and a card joins
 one with `tab:` — tab ids are unique across sections, so a panel selects on `tab:` alone.
 `assets/tabs.js` (≤ 110 lines, no dependency) sets `aria-selected`, hides the other panels, moves on
@@ -189,16 +199,15 @@ build cannot read collapses its pill, its tile row and its door rather than bein
 
 **Where a door leads when the catalog does not exist.** `/species/` exists only where the release
 carries `taxa.json`; `/measurements/` only where it carries `measurements.json`. Without the record
-the band tile, the Observed row, the realm door and the tab all fall back to the Explorer —
+the first screen's number, the realm door and the tab all fall back to the Explorer —
 `…/explore/` for organisms, `…/explore/?var=temperature` for measurements — so a door always leads
 somewhere true.
 
 **Also checked** by `check_layout.py`, in both themes at 1470 and 375: the header reads exactly those
 seven words; each submenu is closed until focused, opens on focus, closes on Escape, and every item
-carries a count; the section bar reads DATA · APPS · ACCESS · BUILD, each counted; every tabset has
+carries a count; every tabset has
 exactly one selected tab and one drawn panel, and a card tabset's pill equals the cards in its panel;
-the band's species and measurements numbers are links; the Observed tile draws both rows and spills
-nothing; the search returns a Species group for "sardine", a Measurements group for "nitrate" and a
+the first screen's species and measurements numbers are links; the search returns a Species group for "sardine", a Measurements group for "nitrate" and a
 Datasets group for "CUFES"; and the DATA section is no more than 120 px taller than it was before the
 tabs (`DATA_SECTION_BASE`, measured on main, is re-stated in the script whenever the furniture
 changes).
