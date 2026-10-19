@@ -32,7 +32,7 @@
   {%- if sf_.photo -%}
 <figure class="calm-head-r sp-photo-fig">
   <div class="calm-pic sp-photo">
-    <img src="{{ sf_.photo.src }}" alt="{{ sf_.photo.alt | escape }}"{% if sf_.photo.w %} width="{{ sf_.photo.w }}"{% endif %}{% if sf_.photo.h %} height="{{ sf_.photo.h }}"{% endif %} loading="lazy" decoding="async" style="object-position:{{ sf_.photo.pos }}">
+    <img src="{{ sf_.photo.src }}" alt="{{ sf_.photo.alt | escape }}"{% if sf_.photo.w %} width="{{ sf_.photo.w }}"{% endif %}{% if sf_.photo.h %} height="{{ sf_.photo.h }}"{% endif %} fetchpriority="high" decoding="async" style="object-position:{{ sf_.photo.pos }}">
   </div>
   <figcaption class="calm-cap sp-credit"{% if sf_.photo.credit.by_full %} title="{{ sf_.photo.credit.by_full | escape }}"{% endif %}>
     {%- include species_credit.html c=sf_.photo.credit -%}
