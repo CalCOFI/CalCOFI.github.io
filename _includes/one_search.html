@@ -1,0 +1,24 @@
+{%- comment -%}
+  The ONE search over the three indexes (issue #30 D10 B): the front door's box, on every catalog page.
+  assets/door-search.js fetches the three search records on first focus and nothing before, and draws the
+  grouped dropdown (#door-res). A catalog page's own script may ALSO listen to #door-q's input event to
+  filter its own list in place; the dropdown still answers for the other two indexes.
+
+  include one_search.html placeholder="…" hint="19 · 1,234 · 456"
+{%- endcomment -%}
+<div class="dsearch" id="door-search"
+     data-datasets="{{ '/datasets/search.json' | relative_url }}"
+     data-species="{{ '/species/search.json' | relative_url }}"
+     data-measurements="{{ '/measurements/search.json' | relative_url }}"
+     data-species-url="{{ '/species/' | relative_url }}" data-measurements-url="{{ '/measurements/' | relative_url }}">
+  <label class="dsearch-box">
+    <i class="cc-i cc-i-ui-search cc-muted" aria-hidden="true"></i>
+    <input id="door-q" type="search" autocomplete="off" spellcheck="false"
+           placeholder="{{ include.placeholder | default: 'sardine · nitrate · Sardinops · CTD · TEMPPR01 · Farallon …' }}"
+           aria-label="Search datasets, species and measurements"
+           aria-controls="door-res" aria-expanded="false" role="combobox" aria-autocomplete="list">
+    {%- if include.hint %}<span class="dsearch-k" aria-hidden="true">{{ include.hint }}</span>{% endif %}
+  </label>
+  <div class="dres" id="door-res" role="listbox" aria-label="Results"></div>
+</div>
+<script defer src="{{ '/assets/door-search.js' | relative_url }}"></script>
