@@ -651,11 +651,6 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
 .ds-fold-h { margin: 16px 0 6px; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
 .ds-fold-note { font-size: 14px; }
 .ds-folds .ds-access-lede:first-child { margin-bottom: 12px; }
-/* override of calm.css's .calm-fold summary on these two pages: on a phone the answer wraps under
-   the title and the chevron (margin-left: auto in a wrapping flex row) fell to a third line of its
-   own. Pinned to the summary's right edge instead, so the fold stays two lines. */
-.ds-page .calm-fold > summary, .ds-cat .calm-fold > summary { position: relative; padding-right: 30px; }
-.ds-page .calm-fold > summary .calm-chev, .ds-cat .calm-fold > summary .calm-chev { position: absolute; right: 4px; top: 17px; margin: 0; }
 @media (max-width: 760px) {
   .ds-cathead-g { grid-template-columns: minmax(0, 1fr); gap: 14px; }
   .ds-realm-h h2 { font-size: 24px; }

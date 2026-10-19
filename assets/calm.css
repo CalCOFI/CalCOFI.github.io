@@ -110,10 +110,12 @@
 .calm-folds { margin-top: 22px; }
 .calm-fold { border-top: 1px solid var(--border); }
 .calm-fold:last-child { border-bottom: 1px solid var(--border); }
-.calm-fold > summary { cursor: pointer; list-style: none; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; padding: 14px 4px 14px 0; font-weight: 700; font-size: 16px; text-transform: uppercase; letter-spacing: 0.04em; }
+.calm-fold > summary { position: relative; cursor: pointer; list-style: none; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; padding: 14px 30px 14px 0; font-weight: 700; font-size: 16px; text-transform: uppercase; letter-spacing: 0.04em; }
 .calm-fold > summary::-webkit-details-marker { display: none; }
 .calm-fold > summary > .cc-i:first-child { align-self: center; color: var(--muted); font-size: 18px; }
-.calm-fold > summary .calm-chev { margin-left: auto; align-self: center; color: var(--muted); transition: transform 200ms; font-size: 18px; }
+/* the chevron is pinned to the summary's right edge: in a wrapping flex row (the answer wraps under the
+   title on a phone) margin-left: auto dropped it to a third line of its own */
+.calm-fold > summary .calm-chev { position: absolute; right: 4px; top: 17px; margin: 0; color: var(--muted); transition: transform 200ms; font-size: 18px; }
 .calm-fold[open] > summary .calm-chev { transform: rotate(180deg); }
 .calm-fold > summary:hover { color: var(--accent); }
 .calm-fold > summary:hover > .cc-i { color: var(--accent); }

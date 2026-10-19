@@ -65,7 +65,7 @@ can only pass by the layout actually being fixed:
              answer, and there is no sub-nav. At 1470 with nothing open the index's content is at
              most MAX_SPECIES_INDEX_H and a taxon page's MAX_SPECIES_PAGE_H.
   faces      (a taxon page, plan 2026-09-11 § D1–D5, D9; round 2 § P1, P2, D6) the silhouette is a
-             labelled role="img" with real pixels; the photo has alt text and loading="lazy", and
+             labelled role="img" with real pixels; the photo has alt text and is NOT lazy (#30 D11: it is the head's one picture), and
              the head carries ONE picture (#30 D11 A: the photo, else the silhouette); the glance
              draws two bars or says "not on record" — never a blank slot; the sentence's marked
              parts each end in exactly one .cc-src source badge and carry NO .sp-legend (retired in favour of the badges); every asset shown has a
@@ -1485,8 +1485,8 @@ def check(path, r, width, theme, fails, notes):
             p = fa["photo"]
             if not p["alt"]:
                 fails.append(f"{where}: the photo has no alt text")
-            if p["loading"] != "lazy":
-                fails.append(f"{where}: the photo is not loading=lazy")
+            if p["loading"] == "lazy":
+                fails.append(f"{where}: the head photo is loading=lazy (it is the page's one picture, above the fold)")
             if p["w"] < 40 or p["h"] < 40:
                 fails.append(f"{where}: the photo is drawn {p['w']}x{p['h']}px")
             notes.append(f"{where}: photo {p['w']}x{p['h']} pos {p['pos']}"
