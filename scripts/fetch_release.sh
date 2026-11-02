@@ -91,11 +91,16 @@ MEAS_FALLBACK="${MEASUREMENTS_RELEASE_URL:-}"
 
 mkdir -p "$DATA"
 
+# a private preview build (scripts/build_preview.sh) reads its candidate release from a private bucket,
+# so every request carries CALCOFI_RELEASE_TOKEN when it is set; the public build sends no header
+AUTH=()
+[ -n "${CALCOFI_RELEASE_TOKEN:-}" ] && AUTH=(-H "Authorization: Bearer $CALCOFI_RELEASE_TOKEN")
+
 get() {  # get <url> <dest>; quiet, fails on any non-2xx
-  curl -fsSL --retry 3 --retry-delay 2 -o "$2" "$1"
+  curl -fsSL --retry 3 --retry-delay 2 ${AUTH[@]+"${AUTH[@]}"} -o "$2" "$1"
 }
 
-version="$(curl -fsSL --retry 3 "$RELEASE_BASE/latest.txt" | tr -d '[:space:]' || true)"
+version="$(curl -fsSL --retry 3 ${AUTH[@]+"${AUTH[@]}"} "$RELEASE_BASE/latest.txt" | tr -d '[:space:]' || true)"
 if [ -z "$version" ]; then
   echo "ERROR: could not resolve $RELEASE_BASE/latest.txt" >&2
   exit 1

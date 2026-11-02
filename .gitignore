@@ -36,3 +36,5 @@ _data/measurements_media.json
 
 # the per-cast measurements sidecar (scripts/fetch_dataset_measurements.py), measured from the release at build time
 _data/dataset_measurements.json
+_site_preview*/
+_config.preview.yml
