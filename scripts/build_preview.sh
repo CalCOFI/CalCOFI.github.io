@@ -17,20 +17,20 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
 KEY="${1:?dataset key, e.g. sio_cetacean-sightings}"
-# the path segment the preview service shows the build under: the key (iap mode) or, in link
-# mode, the unguessable slug workflows' scripts/build_preview.sh mints (PREVIEW_SLUG)
-SLUG="${PREVIEW_SLUG:-$KEY}"
+# where the preview service shows the build: /d/<key> (iap mode) or, in link mode, the
+# /<key>/<token> workflows' scripts/build_preview.sh mints (PREVIEW_URLBASE)
+URLBASE="${PREVIEW_URLBASE:-/d/$KEY}"
 BASE="${2:?release base, e.g. https://storage.googleapis.com/calcofi-preview/ducklake-preview/releases}"
 OUT="${3:-_site_preview}"
-SITE="/d/$SLUG/f/site"
-EXPLORE="/d/$SLUG/f/explore/"
+SITE="$URLBASE/f/site"
+EXPLORE="$URLBASE/f/explore/"
 # the candidate's object URLs name the PUBLIC bucket under the preview root (calcofi4db builds
 # them on CC_STORAGE_HTTPS); the service streams those objects at /d/<key>/data/<root>/ behind the
 # same sign-in, and serves the held notebook's render as /d/<key>/f/ingest.html
 BUCKET="${BASE#https://storage.googleapis.com/}"; BUCKET="${BUCKET%%/*}"
 ROOT="$(basename "$(dirname "$BASE")")"
-DATA="/d/$SLUG/data/$ROOT/"
-NOTEBOOK="/d/$SLUG/f/ingest.html"
+DATA="$URLBASE/data/$ROOT/"
+NOTEBOOK="$URLBASE/f/ingest.html"
 
 export CALCOFI_RELEASE_BASE="$BASE"
 export CALCOFI_RELEASE_TOKEN="${CALCOFI_RELEASE_TOKEN:-$(gcloud auth print-access-token)}"
