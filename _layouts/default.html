@@ -157,11 +157,11 @@
       <svg class="cc-menu-icon-open" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
       <svg class="cc-menu-icon-close" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
     </button>
-    {%- comment -%} a private preview (scripts/build_preview.sh) never files a public issue {%- endcomment -%}
-    {%- unless site.preview %}
+    {%- comment -%} a private preview (scripts/build_preview.sh) posts to the preview service instead of the Apps Script; feedback_repo is empty there and the dialog says it stays private {%- endcomment -%}
+    {%- if site.feedback_url != "" %}
     <button class="cc-icon-button cc-feedback" type="button" aria-label="Send feedback" title="Send feedback — with a screenshot of this view"
       data-endpoint="{{ site.feedback_url }}" data-repo="{{ site.feedback_repo }}" data-release="{{ site.data.catalog.release.version }}" data-app="calcofi-io"><i class="cc-i cc-i-ui-feedback" aria-hidden="true"></i></button>
-    {%- endunless %}
+    {%- endif %}
     <button class="cc-theme-toggle" type="button" aria-label="Toggle dark / light theme">🌓</button>
   </header>
 
