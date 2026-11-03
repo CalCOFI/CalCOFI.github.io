@@ -32,6 +32,9 @@ NOTEBOOK="/d/$KEY/f/ingest.html"
 export CALCOFI_RELEASE_BASE="$BASE"
 export CALCOFI_RELEASE_TOKEN="${CALCOFI_RELEASE_TOKEN:-$(gcloud auth print-access-token)}"
 export CALCOFI_SKIP_LINK_CHECK=1
+# the per-cast measurements are measured from the candidate's own objects (fetch_dataset_measurements.py)
+export CALCOFI_OBJECT_BASE="https://storage.googleapis.com/${BASE#https://storage.googleapis.com/}"
+CALCOFI_OBJECT_BASE="${CALCOFI_OBJECT_BASE%%/ducklake*}"
 unset JEKYLL_ENV
 
 scripts/fetch_release.sh
