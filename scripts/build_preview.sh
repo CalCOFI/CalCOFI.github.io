@@ -52,7 +52,7 @@ find "$OUT" -type f \( -name '*.html' -o -name '*.js' -o -name '*.json' -o -name
     s{https://calcofi\.io/explore/}{$EXPLORE}g;
     s{https://storage\.googleapis\.com/(?:calcofi-db|$BUCKET)/$ROOT/}{$DATA}g;
     s{https://calcofi\.io/workflows/ingest_$KEY\.html}{$NOTEBOOK}g;
-    s{((?:href|src)=\")/(?!/|\Q${SITE#/}\E/)}{\$1$SITE/}g;
+    s{((?:href|src)=\")/(?!/|\Q${URLBASE#/}\E/)}{\$1$SITE/}g;
     s{(['\"])/brand/v2/}{\$1$SITE/brand/v2/}g;
     s{(['\"])/datasets/search\.json}{\$1$SITE/datasets/search.json}g;
     s{(all: ['\"])/(datasets|species|measurements)/}{\$1$SITE/\$2/}g;
