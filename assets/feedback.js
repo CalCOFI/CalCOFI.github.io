@@ -196,7 +196,7 @@
                 : 'This is a private preview: it goes to the CalCOFI data team only and is listed on the preview\'s landing page. Nothing is posted publicly.</p>') +
       (cfg.endpoint ? '' : '<p class="fb-hint fb-warn">This build has no feedback endpoint — use <i>Open as GitHub issue myself</i> (it copies the screenshot for you to paste).</p>') +
       '<p class="fb-hint fb-err" hidden></p></div>' +
-      '<div class="fb-actions"><a class="cc-btn cc-btn-ghost fb-btn fb-issue" target="_blank" rel="noopener"' + (cfg.repo ? '' : ' hidden') + title="for developers: a prefilled public issue; the screenshot is copied to your clipboard to paste">' + icon('github') + ' Open as GitHub issue myself</a>' +
+      '<div class="fb-actions"><a class="cc-btn cc-btn-ghost fb-btn fb-issue" target="_blank" rel="noopener"' + (cfg.repo ? '' : ' hidden') + ' title="for developers: a prefilled public issue; the screenshot is copied to your clipboard to paste">' + icon('github') + ' Open as GitHub issue myself</a>' +
       '<button type="button" class="cc-btn cc-btn-primary fb-btn fb-send" disabled>' + icon('send') + ' Send</button></div></form>';
     document.body.appendChild(dlg);
     var ta = dlg.querySelector('textarea'), em = dlg.querySelector('input[type=email]'), thumb = dlg.querySelector('.fb-thumb'), inc = dlg.querySelector('.fb-include');
