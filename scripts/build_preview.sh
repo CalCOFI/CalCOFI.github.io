@@ -10,7 +10,7 @@
 # The site is served under /d/<key>/f/site/ and the Explorer build beside it under
 # /d/<key>/f/explore/, so: --baseurl, Explorer links rewritten to the private Explorer, and the
 # few script defaults that assume the domain root made relative to it. Not a production build
-# (JEKYLL_ENV unset), so no analytics tag; `preview: true` drops the feedback button, which would
+# (JEKYLL_ENV unset), so no analytics tag; `preview: true` keeps the feedback button but points it at
 # otherwise file a public GitHub issue. The release is read with the caller's gcloud token.
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -42,7 +42,9 @@ unset JEKYLL_ENV
 
 scripts/fetch_release.sh
 
-printf 'preview: true\nfeedback_url: ""\n' > _config.preview.yml
+# the Feedback button stays: it posts to the preview service, which keeps the report in the private
+# bucket and lists it on the dataset's landing page (no public issue; feedback_repo empty says so)
+printf 'preview: true\nfeedback_url: "%s/feedback"\nfeedback_repo: ""\n' "$URLBASE" > _config.preview.yml
 trap 'rm -f _config.preview.yml' EXIT
 bundle exec jekyll build --config _config.yml,_config.preview.yml --baseurl "$SITE" -d "$OUT"
 

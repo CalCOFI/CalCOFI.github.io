@@ -192,10 +192,11 @@
       '<div class="fb-row"><label class="fb-row"><input type="checkbox" checked class="fb-include"> include screenshot</label>' +
       '<button type="button" class="cc-chip fb-pill" data-act="edit" disabled>' + icon('pen') + ' edit</button><button type="button" class="cc-chip fb-pill" data-act="retake" disabled>' + icon('capture') + ' retake</button></div></div>' +
       '<p class="fb-hint fb-sent">What is sent: your text, this page\'s URL, the release (' + esc(cfg.release || '—') + '), the viewport (' + viewport + ') and theme (' + theme + '), and the screenshot — nothing else. ' +
-      'It goes to the team by mail and lands in a Sheet they read and, <b>without your email</b>, as a public issue in <code>' + esc(cfg.repo) + '</code> labelled <code>' + cfg.label + '</code>; with an email you get the same report back.</p>' +
+      (cfg.repo ? 'It goes to the team by mail and lands in a Sheet they read and, <b>without your email</b>, as a public issue in <code>' + esc(cfg.repo) + '</code> labelled <code>' + cfg.label + '</code>; with an email you get the same report back.</p>'
+                : 'This is a private preview: it goes to the CalCOFI data team only and is listed on the preview\'s landing page. Nothing is posted publicly.</p>') +
       (cfg.endpoint ? '' : '<p class="fb-hint fb-warn">This build has no feedback endpoint — use <i>Open as GitHub issue myself</i> (it copies the screenshot for you to paste).</p>') +
       '<p class="fb-hint fb-err" hidden></p></div>' +
-      '<div class="fb-actions"><a class="cc-btn cc-btn-ghost fb-btn fb-issue" target="_blank" rel="noopener" title="for developers: a prefilled public issue; the screenshot is copied to your clipboard to paste">' + icon('github') + ' Open as GitHub issue myself</a>' +
+      '<div class="fb-actions"><a class="cc-btn cc-btn-ghost fb-btn fb-issue" target="_blank" rel="noopener"' + (cfg.repo ? '' : ' hidden') + title="for developers: a prefilled public issue; the screenshot is copied to your clipboard to paste">' + icon('github') + ' Open as GitHub issue myself</a>' +
       '<button type="button" class="cc-btn cc-btn-primary fb-btn fb-send" disabled>' + icon('send') + ' Send</button></div></form>';
     document.body.appendChild(dlg);
     var ta = dlg.querySelector('textarea'), em = dlg.querySelector('input[type=email]'), thumb = dlg.querySelector('.fb-thumb'), inc = dlg.querySelector('.fb-include');
@@ -239,8 +240,8 @@
         // filled dropped real reports while the dialog said "Received" (2026-10-15); a skip is never a success
         if (j && j.skipped) throw new Error('the endpoint skipped it (' + j.skipped + ')');
         if (window.gtag && !navigator.webdriver) try { window.gtag('event', 'feedback', { app: cfg.app, image: !!(include && shot) }); } catch (e) {}
-        body.innerHTML = '<p>' + (j ? 'Received.' : 'Sent.') + ' The team gets it by mail' + (j && j.issue_url ? ' and it is public issue <a href="' + esc(j.issue_url) + '" target="_blank" rel="noopener">' + esc(j.issue_url.replace(/^https?:\/\/github\.com\//, '')) + '</a>'
-          : j ? '' : '; it should appear among the <a href="https://github.com/' + esc(cfg.repo) + '/issues?q=label%3A' + encodeURIComponent(cfg.label) + '" target="_blank" rel="noopener">public feedback issues</a>') + (j && j.id ? ' <span class="fb-hint">· id ' + esc(j.id) + '</span>' : '') + '.</p><p class="fb-hint">Thank you.</p>';
+        body.innerHTML = '<p>' + (j ? 'Received.' : 'Sent.') + (cfg.repo ? ' The team gets it by mail' : ' The CalCOFI data team has it; it stays private') + (j && j.issue_url ? ' and it is public issue <a href="' + esc(j.issue_url) + '" target="_blank" rel="noopener">' + esc(j.issue_url.replace(/^https?:\/\/github\.com\//, '')) + '</a>'
+          : j || !cfg.repo ? '' : '; it should appear among the <a href="https://github.com/' + esc(cfg.repo) + '/issues?q=label%3A' + encodeURIComponent(cfg.label) + '" target="_blank" rel="noopener">public feedback issues</a>') + (j && j.id ? ' <span class="fb-hint">· id ' + esc(j.id) + '</span>' : '') + '.</p><p class="fb-hint">Thank you.</p>';
         dlg.querySelector('.fb-actions').innerHTML = '<button type="button" class="cc-btn cc-btn-primary fb-btn fb-ok">Close</button>';
         dlg.querySelector('.fb-ok').addEventListener('click', function () { dlg.close(); });
       }).catch(function (e) { err.hidden = false; err.textContent = 'Not sent: ' + e.message + '. Try again, or open the issue yourself.'; })
@@ -257,8 +258,8 @@
     var btn = document.querySelector('.cc-feedback');
     if (btn) {
       cfg.endpoint = (btn.getAttribute('data-endpoint') || '').trim();
-      cfg.repo = btn.getAttribute('data-repo') || cfg.repo; cfg.release = btn.getAttribute('data-release') || ''; cfg.app = btn.getAttribute('data-app') || cfg.app;
-      if (!/^https?:\/\//.test(cfg.endpoint)) cfg.endpoint = '';
+      cfg.repo = btn.hasAttribute('data-repo') ? btn.getAttribute('data-repo') : cfg.repo; cfg.release = btn.getAttribute('data-release') || ''; cfg.app = btn.getAttribute('data-app') || cfg.app;
+      if (!/^(https?:\/\/|\/)/.test(cfg.endpoint)) cfg.endpoint = '';   // absolute, or same-origin (a private preview's service)
       if (!btn.dataset.fbBound) { btn.dataset.fbBound = '1'; btn.addEventListener('click', function (e) { e.preventDefault(); open(); }); }
     }
     Array.prototype.forEach.call(document.querySelectorAll('[data-feedback]'), function (a) { if (!a.dataset.fbBound) { a.dataset.fbBound = '1'; a.addEventListener('click', function (e) { e.preventDefault(); open(); }); } });
