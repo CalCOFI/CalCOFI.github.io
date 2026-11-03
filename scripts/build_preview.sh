@@ -21,6 +21,13 @@ BASE="${2:?release base, e.g. https://storage.googleapis.com/calcofi-preview/duc
 OUT="${3:-_site_preview}"
 SITE="/d/$KEY/f/site"
 EXPLORE="/d/$KEY/f/explore/"
+# the candidate's object URLs name the PUBLIC bucket under the preview root (calcofi4db builds
+# them on CC_STORAGE_HTTPS); the service streams those objects at /d/<key>/data/<root>/ behind the
+# same sign-in, and serves the held notebook's render as /d/<key>/f/ingest.html
+BUCKET="${BASE#https://storage.googleapis.com/}"; BUCKET="${BUCKET%%/*}"
+ROOT="$(basename "$(dirname "$BASE")")"
+DATA="/d/$KEY/data/$ROOT/"
+NOTEBOOK="/d/$KEY/f/ingest.html"
 
 export CALCOFI_RELEASE_BASE="$BASE"
 export CALCOFI_RELEASE_TOKEN="${CALCOFI_RELEASE_TOKEN:-$(gcloud auth print-access-token)}"
@@ -37,6 +44,8 @@ bundle exec jekyll build --config _config.yml,_config.preview.yml --baseurl "$SI
 find "$OUT" -type f \( -name '*.html' -o -name '*.js' -o -name '*.json' -o -name '*.xml' \) -print0 |
   xargs -0 perl -pi -e "
     s{https://calcofi\.io/explore/}{$EXPLORE}g;
+    s{https://storage\.googleapis\.com/(?:calcofi-db|$BUCKET)/$ROOT/}{$DATA}g;
+    s{https://calcofi\.io/workflows/ingest_$KEY\.html}{$NOTEBOOK}g;
     s{((?:href|src)=\")/(?!/|d/)}{\$1$SITE/}g;
     s{(['\"])/brand/v2/}{\$1$SITE/brand/v2/}g;
     s{(['\"])/datasets/search\.json}{\$1$SITE/datasets/search.json}g;
