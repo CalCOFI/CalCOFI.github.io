@@ -76,6 +76,11 @@ def main():
     try:
         con = duckdb.connect()
         con.execute("INSTALL httpfs; LOAD httpfs;")
+        # a private candidate release (scripts/build_preview.sh) is read with the caller's token, the
+        # same one fetch_release.sh sends; the public bucket needs none
+        token = os.environ.get("CALCOFI_RELEASE_TOKEN", "")
+        if token:
+            con.execute("CREATE SECRET release_token (TYPE http, BEARER_TOKEN ?)", [token])
         for table in PER_CAST_TABLES:
             urls = object_urls(catalog, table, a.base)
             if not urls or not sample_urls:

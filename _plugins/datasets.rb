@@ -113,8 +113,11 @@ module CalCOFI
     end
 
     def release      = rec["release"]
-    def datasets     = @datasets ||= (rec["datasets"] || []).reject { |d| d["visibility"] == "internal" }
-    def holdings     = @holdings ||= (rec["holdings"] || []).reject { |h| h["visibility"] == "internal" }
+    def datasets     = @datasets ||= visible(rec["datasets"])
+    def holdings     = @holdings ||= visible(rec["holdings"])
+    # `visibility: internal` keeps a record off the public site; a private preview
+    # (scripts/build_preview.sh, `preview: true`) exists to show exactly that record
+    def visible(rows) = (rows || []).reject { |r| r["visibility"] == "internal" && !site.config["preview"] }
     def reference    = rec["reference"] || []
     def records      = datasets + holdings
     def holding?(r)  = r.key?("status") && !r.key?("coverage")
