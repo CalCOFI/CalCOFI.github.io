@@ -29,6 +29,7 @@ require "cgi"
 require "net/http"
 require "uri"
 require_relative "derive_id"
+require_relative "release_doi"
 
 module CalCOFI
   # ── small formatters ───────────────────────────────────────────────────────
@@ -112,7 +113,15 @@ module CalCOFI
       @contact = site.config["contact_email"] || "data@calcofi.io"
     end
 
-    def release      = rec["release"]
+    # the record's release block, with the DOI the release was given after the record was written
+    # and the citation that ends in it (_plugins/release_doi.rb) — read from the release's own
+    # catalog.json or versions.json, both fetched by scripts/fetch_release.sh; never typed
+    def release
+      @release ||= begin
+        vers = @site.data["versions"]
+        ReleaseDoi.call(rec["release"], @site.data["release_catalog"], vers.is_a?(Hash) ? vers["versions"] : nil)
+      end
+    end
     def datasets     = @datasets ||= visible(rec["datasets"])
     def holdings     = @holdings ||= visible(rec["holdings"])
     # `visibility: internal` keeps a record off the public site; a private preview

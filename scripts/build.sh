@@ -28,6 +28,8 @@ if [ -z "${CC_SKIP_TESTS:-}" ]; then
   ruby _test/licence_pending_test.rb >/dev/null || { echo "FAIL: _test/licence_pending_test.rb" >&2; exit 1; }
   # a dataset's original page is one "Original at …" way, after the apps, before ERDDAP
   ruby _test/source_way_test.rb >/dev/null || { echo "FAIL: _test/source_way_test.rb" >&2; exit 1; }
+  # the release citation ends in the release's DOI wherever one of the release's own files carries it
+  ruby _test/release_doi_test.rb >/dev/null || { echo "FAIL: _test/release_doi_test.rb" >&2; exit 1; }
 fi
 
 scripts/fetch_release.sh
