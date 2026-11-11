@@ -804,6 +804,22 @@ module CalCOFI
       best
     end
 
+    # The same pair read from the other end, for the page the note points to: every dataset whose
+    # successor_note names THIS one, with the variables under the names this dataset gives them
+    # (`btl_<m>`). Derived from successor_note and nothing else, so the two pages cannot disagree;
+    # a dataset nobody names as its successor gets an empty list and no note.
+    def predecessor_notes(r)
+      key = r["dataset_key"]
+      datasets.filter_map do |o|
+        next if o["dataset_key"] == key
+        n = successor_note(o)
+        next unless n && n["key"] == key
+        { "key" => o["dataset_key"], "name" => o["dataset_name_short"] || o["dataset_name"],
+          "url" => page_url(o), "n" => n["n"], "last" => n["last"], "through" => n["through"],
+          "types" => n["types"].map { |t| "btl_#{t}" } }
+      end
+    end
+
     # rung 1 and 2 of the emphasis ladder carry the dataset's own colour as a 9 px dot — the one
     # visual the Explorer, the Station Explorer and this catalog share. Never as text colour
     # (plan Decision 4); a record with no colour falls back to the accent in CSS.
@@ -2403,6 +2419,7 @@ module CalCOFI
         "n_types"     => cat.variable_groups(r).sum { |g| g["variables"].size },
         # where the values after this record's last year live (data-derived; nil for most datasets)
         "successor"   => is_holding ? nil : cat.successor_note(r),
+        "predecessors" => is_holding ? [] : cat.predecessor_notes(r),
         # the release tables the record names that the release really ships
         "tables"      => is_holding ? (r["tables"] || []) : cat.shipped_tables(r),
         # S1: the leaf of each GCMD path, the full path kept as the chip's title (data.json and the
