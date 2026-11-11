@@ -12,6 +12,8 @@
 #   shipped_tables    a table the record names but the release does not ship is not drawn
 #   successor_note    "this record ends in E; later values are btl_* of dataset C" — derived from the
 #                     variables, so it appears for calcofi_bottle and for no dataset that has no twin
+#   predecessor_notes the same pair from the other end: the dataset that runs on names the record it
+#                     carries on and its own btl_* names for the variables — derived from successor_note
 require "minitest/autorun"
 require "logger"
 
@@ -301,5 +303,42 @@ class DatasetMeasurementsTest < Minitest::Test
   def test_a_dataset_with_no_twins_has_no_note
     r = derived_record
     assert_nil catalog([r]).successor_note(r)
+  end
+
+  # ── predecessor_notes: the same pair, on the page the note points to ─────
+  def test_the_dataset_that_runs_on_names_the_record_it_carries_on
+    bottle, cast, cov = bottle_pair
+    c = catalog([bottle, cast], "release_coverage" => cov)
+    notes = c.predecessor_notes(cast)
+    assert_equal 1, notes.size
+    n = notes[0]
+    assert_equal "x_bottle", n["key"]
+    assert_equal "Bottle", n["name"]
+    assert_equal "/datasets/x_bottle/", n["url"]
+    assert_equal 2021, n["last"]
+    assert_equal 2025, n["through"]
+    assert_equal %w[btl_nitrate btl_temperature], n["types"], "its own names: btl_depth has no twin and is not listed"
+    assert_equal 2, n["n"]
+  end
+
+  def test_the_two_ends_of_a_pair_agree
+    bottle, cast, cov = bottle_pair
+    c = catalog([bottle, cast], "release_coverage" => cov)
+    fwd, back = c.successor_note(bottle), c.predecessor_notes(cast)[0]
+    assert_equal fwd["types"].map { |t| "btl_#{t}" }, back["types"]
+    assert_equal [fwd["n"], fwd["last"], fwd["through"]], [back["n"], back["last"], back["through"]]
+  end
+
+  def test_a_record_that_ends_carries_nothing_on
+    bottle, cast, cov = bottle_pair
+    assert_empty catalog([bottle, cast], "release_coverage" => cov).predecessor_notes(bottle)
+  end
+
+  def test_a_dataset_nobody_names_has_no_predecessor
+    r = derived_record
+    assert_empty catalog([r]).predecessor_notes(r)
+    bottle, cast, cov = bottle_pair
+    cov["variables"].each { |v| v["year_max"] = 2021 if v["dataset_key"] == "x_cast" }
+    assert_empty catalog([bottle, cast], "release_coverage" => cov).predecessor_notes(cast)
   end
 end

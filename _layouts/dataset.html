@@ -91,6 +91,14 @@ layout: default
           <a href="{{ succ.url | relative_url }}">{{ succ.name | escape }}</a>
           (<span class="mono">{{ succ.key | escape }}</span>) — {{ succ.n }} of this dataset’s variables ({{ succ.types | join: ", " | escape }}), through {{ succ.through | escape }}.</p>
         {%- endif -%}
+        {%- comment -%} the same note from the other end, on the page it points to (_plugins/datasets.rb
+          predecessor_notes): which dataset this one carries on, and under which names {%- endcomment -%}
+        {%- for pred in page.predecessors -%}
+        <p class="ds-successor cc-prose">This dataset carries on
+          <a href="{{ pred.url | relative_url }}">{{ pred.name | escape }}</a>
+          (<span class="mono">{{ pred.key | escape }}</span>), which ends in <strong>{{ pred.last | escape }}</strong>. From {{ pred.last | plus: 1 }} on, the
+          bottle values are this dataset’s <span class="mono">btl_*</span> variables — {{ pred.n }} of them keep that dataset’s variable names, with <span class="mono">btl_</span> in front ({{ pred.types | join: ", " | escape }}), through {{ pred.through | escape }}.</p>
+        {%- endfor -%}
         <dl class="ds-meta">
           {%- if r.provider.name %}<div><dt>Provider</dt><dd>{% if r.provider.url %}<a href="{{ r.provider.url }}">{{ r.provider.name | escape }}</a>{% else %}{{ r.provider.name | escape }}{% endif %}</dd></div>{% endif -%}
           {%- if a.pi_names.size > 0 -%}

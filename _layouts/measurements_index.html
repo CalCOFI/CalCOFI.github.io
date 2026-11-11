@@ -48,11 +48,15 @@ layout: default
     {%- comment -%} a div, not a p: the ⓘ is a <details>, which would close a paragraph early {%- endcomment -%}
     <div class="calm-sentence">Everything measured in the water and the air above it, under one name across datasets.
       {% include info.html label="What counts as one measurement, and the machine-readable form" body=mm_idx_info align="right" %}</div>
+    {%- comment -%} both value counts, each saying what it counts: the front door's first screen
+      shows the full-resolution one, so a visitor who follows it here must find it beside the
+      release-grain one (2026-11-11) {%- endcomment -%}
     <p class="calm-facts mm-idx-nums">
       <span><b class="tab">{{ c.measurements }}</b> measurements</span>
       <span><b class="tab">{{ c.series }}</b> series</span>
       <span><b class="tab">{{ c.datasets }}</b> datasets</span>
-      <span title="rows of obs_env — one measurement × one sample"><b class="tab">{{ c.obs_env_rows_m }} M</b> values</span>
+      <span title="rows of obs_env — one measurement × one sample"><b class="tab">{{ c.obs_env_rows_m }} M</b> values at the release grain</span>
+      {% if mm.counts.full_rows %}<span title="with the two full-resolution supplementals, obs_ctd_full and obs_mets_full"><b class="tab">{{ c.full_rows_m }} M</b> with full resolution</span>{% endif %}
       <span title="{{ c.n_no_p01 }} carry no NERC P01 concept and are listed under their own names"><b class="tab">{{ c.n_p01 }}</b> with a NERC concept</span>
       <a href="{{ '/datasets/release/' | relative_url }}" class="mono">{{ mm.release.version | escape }}</a>
     </p>

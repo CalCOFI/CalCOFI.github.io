@@ -29,6 +29,7 @@ require "cgi"
 require "net/http"
 require "uri"
 require_relative "derive_id"
+require_relative "release_doi"
 
 module CalCOFI
   # ── small formatters ───────────────────────────────────────────────────────
@@ -112,7 +113,15 @@ module CalCOFI
       @contact = site.config["contact_email"] || "data@calcofi.io"
     end
 
-    def release      = rec["release"]
+    # the record's release block, with the DOI the release was given after the record was written
+    # and the citation that ends in it (_plugins/release_doi.rb) — read from the release's own
+    # catalog.json or versions.json, both fetched by scripts/fetch_release.sh; never typed
+    def release
+      @release ||= begin
+        vers = @site.data["versions"]
+        ReleaseDoi.call(rec["release"], @site.data["release_catalog"], vers.is_a?(Hash) ? vers["versions"] : nil)
+      end
+    end
     def datasets     = @datasets ||= visible(rec["datasets"])
     def holdings     = @holdings ||= visible(rec["holdings"])
     # `visibility: internal` keeps a record off the public site; a private preview
@@ -793,6 +802,22 @@ module CalCOFI
                  "types" => theirs.keys.map { |t| t.sub(/\Abtl_/, "") }.sort } if best.nil? || theirs.size > best["n"]
       end
       best
+    end
+
+    # The same pair read from the other end, for the page the note points to: every dataset whose
+    # successor_note names THIS one, with the variables under the names this dataset gives them
+    # (`btl_<m>`). Derived from successor_note and nothing else, so the two pages cannot disagree;
+    # a dataset nobody names as its successor gets an empty list and no note.
+    def predecessor_notes(r)
+      key = r["dataset_key"]
+      datasets.filter_map do |o|
+        next if o["dataset_key"] == key
+        n = successor_note(o)
+        next unless n && n["key"] == key
+        { "key" => o["dataset_key"], "name" => o["dataset_name_short"] || o["dataset_name"],
+          "url" => page_url(o), "n" => n["n"], "last" => n["last"], "through" => n["through"],
+          "types" => n["types"].map { |t| "btl_#{t}" } }
+      end
     end
 
     # rung 1 and 2 of the emphasis ladder carry the dataset's own colour as a 9 px dot — the one
@@ -2394,6 +2419,7 @@ module CalCOFI
         "n_types"     => cat.variable_groups(r).sum { |g| g["variables"].size },
         # where the values after this record's last year live (data-derived; nil for most datasets)
         "successor"   => is_holding ? nil : cat.successor_note(r),
+        "predecessors" => is_holding ? [] : cat.predecessor_notes(r),
         # the release tables the record names that the release really ships
         "tables"      => is_holding ? (r["tables"] || []) : cat.shipped_tables(r),
         # S1: the leaf of each GCMD path, the full path kept as the chip's title (data.json and the
