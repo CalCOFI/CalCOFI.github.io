@@ -32,4 +32,10 @@
   el('circle', { cx: 18, cy: 121, r: 3.2, 'class': 'wire', 'stroke-opacity': 0.8 }, g);
   el('line', { x1: 28, y1: 2, x2: 90, y2: 64, 'class': 'wire', 'stroke-opacity': 0.45 }, g);
   el('path', { d: 'M90,64 l16,8 l-4,-12 z', 'fill-opacity': 0.6 }, g);
+  // the way in to Learn (#learn), beside the ship it explains (Betty, 2026-11-13: option B). Drawn in the picture so it
+  // stays by the ship at every window size; the door script opens #learn on the hash
+  var a = el('a', { href: '#learn', 'class': 'hero-tag', 'aria-label': 'What is sampled, and how deep: the Line 90 section' });
+  el('rect', { x: 700, y: SURF + 22, width: 292, height: 50, rx: 8 }, a);
+  var t1 = el('text', { x: 712, y: SURF + 42, 'class': 'hero-tag-t' }, a); t1.textContent = 'What is sampled, and how deep';
+  var t2 = el('text', { x: 712, y: SURF + 61, 'class': 'hero-tag-s' }, a); t2.textContent = 'The ship, its nets and instruments along Line 90 \u2192';
 })();

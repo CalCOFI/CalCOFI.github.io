@@ -61,3 +61,14 @@
 #learn .fd-secscreen .fd-sec svg.sec { width: 100%; height: calc(100vh - var(--header-h, 72px) - 130px); }
 #learn .fd-secscreen .fd-sec { flex: none; }
 #learn > .cc-container { padding-top: 14px; }
+
+/* the label by the ship (hero.js): the way in to the Learn drawing */
+.hero-sea .hero-tag { cursor: pointer; }
+.hero-sea .hero-tag rect { fill: var(--c-bg); stroke: var(--c-b); stroke-width: 1; filter: drop-shadow(0 4px 10px rgba(4,12,24,.18)); }
+.hero-sea .hero-tag:hover rect, .hero-sea .hero-tag:focus rect { stroke: var(--cc-yellow, #ffcd00); stroke-width: 1.5; }
+.hero-sea .hero-tag-t { font: 700 13.5px "Source Sans 3", system-ui, sans-serif; fill: var(--c-ink); }
+.hero-sea .hero-tag-s { font: 600 12.5px "Source Sans 3", system-ui, sans-serif; fill: var(--c-who); }
+.hero-sea { pointer-events: none; } .hero-sea .hero-tag { pointer-events: auto; }
+/* the text layer lies over the picture: let clicks through its empty space to the label */
+.hero-in { pointer-events: none; } .hero-in > * { pointer-events: auto; }
+.hero-start { pointer-events: none; } .hero-start > * { pointer-events: auto; } .hero .hero-h2 { width: fit-content; }
