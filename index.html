@@ -396,13 +396,21 @@ SELECT * FROM read_json('{{ rel.catalog_url }}')</pre>
 
 {%- comment -%}
   ── 5 · Learn how CalCOFI sampling and data work (was the hero's pins, the DOCS word's card and the
-  ship's log tile). The ANNOTATED section — one pin per category at the depth it lives, each a link
-  to its method page — then the docs book's own card beside the ship's log.
+  ship's log tile). The ANNOTATED section FIRST and alone on the screen (Betty, 2026-11-13: the front
+  door's "Sampling methods" link opens on the drawing; the rest is below for whoever scrolls) — one pin
+  per category at the depth it lives, each a link to its method page — then the heading, the docs
+  book's own card and the ship's log.
 {%- endcomment -%}
 {%- assign docs_p = data.products | where: "key", "docs" | first -%}
 <section class="fd-panel" id="learn" hidden aria-labelledby="learn-h">
   <div class="cc-container">
     {{ close_btn }}
+    <figure class="fd-secfull fd-secscreen" aria-labelledby="learn-h">
+      <div class="fd-sec" id="sec-full" data-sprite="{{ sprite }}"></div>
+      <figcaption class="fd-cap">The ship's gear to the depth the protocol takes it: the CTD to 515 m, the bongo to
+        210 m, the PairoVET to 70 m, CUFES at 3 m underway, the manta at the surface. A dashed pin is a category not
+        yet in the release.</figcaption>
+    </figure>
     <div class="fd-phead">
       <div class="cc-eyebrow">Docs{% if docs_p.tagline %} · {{ docs_p.tagline | downcase }}{% endif %}</div>
       <h2 class="cc-h2" id="learn-h">Learn how CalCOFI sampling and data work</h2>
@@ -415,12 +423,6 @@ SELECT * FROM read_json('{{ rel.catalog_url }}')</pre>
         <a class="cc-text-link" href="https://calcofi.org/sampling-info/">Sampling methods on calcofi.org</a>
       </p>
     </div>
-    <figure class="fd-secfull">
-      <div class="fd-sec" id="sec-full" data-sprite="{{ sprite }}"></div>
-      <figcaption class="fd-cap">The ship's gear to the depth the protocol takes it: the CTD to 515 m, the bongo to
-        210 m, the PairoVET to 70 m, CUFES at 3 m underway, the manta at the surface. A dashed pin is a category not
-        yet in the release.</figcaption>
-    </figure>
     <div class="fd-two">
       <div class="card-grid card-grid-solo">
         {%- if docs_p -%}{% include product_card.html p=docs_p section="Docs" %}{%- endif -%}

@@ -54,3 +54,10 @@
   .hero-goals { grid-template-columns: 1fr; }
   .hero-start { margin-bottom: 64px; }
 }
+
+/* Learn (#learn), opened from the front door's "Sampling methods": the annotated Line 90 drawing alone fills the screen
+   under the header; the heading, the docs and the log follow below the fold */
+#learn .fd-secscreen { margin: 0 0 32px; min-height: calc(100vh - var(--header-h, 72px) - 70px); display: flex; flex-direction: column; justify-content: center; }
+#learn .fd-secscreen .fd-sec svg.sec { width: 100%; height: calc(100vh - var(--header-h, 72px) - 130px); }
+#learn .fd-secscreen .fd-sec { flex: none; }
+#learn > .cc-container { padding-top: 14px; }
