@@ -21,7 +21,11 @@ done
 if [ -n "$EXPLORE" ]; then
   echo "Explorer: $EXPLORE → http://localhost:5178  (Table builder: http://localhost:5178/builder.html)"
   [ -d "$EXPLORE/node_modules" ] || (cd "$EXPLORE" && npm install --no-audit --no-fund)
-  (cd "$EXPLORE" && npm run dev -- --strictPort > "$ROOT/.explore-dev.log" 2>&1) &
+  # the Explorer's log lives OUTSIDE this site: Jekyll watches every file here and rebuilds the whole site (minutes) on
+  # any change, so a log inside it kept the homepage rebuilding forever
+  LOG="${TMPDIR:-/tmp}/calcofi-explore-dev.log"
+  echo "  its log: $LOG"
+  (cd "$EXPLORE" && npm run dev -- --strictPort > "$LOG" 2>&1) &
   EXPLORE_PID=$!
   trap 'kill $EXPLORE_PID 2>/dev/null || true' EXIT INT TERM
 else
