@@ -12,7 +12,8 @@
 {%- assign p_finder = data.products | where: "key", "db-viz-station" | first -%}
 {%- assign p_query = data.products | where: "key", "db-query" | first -%}
 {%- assign p_flows = data.products | where: "key", "workflows" | first -%}
-{%- assign explore_url = p_explore.live_url | default: "https://calcofi.io/explore/" -%}
+{%- comment -%} a local preview (scripts/dev_all.sh, _config.local.yml) points the Explorer buttons at the Explorer on this machine {%- endcomment -%}
+{%- assign explore_url = site.local_explore | default: p_explore.live_url | default: "https://calcofi.io/explore/" -%}
 {%- assign finder_url = p_finder.live_url | default: "https://app.calcofi.io/station/" -%}
 {%- assign query_url = p_query.live_url | default: "https://calcofi.io/db-query/" -%}
 {%- assign flows_url = p_flows.live_url | default: "https://calcofi.io/workflows/" -%}
