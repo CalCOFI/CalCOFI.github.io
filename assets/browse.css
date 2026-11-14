@@ -52,7 +52,14 @@ body:has(.ds-browse) { background: var(--band); }
 .bd-dl { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 7px; background: var(--fg); color: var(--bg); text-decoration: none; }
 .bd-dl .cc-i { font-size: 17px; }
 .bd-ex:hover { background: var(--accent); color: var(--on-accent); } .bd-dl:hover { background: var(--accent); }
-@media (hover: hover) { .bd-row .bd-act, .bd-dr .bd-act { opacity: 0; transition: opacity .15s; } .bd-row:hover .bd-act, .bd-row:focus-within .bd-act, .bd-dr:hover .bd-act, .bd-dr:focus-within .bd-act { opacity: 1; } }
+@media (hover: hover) {
+  /* no column held empty for the buttons: they appear over the records on hover */
+  .bd-lh, .bd-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) 96px; }
+  .bd-lh > span:last-child { display: none; }
+  .bd-row { position: relative; }
+  .bd-row .bd-act { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); background: var(--panel); padding: 4px 0 4px 12px; }
+  .bd-row:hover .bd-f, .bd-row:focus-within .bd-f { visibility: hidden; }
+  .bd-row .bd-act, .bd-dr .bd-act { opacity: 0; transition: opacity .15s; } .bd-row:hover .bd-act, .bd-row:focus-within .bd-act, .bd-dr:hover .bd-act, .bd-dr:focus-within .bd-act { opacity: 1; } }
 
 /* by category */
 .bd-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; align-items: start; }
