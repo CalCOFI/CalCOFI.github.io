@@ -896,8 +896,43 @@ module CalCOFI
                          end,
         "since"      => d["since_version"],
         "contrib"    => (cov["contributes_to"] || []).map { |ct| { "category" => ct["category"], "n" => (ct["variables"] || []).size } },
-        "ways"    => ways(d).select { |w| w["kind"] == "source" || %w[way-explorer way-erddap ui-data].include?(w["icon"]) }
+        "ways"    => ways(d).select { |w| w["kind"] == "source" || %w[way-explorer way-erddap ui-data].include?(w["icon"]) },
+        # Browse datasets (Betty, 2026-11-13): the row's years on the release's own axis, and the two
+        # things a reader came to do — Explore (the app) and Download (the whole dataset in one click)
+        "cov_bar"    => cov_bar(cov["years"], cov["year_min"], cov["year_max"]),
+        "explore"    => ways(d).find { |w| w["icon"] == "way-explorer" }&.dig("url"),
+        "download"   => download_of(d)
       }
+    end
+
+    # the whole dataset in one click: ERDDAP's CSV of the current dataset (every row, every column),
+    # else the release's Parquet, else nil (the row then offers the dataset page's "Get the data")
+    def download_of(d)
+      dist = d["distributions"] || []
+      if (e = erddap_current(dist).first)
+        return { "url" => e["url"].sub(/\.html\z/, ".csv"), "label" => "Download the whole dataset (CSV, from ERDDAP)" }
+      end
+      pq = dist.find { |x| x["status"] != "superseded" && x["format"] == "parquet" }
+      return { "url" => pq["url"], "label" => "Download the whole dataset (Parquet)" } if pq && Fmt.present(pq["url"])
+      nil
+    end
+
+    # one bar per year with data on the release's axis (strip_span), so every row's bar lines up with
+    # every other's and with the "Years covered" strip; a dataset whose years cannot be measured
+    # (the asserted `temporal`) draws its span as a dashed outline, as the strip hatches it
+    def cov_bar(years, ymin, ymax)
+      span = strip_span
+      return nil unless span && ymin && ymax
+      y0, y1 = span
+      n = y1 - y0 + 1
+      have = (years || []).select { |y| y["n_obs"].to_i.positive? }.map { |y| y["year"] }
+      body = if have.empty?
+               format('<rect class="cb-span" x="%d.15" y="1" width="%.2f" height="8" rx="1"/>', ymin - y0, ymax - ymin + 0.7)
+             else
+               have.map { |yr| format('<rect x="%d" y="0" width="0.86" height="10"/>', yr - y0) }.join
+             end
+      %(<svg class="ds-cov" viewBox="0 0 #{n} 10" preserveAspectRatio="none" role="img" ) +
+        %(aria-label="Years with data, #{ymin} to #{ymax}"><rect class="cb-bg" width="#{n}" height="10"/>#{body}</svg>)
     end
 
     def holding_row(h)
@@ -2252,6 +2287,7 @@ module CalCOFI
                           "reference" => cat.reference.size },
         "categories" => cat.categories,
         "realms"     => cat.realms,
+        "span"       => cat.strip_span,
         "reference"  => cat.reference_band.merge("map" => cat.map_svg(nil)),
         "facets"     => cat.facets,
         "jsonld"     => JSON.pretty_generate(cat.catalog_jsonld),
