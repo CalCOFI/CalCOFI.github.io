@@ -77,3 +77,8 @@
 /* the text layer lies over the picture: let clicks through its empty space to the label */
 .hero-in { pointer-events: none; } .hero-in > * { pointer-events: auto; }
 .hero-start { pointer-events: none; } .hero-start > * { pointer-events: auto; } .hero .hero-h2 { width: fit-content; }
+
+/* white mode: the white header met the white sky with a hairline; give the edge a clear line and a soft shadow
+   (this page only — the brand's header is shared, so the rule lives here) */
+[data-theme="light"] .cc-header { border-bottom-color: #c9d4e2; box-shadow: 0 1px 0 rgba(24, 43, 73, .05), 0 6px 16px -6px rgba(24, 43, 73, .18); }
+[data-theme="light"] .hero { --sky1: #f3f7fb; }
