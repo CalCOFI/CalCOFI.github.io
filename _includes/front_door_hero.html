@@ -1,0 +1,75 @@
+{%- comment -%}
+  The front door, v2 (Betty, 2026-11-13, after the 12 Nov database tour: Ed, Mark, Nastassia, Erin's "what do you want to
+  do?"). One screen: what CalCOFI is, then three goals, each with its destinations named — Visualize on a map (Explorer ·
+  Data Finder), Download a dataset (the dataset pages), Pull exact data (the Table builder · code). Data providers and the
+  old doors' panels are one row of quiet links under them. Behind it, Line 90's real sea floor (_data/line90_floor.json,
+  GEBCO 2025, drawn by assets/hero.js) — no figure is drawn from anything else.
+  Every number is read at build (site.data.catalog.numbers); a number the build cannot read is not rendered.
+{%- endcomment -%}
+{%- assign nums = site.data.catalog.numbers -%}
+{%- assign data = site.data.products -%}
+{%- assign p_explore = data.products | where: "key", "explore" | first -%}
+{%- assign p_finder = data.products | where: "key", "db-viz-station" | first -%}
+{%- assign p_query = data.products | where: "key", "db-query" | first -%}
+{%- assign p_flows = data.products | where: "key", "workflows" | first -%}
+{%- assign explore_url = p_explore.live_url | default: "https://calcofi.io/explore/" -%}
+{%- assign finder_url = p_finder.live_url | default: "https://app.calcofi.io/station/" -%}
+{%- assign query_url = p_query.live_url | default: "https://calcofi.io/db-query/" -%}
+{%- assign flows_url = p_flows.live_url | default: "https://calcofi.io/workflows/" -%}
+{%- assign builder_url = explore_url | append: "builder.html" -%}
+<link rel="stylesheet" href="{{ '/assets/hero.css' | relative_url }}">
+<section class="hero" aria-label="CalCOFI ocean data">
+  <svg class="hero-sea" id="hero-sea" viewBox="0 0 1280 720" preserveAspectRatio="xMidYMax slice" aria-hidden="true"></svg>
+  <script type="application/json" id="hero-floor">{{ site.data.line90_floor | jsonify }}</script>
+  <div class="hero-in">
+    <div class="hero-intro">
+      <div class="hero-eyebrow">CalCOFI ocean data</div>
+      <h1 class="hero-h1">California's ocean,<br>measured since {{ nums.since | default: 1949 }}</h1>
+      <p class="hero-lede">Data from CalCOFI's quarterly ocean surveys off California: water temperature and chemistry, plankton, larval fish, seabirds and marine mammals.</p>
+      <p class="hero-lede hero-lede-2">Visualize it on a map, download it, or pull the exact data you need.</p>
+    </div>
+    <dl class="hero-nums" aria-label="CalCOFI by the numbers">
+      {%- if nums.years %}<div><dd>{{ nums.years }}</dd><dt>years</dt></div>{% endif -%}
+      {%- if nums.cruises %}<div><dd>{{ nums.cruises }}</dd><dt>cruises</dt></div>{% endif -%}
+      {%- if nums.species %}<div><dd>{{ nums.species_fmt }}</dd><dt>species</dt></div>{% endif -%}
+      {%- if nums.measurements %}<div><dd>{{ nums.measurements_m }} M</dd><dt>measurements</dt></div>{% endif -%}
+    </dl>
+
+    <div class="hero-start">
+      <h2 class="hero-h2">Where do you want to start?</h2>
+      <div class="hero-goals">
+        <div class="hero-goal">
+          <div class="hero-who"><i class="cc-i cc-i-door-explore" aria-hidden="true"></i>I'm curious</div>
+          <h3>Visualize on a map</h3><p>Species and ocean conditions</p>
+          <div class="hero-dest two">
+            <a class="hero-opt" href="{{ explore_url }}"><span class="hero-btn">Explorer →</span><small>Trends over time</small></a>
+            <a class="hero-opt" href="{{ finder_url }}"><span class="hero-btn">Data Finder →</span><small>Data by station</small></a>
+          </div>
+        </div>
+        <a class="hero-goal" href="{{ '/datasets/' | relative_url }}">
+          <div class="hero-who"><i class="cc-i cc-i-ui-download" aria-hidden="true"></i>I need data</div>
+          <h3>Download a dataset</h3><p>Pick one, filter, get a CSV</p>
+          <div class="hero-dest"><span class="hero-btn main">Browse datasets →</span></div>
+        </a>
+        <div class="hero-goal">
+          <div class="hero-who"><i class="cc-i cc-i-view-matrix" aria-hidden="true"></i>I need specific data</div>
+          <h3>Pull exact data</h3><p>Combine species and water variables</p>
+          <div class="hero-dest two">
+            <a class="hero-opt" href="{{ builder_url }}"><span class="hero-btn">Table builder →</span><small>No code needed</small></a>
+            <a class="hero-opt" href="{{ query_url }}"><span class="hero-btn">Code →</span><small>R, Python, SQL</small></a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="hero-foot"><div class="hero-in-row">
+    <nav aria-label="More">
+      <a href="{{ flows_url }}">Share your data</a>
+      <a href="#learn">Sampling methods</a>
+      <a href="#monitor">Statewide monitoring</a>
+      <a href="#viz">More visualizations</a>
+    </nav>
+    <span>Line 90 sea floor, GEBCO 2025</span>
+  </div></div>
+</section>
+<script defer src="{{ '/assets/hero.js' | relative_url }}"></script>

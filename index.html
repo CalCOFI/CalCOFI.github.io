@@ -50,81 +50,8 @@ layout: default
 {%- comment -%} With JS off every panel shows, one after another: the doors are then a table of contents. {%- endcomment -%}
 <noscript><style>.fd-panel[hidden] { display: block !important; } .fd-close, .fd-door-chev { display: none !important; }</style></noscript>
 
-<section class="fd-screen" aria-label="CalCOFI, from ship to screen">
-  <div class="fd-who">
-    <div class="cc-eyebrow">CalCOFI · the California Current · since {{ nums.since }}</div>
-    <h1 class="cc-h1">From ship to screen</h1>
-    <p class="fd-lede">Temperature to whales, surface to the deep, since {{ nums.since }}. Open and integrated.</p>
-    {%- comment -%}
-      Five numbers (was the six-tile band, plan 2026-09-09 § D9): years · cruises · stations ·
-      species · measurements. The two COUNTED things are links to their catalogs. Organism
-      observations moved to the species number's title and the Species tab's own counts; ships to
-      the cruises' title. A number the build cannot read is not rendered.
-    {%- endcomment -%}
-    <dl class="fd-nums" aria-label="CalCOFI by the numbers">
-      {%- if nums.years %}<div title="since {{ nums.since }}"><dd>{{ nums.years }}</dd><dt>years</dt></div>{% endif -%}
-      {%- if nums.cruises %}<div title="{{ nums.cruises }} cruises{% if nums.ships %} on {{ nums.ships }} ships{% endif %}"><dd>{{ nums.cruises }}</dd><dt>cruises</dt></div>{% endif -%}
-      {%- if nums.stations %}<div title="{{ nums.stations }} grid cells · {{ nums.grid.standard }} standard · {{ nums.grid.extended }} extended · {{ nums.grid.historical }} historical"><dd>{{ nums.stations }}</dd><dt>stations</dt></div>{% endif -%}
-      {%- if nums.species %}<div title="{{ nums.species_title | escape }}{% if nums.organism_obs_m %} — {{ nums.organism_obs_m }} M organism observations{% endif %}"><dd><a href="{{ species_url }}">{{ nums.species_fmt }}</a></dd><dt>species</dt></div>{% endif -%}
-      {%- if nums.measurements %}<div title="{{ nums.measurements_title | escape }}{% if nums.measurements_keys %} — {{ nums.measurements_keys_fmt }} measurements in {{ nums.measurements_datasets }} datasets{% endif %}"><dd><a href="{{ meas_url }}">{{ nums.measurements_m }} M</a></dd><dt>measurements</dt></div>{% endif -%}
-    </dl>
-  </div>
-
-  <figure class="fd-fig">
-    <div class="fd-sec" id="sec-quiet" data-sprite="{{ sprite }}"></div>
-    <figcaption class="fd-cap">
-      <span>Line 90, west to the coast: the ship, its gear to depth, the sea floor {% if site.data.reach.floor %}from GEBCO{% else %}as drawn{% endif %}.</span>
-      <a class="cc-text-link" href="#learn" data-open="learn">What is sampled, and how deep →</a>
-    </figcaption>
-  </figure>
-
-  <div class="fd-ask">
-    <h2 class="cc-h2">What do you want to do?</h2>
-    {%- comment -%} Dan's seven pathways (issue #30), in his words; the last two drawn smaller (D5 A) {%- endcomment -%}
-    <ul class="fd-doors" id="doors">
-      <li><button type="button" class="fd-door" id="door-find" data-door="find" aria-expanded="false" aria-controls="find">
-        <i class="cc-i cc-i-door-find fd-door-i" aria-hidden="true"></i>
-        <span class="fd-door-t">Find and download data</span>
-        <span class="fd-door-b">Biological, physical and chemical observations by station, dataset, species or measurement.</span>
-        <i class="cc-i cc-i-ui-down fd-door-chev" aria-hidden="true"></i>
-      </button></li>
-      <li><button type="button" class="fd-door" id="door-explore" data-door="explore" aria-expanded="false" aria-controls="explore">
-        <i class="cc-i cc-i-door-explore fd-door-i" aria-hidden="true"></i>
-        <span class="fd-door-t">Visualize and explore</span>
-        <span class="fd-door-b">Species, ocean conditions, stations and decades, integrated in the CalCOFI Explorer.</span>
-        <i class="cc-i cc-i-ui-down fd-door-chev" aria-hidden="true"></i>
-      </button></li>
-      <li><button type="button" class="fd-door" id="door-program" data-door="program" aria-expanded="false" aria-controls="program">
-        <i class="cc-i cc-i-door-program fd-door-i" aria-hidden="true"></i>
-        <span class="fd-door-t">Download programmatically</span>
-        <span class="fd-door-b">Files, tables and queries from R, Python, SQL and ERDDAP.</span>
-        <i class="cc-i cc-i-ui-down fd-door-chev" aria-hidden="true"></i>
-      </button></li>
-      <li><button type="button" class="fd-door" id="door-build" data-door="build" aria-expanded="false" aria-controls="build">
-        <i class="cc-i cc-i-door-build fd-door-i" aria-hidden="true"></i>
-        <span class="fd-door-t">Build something</span>
-        <span class="fd-door-b">APIs, the database schema, packages, workflows and source code.</span>
-        <i class="cc-i cc-i-ui-down fd-door-chev" aria-hidden="true"></i>
-      </button></li>
-      <li><button type="button" class="fd-door" id="door-learn" data-door="learn" aria-expanded="false" aria-controls="learn">
-        <i class="cc-i cc-i-door-learn fd-door-i" aria-hidden="true"></i>
-        <span class="fd-door-t">Learn how CalCOFI sampling and data work</span>
-        <span class="fd-door-b">The grid, the methods, data definitions, documentation and citations.</span>
-        <i class="cc-i cc-i-ui-down fd-door-chev" aria-hidden="true"></i>
-      </button></li>
-      <li><button type="button" class="fd-door fd-door-sm" id="door-monitor" data-door="monitor" aria-expanded="false" aria-controls="monitor">
-        <i class="cc-i cc-i-door-monitor fd-door-i" aria-hidden="true"></i>
-        <span class="fd-door-t">Ocean monitoring throughout California <span class="fd-door-q">· the statewide inventory</span></span>
-        <i class="cc-i cc-i-ui-down fd-door-chev" aria-hidden="true"></i>
-      </button></li>
-      <li><button type="button" class="fd-door fd-door-sm" id="door-viz" data-door="viz" aria-expanded="false" aria-controls="viz">
-        <i class="cc-i cc-i-door-viz fd-door-i" aria-hidden="true"></i>
-        <span class="fd-door-t">Other data visualizations <span class="fd-door-q">· pollutants, CTD transects, student projects</span></span>
-        <i class="cc-i cc-i-ui-down fd-door-chev" aria-hidden="true"></i>
-      </button></li>
-    </ul>
-  </div>
-</section>
+{%- comment -%} the front door, v2 (2026-11-13): the first screen; the panels below stay, reached by the header and the links under the goals {%- endcomment -%}
+{% include front_door_hero.html %}
 
 {%- comment -%}
   ── 1 · Find and download data (was the DATA section, the Where/When tiles, the release tile and
@@ -627,7 +554,7 @@ SELECT * FROM read_json('{{ rel.catalog_url }}')</pre>
     KEYS.forEach(function (j) {
       var on = j === k;
       panel(j).hidden = !on;
-      door(j).setAttribute('aria-expanded', on ? 'true' : 'false');
+      if (door(j)) door(j).setAttribute('aria-expanded', on ? 'true' : 'false');
     });
     markNav(k);
   }
@@ -645,6 +572,7 @@ SELECT * FROM read_json('{{ rel.catalog_url }}')</pre>
   }
 
   KEYS.forEach(function (k) {
+    if (!door(k)) return;
     door(k).addEventListener('click', function () {
       if (!panel(k).hidden) close(k); else open({ key: k }, true);
     });
