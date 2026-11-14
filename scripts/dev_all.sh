@@ -3,6 +3,11 @@
 #   http://localhost:4000         this site (Jekyll), its Explorer / Table builder buttons pointing at ↓
 #   http://localhost:5178         the Explorer (Vite, from the explore repo), /builder.html = the Table builder
 # Ctrl+C stops both. The explore repo is found beside this one (../explore), around it (..), or at $EXPLORE_DIR.
+#
+#   bash scripts/dev_all.sh            reuse the release record already in _data/ (skips the download, the gem install and
+#                                      the tests): the fast restart
+#   bash scripts/dev_all.sh --refresh  download the promoted release again first (scripts/build.sh), as a fresh clone does
+# The first run on a clone always refreshes. While it runs, Jekyll rebuilds on every saved edit: no restart needed.
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
@@ -24,4 +29,10 @@ else
 fi
 
 echo "Homepage: http://localhost:4000  (Ctrl+C stops both)"
-bash scripts/build.sh serve --config _config.yml,_config.local.yml
+if [ "${1:-}" = "--refresh" ] || [ ! -f _data/datasets.json ]; then
+  bash scripts/build.sh serve --config _config.yml,_config.local.yml
+else
+  rel="$(python3 -c "import json;d=json.load(open('_data/datasets.json'));r=d.get('release');print(r if isinstance(r,str) else (r or {}).get('version') or d.get('version') or 'the last download')" 2>/dev/null || echo 'the last download')"
+  echo "reusing the release record in _data/ ($rel) — run with --refresh to download the latest"
+  bundle exec jekyll serve --config _config.yml,_config.local.yml
+fi
