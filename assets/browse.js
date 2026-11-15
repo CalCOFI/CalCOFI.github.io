@@ -96,7 +96,7 @@
         (x.size ? '<span class="bd-dl-sz">' + esc(x.size) + "</span>" : "") + "<small>" + esc(x.note) + "</small></a>";
     };
     return '<span class="bd-dl"><a class="bd-b2" href="' + esc(first.url) + '"' + (first.direct ? " download" : ' target="_blank" rel="noopener"') +
-      ' title="' + esc(first.note) + '"><i class="cc-i cc-i-ui-download" aria-hidden="true"></i>Download ' + esc(first.fmt) + "</a>" +
+      ' title="Download ' + esc(first.fmt) + ': ' + esc(first.note) + '"><i class="cc-i cc-i-ui-download" aria-hidden="true"></i>Download</a>' +
       (d.length > 1 ? '<button type="button" class="bd-b2 bd-dl-more" aria-haspopup="menu" aria-expanded="false" aria-label="Other formats"><i class="cc-i cc-i-ui-down" aria-hidden="true"></i></button>' +
         '<span class="bd-dl-menu" role="menu" hidden>' + d.map(item).join("") + "</span>" : "") + "</span>";
   }

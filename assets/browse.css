@@ -144,3 +144,11 @@
 .bd-dl-menu small { grid-column: 1 / -1; font-size: 12.5px; color: var(--muted); }
 .bd-pv { overflow: visible; }
 .bd-pv-map { border-radius: 14px 14px 0 0; overflow: hidden; }
+
+/* one row: View on map · Download ▾ · Full details (Betty 2026-11-14); the button says Download, its menu
+   names the formats with the default first */
+.bd-pv-act { flex-wrap: nowrap; gap: 8px; }
+.bd-pv-act .bd-b1 { padding: 0 14px; white-space: nowrap; }
+.bd-pv-act .bd-b2 { padding: 0 11px; white-space: nowrap; }
+.bd-dl-more { width: 28px; height: 38px; box-sizing: border-box; }
+.bd-pv-act .bd-b3 { white-space: nowrap; }
