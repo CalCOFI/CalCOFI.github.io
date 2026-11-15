@@ -24,50 +24,42 @@ layout: default
 {%- assign nums = cat.numbers -%}
 <link rel="stylesheet" href="{{ '/assets/browse.css' | relative_url }}">
 {%- comment -%}
-  Browse datasets (Betty, 2026-11-13). What a reader comes here to do is get a dataset or look at it, so
-  each one offers Explore and Download right on its row (Download = the whole dataset in one click), and
-  the row's name opens its page for everything else. A navy head (title, one line, search, type, sort),
-  then "Years covered" (the front door's strip, folded), then two views: a List (A–Z by default, each
-  row with its years on the release's axis) and By category (Biology | Environment, category cards).
-  catalog.js still filters both views: the rows keep data-key / data-kind and the facet data-*.
+  Browse datasets (Betty, 2026-11-14). A finder: search and filters in a navy band (no title — the
+  page's h1 is kept for screen readers), "Years covered" folded, then two views of the same rows with
+  a preview beside them. Click a row and the preview shows its station map, what is in it, its years
+  and the ways in (View on map, Download, Full details); without JavaScript the row is a link to the
+  dataset's page. Rows are site.data.browse (_plugins/browse.rb): core datasets first, newest last.
+    List         one row per dataset: name (category · provider), what's in it, years with data
+    By category  Biology | Environment, each category a label over a card of its datasets
+  Search matches names, providers, categories AND the species and measurements inside each dataset.
 {%- endcomment -%}
-{%- assign span = cat.span -%}
-{%- assign y0 = span[0] | default: 1949 -%}{%- assign y1 = span[1] | default: 2026 -%}
-{%- assign ny = y1 | minus: y0 | plus: 1 -%}
-{%- capture axis -%}<span class="bd-axis" aria-hidden="true">
-  {%- assign ticks = "1970,1990,2010" | split: "," -%}
-  <span style="left:0">{{ y0 }}</span>
-  {%- for tk in ticks %}{% assign ty = tk | plus: 0 %}{% if ty > y0 and ty < y1 %}<span style="left:{{ ty | minus: y0 | times: 100.0 | divided_by: ny }}%">{{ ty }}</span>{% endif %}{% endfor -%}
-  <span style="right:0">{{ y1 }}</span></span>{%- endcapture -%}
-{%- assign all = "" | split: "" -%}
-{%- for rlm in cat.realms %}{% for c in rlm.categories %}{% assign all = all | concat: c.datasets %}{% endfor %}{% endfor -%}
-{%- assign all = all | sort_natural: "name" -%}
+{%- assign b = site.data.browse -%}
+{%- assign try = "anchovy,oxygen,krill,chlorophyll,seabirds" | split: "," -%}
 
-<header class="bd-head">
+<header class="bd-head bd-wave">
   <div class="bd-in">
-    <div class="bd-head-l">
-      <div class="bd-eye">{{ cat.counts.datasets }} datasets · {{ nums.since | default: y0 }} to today</div>
-      <h1>Browse datasets</h1>
-      <p>Download any dataset, or explore it on a map.</p>
-    </div>
+    <h1 class="sr-only">Browse datasets</h1>
     <div class="bd-tools">
-      {% include one_search.html placeholder="Search datasets" hint=cat.counts.datasets %}
+      <label class="bd-q"><i class="cc-i cc-i-ui-search" aria-hidden="true"></i>
+        <span class="sr-only">Search datasets, species or measurements</span>
+        <input id="bd-q" type="search" autocomplete="off" spellcheck="false" placeholder="Search datasets, species or measurements">
+        <span class="bd-qn" id="bd-qn" aria-live="polite">{{ b.rows.size }}</span></label>
       <label class="bd-sel"><span class="sr-only">Type</span><select id="bd-type">
         <option value="">All types</option>
-        {%- for v in cat.facets.realms %}<option value="{{ v | escape }}">{% if v == "bio" %}Biology{% elsif v == "env" %}Environment{% else %}{{ v | capitalize | escape }}{% endif %}</option>{% endfor -%}
+        {%- for r in b.realms %}<option value="{{ r.id | escape }}">{{ r.title | escape }}</option>{% endfor -%}
       </select></label>
       <label class="bd-sel"><span class="sr-only">Sort</span><select id="bd-sort">
-        <option value="az">Sort: A–Z</option><option value="long">Longest record</option><option value="recent">Most recent</option><option value="cat">Category</option>
+        <option value="core">Sort: Core first, newest last</option><option value="az">A–Z</option><option value="long">Longest record</option><option value="recent">Most recent</option><option value="cat">Category</option>
       </select></label>
     </div>
+    <p class="bd-try">Try {% for w in try %}<button type="button" data-q="{{ w }}">{{ w }}</button>{% endfor %}</p>
   </div>
+  <svg class="bd-wave-edge" viewBox="0 0 1200 40" preserveAspectRatio="none" aria-hidden="true"><path d="M0 30 C150 10 300 34 450 22 S750 6 900 20 S1100 34 1200 18 V40 H0Z"/></svg>
 </header>
 
 <main class="calm-page ds-cat ds-browse">
 
-{% include catalog_filters.html hidden=true %}
-
-<details class="bd-when" open>
+<details class="bd-when">
   <summary><i class="cc-i cc-i-ui-years" aria-hidden="true"></i><b>Years covered</b><span>which datasets were collected each year</span><i class="calm-chev cc-i cc-i-ui-down" aria-hidden="true"></i></summary>
   <script type="application/json" id="reach">{{ site.data.reach | jsonify }}</script>
   <div id="strip-host" class="fd-strip bd-strip" data-sprite="{{ '/brand/v2/icons/calcofi-icons.svg' | relative_url }}"></div>
@@ -77,77 +69,39 @@ layout: default
   <div class="tabrow" role="tablist" aria-label="How to see the datasets">
     <button type="button" role="tab" id="ds-view-tab-list" aria-controls="ds-view-list" data-tab="list" aria-selected="true" tabindex="0">List</button>
     <button type="button" role="tab" id="ds-view-tab-grid" aria-controls="ds-view-grid" data-tab="grid" aria-selected="false" tabindex="-1">By category</button>
+    <span class="bd-count">{{ cat.counts.datasets }} datasets · {{ nums.since | default: b.span[0] }} to today</span>
   </div>
 
-  <div class="tabpanel" id="ds-view-list" data-panel="list" role="tabpanel" aria-labelledby="ds-view-tab-list">
-    <div class="bd-list" id="ds-list">
-      <div class="bd-lh"><span>Dataset</span>{{ axis }}<span>Records</span><span></span></div>
-      {%- for d in all -%}
-      {%- assign c_order = 0 -%}{%- for c in cat.categories %}{% if c.name == d.category %}{% assign c_order = forloop.index %}{% endif %}{% endfor -%}
-      <div class="bd-row ds-item" data-kind="dataset" data-key="{{ d.key | escape }}" data-cat="{{ d.category | escape }}"
-           data-realm="{{ d.realm | escape }}" data-prov="{{ d.provider | escape }}"
-           data-lic="{{ d.license | default: 'unstated' | escape }}" data-fmt="{{ d.formats | join: ' ' | escape }}"
-           data-stage="{{ d.stage | default: 'published' | escape }}"
-           data-name="{{ d.name | downcase | escape }}" data-y0="{{ d.year_min | default: 9999 }}" data-y1="{{ d.year_max | default: 0 }}" data-order="{{ c_order }}">
-        <a class="bd-n" href="{{ d.url | relative_url }}">
-          <span class="bd-ic"><i class="cc-i cc-i-{{ d.icon | escape }}" aria-hidden="true"></i></span>
-          <span class="bd-tx"><b>{{ d.name | escape }}</b><span>{{ d.sentence | default: d.category | escape }}</span></span>
-        </a>
-        <span class="bd-cov">{{ d.cov_bar }}</span>
-        <span class="bd-f">{% if d.n_obs_short %}<b title="{{ d.n_obs_fmt }} records">{{ d.n_obs_short }}</b>{% endif %}{% if d.years %}<span>{{ d.years | escape }}</span>{% endif %}</span>
-        {% include browse_actions.html d=d %}
+  <div class="bd-find">
+    <div class="bd-lists">
+      <div class="tabpanel" id="ds-view-list" data-panel="list" role="tabpanel" aria-labelledby="ds-view-tab-list">
+        <div class="bd-colh"><span>Dataset</span><span>What&#8217;s in it</span><span>Years with data</span></div>
+        <div class="bd-list" id="bd-list">
+          {%- for d in b.rows %}{% include browse_row.html d=d sub=true %}{% endfor -%}
+        </div>
       </div>
-      {%- endfor -%}
-    </div>
-    <p class="ds-empty" id="ds-empty" hidden>No dataset matches. <button type="button" class="cc-text-link" id="ds-clear2">Clear</button></p>
-  </div>
-
-  <div class="tabpanel" id="ds-view-grid" data-panel="grid" role="tabpanel" aria-labelledby="ds-view-tab-grid" hidden>
-    <h2 class="sr-only">Datasets by category</h2>
-    <div class="bd-cols" id="ds-grid">
-      {%- for rlm in cat.realms -%}
-      {%- assign n_rlm = 0 -%}{%- for c in rlm.categories %}{% assign n_rlm = n_rlm | plus: c.datasets.size %}{% endfor -%}
-      <section class="bd-col ds-realm" data-realm-col="{{ rlm.id }}">
-        <header class="bd-colh">
-          <h3>{{ rlm.title | escape }}</h3>
-          <p>{% if rlm.id == "bio" %}What lives in the water column{% elsif rlm.id == "env" %}The water itself and the air above it{% else %}{{ rlm.lede | escape }}{% endif %}</p>
-          {%- if rlm.id == "bio" and nums.species -%}
-          <a class="bd-stat" href="{{ '/species/' | relative_url }}"><b>{{ nums.species_fmt }} species</b><span>{{ n_rlm }} datasets</span><em>Browse species →</em></a>
-          {%- elsif rlm.id == "env" and nums.measurements_keys -%}
-          <a class="bd-stat" href="{{ '/measurements/' | relative_url }}"><b>{{ nums.measurements_keys_fmt }} measurements</b><span>{{ n_rlm }} datasets</span><em>Browse measurements →</em></a>
-          {%- endif -%}
-        </header>
-        {%- for c in rlm.categories -%}
-        {%- if c.datasets.size > 0 or c.contributions.size > 0 -%}
-        <section class="bd-cat ds-tile" data-tile="{{ c.name | slugify | escape }}">
-          <header class="bd-cath">
-            <span class="bd-ic"><i class="cc-i cc-i-{{ c.icon | escape }}" aria-hidden="true"></i></span>
-            <span class="bd-tx"><b>{{ c.name | escape }}</b>{% if c.description %}<span>{{ c.description | escape }}</span>{% endif %}</span>
-            <span class="bd-cnt">{{ c.datasets.size }} dataset{% if c.datasets.size != 1 %}s{% endif %}</span>
-          </header>
-          {%- for d in c.datasets -%}
-          <div class="bd-dr ds-row" data-kind="dataset" data-key="{{ d.key | escape }}" data-cat="{{ c.name | escape }}"
-               data-realm="{{ d.realm | escape }}" data-prov="{{ d.provider | escape }}"
-               data-lic="{{ d.license | default: 'unstated' | escape }}" data-fmt="{{ d.formats | join: ' ' | escape }}"
-               data-stage="{{ d.stage | default: 'published' | escape }}">
-            <a class="bd-dn" href="{{ d.url | relative_url }}"><b>{{ d.name | escape }}</b><span>{{ d.provider | escape }}{% if d.years %} · {{ d.years | escape }}{% endif %}</span></a>
-            <span class="bd-cov">{{ d.cov_bar }}</span>
-            <span class="bd-f">{% if d.n_obs_fmt %}<span><b>{{ d.n_obs_fmt }}</b> records</span>{% endif %}
-              {%- if d.n_taxa and d.n_taxa > 0 %}<span>{{ d.n_taxa }} taxa</span>{% elsif d.n_var and d.n_var > 0 %}<span>{{ d.n_var }} variable{% if d.n_var != 1 %}s{% endif %}</span>{% endif %}</span>
-            {% include browse_actions.html d=d %}
-          </div>
-          {%- endfor -%}
-          {%- if c.contributions.size > 0 -%}
-          <p class="bd-also">Also measured in: {% for k in c.contributions %}<a href="{{ k.url | relative_url }}" data-kind="contribution" data-key="{{ k.key | escape }}" data-cat="{{ c.name | escape }}" data-realm="env" data-prov="" data-lic="" data-fmt="" data-stage="published">{{ k.name | escape }}</a>{% unless forloop.last %}, {% endunless %}{% endfor %}</p>
-          {%- endif -%}
+      <div class="tabpanel" id="ds-view-grid" data-panel="grid" role="tabpanel" aria-labelledby="ds-view-tab-grid" hidden>
+        <div class="bd-colh bd-colh-2"><span>Dataset and what&#8217;s in it</span><span>Years with data</span></div>
+        {%- for r in b.realms %}
+        <section class="bd-realm" data-realm="{{ r.id }}">
+          <h2>{{ r.title | escape }}</h2>
+          {%- for g in r.groups %}
+          <section class="bd-grp" id="cat-{{ g.cat | slugify }}" data-cat="{{ g.cat | escape }}">
+            <header class="bd-gh"><span class="bd-gi"><i class="cc-i cc-i-{{ g.icon | escape }}" aria-hidden="true"></i></span><h3>{{ g.cat | escape }}</h3>{% if g.desc %}<span class="bd-gd">{{ g.desc | escape }}</span>{% endif %}<span class="bd-gn">{{ g.n }} dataset{% if g.n != 1 %}s{% endif %}</span></header>
+            <div class="bd-card">
+              {%- for d in g.rows %}{% if g.solo %}{% include browse_row.html d=d title=d.full %}{% else %}{% include browse_row.html d=d %}{% endif %}{% endfor -%}
+            </div>
+          </section>
+          {%- endfor %}
         </section>
-        {%- endif -%}
-        {%- endfor -%}
-      </section>
-      {%- endfor -%}
+        {%- endfor %}
+      </div>
+      <p class="bd-empty" id="bd-empty" hidden>Nothing matches. Try a species (<i>anchovy</i>), a measurement (<i>oxygen</i>) or a group (<i>krill</i>). <button type="button" id="bd-clear">Clear</button></p>
     </div>
+    <aside class="bd-pv" id="bd-pv" aria-live="polite" hidden></aside>
   </div>
 </div>
+<script type="application/json" id="bd-rows">{{ b.rows | jsonify }}</script>
 
 <div class="calm-folds ds-cat-folds">
   {%- assign n_held = cat.counts.holdings -%}
@@ -182,7 +136,6 @@ layout: default
 </main>
 
 <script src="{{ '/assets/reach.js' | relative_url }}" defer></script>
-<script src="{{ '/assets/browse.js' | relative_url }}" defer></script>
-<script src="{{ '/assets/catalog.js' | relative_url }}" defer
-        data-search="{{ '/datasets/search.json' | relative_url }}"></script>
+<script src="{{ '/assets/browse.js' | relative_url }}" defer
+        data-maps="{{ '/datasets/browse.json' | relative_url }}"></script>
 <script type="application/ld+json">{{ cat.jsonld }}</script>
