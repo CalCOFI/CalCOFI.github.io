@@ -198,12 +198,23 @@ module CalCOFI
     def generate(site)
       cat = self.class.catalog
       return unless cat
-      site.data["browse"] = cat.browse(site.data.dig("measurements", "measurements"))
+      site.data["browse"] = cat.browse(raw_measurements(site))
       page = Jekyll::PageWithoutAFile.new(site, site.source, "datasets", "browse.json")
       page.content = "{% raw %}#{JSON.generate(cat.browse_maps)}{% endraw %}"
       page.data["layout"] = nil
       page.data["sitemap"] = false
       site.pages << page
+    end
+
+    # the measurements record as it is on disk. measurements.rb (also :normal) replaces
+    # site.data["measurements"] with its own summary, and which of the two generators runs first
+    # depends on the order the platform lists _plugins/ (it differs on Windows), so this reads the
+    # record's own list either way: from site.data while it is still the record, else from the file
+    def raw_measurements(site)
+      m = site.data.dig("measurements", "measurements")
+      return m if m.is_a?(Array)
+      f = File.join(site.source, "_data", "measurements.json")
+      File.exist?(f) ? (JSON.parse(File.read(f))["measurements"] rescue nil) : nil
     end
   end
 end
