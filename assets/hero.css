@@ -96,3 +96,4 @@
 [data-theme="dark"] .hero-btn:not(.main) { color: #0a1e38; }
 .hero-opt:hover .hero-btn:not(.main), a.hero-goal:hover .hero-btn:not(.main) { background: var(--accent-d, #004663); border-color: var(--accent-d, #004663); color: #fff; }
 [data-theme="dark"] .hero-opt:hover .hero-btn:not(.main) { background: #bfe5f7; border-color: #bfe5f7; color: #0a1e38; }
+.hero-opt:hover .hero-btn.main { background: #f2c200; border-color: #f2c200; color: #182b49; }
