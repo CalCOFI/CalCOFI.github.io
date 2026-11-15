@@ -97,3 +97,17 @@
 .hero-opt:hover .hero-btn:not(.main), a.hero-goal:hover .hero-btn:not(.main) { background: var(--accent-d, #004663); border-color: var(--accent-d, #004663); color: #fff; }
 [data-theme="dark"] .hero-opt:hover .hero-btn:not(.main) { background: #bfe5f7; border-color: #bfe5f7; color: #0a1e38; }
 .hero-opt:hover .hero-btn.main { background: #f2c200; border-color: #f2c200; color: #182b49; }
+
+/* Learn's header as a slim bar (Betty 2026-11-14): title and hint on one line, Sampling methods and Close on the
+   right, a wave edge into the drawing like Browse datasets. Replaces the tall uppercase head. */
+#learn .fd-learnhead { position: relative; padding-bottom: 16px; }
+#learn .fd-learnhead .cc-container { padding-top: 14px; padding-bottom: 4px; }
+#learn .fd-learnbar { display: flex; align-items: center; gap: 18px; }
+#learn .fd-learnbar .fd-learnh { font-family: var(--sans); font-size: 20px; font-weight: 700; line-height: 1.25; text-transform: none; letter-spacing: -.01em; margin: 0 auto 0 0; }
+#learn .fd-learnbar .fd-learnh span { margin-left: 12px; font-size: 14px; font-weight: 400; color: #b9c6da; }
+#learn .fd-learnbar .fd-learngo { margin-left: 0; padding: 7px 13px; font-size: 13.5px; }
+#learn .fd-learnwave { position: absolute; left: 0; right: 0; bottom: -1px; width: 100%; height: 16px; }
+#learn .fd-learnwave path { fill: #fff; }
+@media (max-width: 760px) { #learn .fd-learnbar { flex-wrap: wrap; } #learn .fd-learnbar .fd-learnh span { display: block; margin: 2px 0 0; } }
+[data-theme="dark"] #learn.fd-learn, [data-theme="dark"] #learn .fd-secscreen .fd-sec { background: var(--bg); }
+[data-theme="dark"] #learn .fd-learnwave path { fill: var(--bg); }

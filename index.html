@@ -404,18 +404,13 @@ SELECT * FROM read_json('{{ rel.catalog_url }}')</pre>
 {%- assign docs_p = data.products | where: "key", "docs" | first -%}
 <section class="fd-panel fd-learn" id="learn" hidden aria-labelledby="learn-h">
   <div class="fd-learnhead"><div class="cc-container">
-    <div class="fd-learntop">
-      <div>
-        <div class="fd-learneye">Line 90 · offshore to the coast</div>
-        <h2 class="fd-learnh" id="learn-h">Learn how CalCOFI sampling and data work</h2>
-      </div>
+    <div class="fd-learnbar">
+      <h2 class="fd-learnh" id="learn-h">How CalCOFI samples the ocean <span>Click anything in the drawing to learn more</span></h2>
+      <a class="fd-learngo" href="https://calcofi.org/sampling-info/">Sampling methods <span aria-hidden="true">↗</span></a>
       {{ close_btn }}
     </div>
-    <div class="fd-learnrow">
-      <p>Everything we measure on a cruise, and the depth it's collected. Click one to learn more.</p>
-      <a class="fd-learngo" href="https://calcofi.org/sampling-info/">Sampling methods <span aria-hidden="true">↗</span></a>
-    </div>
-  </div></div>
+  </div>
+  <svg class="fd-learnwave" viewBox="0 0 1200 40" preserveAspectRatio="none" aria-hidden="true"><path d="M0 30 C150 10 300 34 450 22 S750 6 900 20 S1100 34 1200 18 V40 H0Z"/></svg></div>
   <figure class="fd-secfull fd-secscreen" aria-labelledby="learn-h">
     <div class="fd-sec" id="sec-full" data-sprite="{{ sprite }}"></div>
     <figcaption class="fd-cap">The ship's gear at its working depth: CTD to 515 m, bongo net to 210 m, PairoVET to 70 m,
