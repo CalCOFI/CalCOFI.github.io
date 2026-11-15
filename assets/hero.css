@@ -111,3 +111,9 @@
 @media (max-width: 760px) { #learn .fd-learnbar { flex-wrap: wrap; } #learn .fd-learnbar .fd-learnh span { display: block; margin: 2px 0 0; } }
 [data-theme="dark"] #learn.fd-learn, [data-theme="dark"] #learn .fd-secscreen .fd-sec { background: var(--bg); }
 [data-theme="dark"] #learn .fd-learnwave path { fill: var(--bg); }
+/* Sampling methods: a small grey link beside Close (Betty 2026-11-14, option E2) — the drawing is the point
+   here, not a call to leave; it underlines and turns white on hover */
+#learn .fd-learnbar .fd-learngo { background: none; color: #b9c6da; border: 0; padding: 0; font-size: 13px; font-weight: 600; }
+#learn .fd-learnbar .fd-learngo:hover { color: #fff; text-decoration: underline; text-underline-offset: 3px; }
+/* the bar spans the drawing's width (the drawing is edge to edge), not the page column */
+#learn .fd-learnhead .cc-container { max-width: none; padding-left: 32px; padding-right: 32px; }
