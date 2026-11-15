@@ -2039,3 +2039,9 @@ a.cc-chip-lic:hover { color: var(--accent); border-color: var(--accent); text-de
      units so they still read at ~9 px */
   .calm-strip.mm-strip text { font-size: 18px; }
 }
+
+/* the header's edge on every page (Betty 2026-11-14; was front-door only, in assets/hero.css): a line and a soft
+   shadow in light mode, so the header reads as its own layer over white pages and navy bands alike */
+[data-theme="light"] .cc-header { border-bottom-color: #c9d4e2; box-shadow: 0 1px 0 rgba(24, 43, 73, .05), 0 6px 16px -6px rgba(24, 43, 73, .18); }
+/* over a navy band the soft shadow would vanish (navy on navy), so it is deeper there */
+[data-theme="light"] body:has(.bd-head) .cc-header { box-shadow: 0 1px 0 rgba(24, 43, 73, .05), 0 8px 18px -4px rgba(0, 0, 0, .45); }
