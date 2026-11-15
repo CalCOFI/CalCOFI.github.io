@@ -111,6 +111,37 @@ module CalCOFI
       out << "</svg>"
     end
 
+    def human_size(b)
+      return nil unless b.to_i.positive?
+      b = b.to_f
+      %w[B KB MB GB].each_with_index do |u, i|
+        v = b / (1024**i)
+        return (v < 10 && i.positive? ? format("%.1f %s", v, u) : format("%d %s", v.round, u)) if v < 1024 || u == "GB"
+      end
+    end
+
+    # The Download menu (Betty 2026-11-14): CSV first where the dataset is on ERDDAP — ERDDAP refuses a
+    # whole-table CSV with no query, so CSV opens the dataset's ERDDAP form, where the reader picks
+    # columns and rows and gets a CSV; then the release files, whole, in one click: Parquet (the
+    # dataset's own rows in the release) and NetCDF. Without ERDDAP, Parquet comes first.
+    def browse_downloads(d)
+      dist = (d["distributions"] || []).reject { |x| x["status"] == "superseded" }
+      key = d["dataset_key"]
+      out = []
+      ed = erddap_current(dist)
+      main = ed.find { |x| x["url"].end_with?("/#{key}.html") } ||
+             ed.reject { |x| x["url"].match?(/_(sample|attribute)\.html\z/) }.first
+      if main
+        out << { "fmt" => "CSV", "note" => "Choose columns and years on ERDDAP", "url" => main["url"], "direct" => false }
+      end
+      pq = dist.find { |x| x["format"] == "parquet" && x["url"].to_s.include?("dataset_key=#{key}") } ||
+           dist.find { |x| x["format"] == "parquet" }
+      out << { "fmt" => "Parquet", "note" => "Whole dataset, fastest for R or Python", "url" => pq["url"], "size" => human_size(pq["bytes"] || pq["size"]), "direct" => true } if pq && Fmt.present(pq["url"])
+      nc = dist.select { |x| x["format"] == "netcdf" && Fmt.present(x["url"]) }.min_by { |x| (x["bytes"] || x["size"] || 0).to_i }
+      out << { "fmt" => "NetCDF", "note" => "Whole dataset", "url" => nc["url"], "size" => human_size(nc["bytes"] || nc["size"]), "direct" => true } if nc
+      out
+    end
+
     def browse_row(d, lab, rank, span)
       cov = d["coverage"] || {}
       label, has, total = browse_has(cov, lab, rank)
@@ -150,7 +181,8 @@ module CalCOFI
         "since"    => d["since_version"],
         "url"      => page_url(d),
         "explore"  => ways(d).find { |w| w["icon"] == "way-explorer" }&.dig("url"),
-        "dl"       => dl && dl["url"], "dl_label" => dl && dl["label"]
+        "dl"       => dl && dl["url"], "dl_label" => dl && dl["label"],
+        "downloads" => browse_downloads(d)
       }
     end
   end
