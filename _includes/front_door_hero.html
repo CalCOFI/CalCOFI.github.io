@@ -49,12 +49,12 @@
         </div>
         <a class="hero-goal" href="{{ '/datasets/' | relative_url }}">
           <div class="hero-who"><i class="cc-i cc-i-ui-download" aria-hidden="true"></i>I need data</div>
-          <h3>Download a dataset</h3><p>Pick one, filter, get a CSV</p>
+          <h3>Download a dataset</h3><p>One dataset, as its owner published it</p>
           <div class="hero-dest"><span class="hero-opt"><span class="hero-btn">Browse datasets</span><small>All {{ site.data.catalog.counts.datasets }} datasets</small></span></div>
         </a>
         <div class="hero-goal">
           <div class="hero-who"><i class="cc-i cc-i-view-matrix" aria-hidden="true"></i>I need specific data</div>
-          <h3>Pull exact data</h3><p>Combine species and water variables</p>
+          <h3>Pull exact data</h3><p>Combined across datasets, by station or area</p>
           <div class="hero-dest two">
             <a class="hero-opt" href="{{ builder_url }}"><span class="hero-btn">Query Builder</span><small>No code needed</small></a>
             <a class="hero-opt" href="{{ query_url }}"><span class="hero-btn">Code</span><small>R, Python, SQL</small></a>
@@ -65,7 +65,7 @@
   </div>
   <div class="hero-foot"><div class="hero-in-row">
     <nav aria-label="More">
-      <a href="{{ flows_url }}">Share your data</a>
+      <a class="hero-share" href="{{ flows_url }}"><i class="cc-i cc-i-ui-share" aria-hidden="true"></i>Share your data</a>
       <a href="https://calcofi.io/docs/cite.html">Cite the data</a>
       <a href="#learn">Sampling methods</a>
       <a href="#monitor">Statewide monitoring</a>
