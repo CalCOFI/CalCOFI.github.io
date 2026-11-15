@@ -1,0 +1,169 @@
+{%- comment -%}
+  The dataset page, redesigned (Betty, 2026-11-15; dataset-page-mockup-8, version 2). Every value is
+  page.dp, built from the release record by _plugins/dataset_page.rb; a missing value is not drawn.
+  A holding keeps the older page (_layouts/dataset.html).
+{%- endcomment -%}
+{%- assign r = page.record -%}
+{%- assign dp = page.dp -%}
+{%- assign p_explore = site.data.products.products | where: "key", "explore" | first -%}
+{%- assign explore_url = site.local_explore | default: p_explore.live_url | default: "https://calcofi.io/explore/" -%}
+{%- capture arr -%}<svg class="dp-arr" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M5 11h11.2l-4.6-4.6L13 5l7 7-7 7-1.4-1.4 4.6-4.6H5z"/></svg>{%- endcapture -%}
+<link rel="stylesheet" href="{{ '/assets/download.css' | relative_url }}">
+<link rel="stylesheet" href="{{ '/assets/dataset-page.css' | relative_url }}">
+
+<header class="dp-band">
+  <div class="dp-in">
+    <div class="dp-t">
+      <div class="dp-ttl"><i class="cc-i cc-i-{{ page.icon | escape }}" aria-hidden="true"></i><h1>{{ page.h1 | escape }}</h1></div>
+      {%- if dp.byline != "" %}<p class="dp-by">{{ dp.byline | escape }}</p>{% endif -%}
+    </div>
+    <dl class="dp-nums">
+      {%- for f in dp.facts %}<div><dd>{{ f[0] | escape }}</dd><dt>{{ f[1] | escape }}</dt></div>{% endfor -%}
+    </dl>
+  </div>
+  <svg class="dp-wave" viewBox="0 0 1200 40" preserveAspectRatio="none" aria-hidden="true"><path d="M0 30 C150 10 300 34 450 22 S750 6 900 20 S1100 34 1200 18 V40 H0Z"/></svg>
+</header>
+
+<main class="dp-page" id="dp" data-builder="{{ explore_url }}builder.html" data-base="{{ site.baseurl }}">
+{{ dp.sprite }}
+<div class="dp-row">
+  <div class="dp-main">
+
+    <section class="dp-sec">
+      <h2>About</h2>
+      {%- if dp.lede %}<p class="dp-lede">{{ dp.lede | escape }}</p>{% endif -%}
+      {%- if dp.rest -%}
+      <p class="dp-rest" id="dp-rest" hidden>{{ dp.rest | escape }}</p>
+      <button type="button" class="dp-lnk" data-more aria-controls="dp-rest" aria-expanded="false">More about the record</button>
+      {%- endif -%}
+      {%- assign succ = page.successor -%}
+      {%- if succ -%}
+      <p class="dp-note">This record ends in <b>{{ succ.last | escape }}</b>. From {{ succ.last | plus: 1 }} on, the bottle values are in
+        <a href="{{ succ.url | relative_url }}">{{ succ.name | escape }}</a>, through {{ succ.through | escape }}.</p>
+      {%- endif -%}
+      {%- for pred in page.predecessors -%}
+      <p class="dp-note">This dataset carries on <a href="{{ pred.url | relative_url }}">{{ pred.name | escape }}</a>, which ends in
+        <b>{{ pred.last | escape }}</b>; from {{ pred.last | plus: 1 }} on, its bottle values are here, through {{ pred.through | escape }}.</p>
+      {%- endfor -%}
+      {%- if dp.samples_only %}<p class="dp-note">No observations are counted yet, so there is nothing to map; the sampling events are in the release&#8217;s <span class="mono">sample</span> table{% if dp.erddap_sample %} and <a href="{{ dp.erddap_sample | escape }}">on ERDDAP</a>{% endif %}.</p>{% endif -%}
+    </section>
+
+    {%- if dp.years -%}
+    <section class="dp-sec">
+      <h2>When it was sampled</h2>
+      <div class="dp-when">
+        <div><div class="dp-wh"><b>Records per year</b><span>{{ dp.n_years }} year{% unless dp.n_years == 1 %}s{% endunless %} with data</span></div>{{ dp.years }}</div>
+        {%- if dp.months %}<div><div class="dp-wh"><b>By month</b><span>{{ dp.months.label }}</span></div>{{ dp.months.html }}</div>{% endif -%}
+      </div>
+    </section>
+    {%- endif -%}
+
+    {%- if dp.n_taxa > 0 -%}
+    <section class="dp-sec" id="inside">
+      <div class="dp-ih"><h2>What&#8217;s in it</h2><span>{{ dp.n_taxa }} {% if dp.n_taxa == 1 %}taxon{% else %}taxa{% endif %}, most recorded first</span>
+        {%- if dp.n_taxa > 8 %}<label class="dp-q"><i class="cc-i cc-i-ui-search" aria-hidden="true"></i><span class="sr-only">Find a species in this dataset</span><input type="search" data-find placeholder="Find a species"></label>{% endif -%}
+      </div>
+      <div class="dp-tbl" data-list>
+        <div class="dp-tr dp-th"><span></span><span>Species</span><span>In this dataset</span><span></span></div>
+        {%- for t in dp.taxa -%}
+        <div class="dp-tr" data-q="{{ t.sci | downcase | escape }} {{ t.com | downcase | escape }}"{% if forloop.index > 8 %} data-extra hidden{% endif %}>
+          <span>{% if t.sil %}<svg class="dp-si" aria-hidden="true"><use href="#{{ t.sil }}"/></svg>{% endif %}</span>
+          <span class="dp-nm">{% if t.url %}<a href="{{ t.url | relative_url }}">{% endif %}{% if t.com %}<b>{{ t.com | escape }}</b><span><i>{{ t.sci | escape }}</i></span>{% else %}<b><i>{{ t.sci | escape }}</i></b>{% if t.rank %}<span>{{ t.rank | escape }}</span>{% endif %}{% endif %}{% if t.url %}</a>{% endif %}</span>
+          <span class="dp-nb">{{ t.n }} records<span class="dp-bar"><i style="width:{{ t.pct }}%"></i></span></span>
+          <button type="button" class="dp-csv" data-one="bio" data-k="{{ t.k | escape }}" data-name="{{ t.com | default: t.sci | escape }}" data-n="{{ t.n_raw }}" title="Download just {{ t.com | default: t.sci | escape }}, from this dataset"><i class="cc-i cc-i-ui-download" aria-hidden="true"></i>CSV</button>
+        </div>
+        {%- endfor -%}
+        <p class="dp-none" data-none hidden>No species here matches.</p>
+        {%- if dp.taxa_more %}<script type="application/json" data-more-rows>{{ dp.taxa_more }}</script>{% endif -%}
+        {%- if dp.n_taxa > 8 %}<div class="dp-more"><span data-shown>8 of {{ dp.n_taxa }}</span><button type="button" class="dp-lnk" data-all data-n="{{ dp.n_taxa }}">Show all {{ dp.n_taxa }}</button></div>{% endif -%}
+      </div>
+      {%- if dp.stages.size > 0 %}<p class="dp-stg"><b>Life stages:</b> {{ dp.stages | join: ", " | escape }}</p>{% endif -%}
+    </section>
+    {%- endif -%}
+
+    {%- if dp.n_meas > 0 -%}
+    <section class="dp-sec"{% if dp.n_taxa == 0 %} id="inside"{% endif %}>
+      <div class="dp-ih"><h2>{% if dp.n_taxa > 0 %}Measurements{% else %}What&#8217;s in it{% endif %}</h2><span>{{ dp.n_meas }} measurement{% unless dp.n_meas == 1 %}s{% endunless %}, by category</span></div>
+      <div class="dp-tbl dp-m">
+        <div class="dp-tr dp-th"><span>Measurement</span><span>Values here</span><span>Years</span><span></span></div>
+        {%- for g in dp.meas -%}
+        <div class="dp-cath">{{ g.cat | escape }}<span>{{ g.rows.size }}</span></div>
+        {%- for m in g.rows -%}
+        <div class="dp-tr">
+          <span class="dp-nm"><a href="{{ m.url | relative_url }}"><b>{{ m.lab | escape }}</b></a><span>{{ m.units | default: "no units" | escape }}</span></span>
+          <span class="dp-nb">{{ m.n }}</span><span class="dp-nb">{{ m.years }}</span>
+          <button type="button" class="dp-csv" data-one="env" data-k="{{ m.k | escape }}" data-name="{{ m.lab | escape }}" data-n="{{ m.n_raw }}" data-y0="{{ m.y0 }}" data-y1="{{ m.y1 }}" title="Download just {{ m.lab | escape }}, from this dataset"><i class="cc-i cc-i-ui-download" aria-hidden="true"></i>CSV</button>
+        </div>
+        {%- endfor -%}
+        {%- endfor -%}
+      </div>
+    </section>
+    {%- endif -%}
+  </div>
+
+  <aside class="dp-side">
+    {%- if page.map -%}
+    <div class="dp-card">
+      <div class="dp-map">{{ page.map.svg }}</div>
+      {%- if dp.map_cap != "" %}<p class="dp-cap">{{ dp.map_cap | escape }}</p>{% endif -%}
+      {%- if dp.explore or dp.finder -%}
+      <div class="dp-mapa">
+        {%- if dp.explore %}<a class="dp-mb1" href="{{ dp.explore | escape }}">View on map<small>In the Explorer</small></a>{% endif -%}
+        {%- if dp.finder %}<a class="dp-mb2" href="{{ dp.finder | escape }}">See stations<small>In the Dataset Finder</small></a>{% endif -%}
+      </div>
+      {%- endif -%}
+    </div>
+    {%- endif -%}
+
+    <div class="dp-card">
+      <h3 class="dp-ch">Get the data</h3>
+      <button type="button" class="dp-big" data-all-dl><i class="cc-i cc-i-ui-download" aria-hidden="true"></i>Download the whole dataset</button>
+      <p class="dp-bigs">CSV, Parquet or NetCDF{% if dp.n_taxa > 0 or dp.n_meas > 0 %} · or one {% if dp.n_taxa > 0 %}species{% else %}measurement{% endif %} with the CSV buttons{% endif %}</p>
+      <ul class="dp-gl">
+        {%- if dp.erddap_obs -%}
+        <li class="dp-erd"><i class="cc-i cc-i-way-erddap" aria-hidden="true"></i><span><b>Filter on ERDDAP</b><small>Pick years and columns, then download</small>
+          <span class="dp-erl"><a href="{{ dp.erddap_obs | escape }}">The records ↗</a>{% if dp.erddap_sample %}<a href="{{ dp.erddap_sample | escape }}">The {{ dp.event_word }} ↗</a>{% endif %}</span></span></li>
+        {%- endif -%}
+        {%- if dp.src -%}
+        <li><a href="{{ dp.src | escape }}"><i class="cc-i cc-i-ui-external" aria-hidden="true"></i><span><b>Original files from the provider</b>{% if dp.src_portal %}<small>{{ dp.src_portal | escape }}</small>{% endif %}</span><em>↗</em></a></li>
+        {%- endif -%}
+      </ul>
+    </div>
+
+    {%- assign cite = dp.cite | default: page.cite_text -%}
+    {%- if cite -%}
+    <div class="dp-card">
+      <div class="dp-chr"><h3 class="dp-ch">Cite this dataset</h3><button type="button" class="dp-cpy" data-copy="{{ cite | escape }}">Copy</button></div>
+      <p class="dp-cite">{{ cite | escape }}</p>
+      {%- if dp.license %}<p class="dp-lic">License: {% if dp.license_url %}<a href="{{ dp.license_url | escape }}">{{ dp.license | escape }}</a>{% else %}{{ dp.license | escape }}{% endif %}</p>{% endif -%}
+      <div class="dp-cfoot">
+        {%- if dp.doi %}<a href="https://doi.org/{{ dp.doi | escape }}">DOI</a>{% endif -%}
+        {%- if page.bibtex %}<button type="button" class="dp-lnk" data-copy="{{ page.bibtex | escape }}" title="Copy the BibTeX">BibTeX</button>{% endif -%}
+        <a href="https://calcofi.io/docs/cite.html">How to cite</a>
+      </div>
+    </div>
+    {%- endif -%}
+  </aside>
+</div>
+
+<section class="dp-about">
+  <h2>About the data</h2>
+  <div class="dp-ag">
+    {%- if dp.creators or dp.contact -%}
+    <div><h4>Creators</h4>
+      {%- if dp.creators %}<p>{{ dp.creators | escape }}</p>{% endif -%}
+      {%- if dp.contact %}<p class="dp-sm">Contact <a href="mailto:{{ dp.contact | escape }}">{{ dp.contact | escape }}</a></p>{% endif -%}</div>
+    {%- endif -%}
+    {%- if dp.funding or dp.ack -%}
+    <div class="dp-wide"><h4>Credit</h4><p>{% if dp.funding %}Funded by {{ dp.funding | escape }}.{% endif %} {{ dp.ack | escape }}</p></div>
+    {%- endif -%}
+    <div><h4>Also archived at</h4>
+      {%- if dp.archived.size > 0 %}<p>{% for x in dp.archived %}<a href="{{ x.url | escape }}">{{ x.name | escape }}</a>{% unless forloop.last %}{% if forloop.rindex == 2 %} and {% else %}, {% endif %}{% endunless %}{% endfor %}</p>{% else %}<p class="dp-sm">Nowhere else yet</p>{% endif -%}
+      <p class="dp-sm"><a href="{{ '/datasets/' | append: page.dataset_key | append: '.json' | relative_url }}">Full record (JSON) ↗</a></p></div>
+  </div>
+</section>
+<p class="dp-foot">Everything here is open; nothing asks you to register. If you use this dataset, <a href="{{ site.register_use_url }}">tell us</a> so it can be credited, or <a href="{{ site.stay_informed_url }}">hear when a release changes it</a>. Questions: <a href="mailto:{{ site.contact_email | escape }}">{{ site.contact_email | escape }}</a>.</p>
+</main>
+<script type="application/json" id="dp-dl">{{ dp.dl }}</script>
+<script src="{{ '/assets/download.js' | relative_url }}" defer></script>
+<script src="{{ '/assets/dataset-page.js' | relative_url }}" defer></script>
