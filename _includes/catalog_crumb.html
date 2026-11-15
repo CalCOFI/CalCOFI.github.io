@@ -1,0 +1,7 @@
+{%- comment -%} the three catalogs as one line above the tabs (Browse datasets, Species, Measurements);
+  include.on = datasets | species | measurements {%- endcomment -%}
+<nav class="cf-crumb" aria-label="The three catalogs">
+  <a href="{{ '/datasets/' | relative_url }}"{% if include.on == "datasets" %} aria-current="page"{% endif %}>Datasets</a>
+  <a href="{{ '/species/' | relative_url }}"{% if include.on == "species" %} aria-current="page"{% endif %}>Species</a>
+  <a href="{{ '/measurements/' | relative_url }}"{% if include.on == "measurements" %} aria-current="page"{% endif %}>Measurements</a>
+</nav>

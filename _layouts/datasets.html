@@ -23,6 +23,8 @@ layout: default
 {%- assign ref = cat.reference -%}
 {%- assign nums = cat.numbers -%}
 <link rel="stylesheet" href="{{ '/assets/browse.css' | relative_url }}">
+<link rel="stylesheet" href="{{ '/assets/finder.css' | relative_url }}">
+<link rel="stylesheet" href="{{ '/assets/download.css' | relative_url }}">
 {%- comment -%}
   Browse datasets (Betty, 2026-11-14). A finder: search and filters in a navy band (no title — the
   page's h1 is kept for screen readers), "Years covered" folded, then two views of the same rows with
@@ -58,6 +60,7 @@ layout: default
 </header>
 
 <main class="calm-page ds-cat ds-browse">
+{% include catalog_crumb.html on="datasets" %}
 
 <details class="bd-when">
   <summary><i class="cc-i cc-i-ui-years" aria-hidden="true"></i><b>Years covered</b><span>which datasets were collected each year</span><i class="calm-chev cc-i cc-i-ui-down" aria-hidden="true"></i></summary>
@@ -136,6 +139,7 @@ layout: default
 </main>
 
 <script src="{{ '/assets/reach.js' | relative_url }}" defer></script>
+<script src="{{ '/assets/download.js' | relative_url }}" defer></script>
 <script src="{{ '/assets/browse.js' | relative_url }}" defer
         data-maps="{{ '/datasets/browse.json' | relative_url }}"></script>
 <script type="application/ld+json">{{ cat.jsonld }}</script>

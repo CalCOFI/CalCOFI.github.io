@@ -142,6 +142,27 @@ module CalCOFI
       out
     end
 
+    # the same, shaped for the one download form (assets/download.js): CalCOFI's ERDDAP table, the
+    # release Parquet (with its bytes, so the browser knows whether it can build the CSV) and NetCDF,
+    # and the provider's original files. Species and Measurements read it through _plugins/finder.rb.
+    def download_files(d)
+      k = d["dataset_key"]
+      out = { "name" => d["dataset_name_short"] || d["dataset_name"] || k }
+      browse_downloads(d).each do |x|
+        case x["fmt"]
+        when "CSV" then out["erddap"] = x["url"]
+        when "Parquet" then out["pq"] = [x["url"], x["size"]]
+        when "NetCDF" then out["nc"] = [x["url"], x["size"]]
+        end
+      end
+      dist = d["distributions"] || []
+      pqd = dist.find { |x| x["format"] == "parquet" && x["url"].to_s.include?("dataset_key=#{k}") }
+      out["pq_bytes"] = (pqd["bytes"] || pqd["size"]).to_i if pqd
+      src = dist.find { |x| x["kind"] == "source" && Fmt.present(x["url"]) }
+      out["src"] = src["url"] if src
+      out
+    end
+
     def browse_row(d, lab, rank, span)
       cov = d["coverage"] || {}
       label, has, total = browse_has(cov, lab, rank)
@@ -182,7 +203,7 @@ module CalCOFI
         "url"      => page_url(d),
         "explore"  => ways(d).find { |w| w["icon"] == "way-explorer" }&.dig("url"),
         "dl"       => dl && dl["url"], "dl_label" => dl && dl["label"],
-        "downloads" => browse_downloads(d)
+        "file"     => download_files(d)
       }
     end
   end

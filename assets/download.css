@@ -1,0 +1,28 @@
+/* The download form (assets/download.js), shared by Browse datasets, Species and Measurements. */
+.ccd { position: fixed; inset: 0; z-index: 1000; background: rgba(10, 20, 36, .45); display: grid; place-items: center; padding: 20px; }
+.ccd[hidden] { display: none; }
+.ccd-box { width: min(500px, 100%); max-height: calc(100vh - 40px); overflow: auto; box-sizing: border-box; background: var(--bg); color: var(--fg);
+  border-radius: 16px; box-shadow: 0 20px 60px rgba(0, 0, 0, .3); padding: 20px 22px 18px; }
+.ccd-box header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.ccd-box h2 { margin: 0; font-size: 21px; line-height: 1.25; }
+.ccd-x { all: unset; cursor: pointer; font-size: 16px; color: var(--muted); padding: 4px 6px; border-radius: 6px; }
+.ccd-x:hover, .ccd-x:focus-visible { color: var(--fg); background: var(--panel); }
+.ccd-row { display: grid; grid-template-columns: 70px minmax(0, 1fr); gap: 12px; align-items: start; margin-top: 14px; }
+.ccd-l { font-size: 13px; font-weight: 700; color: var(--muted); padding-top: 3px; }
+.ccd-c { display: flex; flex-direction: column; gap: 6px; font-size: 14.5px; }
+.ccd-c label { display: flex; gap: 8px; align-items: center; cursor: pointer; }
+.ccd-c input { accent-color: var(--accent); margin: 0; }
+.ccd-c select { max-width: 100%; font: 14px var(--sans); padding: 7px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--fg); }
+.ccd-sum { margin-top: 16px; padding: 12px 14px; border-radius: 10px; background: var(--panel); border: 1px solid var(--border); }
+.ccd-sum > span { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.ccd-sum p { margin: 4px 0 2px; font-size: 14.5px; line-height: 1.45; }
+.ccd-sum small { display: block; color: var(--muted); font-size: 12.5px; line-height: 1.45; }
+.ccd-act { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 14px; }
+.ccd-go { height: 38px; padding: 0 16px; display: inline-flex; align-items: center; border-radius: 8px; background: var(--cta-bg); color: var(--cta-fg);
+  font-weight: 700; font-size: 14px; text-decoration: none; }
+.ccd-go:hover { filter: brightness(1.08); }
+.ccd-cancel { all: unset; cursor: pointer; color: var(--muted); font-weight: 600; font-size: 14px; }
+.ccd-cancel:hover, .ccd-cancel:focus-visible { color: var(--fg); }
+.ccd-src { margin-left: auto; color: var(--accent); font-size: 13px; font-weight: 600; }
+.ccd-msg { margin: 10px 0 0; font-size: 13.5px; color: var(--muted); }
+.ccd-msg a { color: var(--accent); }

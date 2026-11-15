@@ -87,18 +87,11 @@
   }
   var BSPAN = (function () { var a = ROWS.map(function (r) { return r.y0; }).filter(Boolean); return [Math.min.apply(null, a.concat([1949])), new Date().getFullYear()]; })();
 
-  // Download: the first format is the button (CSV where the dataset is on ERDDAP); ▾ lists the others
+  // Download: one button; the form (assets/download.js) says what you get and lets you choose the file
   function dlMenu(r) {
-    var d = r.downloads || [];
-    if (!d.length) return "";
-    var first = d[0], item = function (x) {
-      return '<a role="menuitem" href="' + esc(x.url) + '"' + (x.direct ? " download" : ' target="_blank" rel="noopener"') + '><b>' + esc(x.fmt) + "</b>" +
-        (x.size ? '<span class="bd-dl-sz">' + esc(x.size) + "</span>" : "") + "<small>" + esc(x.note) + "</small></a>";
-    };
-    return '<span class="bd-dl"><a class="bd-b2" href="' + esc(first.url) + '"' + (first.direct ? " download" : ' target="_blank" rel="noopener"') +
-      ' title="Download ' + esc(first.fmt) + ': ' + esc(first.note) + '"><i class="cc-i cc-i-ui-download" aria-hidden="true"></i>Download</a>' +
-      (d.length > 1 ? '<button type="button" class="bd-b2 bd-dl-more" aria-haspopup="menu" aria-expanded="false" aria-label="Other formats"><i class="cc-i cc-i-ui-down" aria-hidden="true"></i></button>' +
-        '<span class="bd-dl-menu" role="menu" hidden>' + d.map(item).join("") + "</span>" : "") + "</span>";
+    var x = r.file || {};
+    if (!x.erddap && !x.pq && !x.nc) return "";
+    return '<button type="button" class="bd-b2" data-dl="' + esc(r.key) + '"><i class="cc-i cc-i-ui-download" aria-hidden="true"></i>Download</button>';
   }
 
   function select(key) {
@@ -110,9 +103,13 @@
   }
 
   document.addEventListener("click", function (e) {
-    var more = e.target.closest && e.target.closest(".bd-dl-more"), open = document.querySelector(".bd-dl-menu:not([hidden])");
-    if (more) { var m = more.nextElementSibling, on = m.hidden; m.hidden = !on; more.setAttribute("aria-expanded", on ? "true" : "false"); return; }
-    if (open && !(e.target.closest && e.target.closest(".bd-dl-menu"))) { open.hidden = true; var b = open.previousElementSibling; if (b) b.setAttribute("aria-expanded", "false"); }
+    var dl = e.target.closest && e.target.closest("[data-dl]");
+    if (dl && window.CCDownload) {
+      var r = BY[dl.getAttribute("data-dl")], files = {};
+      files[r.key] = r.file;
+      CCDownload.open({ name: r.name, kind: "dataset", files: files, ds: [[r.key, r.y0, r.y1, r.n_obs]], dsKey: r.key });
+      return;
+    }
     var a = e.target.closest && e.target.closest(".bd-r[data-k]");
     if (!a || e.metaKey || e.ctrlKey || e.shiftKey || e.button) return;
     e.preventDefault(); select(a.dataset.k);
@@ -122,7 +119,6 @@
   });
   var clr = document.getElementById("bd-clear");
   if (clr) clr.addEventListener("click", function () { q.value = ""; if (type) type.value = ""; apply(); });
-  document.addEventListener("keydown", function (e) { if (e.key === "Escape") { var m = document.querySelector(".bd-dl-menu:not([hidden])"); if (m) { m.hidden = true; m.previousElementSibling.focus(); } } });
   if (q) q.addEventListener("input", apply);
   if (type) type.addEventListener("change", apply);
   if (sort) sort.addEventListener("change", function () { reorder(); select(firstVisible()); });
