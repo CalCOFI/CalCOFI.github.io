@@ -600,7 +600,7 @@ PROBE = r"""
   }
 
   // ── the front door's navigation (plan 2026-09-10 § D7, WS-M0) ──────────────
-  // The header's six words plus calcofi.org, the submenus, the sticky section bar, the tabsets and
+  // The header's seven words plus calcofi.org, the submenus, the sticky section bar, the tabsets and
   // the one search over the three indexes. Everything here is measured on the real page: the
   // submenu is opened by FOCUSING its trigger (that is the whole mechanism — :focus-within), and
   // the search is driven by typing into the box and reading what came back.
@@ -1296,9 +1296,10 @@ MAX_MM_INDEX_H = 1625
 MAX_MM_PAGE_H = 1850
 
 # ── the front door's navigation (plan 2026-09-10 § D7, WS-M0) ─────────────────
-# The six words plus calcofi.org ↗ — seven items, as before D7. DOCS and NEWS are pages, so the
-# section bar draws four; the header draws all six and the outbound link.
-NAV_WORDS = ["Data", "Apps", "Access", "Build", "Docs", "News", "calcofi.org ↗"]
+# The seven words plus calcofi.org ↗ — eight items (FAQ joined after DOCS on 2026-11-16, the owner's
+# request). DOCS, FAQ and NEWS are pages, so the section bar draws four; the header draws all seven
+# and the outbound link.
+NAV_WORDS = ["Data", "Apps", "Access", "Build", "Docs", "FAQ", "News", "calcofi.org ↗"]
 # the sections whose tabs are CARDS, so a pill must equal the number of cards in its panel. DATA's
 # three pills count datasets, species and measurements — the release's numbers, checked against the
 # page's own inline record instead (the band assertions above already do it).
@@ -2243,7 +2244,7 @@ def check(path, r, width, theme, fails, notes):
                 elif not ok:
                     fails.append(f"{where}: pin {href} does not answer 200/206")
 
-    # ── the header: six words, calcofi.org, and the submenus (plan 2026-09-10 § D7) ────────────
+    # ── the header: seven words, calcofi.org, and the submenus (plan 2026-09-10 § D7) ────────────
     nav = r.get("nav")
     if nav and nav["visible"]:
         notes.append(f"{where}: header {' · '.join(nav['words'])}; "

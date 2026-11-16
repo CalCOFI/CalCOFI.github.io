@@ -41,12 +41,12 @@
 #               behind each dataset page's Access > Explore rows, so this is the ONE place a
 #               product-to-dataset link is written.
 
-# sections: the six words of the header — DATA · APPS · ACCESS · BUILD · DOCS · NEWS (plan
-# 2026-09-10 § D7, Ben's scheme) — plus calcofi.org ↗, seven items in all. One list drives the
+# sections: the seven words of the header — DATA · APPS · ACCESS · BUILD · DOCS · FAQ · NEWS (plan
+# 2026-09-10 § D7, Ben's scheme; FAQ added 2026-11-16) — plus calcofi.org ↗, eight items in all. One list drives the
 # header, the sticky section bar and the page, so they can never drift.
 #
 # kind:   section (default) — drawn on the landing page under its own `id` anchor
-#         page             — a link only (`url:`); no section is drawn (docs, news)
+#         page             — a link only (`url:`); no section is drawn (docs, faq, news)
 # tabs:   [{id, title, blurb, count}] — a crowded section is tabbed, each tab with a count PILL.
 #         `count` names where the pill's number is read from when it is not "how many products
 #         carry this tab": `datasets` · `species` · `measurements` resolve through
@@ -146,7 +146,9 @@ sections:
     blurb: >-
       The pipeline behind every release and the database tooling — the ingest workflows, calcofi4db
       and the schema browser.
-  # docs and news are PAGES, not sections: the header links them and no section is drawn (D7).
+  # docs, faq and news are PAGES, not sections: the header links them and no section is drawn (D7).
+  # FAQ (2026-11-16, the owner: "we should prob also include a FAQ link in the calcofi.io nav bar")
+  # is the docs book's own chapter, so it sits right after Docs; it has no product and no card.
   # The docs product keeps its key, its uptime and analytics slugs and its `added:` — only its card
   # leaves the Build grid.
   - id: docs
@@ -154,6 +156,11 @@ sections:
     emoji: "📖"
     title: Docs
     url: https://calcofi.io/docs/
+  - id: faq
+    kind: page
+    emoji: "❓"
+    title: FAQ
+    url: https://calcofi.io/docs/faq.html
   - id: news
     kind: page
     emoji: "🗞"

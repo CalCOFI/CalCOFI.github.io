@@ -87,9 +87,9 @@
 
     <nav class="cc-links cc-submenus" id="cc-nav" aria-label="Sections">
       {%- comment -%}
-        Six words and calcofi.org ↗ — DATA · APPS · ACCESS · BUILD · DOCS · NEWS (plan 2026-09-10
+        Seven words and calcofi.org ↗ — DATA · APPS · ACCESS · BUILD · DOCS · FAQ · NEWS (plan 2026-09-10
         § D7, Ben's scheme). The section list drives the header, so it can never drift from the
-        page: a `kind: page` section (docs, news) is a link to its `url:`, everything else is the
+        page: a `kind: page` section (docs, faq, news) is a link to its `url:`, everything else is the
         landing page's anchor, absolute so it works from a dataset page too (the whole catalog is
         on the landing page; /datasets/ is reached from its "All datasets" link, 2026-09-06).
 
@@ -97,7 +97,7 @@
         link itself is the trigger, `:hover` / `:focus-within` opens it, Escape closes it (one line
         in assets/tabs.js), and it is display:none under 760 px where the brand hides the nav
         anyway, so a phone tap on the word goes to the section. The whole behaviour hangs off ONE
-        class on this nav — `cc-submenus`: remove it and the header is flat six words again
+        class on this nav — `cc-submenus`: remove it and the header is flat seven words again
         (open question 8), with no other change anywhere.
       {%- endcomment -%}
       {%- for s in site.data.products.sections -%}

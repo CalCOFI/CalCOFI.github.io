@@ -92,7 +92,7 @@ browser's own scroll to the fragment on load lands on the element, below the sti
 `#students` map to where they live now. The header's words are the same links (D3 A), so DATA · APPS ·
 ACCESS · BUILD open their doors in place (Find, Explore, Code, Code at its Build group), and the open
 door's word is marked `aria-current` (both ACCESS and BUILD while Code is open). Each submenu item links
-`/#<tab id>`, so General lands in Explore and Student in Explore's second group. DOCS and NEWS stay
+`/#<tab id>`, so General lands in Explore and Student in Explore's second group. DOCS, FAQ and NEWS stay
 pages. The logic is one inline script at the foot of `index.html`. It runs before the deferred scripts,
 so a door named in the URL is open before the first paint. Each open fires `cc:door` on the document.
 With JavaScript off, every panel shows (a `<noscript>` rule), in door order.
@@ -146,13 +146,15 @@ at 1470 and 375 px, in both themes. These assertions hold:
 The front door's footer puts the partner strip and the three columns on one row, scoped by
 `#layout:has(.fd-screen)`. The layout's footer is unchanged on every other page.
 
-### Six words, tabs, and one search over the three indexes
+### Seven words, tabs, and one search over the three indexes
 
-Since 2026-09-10 (plan `2026-09-10 Measurements catalog …` § D7, Ben's scheme) the navigation is six
-words and an outbound link — **DATA · APPS · ACCESS · BUILD · DOCS · NEWS · calcofi.org ↗**, seven
-items, all of them generated from the one `sections:` list in `_data/products.yml`. A section is a
+Since 2026-09-10 (plan `2026-09-10 Measurements catalog …` § D7, Ben's scheme) the navigation is words
+and an outbound link — since 2026-11-16 **DATA · APPS · ACCESS · BUILD · DOCS · FAQ · NEWS ·
+calcofi.org ↗**, eight items (FAQ, the docs book's FAQ chapter, joined right after DOCS at the owner's
+request), all of them generated from the one `sections:` list in `_data/products.yml`. A section is a
 `kind: section` (drawn on this page under its own anchor) or a `kind: page` (a header link to its
-`url:` and nothing else — that is what DOCS and NEWS are). The section ids `datasets`, `explore`,
+`url:` and nothing else — that is what DOCS, FAQ and NEWS are; FAQ has no product, so no card, tab
+or door draws it). The section ids `datasets`, `explore`,
 `access` and `build` did not change, so every anchor anyone has bookmarked still lands; only their
 titles did. `students` is gone as a section: the nine student projects are a tab of APPS. The
 `docs` product keeps its key, its uptime and analytics slugs and its `added:` — the ship's log and
@@ -163,7 +165,7 @@ It is CSS, not a library: the section link is the trigger, `:hover` / `:focus-wi
 `assets/tabs.js` blurs the focused link on Escape, which is the whole close. The brand hides
 `.cc-links` under 760 px, so on a phone a tap on the word goes to the section. The whole behaviour
 hangs off **one class** — `cc-submenus` on the `<nav class="cc-links">` in `_layouts/default.html`:
-remove it and the header is flat six words again, with no other edit anywhere (the plan's open
+remove it and the header is flat seven words again, with no other edit anywhere (the plan's open
 question 8).
 
 **The tabs.** Every crowded section is tabbed, each tab with a count pill: DATA is *Datasets ·
@@ -232,7 +234,7 @@ the first screen's number, the realm door and the tab all fall back to the Explo
 somewhere true.
 
 **Also checked** by `check_layout.py`, in both themes at 1470 and 375: the header reads exactly those
-seven words; each submenu is closed until focused, opens on focus, closes on Escape, and every item
+seven words and calcofi.org ↗; each submenu is closed until focused, opens on focus, closes on Escape, and every item
 carries a count; every tabset has
 exactly one selected tab and one drawn panel, and a card tabset's pill equals the cards in its panel;
 the first screen's species and measurements numbers are links; the search returns a Species group for "sardine", a Measurements group for "nitrate" and a
