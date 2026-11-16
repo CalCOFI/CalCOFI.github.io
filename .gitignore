@@ -39,3 +39,6 @@ _data/dataset_measurements.json
 _site_preview*/
 _config.preview.yml
 .explore-dev.log
+
+# Local Netlify folder
+.netlify
