@@ -335,6 +335,12 @@ module CalCOFI
               "temporal" => Fmt.present(cov["temporal"]),
               "ymin"     => cov["year_min"], "ymax" => cov["year_max"],
               "years"    => (cov["years"] || []).map { |y| [y["year"], y["n_roots"], y["n_obs"]] } }
+          end.sort_by do |r|
+            # Find's dataset list is drawn by Liquid in THIS order inside each realm (the strip's own
+            # order since 2026-09-08): earliest start first, an asserted span by the first year of its
+            # `temporal`, ties by name; a row with no year at all goes last
+            y0 = r["ymin"] || r["temporal"].to_s[/\d{4}/]&.to_i
+            [y0 || 9999, r["name"].to_s.downcase]
           end,
           # the categories in category.order with the release's counts — the drawing's pins read
           # their name, realm and counts from here (the calcofi.org method URLs are constants in

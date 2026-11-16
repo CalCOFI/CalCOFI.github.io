@@ -103,8 +103,11 @@ can only pass by the layout actually being fixed:
              panel carries exactly one yellow button, except #program, which carries none (Get the
              data is its destination); the quiet drawing has no pins and the See-what-CalCOFI-
              collects panel's has them, each answering 200/206 to a ranged GET (checked once, not per theme);
-             the five numbers equal the inline #reach record's; the years strip has
-             datasets.length rows and the map stations.length marks; every product key in
+             the five numbers equal the inline #reach record's; Find's list of datasets has
+             datasets.length rows, each name an <a> to /datasets/{key}/ with its years drawn, at
+             >= 16 px in --accent and underlined, and at >= 1280 the search and the first eight
+             names fit an 800 px window with Find open, beside a map card no taller than the head;
+             Find links the Data Finder nowhere; the map has stations.length marks; every product key in
              _data/products.yml is drawn as a card behind some door; no horizontal scroll.
 
 Lighthouse is NOT run here (it needs its own Chrome and ~30 s a page); README says how, and
@@ -467,7 +470,13 @@ PROBE = r"""
       quietDrawn: !!d.querySelector("#sec-quiet svg.sec"),
       pins: full ? [...full.querySelectorAll("a.pin")].map(a => a.getAttribute("href")) : [],
       band, reachNumbers: reach && reach.numbers,
-      stripRows: d.querySelectorAll("svg.strip a.rowlink").length, datasets: reach && reach.datasets.length,
+      // Find's list of datasets (Ben, 2026-11-16): one HTML row per dataset, the name an <a> to its page
+      stripRows: d.querySelectorAll(".fd-yrow a.fd-yname[href]").length, datasets: reach && reach.datasets.length,
+      stripDrawn: d.querySelectorAll(".fd-yrow .fd-ycells svg.fd-ysvg").length,
+      stripLinks: [...d.querySelectorAll(".fd-yrow")].map(r => ({ key: r.dataset.key,
+        href: (r.querySelector("a.fd-yname") || { getAttribute: () => null }).getAttribute("href") })),
+      finderLinks: [...d.querySelectorAll("#find a[href]")].map(a => a.getAttribute("href")).filter(h => /app\.calcofi\.io\/station/.test(h)),
+      accent: tok("--accent"),
       mapMarks: d.querySelectorAll("svg.map .st").length - d.querySelectorAll("svg.map .keyg .st").length, stations: reach && reach.stations.length,
       cardKeys: [...new Set([...d.querySelectorAll(".prod-card[data-key]")].map(c => c.dataset.key))],
       warnEls, ctaEls
@@ -479,6 +488,23 @@ PROBE = r"""
       was.forEach(k => door(k) && door(k).click());              // start from every door closed
       door("find").click();
       const a = openNow();
+      // Find, open: the list's names read as links (body-text size, the link colour, underlined), and
+      // with the panel scrolled to its top the search and the first eight names sit inside an 800 px
+      // window under the sticky header — finding a dataset is the obvious thing (Ben, 2026-11-16)
+      const fp = d.getElementById("find"), names = [...d.querySelectorAll("#find .fd-yname")];
+      if (fp && names.length) {
+        const ft = fp.getBoundingClientRect().top, q = d.getElementById("door-q");
+        const n8 = names[Math.min(7, names.length - 1)], s0 = cs(names[0]);
+        out.front.findList = {
+          qBottom: q ? px(q.getBoundingClientRect().bottom - ft) : null,
+          n8Bottom: px(n8.getBoundingClientRect().bottom - ft),
+          headerH: parseFloat(cs(d.documentElement).getPropertyValue("--header-h")) || null,
+          fontPx: parseFloat(s0.fontSize), color: s0.color.replace(/\s/g, ""),
+          underline: s0.textDecorationLine, minH: px(Math.min(...names.map(x => x.getBoundingClientRect().height))),
+          mapH: px((d.querySelector("#find .fd-map") || { getBoundingClientRect: () => ({ height: 0 }) }).getBoundingClientRect().height),
+          headH: px((d.querySelector("#find .fd-phead") || { getBoundingClientRect: () => ({ height: 0 }) }).getBoundingClientRect().height)
+        };
+      }
       door("explore").click();
       const b = openNow(), findExp = door("find").getAttribute("aria-expanded"), expExp = door("explore").getAttribute("aria-expanded");
       door("explore").click();
@@ -603,8 +629,14 @@ PROBE = r"""
   }
 
   // the DATA section's height, so the front door cannot quietly grow (plan § Risks)
+  // Since 2026-11-16 #datasets also holds Find's list of datasets (it was the years strip above the
+  // block): that list is the panel's, one row per dataset, and is measured apart from the catalog
   const dataSec = d.getElementById("datasets");
-  if (dataSec) out.dataSectionH = px(dataSec.getBoundingClientRect().height);
+  if (dataSec) {
+    const yl = dataSec.querySelector(".fd-years"), ylR = yl ? yl.getBoundingClientRect().height : 0;
+    const ylH = ylR ? ylR + parseFloat(cs(yl).marginBottom || 0) : 0;   // nothing to subtract while Find is shut
+    out.dataSectionH = px(Math.max(0, dataSec.getBoundingClientRect().height - ylH));
+  }
 
   // ── D1–D5, D9 (round 2, WS-R4): the homed row, the one search box ──────────
   if (dataSec) {
@@ -1171,6 +1203,13 @@ FRONT_ANCHORS = {
     "kinds": "learn",
     "data": "find", "apps": "explore", "docs": "learn", "monitoring": "monitor", "students": "explore",
 }
+# Find (Ben, 2026-11-16: "the find is still not obvious enough"): at 1280 x 800 with the panel open at
+# its top, the one search and the first eight dataset names are on screen; each name is a link at
+# body-text size (>= 16 px) in --accent, underlined, at least 28 px tall (MIN_TAP on a phone)
+FIND_FOLD_H = 800
+HEADER_H = 72         # the sticky header, when the page does not say (--header-h)
+FIND_NAME_MIN_PX = 16
+FIND_ROW_MIN_PX = 28
 FRONT_MAX_H = 950     # px at 1470 with no door open (the mockup's ~750 + 25 %, with the site's footer)
 MIN_TAP = 32
 # issue #30 (calm re-cut): full-page heights at 1470 px with nothing open, header and footer included.
@@ -2015,7 +2054,38 @@ def check(path, r, width, theme, fails, notes):
             fails.append(f"{where}: measurements {mm} M + organism observations {om} M "
                          f"exceed the release's {rm} M rows")
         if fr["datasets"] is not None and fr["stripRows"] != fr["datasets"]:
-            fails.append(f"{where}: the years strip has {fr['stripRows']} rows for {fr['datasets']} datasets")
+            fails.append(f"{where}: Find's list has {fr['stripRows']} linked rows for {fr['datasets']} datasets")
+        if fr["datasets"] is not None and fr["stripDrawn"] != fr["datasets"]:
+            fails.append(f"{where}: Find's list draws the years of {fr['stripDrawn']} rows for {fr['datasets']} datasets")
+        for row in fr.get("stripLinks") or []:
+            want_h = f"/datasets/{row['key']}/"
+            if row["href"] != want_h:
+                fails.append(f"{where}: Find's list links {row['key']!r} to {row['href']!r}, expected {want_h}")
+        # the Explorer replaces the Data Finder (Ben, 2026-11-16): Find calls to it nowhere
+        if fr.get("finderLinks"):
+            fails.append(f"{where}: Find still links the Data Finder: {fr['finderLinks']}")
+        fl = fr.get("findList")
+        if fl:
+            notes.append(f"{where}: Find's names {fl['fontPx']}px {fl['color']} {fl['underline']}, rows >= {fl['minH']}px; "
+                         f"search ends {fl['qBottom']}px and name 8 {fl['n8Bottom']}px below the panel's top; "
+                         f"map card {fl['mapH']}px beside a {fl['headH']}px head")
+            if fl["fontPx"] < FIND_NAME_MIN_PX:
+                fails.append(f"{where}: Find's dataset names are {fl['fontPx']}px, under {FIND_NAME_MIN_PX}px")
+            if fl["color"] != fr.get("accent"):
+                fails.append(f"{where}: Find's dataset names are {fl['color']}, not the link colour --accent {fr.get('accent')}")
+            if "underline" not in (fl["underline"] or ""):
+                fails.append(f"{where}: Find's dataset names are not underlined ({fl['underline']!r})")
+            tap = MIN_TAP if width < 900 else FIND_ROW_MIN_PX
+            if fl["minH"] < tap:
+                fails.append(f"{where}: a Find dataset name is {fl['minH']}px tall, under {tap}px")
+            if width >= FOLD_W:
+                room = FIND_FOLD_H - (fl.get("headerH") or HEADER_H)
+                if fl["qBottom"] is None or fl["qBottom"] > room or fl["n8Bottom"] > room:
+                    fails.append(f"{where}: with Find open the search ends {fl['qBottom']}px and the 8th name "
+                                 f"{fl['n8Bottom']}px below the panel's top, beyond the {room}px under the header "
+                                 f"of a {FOLD_W} x {FIND_FOLD_H} window")
+                if fl["mapH"] > fl["headH"] + 40:
+                    fails.append(f"{where}: Find's map card is {fl['mapH']}px beside a {fl['headH']}px head: it sets the block's height again")
         if fr["stations"] is not None and fr["mapMarks"] != fr["stations"]:
             fails.append(f"{where}: the map has {fr['mapMarks']} marks for {fr['stations']} grid cells")
         # nothing removed: every product in products.yml is drawn behind some door

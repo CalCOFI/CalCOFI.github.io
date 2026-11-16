@@ -56,10 +56,14 @@ door                                    opens        what is behind it
   "Pick species or measurements, a                   General apps (#general), then Other data visualizations (#viz:
    time and a place. See them                        the Dataset · Student tabs). "Want one dataset as its provider
    together and download the table."                 published it? Find the dataset →" opens door 3 in place
-3 Find and download a dataset           #find        the grid map beside the years strip (D4 B), the one search, the
-  "Know which dataset you want? Each                 three catalog tabs (#datasets), the release line. "Want several
-   has its own page with its source                  kinds of data together, or just one area and period? Use the
-   files and citation."                              Explorer →" goes straight to the Explorer
+3 Find and download a dataset           #find        the head beside a short grid map (context; "Explore by station →"
+  "Know which dataset you want? Each                 opens the Explorer's station view), then, as one step, the one
+   has its own page with its source                  search over the list of datasets (each name an underlined link
+   files and citation."                              to its page, its years drawn beside it), the three catalog tabs
+                                                     (#datasets holds all three), the release line. "Want several
+                                                     kinds of data together, or just one area and period? Use the
+                                                     Explorer →" goes straight to the Explorer. No Data Finder
+                                                     button: the Explorer replaces it (2026-11-16)
 4 Work with the data in code            #program     Get the data (five snippets), Services · Packages (#access), then
   "R, Python, SQL and ERDDAP."                       Build on the pipeline (#build: calcofi4db, db-schema, workflows,
                                                      GitHub as a quiet primary button) — no yellow
@@ -106,8 +110,10 @@ assets/section.js        Line 90 as an oceanographic section. buildSection(host,
                          ids carry a per-drawing suffix, so the two drawings never share a <defs>.
 _data/line90_floor.json  the sea floor (GEBCO 2025 every 500 m), committed cartography; without it the
                          floor is drawn and the captions say so.
-assets/reach.js          the static grid map and the years strip (unchanged), drawn into #map-host and
-                         #strip-host inside Find.
+assets/reach.js          the static grid map (framed on the survey's core, its key in the caption) into
+                         #map-host, and each dataset row's years into Find's list (#strip-host). The rows
+                         and their linked names are HTML from site.data.reach.datasets, so they read
+                         without JS; the drawing only adds the cells, the decade rules and the bars.
 #reach                   ONE inline JSON the drawings read (_plugins/datasets.rb, site.data.reach).
 the five numbers         site.data.catalog.numbers. A value the build cannot read is not rendered.
 ```
@@ -130,7 +136,10 @@ at 1470 and 375 px, in both themes. These assertions hold:
 - The first screen has no `--warn` and no yellow, and each panel has exactly one yellow button (Code none).
 - The quiet drawing has no pins. The See-what-CalCOFI-collects drawing has them, and each answers a ranged GET.
 - The five numbers equal the record's.
-- The strip has one row per dataset, and the map has one mark per cell.
+- Find's list has one row per dataset, each name an `<a>` to `/datasets/{key}/` with its years drawn,
+  at body-text size (≥ 16 px) in `--accent`, underlined, ≥ 28 px tall (32 on a phone). At ≥ 1280 px,
+  with Find open at its top, the search and the first eight names fit an 800 px window, and the map card
+  is no taller than the head beside it. Find links the Data Finder nowhere. The map has one mark per cell.
 - Every product is drawn.
 - There is no horizontal scroll.
 
