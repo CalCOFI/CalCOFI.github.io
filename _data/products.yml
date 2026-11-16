@@ -145,7 +145,7 @@ sections:
     title: Build
     blurb: >-
       The pipeline behind every release and the database tooling — the ingest workflows, calcofi4db
-      and the schema browser. The documentation is its own door now, in the header, for everyone.
+      and the schema browser.
   # docs and news are PAGES, not sections: the header links them and no section is drawn (D7).
   # The docs product keeps its key, its uptime and analytics slugs and its `added:` — only its card
   # leaves the Build grid.

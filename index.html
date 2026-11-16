@@ -4,18 +4,31 @@ layout: default
 {%- assign data = site.data.products -%}
 
 {%- comment -%}
-  The front door (issue #30, "calcofi.io, calmer": D2 A · D3 A · D4 B · D5 A · D6 A). ONE screen at
-  1280 × 645: what CalCOFI is on the left — the eyebrow, "From ship to screen", one lede, five numbers
-  and the Line 90 section drawn QUIET (the ship, its gear, the sea floor; no pins, no labels) — and
-  on the right "What do you want to do?" with Dan's seven pathways, in his words, as seven doors.
+  The front door (issue #30, "calcofi.io, calmer": D2 A · D3 A · D4 B · D5 A · D6 A; re-cut to seven
+  TASKS after the users' and Erin's feedback, 2026-11-16). ONE screen at 1280 × 645: what CalCOFI is
+  on the left — the eyebrow, "From ship to screen", one lede, five numbers and the Line 90 section
+  drawn QUIET (the ship, its gear, the sea floor; no pins, no labels) — and on the right "What do you
+  want to do?" with seven doors, each a thing a person came to do, in plain words:
+
+    1 See what CalCOFI collects       #learn    the annotated drawing, the kinds of data, the docs
+    2 Explore and download on a map   #explore  the Explorer, its apps, and the other visualizations (#viz)
+    3 Find and download a dataset     #find     the catalog, the one search, the three indexes
+    4 Work with the data in code      #program  R, Python, SQL, ERDDAP, and the pipeline (#build)
+    5 Cite the data                   a link    calcofi.io/docs/cite.html
+    6 Contribute data                 a link    calcofi.io/docs/provide.html
+    7 Inform ocean and fisheries management     #monitor  the statewide inventory
+
+  The split Erin asked to be visible (2026-11-16): one dataset in its original, authoritative form is
+  that dataset's page (door 3); several kinds of observation together, or a subset by time and
+  place, is the Explorer (door 2). Each of the two panels says when to use the other.
 
   Everything the page carried before is still here, each part behind the door it answers: a door
   opens ONE full-width panel beneath the first screen, and opening another closes it (D2 A). The URL
   carries which (#find, or ?door=find), and the old anchors still land: #datasets opens Find,
-  #explore Visualize, #access Download programmatically, #build Build — so does the header, whose
-  words are the same links (D3 A). No yellow on the first screen (D6 A): each panel carries one
-  yellow button to its real destination, except Download programmatically, where Get the data is the
-  destination (Erin, 2026-10-19).
+  #explore Explore, #access and #build Work in code, #viz Explore at its other visualizations — so
+  does the header, whose words are the same links (D3 A). No yellow on the first screen (D6 A): each
+  panel carries one yellow button to its real destination, except Work in code, where Get the data
+  is the destination (Erin, 2026-10-19).
 
   Every number on the first screen is read at build (site.data.catalog.numbers, site.data.reach);
   none is typed.
@@ -38,6 +51,9 @@ layout: default
 {%- assign xs = data.sections | where: "id", "explore" | first -%}
 {%- assign acs = data.sections | where: "id", "access" | first -%}
 {%- assign bs = data.sections | where: "id", "build" | first -%}
+{%- assign explorer_url = 'https://calcofi.io/explore/' -%}
+{%- assign cite_url = 'https://calcofi.io/docs/cite.html' -%}
+{%- assign provide_url = 'https://calcofi.io/docs/provide.html' -%}
 {%- capture close_btn -%}<button type="button" class="fd-close" data-close><i class="cc-i cc-i-ui-close" aria-hidden="true"></i>Close</button>{%- endcapture -%}
 
 {%- comment -%}
@@ -54,7 +70,7 @@ layout: default
   <div class="fd-who">
     <div class="cc-eyebrow">CalCOFI · the California Current · since {{ nums.since }}</div>
     <h1 class="cc-h1">From ship to screen</h1>
-    <p class="fd-lede">Temperature to whales, surface to the deep, since {{ nums.since }}. Open and integrated.</p>
+    <p class="fd-lede">Temperature to whales, surface to the deep, since {{ nums.since }}. Free for anyone to use.</p>
     {%- comment -%}
       Five numbers (was the six-tile band, plan 2026-09-09 § D9): years · cruises · stations ·
       species · measurements. The two COUNTED things are links to their catalogs. Organism
@@ -74,52 +90,55 @@ layout: default
     <div class="fd-sec" id="sec-quiet" data-sprite="{{ sprite }}"></div>
     <figcaption class="fd-cap">
       <span>Line 90, west to the coast: the ship, its gear to depth, the sea floor {% if site.data.reach.floor %}from GEBCO{% else %}as drawn{% endif %}.</span>
-      <a class="cc-text-link" href="#learn" data-open="learn">What is sampled, and how deep →</a>
+      <a class="cc-text-link" href="#learn">What is sampled, and how deep →</a>
     </figcaption>
   </figure>
 
   <div class="fd-ask">
     <h2 class="cc-h2">What do you want to do?</h2>
-    {%- comment -%} Dan's seven pathways (issue #30), in his words; the last two drawn smaller (D5 A) {%- endcomment -%}
+    {%- comment -%}
+      Seven tasks (2026-11-16): four that open a panel, then three drawn smaller (D5 A). Cite and
+      Contribute are links straight to their chapter of the docs book — one click, no panel between —
+      so they carry a right chevron instead of the disclosure's down one, and no aria-expanded.
+    {%- endcomment -%}
     <ul class="fd-doors" id="doors">
-      <li><button type="button" class="fd-door" id="door-find" data-door="find" aria-expanded="false" aria-controls="find">
-        <i class="cc-i cc-i-door-find fd-door-i" aria-hidden="true"></i>
-        <span class="fd-door-t">Find and download data</span>
-        <span class="fd-door-b">Biological, physical and chemical observations by station, dataset, species or measurement.</span>
+      <li><button type="button" class="fd-door" id="door-learn" data-door="learn" aria-expanded="false" aria-controls="learn">
+        <i class="cc-i cc-i-el-samples fd-door-i" aria-hidden="true"></i>
+        <span class="fd-door-t">See what CalCOFI collects</span>
+        <span class="fd-door-b">What is measured, where and how deep{% if nums.since %}, since {{ nums.since }}{% endif %}.</span>
         <i class="cc-i cc-i-ui-down fd-door-chev" aria-hidden="true"></i>
       </button></li>
       <li><button type="button" class="fd-door" id="door-explore" data-door="explore" aria-expanded="false" aria-controls="explore">
         <i class="cc-i cc-i-door-explore fd-door-i" aria-hidden="true"></i>
-        <span class="fd-door-t">Visualize and explore</span>
-        <span class="fd-door-b">Species, ocean conditions, stations and decades, integrated in the CalCOFI Explorer.</span>
+        <span class="fd-door-t">Explore and download on a map</span>
+        <span class="fd-door-b">Pick species or measurements, a time and a place. See them together and download the table.</span>
+        <i class="cc-i cc-i-ui-down fd-door-chev" aria-hidden="true"></i>
+      </button></li>
+      <li><button type="button" class="fd-door" id="door-find" data-door="find" aria-expanded="false" aria-controls="find">
+        <i class="cc-i cc-i-door-find fd-door-i" aria-hidden="true"></i>
+        <span class="fd-door-t">Find and download a dataset</span>
+        <span class="fd-door-b">Know which dataset you want? Each has its own page with its source files and citation.</span>
         <i class="cc-i cc-i-ui-down fd-door-chev" aria-hidden="true"></i>
       </button></li>
       <li><button type="button" class="fd-door" id="door-program" data-door="program" aria-expanded="false" aria-controls="program">
         <i class="cc-i cc-i-door-program fd-door-i" aria-hidden="true"></i>
-        <span class="fd-door-t">Download programmatically</span>
-        <span class="fd-door-b">Files, tables and queries from R, Python, SQL and ERDDAP.</span>
+        <span class="fd-door-t">Work with the data in code</span>
+        <span class="fd-door-b">R, Python, SQL and ERDDAP.</span>
         <i class="cc-i cc-i-ui-down fd-door-chev" aria-hidden="true"></i>
       </button></li>
-      <li><button type="button" class="fd-door" id="door-build" data-door="build" aria-expanded="false" aria-controls="build">
-        <i class="cc-i cc-i-door-build fd-door-i" aria-hidden="true"></i>
-        <span class="fd-door-t">Build something</span>
-        <span class="fd-door-b">APIs, the database schema, packages, workflows and source code.</span>
-        <i class="cc-i cc-i-ui-down fd-door-chev" aria-hidden="true"></i>
-      </button></li>
-      <li><button type="button" class="fd-door" id="door-learn" data-door="learn" aria-expanded="false" aria-controls="learn">
-        <i class="cc-i cc-i-door-learn fd-door-i" aria-hidden="true"></i>
-        <span class="fd-door-t">Learn how CalCOFI sampling and data work</span>
-        <span class="fd-door-b">The grid, the methods, data definitions, documentation and citations.</span>
-        <i class="cc-i cc-i-ui-down fd-door-chev" aria-hidden="true"></i>
-      </button></li>
+      <li><a class="fd-door fd-door-sm" id="door-cite" data-link="cite" href="{{ cite_url }}">
+        <i class="cc-i cc-i-el-cite fd-door-i" aria-hidden="true"></i>
+        <span class="fd-door-t">Cite the data <span class="fd-door-q">· a release, one dataset, or what you downloaded</span></span>
+        <i class="cc-i cc-i-ui-right fd-door-chev" aria-hidden="true"></i>
+      </a></li>
+      <li><a class="fd-door fd-door-sm" id="door-contribute" data-link="contribute" href="{{ provide_url }}">
+        <i class="cc-i cc-i-el-contributes fd-door-i" aria-hidden="true"></i>
+        <span class="fd-door-t">Contribute data <span class="fd-door-q">· what a good dataset needs, and what happens next</span></span>
+        <i class="cc-i cc-i-ui-right fd-door-chev" aria-hidden="true"></i>
+      </a></li>
       <li><button type="button" class="fd-door fd-door-sm" id="door-monitor" data-door="monitor" aria-expanded="false" aria-controls="monitor">
         <i class="cc-i cc-i-door-monitor fd-door-i" aria-hidden="true"></i>
-        <span class="fd-door-t">Ocean monitoring throughout California <span class="fd-door-q">· the statewide inventory</span></span>
-        <i class="cc-i cc-i-ui-down fd-door-chev" aria-hidden="true"></i>
-      </button></li>
-      <li><button type="button" class="fd-door fd-door-sm" id="door-viz" data-door="viz" aria-expanded="false" aria-controls="viz">
-        <i class="cc-i cc-i-door-viz fd-door-i" aria-hidden="true"></i>
-        <span class="fd-door-t">Other data visualizations <span class="fd-door-q">· pollutants, CTD transects, student projects</span></span>
+        <span class="fd-door-t">Inform ocean and fisheries management <span class="fd-door-q">· the statewide monitoring inventory, more to come</span></span>
         <i class="cc-i cc-i-ui-down fd-door-chev" aria-hidden="true"></i>
       </button></li>
     </ul>
@@ -127,10 +146,177 @@ layout: default
 </section>
 
 {%- comment -%}
-  ── 1 · Find and download data (was the DATA section, the Where/When tiles, the release tile and
-  the Observed tile). The head; the reach (the grid map beside the years strip, D4 B); the one search
-  (_includes/one_search.html, D10 B); the three catalog tabs exactly as before; the release line.
-  The id the old anchor named — #datasets — is the catalog block inside it.
+  ── 1 · See what CalCOFI collects (was "Learn how CalCOFI sampling and data work": the hero's pins,
+  the DOCS word's card and the ship's log tile). The ANNOTATED section — one pin per category at the
+  depth it lives, each a link to its method page — then the kinds of data the release holds, read
+  from the record's categories: the three long series first (fish eggs and larvae, hydrography,
+  zooplankton — Erin's order, an editorial choice, by glyph), then the rest in the record's own
+  category.order. Every name, year span and link below is the record's; a category the record does
+  not carry is not drawn. Then the docs book's card beside the ship's log.
+{%- endcomment -%}
+{%- assign docs_p = data.products | where: "key", "docs" | first -%}
+{%- assign cats = site.data.catalog.categories -%}
+{%- assign core_icons = "cat-ichthyo,cat-physical,cat-zooplankton" | split: "," -%}
+<section class="fd-panel" id="learn" hidden aria-labelledby="learn-h">
+  <div class="cc-container">
+    {{ close_btn }}
+    <div class="fd-phead">
+      <div class="cc-eyebrow">What CalCOFI collects{% if cats %} · {{ cats | size }} kinds of data{% endif %} · {{ site.data.catalog.counts.datasets }} datasets{% if nums.since %} · since {{ nums.since }}{% endif %}</div>
+      <h2 class="cc-h2" id="learn-h">See what CalCOFI collects</h2>
+      <p class="blurb">The drawing is Line 90 as a section: the ship's gear to the depth it samples, and one pin
+        per kind of data at the depth it lives, each a link to how it is sampled. Below it, every kind of data in
+        the release and the datasets that hold it, each a link to its own page.</p>
+      <p class="fd-pact">
+        <a class="cc-btn cc-btn-cta" href="https://calcofi.org/sampling-info/">How CalCOFI samples, on calcofi.org</a>
+        <a class="cc-text-link" href="{{ '/datasets/' | relative_url }}">Every dataset</a>
+        <a class="cc-text-link" href="{{ meas_url }}">Every measurement</a>
+        <a class="cc-text-link" href="{{ species_url }}">Every species</a>
+        <a class="cc-text-link" href="{{ docs_p.live_url | default: 'https://calcofi.io/docs/' }}">Read the documentation</a>
+      </p>
+    </div>
+    <figure class="fd-secfull">
+      <div class="fd-sec" id="sec-full" data-sprite="{{ sprite }}"></div>
+      <figcaption class="fd-cap">The ship's gear to the depth the protocol takes it: the CTD to 515 m, the bongo to
+        210 m, the PairoVET to 70 m, CUFES at 3 m underway, the manta at the surface. A dashed pin is a category not
+        yet in the release.</figcaption>
+    </figure>
+    {%- if cats and cats.size > 0 -%}
+    <div class="fd-kinds" id="kinds">
+      <h3 class="fd-h3">The kinds of data <span class="pill">{{ cats | size }}</span></h3>
+      <p class="blurb tab-blurb">The three long series first, then the rest. Years are the years each dataset holds.</p>
+      <ul class="fd-kind-list">
+        {%- comment -%} the long series, in core_icons order, then every other category in the record's order {%- endcomment -%}
+        {%- assign ordered = "" | split: "" -%}
+        {%- for ic in core_icons -%}
+          {%- assign hit = cats | where: "icon", ic -%}
+          {%- assign ordered = ordered | concat: hit -%}
+        {%- endfor -%}
+        {%- for c in cats -%}
+          {%- unless core_icons contains c.icon -%}{%- assign ordered = ordered | push: c -%}{%- endunless -%}
+        {%- endfor -%}
+        {%- for c in ordered -%}
+        {%- assign core = false -%}{%- if core_icons contains c.icon -%}{%- assign core = true -%}{%- endif -%}
+        <li class="fd-kind{% if core %} fd-kind-core{% endif %}">
+          <i class="cc-i cc-i-{{ c.icon | escape }} fd-kind-i" aria-hidden="true"></i>
+          <div class="fd-kind-body">
+            <span class="fd-kind-t">{{ c.name | escape }}</span>
+            {%- if c.description %}<span class="fd-kind-d">{{ c.description | escape }}</span>{% endif -%}
+            <span class="fd-kind-ds">
+              {%- assign rows = c.datasets | sort: "year_min", "last" -%}
+              {%- for t in rows -%}
+              <a href="{{ t.url | relative_url }}">{{ t.name | escape }}</a>{% if t.years %} <span class="fd-kind-y">{{ t.years }}</span>{% endif %}{% unless forloop.last %} · {% endunless %}
+              {%- endfor -%}
+              {%- if c.holdings.size > 0 -%}
+              {%- if rows.size > 0 %} · {% endif -%}
+              <span class="fd-kind-held">held:
+                {%- for h in c.holdings %} <a href="{{ h.url | relative_url }}">{{ h.name | escape }}</a>{% unless forloop.last %},{% endunless %}{% endfor -%}
+              </span>
+              {%- endif -%}
+            </span>
+          </div>
+        </li>
+        {%- endfor -%}
+      </ul>
+    </div>
+    {%- endif -%}
+    <div class="fd-two">
+      <div class="card-grid card-grid-solo">
+        {%- if docs_p -%}{% include product_card.html p=docs_p section="Docs" %}{%- endif -%}
+      </div>
+      <div class="fd-log">
+        <div class="cc-eyebrow">What's new · updates and recent developments to CalCOFI data systems</div>
+        {% include log.html n=4 %}
+        <p class="fd-links">
+          <a class="cc-text-link" href="{{ '/news/' | relative_url }}">All entries →</a>
+          <a class="cc-text-link" href="{{ '/feed.xml' | relative_url }}">feed</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+{%- comment -%}
+  ── 2 · Explore and download on a map (was "Visualize and explore": APPS' Explorer and General tabs
+  and the Explore tile; and "Other data visualizations": the Dataset and Student tabs, now its second
+  group, #viz). The Explorer's own card, featured, then the apps that each go deep on one grain, then
+  the apps built around one dataset and the student projects — the same tabs, from the same `tab:`
+  keys. #explore is this panel, as before; #viz, #dataset and #student land in its second group.
+{%- endcomment -%}
+{%- assign xp_items = data.products | where: "tab", "explorer" -%}
+{%- assign xg_items = data.products | where: "tab", "general" -%}
+{%- assign xt_explorer = xs.tabs | where: "id", "explorer" | first -%}
+{%- assign xt_general = xs.tabs | where: "id", "general" | first -%}
+{%- assign xp = xp_items | first -%}
+{%- assign vt = xs.tabs | where_exp: "t", "t.id == 'dataset' or t.id == 'student'" -%}
+{%- assign vn = 0 -%}{%- for t in vt -%}{%- assign tn_i = data.products | where: "tab", t.id | size -%}{%- assign vn = vn | plus: tn_i -%}{%- endfor -%}
+<section class="fd-panel" id="explore" hidden aria-labelledby="explore-h">
+  <div class="cc-container">
+    {{ close_btn }}
+    <div class="fd-phead">
+      <div class="cc-eyebrow">{{ xs.title }} · the Explorer, {{ xg_items | size }} that go deep on one grain, {{ vn }} more</div>
+      <h2 class="cc-h2" id="explore-h">Explore and download on a map</h2>
+      <p class="blurb">Pick species or measurements, a time and a place: the CalCOFI Explorer draws them together —
+        biology, ocean physics and chemistry — on a map, along a line or through the years, and what you see
+        downloads as a table.</p>
+      <p class="fd-pact"><a class="cc-btn cc-btn-cta" href="{{ xp.live_url | default: explorer_url }}">Open the CalCOFI Explorer</a></p>
+      <p class="fd-xref"><i class="cc-i cc-i-door-find" aria-hidden="true"></i>Want one dataset as its provider published it?
+        <a class="cc-text-link" href="#find">Find the dataset →</a></p>
+    </div>
+    {%- if xs.lenses -%}
+    <p class="lens-key" aria-label="Lenses">
+      {%- for l in xs.lenses %}<span title="{{ l.blurb | escape }}"><i class="cc-i cc-i-lens-{{ l.id | escape }}" aria-hidden="true"></i>{{ l.title | escape }}</span>{% endfor -%}
+      <span title="a capstone or fellowship project"><i class="cc-i cc-i-ui-student" aria-hidden="true"></i>student contribution</span>
+    </p>
+    {%- endif -%}
+    <div class="card-grid featured-grid card-grid-solo" id="explorer">
+      {%- for p in xp_items -%}
+        {% include product_card.html p=p section=xt_explorer.title featured=true %}
+      {%- endfor -%}
+    </div>
+    <h3 class="fd-h3" id="general">{{ xt_general.title }} · one grain at a time <span class="pill">{{ xg_items | size }}</span></h3>
+    <p class="blurb tab-blurb">{{ xt_general.blurb }}</p>
+    <div class="card-grid">
+      {%- for p in xg_items -%}
+        {% include product_card.html p=p section=xt_general.title %}
+      {%- endfor -%}
+    </div>
+
+    <div class="fd-sub" id="viz">
+      <h3 class="fd-h3">Other data visualizations · one dataset, or a student project <span class="pill">{{ vn }}</span></h3>
+      <p class="blurb tab-blurb">{% for t in vt %}{{ t.blurb }} {% endfor %}</p>
+      <div class="tabset" id="ts-viz">
+        <div class="tabrow" role="tablist" aria-label="Other data visualizations">
+          {%- for t in vt -%}
+          {%- capture tn %}{% include tab_count.html s=xs t=t %}{% endcapture -%}
+          <button type="button" role="tab" id="tab-{{ t.id }}" aria-controls="panel-{{ t.id }}"
+                  data-tab="{{ t.id }}" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
+                  tabindex="{% if forloop.first %}0{% else %}-1{% endif %}">{{ t.title }}
+            {%- if tn != "" %}<span class="pill">{{ tn }}</span>{% endif -%}
+          </button>
+          {%- endfor -%}
+        </div>
+        {%- for t in vt -%}
+        {%- assign titems = data.products | where: "tab", t.id -%}
+        <div class="tabpanel" id="panel-{{ t.id }}" data-panel="{{ t.id }}" role="tabpanel"
+             aria-labelledby="tab-{{ t.id }}"{% unless forloop.first %} hidden{% endunless %}>
+          <div class="card-grid">
+            {%- for p in titems -%}
+              {% include product_card.html p=p section=t.title %}
+            {%- endfor -%}
+          </div>
+        </div>
+        {%- endfor -%}
+      </div>
+    </div>
+  </div>
+</section>
+
+{%- comment -%}
+  ── 3 · Find and download a dataset (was "Find and download data": the DATA section, the Where/When
+  tiles, the release tile and the Observed tile). The head; the reach (the grid map beside the years
+  strip, D4 B); the one search (_includes/one_search.html, D10 B); the three catalog tabs exactly as
+  before; the release line. The id the old anchor named — #datasets — is the catalog block inside it.
+  The head's last line says when the Explorer is the better way in (Erin, 2026-11-16).
 {%- endcomment -%}
 {%- assign rel = site.data.catalog.release -%}
 {%- comment -%} The Data Finder: Erin's name for the station app (db-viz-station), map-first and dataset-first,
@@ -147,13 +333,15 @@ layout: default
           {%- if nums.species %} · {{ nums.species_fmt }} species{% endif -%}
           {%- if nums.measurements_keys %} · {{ nums.measurements_keys_fmt }} measurements{% endif %}
           · {{ site.data.catalog.counts.holdings }} holdings</div>
-        <h2 class="cc-h2" id="find-h">Find and download data</h2>
-        <p class="blurb">{{ ds_section.blurb }} Every dataset page lists who collected it, its coverage, every endpoint, the licence and how to cite it.</p>
+        <h2 class="cc-h2" id="find-h">Find and download a dataset</h2>
+        <p class="blurb">{{ ds_section.blurb }} A dataset's page holds it as its provider published it: who collected it, where and when, its source files, the licence and how to cite it.</p>
         <p class="fd-pact">
           <a class="cc-btn cc-btn-cta" href="{{ '/datasets/' | relative_url }}">Browse the data catalog</a>
           <a class="cc-btn cc-btn-primary" href="{{ finder_url }}" title="{{ finder.title | default: 'Station Explorer' | escape }}: what was sampled at each station, by dataset">Open the Data Finder</a>
           <a class="cc-text-link" href="{{ '/data.json' | relative_url }}">data.json</a>
         </p>
+        <p class="fd-xref"><i class="cc-i cc-i-door-explore" aria-hidden="true"></i>Want several kinds of data together, or just one area and period?
+          <a class="cc-text-link" href="{{ explorer_url }}">Use the Explorer →</a></p>
       </div>
 
       <figure class="fd-years">
@@ -326,57 +514,20 @@ layout: default
 </section>
 
 {%- comment -%}
-  ── 2 · Visualize and explore (was APPS' Explorer and General tabs, and the Explore tile). The
-  Explorer's own card, featured, then the apps that each go deep on one grain. The Dataset and
-  Student tabs moved to "Other data visualizations". #explore is this panel, as before.
-{%- endcomment -%}
-{%- assign xp_items = data.products | where: "tab", "explorer" -%}
-{%- assign xg_items = data.products | where: "tab", "general" -%}
-{%- assign xt_explorer = xs.tabs | where: "id", "explorer" | first -%}
-{%- assign xt_general = xs.tabs | where: "id", "general" | first -%}
-{%- assign xp = xp_items | first -%}
-<section class="fd-panel" id="explore" hidden aria-labelledby="explore-h">
-  <div class="cc-container">
-    {{ close_btn }}
-    <div class="fd-phead">
-      <div class="cc-eyebrow">{{ xs.title }} · the Explorer, and {{ xg_items | size }} that go deep on one grain</div>
-      <h2 class="cc-h2" id="explore-h">Visualize and explore</h2>
-      <p class="blurb">Explore observations collected on the CalCOFI platform in the California Current Ecosystem,
-        integrated across species, ocean conditions, stations and decades. {{ xt_explorer.blurb }}</p>
-      <p class="fd-pact"><a class="cc-btn cc-btn-cta" href="{{ xp.live_url | default: 'https://calcofi.io/explore/' }}">Open the CalCOFI Explorer</a></p>
-    </div>
-    {%- if xs.lenses -%}
-    <p class="lens-key" aria-label="Lenses">
-      {%- for l in xs.lenses %}<span title="{{ l.blurb | escape }}"><i class="cc-i cc-i-lens-{{ l.id | escape }}" aria-hidden="true"></i>{{ l.title | escape }}</span>{% endfor -%}
-      <span title="a capstone or fellowship project"><i class="cc-i cc-i-ui-student" aria-hidden="true"></i>student contribution</span>
-    </p>
-    {%- endif -%}
-    <div class="card-grid featured-grid card-grid-solo" id="explorer">
-      {%- for p in xp_items -%}
-        {% include product_card.html p=p section=xt_explorer.title featured=true %}
-      {%- endfor -%}
-    </div>
-    <h3 class="fd-h3" id="general">{{ xt_general.title }} · one grain at a time <span class="pill">{{ xg_items | size }}</span></h3>
-    <p class="blurb tab-blurb">{{ xt_general.blurb }}</p>
-    <div class="card-grid">
-      {%- for p in xg_items -%}
-        {% include product_card.html p=p section=xt_general.title %}
-      {%- endfor -%}
-    </div>
-  </div>
-</section>
-
-{%- comment -%}
-  ── 3 · Download programmatically (was ACCESS and the Get-the-data tile). The five snippets behind
-  radio-input tabs (no script), then Services · Packages as before. #access is the tabset.
+  ── 4 · Work with the data in code (was "Download programmatically": ACCESS and the Get-the-data
+  tile; and "Build something": BUILD's three cards, now its second group, #build, so a developer
+  loses nothing). The five snippets behind radio-input tabs (no script), then Services · Packages as
+  before (#access is the tabset), then the pipeline. No yellow: Get the data is the destination
+  (Erin, 2026-10-19), and the GitHub button is the quieter primary.
 {%- endcomment -%}
 {%- assign ac_items = data.products | where: "section", "access" -%}
+{%- assign b_items = data.products | where: "section", "build" -%}
 <section class="fd-panel" id="program" hidden aria-labelledby="program-h">
   <div class="cc-container">
     {{ close_btn }}
     <div class="fd-phead">
-      <div class="cc-eyebrow">{{ acs.title }}{% for t in acs.tabs %}{% capture tn %}{% include tab_count.html s=acs t=t %}{% endcapture %} · {{ tn }} {{ t.title | downcase }}{% endfor %}</div>
-      <h2 class="cc-h2" id="program-h">Download programmatically</h2>
+      <div class="cc-eyebrow">{{ acs.title }}{% for t in acs.tabs %}{% capture tn %}{% include tab_count.html s=acs t=t %}{% endcapture %} · {{ tn }} {{ t.title | downcase }}{% endfor %} · {{ bs.title }} · {{ b_items | size }} tools</div>
+      <h2 class="cc-h2" id="program-h">Work with the data in code</h2>
       <p class="blurb">{{ acs.blurb }} Every route reads the frozen release directly: no server to stand up, no credentials.</p>
     </div>
     <div id="access">
@@ -440,77 +591,30 @@ SELECT * FROM read_json('{{ rel.catalog_url }}')</pre>
       {%- endfor -%}
     </div>
     </div>
-  </div>
-</section>
 
-{%- comment -%} ── 4 · Build something (was BUILD: three cards). #build is this panel, as before. {%- endcomment -%}
-{%- assign b_items = data.products | where: "section", "build" -%}
-<section class="fd-panel" id="build" hidden aria-labelledby="build-h">
-  <div class="cc-container">
-    {{ close_btn }}
-    <div class="fd-phead">
-      <div class="cc-eyebrow">{{ bs.title }} · {{ b_items | size }} products · the pipeline behind every release</div>
-      <h2 class="cc-h2" id="build-h">Build something</h2>
-      <p class="blurb">{{ bs.blurb }}</p>
-      <p class="fd-pact">
-        <a class="cc-btn cc-btn-cta" href="https://github.com/CalCOFI">Explore developer resources</a>
+    <div class="fd-sub" id="build">
+      <h3 class="fd-h3">Build on the pipeline · the schema, the ingest workflows, the database package <span class="pill">{{ b_items | size }}</span></h3>
+      <p class="blurb tab-blurb">{{ bs.blurb }}</p>
+      <div class="card-grid">
+        {%- for p in b_items -%}
+          {% include product_card.html p=p section=bs.title %}
+        {%- endfor -%}
+      </div>
+      <p class="fd-pact fd-sub-act">
+        <a class="cc-btn cc-btn-primary" href="https://github.com/CalCOFI">Explore developer resources</a>
         <a class="cc-text-link" href="https://calcofi.io/docs/">Read the docs</a>
       </p>
+      <p class="fd-foot">Also <a href="https://calcofi.io/calcofi4r/">calcofi4r</a> · <a href="https://calcofi.io/calcofi4py/">calcofi4py</a> ·
+        <a href="https://github.com/CalCOFI">github.com/CalCOFI</a> · the <a href="{{ provide_url }}">docs</a> part on contributing data</p>
     </div>
-    <div class="card-grid">
-      {%- for p in b_items -%}
-        {% include product_card.html p=p section=bs.title %}
-      {%- endfor -%}
-    </div>
-    <p class="fd-foot">Also <a href="https://calcofi.io/calcofi4r/">calcofi4r</a> · <a href="https://calcofi.io/calcofi4py/">calcofi4py</a> ·
-      <a href="https://github.com/CalCOFI">github.com/CalCOFI</a> · the <a href="https://calcofi.io/docs/">docs</a> part on contributing data</p>
   </div>
 </section>
 
 {%- comment -%}
-  ── 5 · Learn how CalCOFI sampling and data work (was the hero's pins, the DOCS word's card and the
-  ship's log tile). The ANNOTATED section — one pin per category at the depth it lives, each a link
-  to its method page — then the docs book's own card beside the ship's log.
+  ── 7 · Inform ocean and fisheries management (was "Ocean monitoring throughout California"): the
+  products carrying `doors: [monitor]`. Only what is built today — the statewide inventory and the
+  offshore wind baseline; the door says more is to come and the panel claims nothing it cannot show.
 {%- endcomment -%}
-{%- assign docs_p = data.products | where: "key", "docs" | first -%}
-<section class="fd-panel" id="learn" hidden aria-labelledby="learn-h">
-  <div class="cc-container">
-    {{ close_btn }}
-    <div class="fd-phead">
-      <div class="cc-eyebrow">Docs{% if docs_p.tagline %} · {{ docs_p.tagline | downcase }}{% endif %}</div>
-      <h2 class="cc-h2" id="learn-h">Learn how CalCOFI sampling and data work</h2>
-      <p class="blurb">Understand the sampling grid, the methods, the data definitions, the documentation and how to
-        cite. The drawing is Line 90 as a section: one pin per data category, at the depth that kind of measurement
-        lives, each a link to its method page on calcofi.org.</p>
-      <p class="fd-pact">
-        <a class="cc-btn cc-btn-cta" href="{{ docs_p.live_url | default: 'https://calcofi.io/docs/' }}">Read the documentation</a>
-        <a class="cc-text-link" href="https://calcofi.io/docs/cite.html">How to cite</a>
-        <a class="cc-text-link" href="https://calcofi.org/sampling-info/">Sampling methods on calcofi.org</a>
-      </p>
-    </div>
-    <figure class="fd-secfull">
-      <div class="fd-sec" id="sec-full" data-sprite="{{ sprite }}"></div>
-      <figcaption class="fd-cap">The ship's gear to the depth the protocol takes it: the CTD to 515 m, the bongo to
-        210 m, the PairoVET to 70 m, CUFES at 3 m underway, the manta at the surface. A dashed pin is a category not
-        yet in the release.</figcaption>
-    </figure>
-    <div class="fd-two">
-      <div class="card-grid card-grid-solo">
-        {%- if docs_p -%}{% include product_card.html p=docs_p section="Docs" %}{%- endif -%}
-      </div>
-      <div class="fd-log">
-        <div class="cc-eyebrow">What's new · updates and recent developments to CalCOFI data systems</div>
-        {% include log.html n=4 %}
-        <p class="fd-links">
-          <a class="cc-text-link" href="{{ '/news/' | relative_url }}">All entries →</a>
-          <a class="cc-text-link" href="{{ '/feed.xml' | relative_url }}">feed</a>
-        </p>
-      </div>
-    </div>
-  </div>
-</section>
-
-{%- comment -%} ── 6 · Ocean monitoring throughout California: the products carrying `doors: [monitor]` {%- endcomment -%}
 {%- assign m_items = data.products | where_exp: "p", "p.doors contains 'monitor'" -%}
 {%- assign m_first = m_items | first -%}
 <section class="fd-panel" id="monitor" hidden aria-labelledby="monitor-h">
@@ -518,55 +622,14 @@ SELECT * FROM read_json('{{ rel.catalog_url }}')</pre>
     {{ close_btn }}
     <div class="fd-phead">
       <div class="cc-eyebrow">Beyond the grid{% for p in m_items %} · {{ p.credits.org | default: p.title }} {{ p.credits.year }}{% endfor %}</div>
-      <h2 class="cc-h2" id="monitor-h">Ocean monitoring throughout California</h2>
-      <p class="blurb">Where else California's ocean is observed: a statewide inventory of monitoring programs along
-        the coast, and the baseline data around the planned floating offshore wind areas.</p>
+      <h2 class="cc-h2" id="monitor-h">Inform ocean and fisheries management</h2>
+      <p class="blurb">Ocean monitoring throughout California: a statewide inventory of the monitoring programs
+        along the coast, and the baseline data around the planned floating offshore wind areas.</p>
       {%- if m_first %}<p class="fd-pact"><a class="cc-btn cc-btn-cta" href="{{ m_first.live_url }}">Open the monitoring map</a></p>{% endif -%}
     </div>
     <div class="card-grid">
       {%- for p in m_items -%}
         {% include product_card.html p=p section="Monitoring" %}
-      {%- endfor -%}
-    </div>
-  </div>
-</section>
-
-{%- comment -%}
-  ── 7 · Other data visualizations (was APPS' Dataset and Student tabs). The same tabs, from the
-  same `tab:` keys, with their count pills. #dataset and #student land on their tab.
-{%- endcomment -%}
-{%- assign vt = xs.tabs | where_exp: "t", "t.id == 'dataset' or t.id == 'student'" -%}
-{%- assign vd_first = data.products | where: "tab", "dataset" | first -%}
-<section class="fd-panel" id="viz" hidden aria-labelledby="viz-h">
-  <div class="cc-container">
-    {{ close_btn }}
-    <div class="fd-phead">
-      <div class="cc-eyebrow">{{ xs.title }}{% for t in vt %}{% capture tn %}{% include tab_count.html s=xs t=t %}{% endcapture %} · {{ tn }} {{ t.title | downcase }}{% endfor %}</div>
-      <h2 class="cc-h2" id="viz-h">Other data visualizations</h2>
-      <p class="blurb">{% for t in vt %}{{ t.blurb }} {% endfor %}</p>
-      {%- if vd_first %}<p class="fd-pact"><a class="cc-btn cc-btn-cta" href="{{ vd_first.live_url }}">Open {{ vd_first.title | escape }}</a></p>{% endif -%}
-    </div>
-    <div class="tabset" id="ts-viz">
-      <div class="tabrow" role="tablist" aria-label="Other data visualizations">
-        {%- for t in vt -%}
-        {%- capture tn %}{% include tab_count.html s=xs t=t %}{% endcapture -%}
-        <button type="button" role="tab" id="tab-{{ t.id }}" aria-controls="panel-{{ t.id }}"
-                data-tab="{{ t.id }}" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
-                tabindex="{% if forloop.first %}0{% else %}-1{% endif %}">{{ t.title }}
-          {%- if tn != "" %}<span class="pill">{{ tn }}</span>{% endif -%}
-        </button>
-        {%- endfor -%}
-      </div>
-      {%- for t in vt -%}
-      {%- assign titems = data.products | where: "tab", t.id -%}
-      <div class="tabpanel" id="panel-{{ t.id }}" data-panel="{{ t.id }}" role="tabpanel"
-           aria-labelledby="tab-{{ t.id }}"{% unless forloop.first %} hidden{% endunless %}>
-        <div class="card-grid">
-          {%- for p in titems -%}
-            {% include product_card.html p=p section=t.title %}
-          {%- endfor -%}
-        </div>
-      </div>
       {%- endfor -%}
     </div>
   </div>
@@ -579,32 +642,38 @@ SELECT * FROM read_json('{{ rel.catalog_url }}')</pre>
   way in); the old anchors and the header's words land in the right one. Inline and synchronous at
   the end of the content, so a door named in the URL is open before the first paint.
     a hash that IS a door            → that door
-    a hash that is an element inside a panel (#datasets, #access, #general …) → its door, scrolled to it
+    a hash that is an element inside a panel (#datasets, #access, #general, #build, #viz …)
+                                     → its door, scrolled to it
     a hash that is a tab inside a panel (#species, #student …)                → its door, that tab
-    a few retired words (#data #apps #docs #monitoring #students)            → their door
+    a few retired words (#data #apps #docs #monitoring #students)            → where they live now
     ?q=… or a ?tab= the Find tabs carry                                        → Find
+  Cite and Contribute are plain links, not doors: nothing here touches them.
   Opening a door fires `cc:door` on the document for anything that must measure inside it.
 {%- endcomment -%}
 <script>
 (function () {
   'use strict';
-  var KEYS = ['find', 'explore', 'program', 'build', 'learn', 'monitor', 'viz'];
-  var OLD = { data: 'find', apps: 'explore', docs: 'learn', monitoring: 'monitor', students: 'viz' };
+  var KEYS = ['learn', 'explore', 'find', 'program', 'monitor'];
+  // a retired word → the hash it now resolves through (a door, or an element inside one)
+  var OLD = { data: 'find', apps: 'explore', docs: 'learn', monitoring: 'monitor', students: 'student' };
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   function panel(k) { return document.getElementById(k); }
   function door(k) { return document.getElementById('door-' + k); }
   function panelOf(el) { var p = el && el.closest && el.closest('.fd-panel'); return p && KEYS.indexOf(p.id) >= 0 ? p.id : null; }
 
-  // a hash (without #) → { key, target, tab }
+  // a hash (without #) → { key, target, tab, id }. `id` is set when the hash names an element or a tab
+  // inside a panel (#build, #viz, #datasets, #student …): the URL then keeps that hash, so the
+  // browser's own scroll to the fragment on load lands on the element, not on the top of its panel
+  // (a tab id names no element, so there the script's own scroll to its tabset stands)
   function resolve(h) {
     h = decodeURIComponent(String(h || '').replace(/^#/, ''));
     if (!h) return null;
     if (KEYS.indexOf(h) >= 0) return { key: h };
-    if (OLD[h]) return { key: OLD[h] };
+    if (OLD[h]) return resolve(OLD[h]);
     var el = document.getElementById(h), k = panelOf(el);
-    if (k) return { key: k, target: el };
+    if (k) return { key: k, target: el, id: h };
     var b = document.querySelector('.fd-panel .tabrow [data-tab="' + h.replace(/"/g, '') + '"]');
-    if (b && panelOf(b)) return { key: panelOf(b), target: b.closest('.tabset'), tab: b };
+    if (b && panelOf(b)) return { key: panelOf(b), target: b.closest('.tabset'), tab: b, id: b.getAttribute('data-tab') };
     return null;
   }
   function setUrl(k) {
@@ -634,7 +703,7 @@ SELECT * FROM read_json('{{ rel.catalog_url }}')</pre>
   function open(r, scroll) {
     show(r.key);
     if (r.tab) r.tab.click();
-    setUrl(r.key);
+    setUrl(r.id || r.key);
     try { document.dispatchEvent(new CustomEvent('cc:door', { detail: { door: r.key } })); } catch (e) {}
     if (scroll) (r.target || panel(r.key)).scrollIntoView({ behavior: reduce || scroll === 'now' ? 'auto' : 'smooth', block: 'start' });
   }
@@ -652,8 +721,9 @@ SELECT * FROM read_json('{{ rel.catalog_url }}')</pre>
   [].forEach.call(document.querySelectorAll('.fd-panel [data-close]'), function (b) {
     b.addEventListener('click', function () { close(panelOf(b)); });
   });
-  // any link to a door on THIS page — the header's words, their submenus, the drawing's caption —
-  // opens it in place (the same hash twice fires no hashchange, so the click is caught here)
+  // any link to a door on THIS page — the header's words, their submenus, the drawing's caption,
+  // the cross-reference between Explore and Find — opens it in place (the same hash twice fires no
+  // hashchange, so the click is caught here)
   document.addEventListener('click', function (e) {
     var a = e.target.closest && e.target.closest('a[href*="#"]');
     if (!a || a.pathname !== location.pathname || e.metaKey || e.ctrlKey || e.shiftKey) return;

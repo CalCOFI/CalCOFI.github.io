@@ -89,15 +89,20 @@ can only pass by the layout actually being fixed:
              every end label inside its column, the month strip is 12 cells per series, and each
              `.mm-url` is one line elided from the middle.
 
-  front door (/, issue #30: one screen, seven doors) the seven doors, in order, each controlling
-             its own panel and >= 32 px tall, end above the 1280 x 645 fold at >= 1280; on a phone the
+  front door (/, issue #30: one screen, seven doors; the seven tasks of 2026-11-16) the seven doors,
+             in order (See what CalCOFI collects · Explore · Find · Code · Cite · Contribute ·
+             Management), each >= 32 px tall: a panel door controls its own panel, Cite and
+             Contribute are links to their docs chapters; all end above the 1280 x 645 fold at
+             >= 1280; on a phone the
              head, the quiet drawing and the doors stack in that order (the ship stays at the top); no door is open on load unless
-             the URL names one (#door, ?door=, ?q=, ?tab=), and then exactly one is; the page is
-             <= 950 px at 1470 with none open; opening Find then Visualize leaves only Visualize open
+             the URL names one (#door, ?door=, ?q=, ?tab=), and then exactly one is, the one that
+             ?door= names; every old anchor (#datasets #access #build #viz #general #student …, and
+             the retired words) opens the door it now lives behind; the page is
+             <= 950 px at 1470 with none open; opening Find then Explore leaves only Explore open
              and a second click closes it; nothing on the first screen is --warn or yellow, and each
              panel carries exactly one yellow button, except #program, which carries none (Get the
-             data is its destination); the quiet drawing has no pins and the Learn
-             panel's has them, each answering 200/206 to a ranged GET (checked once, not per theme);
+             data is its destination); the quiet drawing has no pins and the See-what-CalCOFI-
+             collects panel's has them, each answering 200/206 to a ranged GET (checked once, not per theme);
              the five numbers equal the inline #reach record's; the years strip has
              datasets.length rows and the map stations.length marks; every product key in
              _data/products.yml is drawn as a card behind some door; no horizontal scroll.
@@ -111,6 +116,7 @@ import argparse, json, os, re, subprocess, sys
 
 DEFAULT_PATHS = [
     "/",                             # the front door: one screen, seven doors, none open (issue #30)
+    "/?door=viz",                    # an old door's name lands in the door that now holds it (Explore)
     "/?q=sardine&tab=species",       # D9 (round 2, WS-R4): a shared link lands on the Species tab
                                      #   with the box filled and >= 1 .cc-result already rendered
     "/?q=krill",                     # …and on the Datasets tab, the same box still filters the grid
@@ -447,7 +453,9 @@ PROBE = r"""
     const who = d.querySelector(".fd-who"), ask = d.querySelector(".fd-ask"), fig = d.querySelector(".fd-fig");
     const full = d.querySelector("#sec-full svg.sec");
     out.front = {
-      doors: doorEls.map(b => ({ id: b.dataset.door, title: (b.querySelector(".fd-door-t") || b).textContent.replace(/\s+/g, " ").trim(),
+      // a door is a button that opens a panel (data-door) or a link straight to its page (data-link)
+      doors: doorEls.map(b => ({ id: b.dataset.door || b.dataset.link, tag: b.tagName, href: b.getAttribute("href"),
+        title: (b.querySelector(".fd-door-t") || b).textContent.replace(/\s+/g, " ").trim(),
         top: px(top(b)), bottom: px(bot(b)), h: px(b.getBoundingClientRect().height), w: px(b.getBoundingClientRect().width),
         controls: b.getAttribute("aria-controls"), expanded: b.getAttribute("aria-expanded") })),
       screenBottom: px(bot(fds)),
@@ -475,8 +483,22 @@ PROBE = r"""
       const b = openNow(), findExp = door("find").getAttribute("aria-expanded"), expExp = door("explore").getAttribute("aria-expanded");
       door("explore").click();
       const c = openNow();
+      // the old anchors: a click on a link to each (the header's words do exactly this) opens the
+      // door it now lives behind. A tab anchor selects its tab, so every tabset's selection and the
+      // URL are put back afterwards — what is measured next sees the page the URL loaded.
+      const href0 = w.location.href;
+      const sel0 = [...d.querySelectorAll(".fd-panel .tabset")].map(ts => ts.querySelector('.tabrow [aria-selected="true"]')).filter(Boolean);
+      const anchors = {};
+      for (const h of __FD_ANCHORS__) {
+        const lk = d.createElement("a"); lk.href = "#" + h; d.body.appendChild(lk);
+        lk.click(); lk.remove();
+        anchors[h] = openNow();
+      }
+      sel0.forEach(b => b.click());
+      openNow().forEach(k => door(k) && door(k).click());
       if (was.length && door(was[0])) door(was[0]).click();      // put back what the URL opened
-      out.front.drive = { afterFind: a, afterExplore: b, findExpanded: findExp, exploreExpanded: expExp, afterClose: c, restored: openNow() };
+      try { w.history.replaceState(null, "", href0); } catch (e) {}
+      out.front.drive = { afterFind: a, afterExplore: b, findExpanded: findExp, exploreExpanded: expExp, afterClose: c, anchors, restored: openNow() };
       w.scrollTo(0, 0);
     }
   }
@@ -1105,7 +1127,8 @@ def probe(url, width, theme, browser, wait):
     sep = "&" if "?" in url else "?"
     target = f"{url}{sep}theme={theme}&tour=off"
     js = (HOST.replace("__W__", str(width)).replace("__URL__", target)
-              .replace("__PROBE__", PROBE).replace("__WAIT__", str(wait)))
+              .replace("__PROBE__", PROBE.replace("__FD_ANCHORS__", json.dumps(list(FRONT_ANCHORS))))
+              .replace("__WAIT__", str(wait)))
     # the host page must be same-origin with the target, so load the target itself and let the
     # iframe inside it be the one that is measured at the width under test
     status = page_status(target)
@@ -1133,7 +1156,21 @@ MAX_SPECIES_INDEX_H = 2220   # issue #30: /species/ at 1470, nothing open — th
 MAX_SPECIES_PAGE_H = 1500    # issue #30: a taxon page at 1470, nothing open — ~1,200 + 25 %
 # the front door (issue #30): Dan's screen, the seven doors in order, and the page with none open
 FOLD_W, FOLD_H = 1280, 645
-FRONT_DOORS = ["find", "explore", "program", "build", "learn", "monitor", "viz"]
+# The seven tasks (2026-11-16, the users' and Erin's feedback): five open a panel, Cite and Contribute
+# are links straight to their chapter of the docs book.
+FRONT_DOORS = ["learn", "explore", "find", "program", "cite", "contribute", "monitor"]
+FRONT_LINKS = {"cite": "https://calcofi.io/docs/cite.html", "contribute": "https://calcofi.io/docs/provide.html"}
+# every anchor anyone may have bookmarked, and the door it must open now: the doors themselves, the
+# ids inside a panel (#build and #viz were doors until 2026-11-16 and are now groups inside Code and
+# Explore), the tabs inside a panel, and the retired words of the old sections
+FRONT_ANCHORS = {
+    "learn": "learn", "explore": "explore", "find": "find", "program": "program", "monitor": "monitor",
+    "datasets": "find", "species": "find", "measurements": "find",
+    "explorer": "explore", "general": "explore", "viz": "explore", "dataset": "explore", "student": "explore",
+    "access": "program", "services": "program", "packages": "program", "build": "program",
+    "kinds": "learn",
+    "data": "find", "apps": "explore", "docs": "learn", "monitoring": "monitor", "students": "explore",
+}
 FRONT_MAX_H = 950     # px at 1470 with no door open (the mockup's ~750 + 25 %, with the site's footer)
 MIN_TAP = 32
 # issue #30 (calm re-cut): full-page heights at 1470 px with nothing open, header and footer included.
@@ -1883,11 +1920,17 @@ def check(path, r, width, theme, fails, notes):
         doors = fr["doors"]
         notes.append(f"{where}: {len(doors)} doors, the last ending at {max((x['bottom'] for x in doors), default=0)}px; "
                      f"page {fr['heightOnLoad']}px with {fr['openOnLoad'] or 'no'} door open; strip {fr['stripRows']} rows, "
-                     f"map {fr['mapMarks']} marks, {len(fr['pins'])} pins behind Learn")
+                     f"map {fr['mapMarks']} marks, {len(fr['pins'])} pins behind See what CalCOFI collects; "
+                     f"{len((fr.get('drive') or {}).get('anchors') or {})} old anchors driven")
         if [x["id"] for x in doors] != FRONT_DOORS:
             fails.append(f"{where}: the doors are {[x['id'] for x in doors]}, expected {FRONT_DOORS}")
         for x in doors:
-            if x["controls"] != x["id"]:
+            if x["id"] in FRONT_LINKS:
+                # Cite and Contribute: one click to the page, no panel between
+                if x["tag"] != "A" or x["href"] != FRONT_LINKS[x["id"]] or x["controls"]:
+                    fails.append(f"{where}: the {x['id']!r} door is a {x['tag']} to {x['href']!r} "
+                                 f"(controls {x['controls']!r}), expected a link to {FRONT_LINKS[x['id']]}")
+            elif x["controls"] != x["id"]:
                 fails.append(f"{where}: the {x['id']!r} door controls {x['controls']!r}, not its own panel")
             if x["h"] < MIN_TAP:
                 fails.append(f"{where}: the {x['id']!r} door is {x['h']}px tall, under the {MIN_TAP}px tap target")
@@ -1907,6 +1950,10 @@ def check(path, r, width, theme, fails, notes):
             fails.append(f"{where}: {fr['openOnLoad']} open on load; the front door opens with every door closed")
         if names_one and len(fr["openOnLoad"]) != 1:
             fails.append(f"{where}: the URL names a door but {fr['openOnLoad'] or 'none'} opened")
+        mdoor = re.search(r"[?&]door=([\w-]+)", path)
+        if mdoor and mdoor.group(1) in FRONT_ANCHORS and fr["openOnLoad"] != [FRONT_ANCHORS[mdoor.group(1)]]:
+            fails.append(f"{where}: ?door={mdoor.group(1)} opened {fr['openOnLoad']}, expected "
+                         f"[{FRONT_ANCHORS[mdoor.group(1)]!r}]")
         if not names_one and width >= 1400 and fr["heightOnLoad"] > FRONT_MAX_H:
             fails.append(f"{where}: the front door is {fr['heightOnLoad']}px tall with no door open, max {FRONT_MAX_H}")
         dv = fr.get("drive")
@@ -1914,14 +1961,18 @@ def check(path, r, width, theme, fails, notes):
             if dv["afterFind"] != ["find"]:
                 fails.append(f"{where}: opening Find left {dv['afterFind']} open")
             if dv["afterExplore"] != ["explore"] or dv["findExpanded"] != "false" or dv["exploreExpanded"] != "true":
-                fails.append(f"{where}: opening Visualize did not close Find ({dv['afterExplore']}, "
+                fails.append(f"{where}: opening Explore did not close Find ({dv['afterExplore']}, "
                              f"find aria-expanded={dv['findExpanded']}, explore={dv['exploreExpanded']})")
             if dv["afterClose"]:
                 fails.append(f"{where}: a second click on the open door left {dv['afterClose']} open")
+            for h, want_k in FRONT_ANCHORS.items():
+                got = (dv.get("anchors") or {}).get(h)
+                if got != [want_k]:
+                    fails.append(f"{where}: a link to #{h} opened {got}, expected [{want_k!r}]")
             if dv["restored"] != fr["openOnLoad"]:
                 fails.append(f"{where}: the probe could not put the doors back ({dv['restored']} vs {fr['openOnLoad']})")
         # D6 A: no yellow and no --warn on the first screen; each panel carries exactly one yellow,
-        # but Download programmatically none: its destination is the Get the data box (Erin, 2026-10-19)
+        # but Work with the data in code none: its destination is the Get the data box (Erin, 2026-10-19)
         if fr["warnEls"]:
             fails.append(f"{where}: --warn on the first screen: {', '.join(sorted(set(fr['warnEls']))[:4])}")
         if fr["ctaEls"]:
@@ -1936,7 +1987,7 @@ def check(path, r, width, theme, fails, notes):
         if fr["quietPins"]:
             fails.append(f"{where}: the first screen's drawing carries {fr['quietPins']} pins; it is drawn quiet")
         if not fr["pins"]:
-            fails.append(f"{where}: the Learn panel's annotated drawing carries no pins")
+            fails.append(f"{where}: the See-what-CalCOFI-collects panel's annotated drawing carries no pins")
         # the five numbers equal the record's (organism obs. moved to the species number's title)
         n = fr.get("reachNumbers") or {}
         want = {"years": n.get("years"), "cruises": n.get("cruises"), "stations": n.get("stations"),

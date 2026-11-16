@@ -31,51 +31,67 @@ retired.
 
 ## The front door (`/`)
 
-**One screen, seven doors** (issue #30, "calcofi.io, calmer"; decisions D2 A, D3 A, D4 B, D5 A, D6 A).
+**One screen, seven doors** (issue #30, "calcofi.io, calmer"; decisions D2 A, D3 A, D4 B, D5 A, D6 A; the
+doors re-cut to seven *tasks* on 2026-11-16 from the program's users and coordinator).
 At 1280 × 645, the screen in Dan Rudnick's report, the whole first screen is visible: on the left, what
 CalCOFI is (the eyebrow, "From ship to screen", one lede, five numbers and the Line 90 section drawn
-**quiet**); on the right, "What do you want to do?" and Dan's seven pathways, in his words, as seven
-doors. The last two doors are drawn smaller. The first screen has no yellow (D6 A). Each door opens one
-full-width panel on the Sand band beneath the first screen, and opening another door closes it (D2 A).
-Every panel has one yellow button to its real destination. With no door open the page is about 920 px
-tall at 1470 px. Nothing was removed; every part moved behind the door it answers:
+**quiet**); on the right, "What do you want to do?" and seven doors, each a thing a person came to do, in
+plain words (no "integrated", "harmonized", "parquet" or "STAC" on the first screen). The last three doors
+are drawn smaller. The first screen has no yellow (D6 A). Five doors each open one full-width panel on
+the Sand band beneath the first screen, and opening another door closes it (D2 A); Cite and Contribute
+are plain links, one click to their chapter of the docs book. Every panel has one yellow button to its
+real destination, except Work with the data in code, where Get the data is the destination. With no door
+open the page is about 900 px tall at 1470 px.
 
 ```
-the hero's section + pins   quiet on the first screen (#sec-quiet: ship, gear, floor; no pins, no axes,
-                            no captions); ANNOTATED behind Learn (#sec-full: the 14 pins, the axes)
-the numbers band (6)        five numbers under the lede: years · cruises · stations · species ·
-                            measurements. Organism obs. moved to the species number's title and the
-                            Species tab's counts, and ships to the cruises number's title
-Where / When tiles          Find: the grid map beside the years strip (D4 B), under the panel's head
-DATA section (search, tabs) Find: the one search (_includes/one_search.html, D10 B) and the three catalog
-                            tabs, unchanged. #datasets is this catalog block
-Latest release tile         Find: one release line at the foot (version, date, tables, rows, DOI, links)
-What's observed tile        Find: the class silhouettes beside the Species tab's door; the caption on
-                            the release line
-Explore tile + APPS         Visualize and explore: the Explorer's featured card, the lens key, the
-  Explorer/General          General apps' cards (#explorer, #general)
-Get the data tile + ACCESS  Download programmatically: the five snippets, then Services · Packages as
-                            before (#access)
-BUILD                       Build something: its three cards (#build)
-DOCS card, ship's log tile  Learn how CalCOFI sampling and data work: the annotated section, the docs
-                            book's card, the four newest log entries
-—                           Ocean monitoring throughout California: the products whose products.yml
-                            entry has `doors: [monitor]` (the UCLA map, Offshore Wind Monitoring)
-APPS Dataset + Student      Other data visualizations: the same two tabs, from the same `tab:` keys
-the sticky section bar      retired: the doors do the bar's job (D17 A)
+door                                    opens        what is behind it
+1 See what CalCOFI collects             #learn       the annotated Line 90 section (#sec-full: the 14 pins, the axes);
+  "What is measured, where and how                   the kinds of data (#kinds), read from the record's categories —
+   deep, since 1949."                                the three long series first (fish eggs and larvae, hydrography,
+                                                     zooplankton), then the rest in category.order, each with its
+                                                     datasets, their years and its holdings; links to /datasets/,
+                                                     /measurements/, /species/, the docs, calcofi.org's sampling
+                                                     methods (the yellow); the docs card; the four newest log entries
+2 Explore and download on a map         #explore     the Explorer (the yellow), the lens key, its card (#explorer), the
+  "Pick species or measurements, a                   General apps (#general), then Other data visualizations (#viz:
+   time and a place. See them                        the Dataset · Student tabs). "Want one dataset as its provider
+   together and download the table."                 published it? Find the dataset →" opens door 3 in place
+3 Find and download a dataset           #find        the grid map beside the years strip (D4 B), the one search, the
+  "Know which dataset you want? Each                 three catalog tabs (#datasets), the release line. "Want several
+   has its own page with its source                  kinds of data together, or just one area and period? Use the
+   files and citation."                              Explorer →" goes straight to the Explorer
+4 Work with the data in code            #program     Get the data (five snippets), Services · Packages (#access), then
+  "R, Python, SQL and ERDDAP."                       Build on the pipeline (#build: calcofi4db, db-schema, workflows,
+                                                     GitHub as a quiet primary button) — no yellow
+5 Cite the data                         a link       https://calcofi.io/docs/cite.html
+6 Contribute data                       a link       https://calcofi.io/docs/provide.html
+7 Inform ocean and fisheries            #monitor     the products whose products.yml entry has `doors: [monitor]` (the
+  management · the statewide                         UCLA map, Offshore Wind Monitoring). Only what exists is drawn;
+  monitoring inventory, more to come                 a fact the build cannot read is omitted, so nothing is promised
 ```
 
-**The URL carries the open door.** Opening a door writes `#find` (or `#explore`, `#program`, `#build`,
-`#learn`, `#monitor`, `#viz`). On load, `?door=find` also opens it, and so do `?q=` (the search) and
+The split the coordinator asked to be visible: **one dataset in its original, authoritative form** is that
+dataset's page (door 3); **several kinds of observation together, or a subset by time and place**, is the
+Explorer (door 2). Each of the two panels carries one line saying when to use the other. Before
+2026-11-16 the doors were Dan's seven pathways (Find and download data · Visualize and explore · Download
+programmatically · Build something · Learn how CalCOFI sampling and data work · Ocean monitoring · Other
+data visualizations); Build and Other data visualizations are now the second groups of doors 4 and 2, so
+nothing a developer or a student project had was removed.
+
+**The URL carries the open door.** Opening a door writes `#learn` (or `#explore`, `#find`, `#program`,
+`#monitor`). On load, `?door=find` also opens it, and so do `?q=` (the search) and
 `?tab=<one of the Find tabs>`. The old anchors still land: an id inside a panel (`#datasets`, `#access`,
-`#general`) opens that panel and scrolls to the element. A tab id (`#species`, `#student`) opens the
-panel and selects the tab. The retired words `#data`, `#apps`, `#docs`, `#monitoring` and `#students`
-map to their doors. The header's words are the same links (D3 A), so DATA · APPS · ACCESS · BUILD open
-their doors in place, and the open door's word is marked `aria-current`. Each submenu item now links
-`/#<tab id>`, so General lands in Visualize and Student in Other data visualizations. DOCS and NEWS stay
+`#general`, `#explorer`, `#kinds`, and the two former doors `#build` and `#viz`) opens that panel and
+scrolls to the element, and `?door=build` / `?door=viz` do the same. A tab id (`#species`, `#student`)
+opens the panel and selects the tab. Either way the URL keeps that hash (not the door's), so the
+browser's own scroll to the fragment on load lands on the element, below the sticky header. The retired words `#data`, `#apps`, `#docs`, `#monitoring` and
+`#students` map to where they live now. The header's words are the same links (D3 A), so DATA · APPS ·
+ACCESS · BUILD open their doors in place (Find, Explore, Code, Code at its Build group), and the open
+door's word is marked `aria-current` (both ACCESS and BUILD while Code is open). Each submenu item links
+`/#<tab id>`, so General lands in Explore and Student in Explore's second group. DOCS and NEWS stay
 pages. The logic is one inline script at the foot of `index.html`. It runs before the deferred scripts,
 so a door named in the URL is open before the first paint. Each open fires `cc:door` on the document.
-With JavaScript off, every panel shows (a `<noscript>` rule).
+With JavaScript off, every panel shows (a `<noscript>` rule), in door order.
 
 **Every product is still drawn.** The cards are `_includes/product_card.html`, unchanged except for a
 `data-key`. `check_layout.py` asserts that every key in `products.yml` is drawn behind some door.
@@ -99,17 +115,20 @@ the five numbers         site.data.catalog.numbers. A value the build cannot rea
 **Motion**: the rosette casts down the CTD wire and the CUFES dots flow. Both stop under
 `prefers-reduced-motion`, and so do the panel's 220 ms entrance and the chevron turn.
 
-**Checked** by `scripts/check_layout.py` on `/`, `/?q=sardine&tab=species` and `/?q=krill`, at 1470
-and 375 px, in both themes. These assertions hold:
+**Checked** by `scripts/check_layout.py` on `/`, `/?door=viz`, `/?q=sardine&tab=species` and `/?q=krill`,
+at 1470 and 375 px, in both themes. These assertions hold:
 
-- The seven doors are in order, each controls its own panel and is at least 32 px tall.
+- The seven doors are in order (`FRONT_DOORS`), each at least 32 px tall. A panel door controls its own
+  panel; Cite and Contribute are links to their docs chapters (`FRONT_LINKS`).
 - At 1280 px and wider, every door ends above the 645 px fold.
-- On a phone, the head, the doors and the drawing stack in that order.
-- No door is open on load unless the URL names one, and then exactly one is.
+- On a phone, the head, the drawing and the doors stack in that order.
+- No door is open on load unless the URL names one, and then exactly one is — the one `?door=` names.
+- A click on a link to every old anchor (`FRONT_ANCHORS`: the doors, the ids and tabs inside panels, the
+  retired words) opens the door it now lives behind.
 - The page is at most 950 px tall at 1470 with no door open.
-- Opening Find and then Visualize leaves only Visualize open, and a second click closes it.
-- The first screen has no `--warn` and no yellow, and each panel has exactly one yellow button.
-- The quiet drawing has no pins. Learn's drawing has them, and each answers a ranged GET.
+- Opening Find and then Explore leaves only Explore open, and a second click closes it.
+- The first screen has no `--warn` and no yellow, and each panel has exactly one yellow button (Code none).
+- The quiet drawing has no pins. The See-what-CalCOFI-collects drawing has them, and each answers a ranged GET.
 - The five numbers equal the record's.
 - The strip has one row per dataset, and the map has one mark per cell.
 - Every product is drawn.
@@ -140,8 +159,8 @@ question 8).
 
 **The tabs.** Every crowded section is tabbed, each tab with a count pill: DATA is *Datasets ·
 Species · Measurements*, ACCESS is *Services · Packages* and Other data visualizations is *Dataset ·
-Student* (issue #30 took APPS' Explorer and General out of tabs, into the Visualize door); BUILD keeps
-three cards. A tab is declared in `sections[].tabs[]` (`id`, `title`,
+Student* (issue #30 took APPS' Explorer and General out of tabs, into the Explore door, whose second
+group carries these two tabs); BUILD keeps three cards, the second group of Work with the data in code. A tab is declared in `sections[].tabs[]` (`id`, `title`,
 `blurb`, and an optional `count:` naming a catalog number rather than a card count) and a card joins
 one with `tab:` — tab ids are unique across sections, so a panel selects on `tab:` alone.
 `assets/tabs.js` (≤ 110 lines, no dependency) sets `aria-selected`, hides the other panels, moves on
