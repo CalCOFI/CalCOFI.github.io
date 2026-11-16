@@ -162,11 +162,24 @@ the three-slug contract are untouched — but its card left the Build grid for t
 
 **The submenus.** DATA, APPS and ACCESS each list their tabs on hover or focus, with a count pill. A tab whose full listing lives on its own page carries `url:` (and the `site.data` key it needs, `data:`) in `products.yml`, and the header links that page instead of the homepage tab — Species → `/species/`, Measurements → `/measurements/`; Datasets stays a homepage tab because the whole grid is there.
 It is CSS, not a library: the section link is the trigger, `:hover` / `:focus-within` opens it, and
-`assets/tabs.js` blurs the focused link on Escape, which is the whole close. The brand hides
-`.cc-links` under 760 px, so on a phone a tap on the word goes to the section. The whole behaviour
+`assets/tabs.js` blurs the focused link on Escape, which is the whole close. The whole behaviour
 hangs off **one class** — `cc-submenus` on the `<nav class="cc-links">` in `_layouts/default.html`:
 remove it and the header is flat seven words again, with no other edit anywhere (the plan's open
 question 8).
+
+**The menu button, and a header that never wraps** (2026-11-16, with FAQ the eighth item). The row —
+lockup, tagline, the eight items, the feedback and theme buttons — fits one line from 1,089 px
+(measured on seven pages in both themes), so below **1,100 px** the nav hides and a hamburger in the
+icon cluster opens the same nav as a column, each word with its tab items inline (`style.css`
+`@media (max-width: 1099px)`; `NAV_BREAK` in `assets/tabs.js`, which closes the menu when the window
+grows past it, and in `check_layout.py` — change all three together). Before, 480–1,040 px drew the
+nav on two to five lines (a 187 px header at 640). Under 600 px the empty spacer and the brand's gap
+no longer push the theme toggle onto a second line (a 101 px header at 375 px, 109 px at 480–552),
+and from 480 px the tagline sets on two short lines in its own box; the row is one line from 360 px
+(at 320 px it still wraps). brand/v2 is untouched — every rule is this site's own `style.css`, which
+no other product (docs, the Explorer, db-query …) loads. `check_layout.py --nav` (in `pr.yml`)
+asserts one line of nav at 1,100, 1,280 and 1,470 px, the menu button at 1,024, 800, 640 and 375 px
+with all eight items when opened, no header wrap and no overlap, on four pages, both themes.
 
 **The tabs.** Every crowded section is tabbed, each tab with a count pill: DATA is *Datasets ·
 Species · Measurements*, ACCESS is *Services · Packages* and Other data visualizations is *Dataset ·

@@ -648,7 +648,7 @@ PROBE = r"""
     };
   }
 
-  // the phone menu (Ben, 2026-09-10): under 480 px the brand hides .cc-links and the hamburger in the
+  // the menu button (Ben, 2026-09-10; under NAV_BREAK px since 2026-11-16): the hamburger in the
   // icon cluster must open the same nav as a column — every word, every submenu inline, no
   // horizontal scroll while open — and Escape must close it. Measured by clicking the button.
   const header = d.querySelector(".cc-header"), burger = header && header.querySelector(".cc-menu-button");
@@ -666,6 +666,23 @@ PROBE = r"""
       closedOnEsc = !header.classList.contains("cc-nav-open");
     }
     out.phoneMenu = { buttonShown, opened, expanded, wordsOpen, subsOpen, scrollW, closedOnEsc };
+  }
+  // the header never wraps (2026-11-16): its row is one line at every width — the nav's items share
+  // one top when the nav shows, and the row's own children (lockup, tagline, nav or menu button,
+  // the icon buttons) share one line, measured with the menu closed
+  if (header) {
+    const row = [...header.children].filter(el => el.getBoundingClientRect().width > 0 && cs(el).position !== "absolute");
+    const items = nav && cs(nav).display !== "none" ? [...nav.children].filter(el => el.matches("a, .cc-m")) : [];
+    const mid = el => { const b = el.getBoundingClientRect(); return (b.top + b.bottom) / 2; };
+    out.headerRow = {
+      navShown: items.length > 0,
+      navTops: [...new Set(items.map(el => Math.round(el.getBoundingClientRect().top)))].length,
+      rowLines: row.length ? Math.round(Math.max(...row.map(mid)) - Math.min(...row.map(mid))) : 0,
+      height: Math.round(header.getBoundingClientRect().height),
+      overlap: items.length && burger ? (() => { const last = items[items.length - 1].getBoundingClientRect().right;
+        const btns = [...header.querySelectorAll("button")].filter(b => b.getBoundingClientRect().width > 0);
+        return btns.length ? Math.round(last - Math.min(...btns.map(b => b.getBoundingClientRect().left))) : null; })() : null
+    };
   }
 
   // do the two catalog pages exist on this build? (the DATA submenu must link them when they do)
@@ -1300,6 +1317,12 @@ MAX_MM_PAGE_H = 1850
 # request). DOCS, FAQ and NEWS are pages, so the section bar draws four; the header draws all seven
 # and the outbound link.
 NAV_WORDS = ["Data", "Apps", "Access", "Build", "Docs", "FAQ", "News", "calcofi.org ↗"]
+# below this width the menu button carries the nav (= style.css @media (max-width: 1099px) and
+# assets/tabs.js NAV_BREAK): the eight items fit one line from 1,089 px, so the header never wraps
+NAV_BREAK = 1100
+# the widths the header's own assertions are run at by --nav (one line from NAV_BREAK, the menu below)
+NAV_WIDTHS = [1100, 1280, 1470, 1024, 800, 640, 375]
+NAV_PATHS = ["/", "/datasets/swfsc_ichthyo/", "/species/", "/measurements/"]
 # the sections whose tabs are CARDS, so a pill must equal the number of cards in its panel. DATA's
 # three pills count datasets, species and measurements — the release's numbers, checked against the
 # page's own inline record instead (the band assertions above already do it).
@@ -2279,14 +2302,27 @@ def check(path, r, width, theme, fails, notes):
                     want = {"species": "/species/", "measurements": "/measurements/"}.get(t["title"].split()[0].lower())
                     if want and r.get("pageExists", {}).get(want) and (t.get("href") or "").rstrip("/") + "/" != want:
                         fails.append(f"{where}: the DATA submenu's {t['title']!r} links {t.get('href')!r}, not {want} (the page exists)")
-    elif nav and width < 900:
-        notes.append(f"{where}: the header nav is hidden (the brand hides it under 480px); the phone menu carries it")
+    elif nav and width < NAV_BREAK:
+        notes.append(f"{where}: the header nav is hidden under {NAV_BREAK}px; the menu button carries it")
 
-    # ── the phone menu: the hamburger under 480 px (Ben, 2026-09-10: "NO menu in the mobile version") ─
+    # ── the header never wraps (2026-11-16): one line of nav from NAV_BREAK up, the menu button below
+    hrow = r.get("headerRow")
+    if hrow:
+        if width >= NAV_BREAK and not hrow["navShown"]:
+            fails.append(f"{where}: the header nav is hidden at {width}px; it shows from {NAV_BREAK}px")
+        if hrow["navShown"] and hrow["navTops"] > 1:
+            fails.append(f"{where}: the header nav wraps onto {hrow['navTops']} lines at {width}px")
+        if hrow["rowLines"] > 8:
+            fails.append(f"{where}: the header row is not one line ({hrow['rowLines']}px between its items' middles, "
+                         f"{hrow['height']}px tall)")
+        if hrow["overlap"] is not None and hrow["overlap"] > -8:
+            fails.append(f"{where}: the header nav runs into the icon buttons ({hrow['overlap']}px)")
+
+    # ── the menu button under NAV_BREAK px (Ben, 2026-09-10: "NO menu in the mobile version") ─
     pm = r.get("phoneMenu")
-    if width < 480:
+    if width < NAV_BREAK:
         if not pm or not pm["buttonShown"]:
-            fails.append(f"{where}: no phone menu button under 480px, where the brand hides the nav")
+            fails.append(f"{where}: no menu button under {NAV_BREAK}px, where the nav would wrap")
         else:
             if not pm["opened"]:
                 fails.append(f"{where}: the phone menu button does not open the nav")
@@ -2303,7 +2339,7 @@ def check(path, r, width, theme, fails, notes):
             if not fails or not any(where in f and "phone menu" in f for f in fails):
                 notes.append(f"{where}: the phone menu opens with {pm['wordsOpen']} items and {pm['subsOpen']} submenus inline, no horizontal scroll, closes on Escape")
     elif pm and pm["buttonShown"]:
-        fails.append(f"{where}: the phone menu button is visible at {width}px; it belongs under 480px only")
+        fails.append(f"{where}: the menu button is visible at {width}px; it belongs under {NAV_BREAK}px only")
 
     # ── the tabsets: one selected tab, one drawn panel, and a pill that is the panel's own count ─
     for ts in r.get("tabsets") or []:
@@ -2419,6 +2455,8 @@ def main():
     ap.add_argument("--themes", nargs="+", default=["light", "dark"])
     ap.add_argument("--browser", default="chromium")
     ap.add_argument("--wait", type=int, default=2500, help="ms to settle (fonts, masonry) before measuring")
+    ap.add_argument("--nav", action="store_true",
+                    help="the header's breakpoint only: NAV_PATHS at NAV_WIDTHS (pr.yml runs it after the full check)")
     a = ap.parse_args()
 
     fails, notes = [], []
@@ -2426,8 +2464,13 @@ def main():
     paths = resolve_face_exemplars(DEFAULT_PATHS, _read_json(os.path.join(data, "measurements.json")),
                                    _read_json(os.path.join(data, "measurements_media.json")), notes)
     urls = a.url or [a.base.rstrip("/") + p for p in paths]
+    widths = a.widths
+    if a.nav:
+        # the header alone, at the widths either side of NAV_BREAK: one line from it, the menu below
+        urls = a.url or [a.base.rstrip("/") + p for p in NAV_PATHS]
+        widths = NAV_WIDTHS
     for url in urls:
-        for width in a.widths:
+        for width in widths:
             for theme in a.themes:
                 r = probe(url, width, theme, a.browser, a.wait)
                 if "error" in r:

@@ -122,10 +122,12 @@
     if (el && el.closest && el.closest(".cc-links .cc-m")) el.blur();
   });
 
-  // the phone menu (Ben, 2026-09-10): under 480 px the brand hides .cc-links; the hamburger in the
+  // the menu button (Ben, 2026-09-10; from 2026-11-16 under NAV_BREAK, style.css's breakpoint — the
+  // width below which the header's eight items no longer fit one line): the hamburger in the
   // icon cluster toggles one class on the header and the CSS shows the same nav as a column. A tap
   // on any link closes it (the page jumps to the section), Escape closes it and returns focus to
   // the button, and growing past the breakpoint closes it so the desktop header is never stale.
+  var NAV_BREAK = 1100;   // = style.css @media (max-width: 1099px) and check_layout.py NAV_BREAK
   var header = document.querySelector(".cc-header");
   var burger = header && header.querySelector(".cc-menu-button");
   if (header && burger) {
@@ -143,7 +145,7 @@
       if (e.key === "Escape" && header.classList.contains("cc-nav-open")) { setNav(false); burger.focus(); }
     });
     window.addEventListener("resize", function () {
-      if (window.innerWidth >= 480 && header.classList.contains("cc-nav-open")) setNav(false);
+      if (window.innerWidth >= NAV_BREAK && header.classList.contains("cc-nav-open")) setNav(false);
     });
   }
 })();

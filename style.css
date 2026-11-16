@@ -246,6 +246,9 @@ a.fd-door:hover .fd-door-t, a.fd-door:focus-visible .fd-door-t { color: var(--ac
   #layout:has(.fd-screen) .v2-footer > .cc-container { grid-template-columns: minmax(0, 1fr); }
   #layout:has(.fd-screen) .v2-footer .cols { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
 }
+/* a touch-width tablet (641–899 px) gets the 32 px tap target check_layout asks under 900 px; the
+   30 px desktop row was only ever measured at 1470 and 375 until the header's --nav widths (2026-11-16) */
+@media (max-width: 899px) { .fd-yname { min-height: 32px; } }
 @media (max-width: 640px) {
   /* the list of datasets on a phone: one column, the name (wrapping if it must) above its years, each
      name a 40 px tap target; nothing is wider than the card, so the page never scrolls sideways */
@@ -1220,22 +1223,46 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
    the phone menu below shows the same items inline instead */
 @media (max-width: 760px) { .cc-header .cc-links.cc-submenus .cc-m > ul { display: none !important; } }
 
-/* ── the phone menu (Ben, 2026-09-10: "there is NO menu in the mobile version") ──────────────
+/* ── the menu button (Ben, 2026-09-10: "there is NO menu in the mobile version") ───────────────
    The brand hides .cc-links under 480 px (brand/v2/theme.css) and left nothing in its place. A
    hamburger joins the icon cluster at the right — the lockup stays far left, as the brand contract
    says — and opens the SAME nav as a column under the header row, each section word with its tab
    items inline. One class on the header (`cc-nav-open`, assets/tabs.js) is the whole state; no
-   second nav, no framework. */
+   second nav, no framework.
+
+   THE BREAKPOINT IS 1100 px (2026-11-16, with FAQ the eighth item): the header row holds the
+   lockup, the tagline, the eight items and two icon buttons on ONE line from 1,089 px (measured on
+   every page, both themes), so the menu button takes over below 1,100 and the nav never wraps —
+   before this, 480–1,040 px drew it on two to five lines, a 187 px header at 640. The same number
+   is in assets/tabs.js (NAV_BREAK) and scripts/check_layout.py (NAV_BREAK); change all three
+   together. brand/v2 stays as it is (frozen): its own rule under 480 px still hides the tagline
+   there; this block only adds, from this site's stylesheet. No other product loads it. */
+@media (max-width: 1099px) {
+  .cc-header:not(.cc-nav-open) .cc-links { display: none; }
+}
 .cc-header .cc-menu-button { display: none; }
 .cc-header .cc-menu-button svg { width: 1.25rem; height: 1.25rem; fill: currentColor; }
 .cc-header .cc-menu-button .cc-menu-icon-close { display: none; }
 .cc-header.cc-nav-open .cc-menu-button .cc-menu-icon-close { display: block; }
 .cc-header.cc-nav-open .cc-menu-button .cc-menu-icon-open { display: none; }
 @media (max-width: 479px) {
-  .cc-header { flex-wrap: wrap; }
   /* the row must hold the lockup and three icon buttons at 375 px; the "CalCOFI.io" title goes on
      this site alone — its root IS the lockup's, and the brand already hides its subtitle here */
   .cc-header .cc-title { display: none; }
+}
+/* the header row is ONE line at every width (2026-11-16). Under 600 px the brand's gap also fell
+   either side of the empty spacer, so the theme toggle wrapped to a second line: a 101 px header
+   at 375 px, 109 px at 480–552 px where the tagline returns. The spacer goes (the first icon
+   button's auto margin does its job), the gap is 8 px, and from 480 px the tagline — kept, as the
+   brand shows it there — sets on two short lines in its own box. One line from 360 px. */
+@media (max-width: 599px) {
+  .cc-header { gap: 8px; }
+  .cc-header .cc-spacer { display: none; }
+  .cc-header .cc-menu-button { margin-left: auto; }
+  .cc-header .cc-tagline { white-space: normal; max-width: 6.5em; line-height: 1.15; }
+}
+@media (max-width: 1099px) {
+  .cc-header { flex-wrap: wrap; }
   .cc-header .cc-menu-button { display: inline-flex; }
   .cc-header.cc-nav-open .cc-links {
     display: flex; flex-direction: column; align-items: stretch; gap: 0;
