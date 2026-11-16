@@ -8,7 +8,8 @@ exactly (pinned in _test/downloads_test.rb), or the layout check and the page wo
   manifest   a written csv is the button's target; xlsx not written is not a format
   record     the record's own `bundle` rows win over the manifest
   holding    a holding (in holdings[], not datasets[]) never has an offer
-  absent     no manifest, or a schema 2.x one: no offers at all (no button anywhere)
+  absent     no manifest, or one older than 1.x: no offers at all (no button anywhere)
+  hashed     the announced shape (schema 2.x, content-addressed names, checked_version, history)
 """
 import importlib.util, json, os, shutil, tempfile, unittest
 
@@ -59,8 +60,16 @@ class DownloadOffers(unittest.TestCase):
     def test_absent_or_foreign(self):
         self.record("x_all")
         self.assertEqual(cl.download_offers(self.dir), {})
-        self.write("zip_manifest.json", dict(MANIFEST, schema_version="2.0"))
+        self.write("zip_manifest.json", dict(MANIFEST, schema_version="0.9"))
         self.assertEqual(cl.download_offers(self.dir), {})
+
+    def test_content_addressed_shape(self):
+        hashed = json.load(open(os.path.join(HERE, "fixtures", "zip_manifest_hashed.json")))
+        self.record("x_hash")
+        self.write("zip_manifest.json", hashed)
+        o = cl.download_offers(self.dir)["x_hash"]
+        self.assertEqual(o["formats"], ["csv", "xlsx"])
+        self.assertEqual(o["primary"], "https://storage.googleapis.com/calcofi-db/publish/zip/x_hash/x_hash_csv_3a91359fe9086d33.zip")
 
 
 if __name__ == "__main__":

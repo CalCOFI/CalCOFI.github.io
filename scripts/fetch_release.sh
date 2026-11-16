@@ -55,7 +55,7 @@
 #                                 a species page constrains its ERDDAP link only where the server
 #                                 says the column exists
 #   _data/zip_manifest.json       the per-dataset zips a person downloads (publish_to-zip.qmd in
-#                                 workflows, schema 1.0): csv · xlsx (small datasets) · parquet, each
+#                                 workflows, schema 1.x+): csv · xlsx (where it fits a sheet) · parquet, each
 #                                 with its URL, bytes, sha256 and, where a format is not written, the
 #                                 reason in plain words. _plugins/downloads.rb draws the Download
 #                                 button, its dialog and the catalog rows' control from it. Silently
@@ -395,8 +395,10 @@ if [ -s "$DATA/zip_manifest.json" ] && python3 - "$DATA/zip_manifest.json" "$ZIP
 import json, sys
 path, url, promoted = sys.argv[1:4]
 d = json.load(open(path))
-if not str(d.get("schema_version", "")).startswith("1."):
-    print(f"NOTE: zip manifest schema {d.get('schema_version')!r}, expected 1.x — no Download buttons")
+import re
+m = re.match(r"\d+", str(d.get("schema_version", "")))
+if not m or int(m.group()) < 1:      # a HIGHER schema is read: its fields are additive, the rest ignored
+    print(f"NOTE: zip manifest schema {d.get('schema_version')!r}, expected 1.x or later — no Download buttons")
     sys.exit(1)
 ds = d.get("datasets") or []
 n = sum(1 for x in ds for b in x.get("bundles") or [] if b.get("written"))

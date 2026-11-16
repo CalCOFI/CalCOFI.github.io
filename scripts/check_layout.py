@@ -240,11 +240,12 @@ DL_ORDER = ("csv", "xlsx", "parquet")
 def download_offers(data_dir):
     """{dataset_key: {formats, urls, primary, primary_format}} for every dataset the build would draw a
     Download button for — _plugins/downloads.rb's rule: the record's own `bundle` distributions
-    first, else the zip manifest (schema 1.x); a holding never; nothing written, no entry."""
+    first, else the zip manifest (schema 1.x or higher; unknown fields ignored); a holding never;
+    nothing written, no entry. URLs are compared exactly as given, never built."""
     rec = _read_json(os.path.join(data_dir, "datasets.json")) or {}
     man = _read_json(os.path.join(data_dir, "zip_manifest.json")) or {}
     by_man = {}
-    if str(man.get("schema_version", "")).startswith("1."):
+    if re.match(r"\d+", str(man.get("schema_version", ""))) and int(re.match(r"\d+", str(man["schema_version"])).group()) >= 1:
         by_man = {d.get("dataset_key"): d.get("bundles") or [] for d in man.get("datasets") or []}
     out = {}
     for d in rec.get("datasets") or []:

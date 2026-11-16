@@ -483,7 +483,7 @@ netCDF, ERDDAP "CSV" links that answered 403), and /datasets/ had none. Now:
 ```
 _data/zip_manifest.json    scripts/fetch_release.sh, from {calcofi-db}/publish/zip/manifest.json
                            (workflows publish_to-zip.qmd, schema 1.0): per dataset, one zip per format
-                           — csv (every dataset) · xlsx (only where every table has <= 250,000 rows)
+                           — csv (every dataset) · xlsx (only where every table fits an Excel sheet)
                            · parquet — each with README.md, CITATION.md/.bib, LICENSE.txt, columns.csv;
                            a format not written carries its reason in plain words
 _plugins/downloads.rb      Downloads.offer: the record's own `bundle` distributions first, else the
@@ -495,7 +495,7 @@ assets/download.js         the dialog (the button, #download on the URL, Esc, Cl
 assets/download.css        the button, the dialog and the rows' control (loaded from default.html)
 ```
 
-- **The dataset page**: a yellow **DOWNLOAD CSV · 32.4 MB** under the head's numbers — the space the
+- **The dataset page**: a yellow **DOWNLOAD CSV · 425 KB** (the default zip's own size) under the head's numbers — the space the
   map beside it leaves empty, so the head is no taller — above the 1280 × 800 fold. It opens a native
   `<dialog>`: **CSV** first (one click downloads it, and it has the focus), **Excel**, or the
   manifest's own reason it is not offered; each with one plain line on what the format is for, its
@@ -524,8 +524,17 @@ assets/download.css        the button, the dialog and the rows' control (loaded 
   ZIP_MANIFEST_URL=~/_big/calcofi/publish/zip/manifest.json scripts/build.sh
   ```
 
+- **The contract will move, and this code must not need to.** Zip names are going to be
+  content-addressed, each bundle will gain `built_version`, `checked_version` and `history`, and
+  `schema_version` will bump. So nothing here parses or builds a file name or URL: each bundle's
+  `url` is used exactly as given, the suggested download name is its last path segment, unknown
+  fields are ignored, and any `schema_version` of 1 or higher is read. The dialog's "From release
+  v…" is the release the zip was last *confirmed* against (`checked_version`, else `version`), so it
+  stays true when the data are unchanged across releases. `_test/fixtures/zip_manifest_hashed.json`
+  is that shape, beside today's `zip_manifest.json`.
 - **Checked** by `_test/downloads_test.rb` (all three formats; Excel not written, with its reason;
-  the licence kinds; a holding; the manifest absent; the record's bundles winning) and
+  the licence kinds; a holding; the manifest absent; the record's bundles winning; the
+  content-addressed shape) and
   `check_layout.py`'s `download` block: exactly one button in a dataset page's head, ending above
   the 1280 × 800 fold at 1280 and wider and linking the CSV zip; its dialog closed on load and CSV
   first; none on a holding or without zips; one row control per dataset with zips on /datasets/,

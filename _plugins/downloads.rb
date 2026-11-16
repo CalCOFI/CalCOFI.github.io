@@ -1,14 +1,14 @@
 # _plugins/downloads.rb — what a dataset's Download button and its dialog offer.
 #
 # The release pipeline (workflows publish_to-zip.qmd) builds, per dataset, one zip per format:
-# `csv` (every dataset), `xlsx` (only where every table is small enough for a workbook) and `parquet`
+# `csv` (every dataset), `xlsx` (only where every table fits an Excel sheet) and `parquet`
 # (every dataset). Each zip holds the tables plus README.md, CITATION.md/.bib, LICENSE.txt and
 # columns.csv. They are described in two places, read in this order:
 #
 #   1. the record itself — `distributions[]` rows of kind `bundle` with a format of csv · xlsx ·
 #      parquet (calcofi4db, once build_dataset_catalog() carries them)
 #   2. the zip manifest, `_data/zip_manifest.json` (scripts/fetch_release.sh, from
-#      {calcofi-db}/publish/zip/manifest.json, schema 1.0), one entry per dataset with its bundles[]
+#      {calcofi-db}/publish/zip/manifest.json, schema 1.x or later), one entry per dataset with its bundles[]
 #
 # With neither, `offer` is nil and no Download button, row control or "Download as a zip" block is
 # drawn anywhere: that is the state until the zips are first uploaded, so the site is safe to deploy
@@ -20,7 +20,16 @@
 # _includes/licence_chip.html's rule on the RECORD's attribution: an unstated licence is said to be
 # unstated and never implies open terms; custom terms link the provider's own page.
 #
-# Pure functions with no Jekyll dependency, so _test/downloads_test.rb pins them on fixtures.
+# The contract is read defensively, because it is going to move (coordinator, 2026-11-16): file
+# names will become content-addressed, each bundle will gain `built_version` / `checked_version` /
+# `history`, and `schema_version` will bump. So a file name or URL is NEVER parsed or built here —
+# each bundle's `url` is used exactly as given and the suggested download name is that URL's last
+# path segment; unknown fields are ignored; any schema_version of major 1 or higher is read. The
+# version beside the button is the release the zip was last CONFIRMED against (`checked_version`,
+# else `version`), so "from release v…" stays true when the data are unchanged across releases.
+#
+# Pure functions with no Jekyll dependency, so _test/downloads_test.rb pins them on fixtures (one in
+# today's shape, one in the announced content-addressed shape).
 module CalCOFI
   module Downloads
     module_function
@@ -41,12 +50,21 @@ module CalCOFI
     # what travels with the tables in every zip (the manifest's contract), in plain words
     INSIDE = "a readme, how to cite, the licence and a column dictionary"
 
-    # {dataset_key => manifest entry}; {} for a manifest that is absent or not schema 1.x
+    # {dataset_key => manifest entry}; {} for a manifest that is absent, unreadable or older than 1.x.
+    # A HIGHER schema_version is read: the fields used here are additive-safe, the rest ignored.
     def index(manifest)
-      return {} unless manifest.is_a?(Hash) && manifest["schema_version"].to_s.start_with?("1.")
+      return {} unless manifest.is_a?(Hash) && schema_ok?(manifest["schema_version"])
       (manifest["datasets"] || []).each_with_object({}) do |d, h|
         h[d["dataset_key"]] = d if d.is_a?(Hash) && d["dataset_key"]
       end
+    end
+
+    def schema_ok?(v) = v.to_s.match?(/\A\d+(\.|\z)/) && v.to_s.to_i >= 1
+
+    # the name a browser saves the zip under: the URL's last path segment, as given (never built)
+    def file_name(url)
+      seg = url.to_s.sub(/[?#].*\z/, "").split("/").last
+      present?(seg) ? seg : nil
     end
 
     # the record's own zips: distributions[] of kind `bundle` in one of the three formats (a DwC-A
@@ -58,19 +76,19 @@ module CalCOFI
       return nil if rows.empty?
       rows.map do |x|
         { "format" => x["format"], "written" => x.key?("written") ? x["written"] : true,
-          "url" => x["url"], "file" => x["file"] || x["url"].to_s.split("/").last,
+          "url" => x["url"],
           "bytes" => x["bytes"], "sha256" => x["sha256"], "excel_openable" => x["excel_openable"],
           "rows" => x["rows"], "note" => x["note"], "reason" => x["reason"],
-          "version" => x["version"] || x["since"] }
+          "checked_version" => x["checked_version"], "version" => x["version"] || x["since"] }
       end
     end
 
     # the bundles to offer for a record, the record's own first: [bundles, "record"|"manifest", version]
     def bundles_for(r, entry)
       if (rb = record_bundles(r))
-        [rb, "record", rb.map { |b| b["version"] }.compact.first]
+        [rb, "record", rb.map { |b| b["checked_version"] || b["version"] }.compact.first]
       elsif entry.is_a?(Hash) && entry["bundles"].is_a?(Array)
-        [entry["bundles"], "manifest", entry["version"]]
+        [entry["bundles"].select { |b| b.is_a?(Hash) }, "manifest", entry["checked_version"] || entry["version"]]
       else
         [[], nil, nil]
       end
@@ -133,7 +151,8 @@ module CalCOFI
           n = (b["rows"] || {}).size
           n = (entry.is_a?(Hash) ? (entry["tables"] || []).size : 0) if n.zero?
           { "format" => f, "label" => meta["label"], "about" => meta["about"], "written" => true,
-            "url" => b["url"], "file" => b["file"], "bytes" => b["bytes"],
+            "url" => b["url"], "file" => file_name(b["url"]), "bytes" => b["bytes"],
+            "checked_version" => b["checked_version"],
             "size" => b["bytes"] ? bytes.call(b["bytes"]) : nil, "sha256" => b["sha256"],
             "n_tables" => n.positive? ? n : nil,
             "inside" => "#{n.positive? ? "#{n} data table#{'s' unless n == 1}" : 'the data tables'}, #{INSIDE}",
@@ -145,6 +164,8 @@ module CalCOFI
       end
       primary = opts.find { |o| o["written"] && o["format"] == "csv" } || opts.find { |o| o["written"] }
       opts.each { |o| o["primary"] = o.equal?(primary) }
+      # the release the default zip was last confirmed against, else the dataset entry's
+      version = primary["checked_version"] || version
       key = r["dataset_key"]
       {
         "key"     => key,

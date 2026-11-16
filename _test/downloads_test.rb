@@ -116,11 +116,41 @@ class DownloadsTest < Minitest::Test
 
   def test_manifest_absent_or_foreign_or_unwritten
     assert_equal({}, D.index(nil))
-    assert_equal({}, D.index(MANIFEST.merge("schema_version" => "2.0")))
+    assert_equal({}, D.index(MANIFEST.merge("schema_version" => "0.9")))
+    assert_equal({}, D.index(MANIFEST.merge("schema_version" => nil)))
     assert_nil D.offer(record("x_all"), nil)
     assert_nil D.offer(record("x_all"), D.index(nil)["x_all"])
     assert_nil offer("x_none")
     assert_nil offer("x_not_in_manifest")
+  end
+
+  # ── the announced contract: content-addressed names, checked_version, history, schema 2.x ──
+  HASHED = JSON.parse(File.read(File.join(__dir__, "fixtures", "zip_manifest_hashed.json")))
+
+  def test_content_addressed_shape_survives
+    idx = D.index(HASHED)
+    assert_equal ["x_hash"], idx.keys, "a higher schema_version is read, unknown fields ignored"
+    o = D.offer(record("x_hash", license: "CC0-1.0"), idx["x_hash"], bytes: BYTES)
+    # the URL is used exactly as given; the download name is its last path segment, never `file`
+    assert_equal "https://storage.googleapis.com/calcofi-db/publish/zip/x_hash/x_hash_csv_3a91359fe9086d33.zip", o["primary"]["url"]
+    assert_equal "x_hash_csv_3a91359fe9086d33.zip", o["primary"]["file"]
+    xl = o["main"].find { |x| x["format"] == "xlsx" }
+    assert_equal "https://storage.googleapis.com/calcofi-db/publish/zip/x_hash/x_hash_xlsx_b45cce5c29f5cecd.zip?generation=1", xl["url"]
+    assert_equal "x_hash_xlsx_b45cce5c29f5cecd.zip", xl["file"]
+    # the version shown is the release the zip was last CONFIRMED against, not where it was built
+    assert_equal "v9.9.12", o["version"]
+    assert_empty o["other"], "parquet not written, and an unknown format is never offered"
+    assert_equal %w[csv xlsx], o["formats"]
+  end
+
+  def test_version_prefers_checked_version
+    entry = { "dataset_key" => "v", "version" => "v1", "checked_version" => "v3",
+              "bundles" => [{ "format" => "csv", "written" => true, "url" => "https://e/a.zip" }] }
+    assert_equal "v3", D.offer(record("v"), entry)["version"]
+    entry["bundles"][0]["checked_version"] = "v4"
+    assert_equal "v4", D.offer(record("v"), entry)["version"]
+    entry.delete("checked_version"); entry["bundles"][0].delete("checked_version")
+    assert_equal "v1", D.offer(record("v"), entry)["version"]
   end
 
   # ── the record's own bundles win ───────────────────────────────────────────
