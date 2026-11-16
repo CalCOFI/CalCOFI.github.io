@@ -30,6 +30,7 @@ require "net/http"
 require "uri"
 require_relative "derive_id"
 require_relative "release_doi"
+require_relative "downloads"
 
 module CalCOFI
   # ── small formatters ───────────────────────────────────────────────────────
@@ -100,8 +101,6 @@ module CalCOFI
   class Catalog
     include Fmt
     attr_reader :rec, :site, :grid, :land, :coverage_stations
-
-    ERDDAP_FORMATS = [%w[csv CSV], %w[json JSON]].freeze
 
     def initialize(site, rec, grid, land = [], coverage = {})
       @site = site
@@ -902,7 +901,12 @@ module CalCOFI
                          end,
         "since"      => d["since_version"],
         "contrib"    => (cov["contributes_to"] || []).map { |ct| { "category" => ct["category"], "n" => (ct["variables"] || []).size } },
-        "ways"    => ways(d).select { |w| w["kind"] == "source" || %w[way-explorer way-erddap ui-data].include?(w["icon"]) }
+        "ways"    => ways(d).select { |w| w["kind"] == "source" || %w[way-explorer way-erddap ui-data].include?(w["icon"]) },
+        # the row's Download control: the dataset page's dialog, opened by its #download anchor
+        "download" => (o = downloads(d)) && {
+          "url"  => "#{page_url(d)}#download", "what" => o["what"],
+          "aria" => "Download #{d['dataset_name_short'] || d['dataset_name'] || d['dataset_key']}: #{o['what']}, or another format"
+        }
       }
     end
 
@@ -1022,6 +1026,41 @@ module CalCOFI
       end
       add.call("As JSON", abs("/datasets/#{key}.json"), "ui-data")
       out
+    end
+
+    # ── the Download button (_plugins/downloads.rb) ──────────────────────────
+    # The zips a person can take: the record's own `bundle` rows, else the zip manifest
+    # (_data/zip_manifest.json, scripts/fetch_release.sh). nil — and so no Download button, no row
+    # control and no "Download as a zip" block anywhere — when neither has this dataset.
+    def zip_index = @zip_index ||= Downloads.index(@site.data["zip_manifest"])
+
+    def downloads(r)
+      @downloads ||= {}
+      key = r["dataset_key"]
+      return @downloads[key] if @downloads.key?(key)
+      w    = holding?(r) ? [] : ways(r)
+      part = w.find { |x| x["icon"] == "way-explorer" } || w.find { |x| x["icon"] == "way-query" }
+      o = Downloads.offer(r, zip_index[key], holding: holding?(r), contact: contact,
+                          part: part && { "label" => part["label"], "url" => part["url"],
+                                          "app" => part["icon"] == "way-explorer" },
+                          bytes: ->(b) { Fmt.bytes(b) })
+      if o
+        # the technical ways, for whoever wants them, under "Other formats": ERDDAP's subset form
+        # (a whole table is refused there, so the form is the honest link) and the CF netCDF
+        dist = r["distributions"] || []
+        eps  = []
+        cur  = erddap_current(dist)
+        if (e = cur.find { |x| x["id"] == key } || cur.first)
+          eps << { "label" => "ERDDAP subset form", "url" => e["url"],
+                   "about" => "pick variables, years and an area, then CSV, JSON, netCDF and more" }
+        end
+        if (nc = dist.find { |x| x["format"] == "netcdf" && x["status"] != "superseded" && Fmt.present(x["url"]) })
+          eps << { "label" => "CF netCDF", "url" => nc["url"],
+                   "about" => ["one self-describing file for netCDF tools", Fmt.bytes(nc["bytes"])].compact.join(", ") }
+        end
+        o["endpoints"] = eps
+      end
+      @downloads[key] = o
     end
 
     # the years strip under the map (D15): observations per year on the RELEASE's own axis — the
@@ -1258,8 +1297,13 @@ module CalCOFI
     #     dataset" is the meta, not a chip, so an app that merely opens is never mis-sold.
     #   · Metadata records is a two-up list; Archives & portals is a full-width TABLE — role ·
     #     portal · purpose · status · identifier — with the archive-of-record policy stated above it.
-    #   · ERDDAP: CSV · JSON · page · info · graph. The netCDF column is gone — the CF netCDF above it
-    #     is the netCDF to take, and two different netCDFs of one table confused.
+    #   · ERDDAP: subset form · info · graph. The netCDF column is gone — the CF netCDF above it
+    #     is the netCDF to take, and two different netCDFs of one table confused. The whole-table CSV
+    #     and JSON links went on 2026-11-16: ERDDAP answers a request with no constraint 403, so
+    #     they promised a file that never came; the subset form (the tabledap .html page) is where
+    #     ERDDAP's own CSV and JSON are taken, with a constraint.
+    #   · Get the data opens on "Download as a zip" when the dataset has zips (#downloads): the
+    #     same files the head's Download button offers, so the technical list starts with them too.
     #
     # Row keys the includes read: label · label_url · label_title · lenses[] · chips[] · ident ·
     # title_text · meta · url (what the copy button copies) · hash · code · note (+ note_summary) ·
@@ -1301,6 +1345,20 @@ module CalCOFI
 
       # ── Get the data ─────────────────────────────────────────────────────────
       blocks = []
+      # the zips (the same ones the head's Download button offers), first: a table a person can open
+      if (dl = downloads(d))
+        zrows = (dl["main"] + dl["other"]).select { |o| o["written"] }.map do |o|
+          { "label" => "#{o['label']} (zip)", "label_url" => o["url"], "url" => o["url"],
+            "label_title" => o["about"],
+            "meta" => [o["size"], o["inside"]].compact.join(" · "), "hash" => o["sha256"],
+            "note" => o["note"], "note_summary" => "too many rows for a spreadsheet" }
+        end
+        blocks << { "title" => "Download as a zip",
+                    "lede" => "One zip per format, each with the data tables, #{Downloads::INSIDE}" \
+                              "#{dl['version'] ? " — release #{dl['version']}" : ''}. Excel is offered only " \
+                              "where every table fits a workbook.",
+                    "rows" => zrows }
+      end
       objs = ((d["objects"] || []) + per_cast_objects(d)).map do |o|
         shared = o["shared"] || o["scope"] == "table"
         { "label" => o["table"], "label_url" => "https://calcofi.io/db-schema/##{o['table']}",
@@ -1344,8 +1402,7 @@ module CalCOFI
         matrix = cur.map do |x|
           base = x["url"].sub(/\.html\z/, "")
           { "id" => x["id"], "grain" => x["grain"], "title" => Fmt.present(x["title"]),
-            "page" => x["url"], "info" => x["info_url"], "graph" => "#{base}.graph",
-            "formats" => ERDDAP_FORMATS.map { |ext, name| { "name" => name, "url" => "#{base}.#{ext}" } } }
+            "page" => x["url"], "info" => x["info_url"], "graph" => "#{base}.graph" }
         end
         grains = cur.map { |x| x["grain"] }.compact.uniq
         gloss = grains.map do |g|
@@ -1358,8 +1415,10 @@ module CalCOFI
             "sunset" => ERDDAP_SUNSET }
         end
         blocks << { "title" => "ERDDAP (erddap.calcofi.io)",
-                    "lede" => "One ERDDAP dataset per grain. Subset in the browser or query it from a " \
-                              "script; for netCDF take the CF file above.",
+                    "lede" => "One ERDDAP dataset per grain. Its *subset form* picks variables, years and " \
+                              "an area and returns CSV, JSON, netCDF and more; ERDDAP refuses a request for a " \
+                              "whole table, so for everything take a zip or the parquet above. For netCDF " \
+                              "take the CF file above.",
                     "matrix" => matrix, "gloss" => gloss, "legacy" => legacy }
       end
 
@@ -2450,6 +2509,8 @@ module CalCOFI
         "holds"        => cat.holds_sentence(r),
         "samples_only" => cat.samples_only?(r),
         "ways"         => cat.ways(r),
+        # the Download button and its dialog (nil: no zips for this dataset, nothing drawn)
+        "download"     => cat.downloads(r),
         "years_strip"  => is_holding ? nil : cat.years_strip(r),
         "cite_answer"  => cat.cite_answer(r),
         "depth"        => if cov["depth_max_m"].nil? then nil

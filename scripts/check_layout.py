@@ -50,6 +50,13 @@ can only pass by the layout actually being fixed:
              sample_measurement. It listed 2 of 9: the per-cast types live in sample_measurement.
   erddap     (dataset pages) each ERDDAP dataset id's tabledap page appears exactly once. It was
              listed twice: once under Download for its formats, once under Services for its page.
+  download   (2026-11-16) a dataset with zips (the record's `bundle` rows, else _data/zip_manifest.json)
+             has exactly ONE Download button, in its head, ending above the 1280 x 800 fold at 1280
+             and wider, linking the CSV zip (no-JS: the button IS that link); its dialog is closed on
+             load and lists CSV first, linking the manifest's URL, and never offers an Excel the
+             manifest did not write. A holding, or any dataset without zips (no manifest at all
+             before the first upload), draws none. /datasets/ has one row control per dataset with
+             zips in the list and in "By category", none for a holding, none inside a <summary>.
   species    (/species/ and one taxon page, plan 2026-09-09 § S3; round 2 § I1, I2, P1–P3, WS-R5;
              issue #30 D7, D10–D12, D14, D17) the index's five counts equal the inline record's and
              its h1 carries no digit (the quiet line is the numbers' only home); the class list is
@@ -223,6 +230,40 @@ def _product_keys():
         return []
 
 
+def _data_dir():
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "_data")
+
+
+DL_ORDER = ("csv", "xlsx", "parquet")
+
+
+def download_offers(data_dir):
+    """{dataset_key: {formats, urls, primary, primary_format}} for every dataset the build would draw a
+    Download button for — _plugins/downloads.rb's rule: the record's own `bundle` distributions
+    first, else the zip manifest (schema 1.x); a holding never; nothing written, no entry."""
+    rec = _read_json(os.path.join(data_dir, "datasets.json")) or {}
+    man = _read_json(os.path.join(data_dir, "zip_manifest.json")) or {}
+    by_man = {}
+    if str(man.get("schema_version", "")).startswith("1."):
+        by_man = {d.get("dataset_key"): d.get("bundles") or [] for d in man.get("datasets") or []}
+    out = {}
+    for d in rec.get("datasets") or []:
+        k = d.get("dataset_key")
+        own = [x for x in d.get("distributions") or []
+               if x.get("kind") == "bundle" and x.get("format") in DL_ORDER and x.get("status") != "superseded"]
+        rows = [dict(x, written=x.get("written", True)) for x in own] if own else by_man.get(k, [])
+        urls = {}
+        for b in rows:
+            f = b.get("format")
+            if f in DL_ORDER and b.get("written") and b.get("url") and f not in urls:
+                urls[f] = b["url"]
+        if urls:
+            prim = "csv" if "csv" in urls else next(f for f in DL_ORDER if f in urls)
+            out[k] = {"formats": [f for f in DL_ORDER if f in urls], "urls": urls,
+                      "primary": urls[prim], "primary_format": prim}
+    return out
+
+
 def _read_json(path):
     try:
         with open(path) as f:
@@ -285,6 +326,32 @@ PROBE = r"""
               .map(el => el.id || String(el.className).slice(0, 30)),
       // the list's rows are the record's datasets, once each
       rows: [...calmDs.querySelectorAll("#ds-list .ds-item[data-key]")].map(el => el.dataset.key)
+    };
+  }
+
+  // ── the Download button (2026-11-16): one in a dataset page's head, its dialog CSV first; one
+  // control beside each catalog row that has zips, never inside a <summary> — read before anything
+  // below opens or filters, so the button's position is the page as it loads
+  if (calmDs) {
+    const btns = [...calmDs.querySelectorAll(".dl-btn")];
+    const dlg = d.getElementById("dl-dialog");
+    const b0 = btns[0] && btns[0].getBoundingClientRect();
+    out.download = {
+      n: btns.length,
+      inHead: btns.filter(b => b.closest(".calm-head")).length,
+      bottom: b0 ? px(b0.bottom + w.scrollY) : null,
+      href: btns[0] ? btns[0].getAttribute("href") : null,
+      dialog: !!dlg, dialogOpen: !!(dlg && dlg.open),
+      // the dialog's plain options in order: the format a link offers, or "off:<label>" for one not offered
+      options: dlg ? [...dlg.querySelectorAll(".dl-opts > .dl-opt")].map(li => {
+        const a = li.querySelector("a[data-dl-format]");
+        return a ? a.dataset.dlFormat : "off:" + ((li.querySelector(".dl-off-t") || {}).textContent || "").trim();
+      }) : [],
+      firstHref: dlg && dlg.querySelector(".dl-opts a[data-dl-format]") ? dlg.querySelector(".dl-opts a[data-dl-format]").getAttribute("href") : null,
+      rows: [...calmDs.querySelectorAll("#ds-list .dl-rowlink")].map(a => (/\/datasets\/([^/]+)\/#download$/.exec(a.getAttribute("href") || "") || [])[1] || a.getAttribute("href")),
+      gridRows: [...calmDs.querySelectorAll("#ds-grid .ds-row-dataset .dl-rowlink")].length,
+      inSummary: calmDs.querySelectorAll("summary .dl-rowlink, summary .dl-btn").length,
+      inHoldings: calmDs.querySelectorAll("#ds-holdings .dl-rowlink, .ds-row-holding .dl-rowlink").length
     };
   }
 
@@ -641,14 +708,19 @@ PROBE = r"""
   // ── D1–D5, D9 (round 2, WS-R4): the homed row, the one search box ──────────
   if (dataSec) {
     const homed = [...dataSec.querySelectorAll(".ds-row-dataset")];
+    const licOf = row => { const l = row.lastElementChild;
+      return l && l.classList.contains("dl-rowlink") ? l.previousElementSibling : l; };
     out.homedRows = {
       n: homed.length,
       // D1: the format phrase is gone from every homed row (the Format filter and the dataset
       // page keep it — data-fmt stays on the <li> for the select, checked separately below)
       dsFmt: dataSec.querySelectorAll(".ds-row-dataset .ds-fmt").length,
-      // D2: the licence chip is the row's LAST element, and its text is never the raw "custom" id
-      licMissing: homed.filter(row => !row.lastElementChild || !row.lastElementChild.classList.contains("cc-chip-lic")).length,
-      licCustomText: homed.filter(row => (row.lastElementChild || {}).textContent === "custom").length,
+      // D2: the licence chip is the row's LAST data column, and its text is never the raw "custom" id.
+      // A row with zips ends in its Download control (2026-11-16), drawn after the licence, so the
+      // licence is then the element just before it: still in the same place on every row.
+      licMissing: homed.filter(row => { const l = licOf(row); return !l || !l.classList.contains("cc-chip-lic"); }).length,
+      licCustomText: homed.filter(row => (licOf(row) || {}).textContent === "custom").length,
+      dlNotLast: homed.filter(row => row.querySelector(".dl-rowlink") && row.lastElementChild !== row.querySelector(".dl-rowlink")).length,
       // D3: a drawn expander is never empty (self-consistent with n_var/n_taxa > 0 gating the
       // template; the source record is cross-checked in Python from the SAME datasets.json)
       varsTotal: dataSec.querySelectorAll(".ds-vars").length,
@@ -1182,6 +1254,8 @@ MAX_STRETCH = 1.25    # a tile drawn more than a quarter taller than its content
 # issue #30: a page's height at 1470 with nothing open — the mockup's target + ~25 %, footer included
 # (the mockups: the dataset catalog ~1,750 px, a dataset page ~1,750 px). The old pages ran 3,500 /
 # 4,200–5,100 px; anything past these means something that should be a fold has come back open.
+# the Download button (2026-11-16): above the fold of a 1280 x 800 screen, at 1280 and wider
+DL_FOLD_W, DL_FOLD_H = 1280, 800
 MAX_DS_H = {"catalog": 2300, "dataset": 2200}   # catalog: 19 rows + the 347 px site footer the mockup lacked
 MAX_GRID_H = 4400     # px at 1470 with the staging record (was 4,910)
 MAX_SPECIES_INDEX_H = 2220   # issue #30: /species/ at 1470, nothing open — the mockup's 1,775 + 25 %
@@ -1327,6 +1401,52 @@ def check(path, r, width, theme, fails, notes):
                 fails.append(f"{where}: the list has {len(cd['rows'])} rows for {len(want)} datasets in the record")
     if r.get("twoCol"):
         fails.append(f"{where}: two-column region(s) under the head: {r['twoCol']}")
+
+    # the Download button (2026-11-16): the offers are read from the same _data/ files the build read
+    # (the record's own `bundle` rows first, else the zip manifest), so with no manifest every page
+    # must draw none
+    dlw = r.get("download")
+    if cd and dlw is not None:
+        offers = download_offers(_data_dir())
+        if cd["kind"] == "dataset":
+            key = path.rstrip("/").split("/")[-1].split("?")[0]
+            want = offers.get(key)
+            notes.append(f"{where}: download button {dlw['n']} · bottom {dlw['bottom']}px · options {dlw['options']}")
+            if want is None:
+                if dlw["n"] or dlw["dialog"]:
+                    fails.append(f"{where}: {key} has no zips (or is a holding) but draws {dlw['n']} Download button(s)")
+            else:
+                if dlw["n"] != 1 or dlw["inHead"] != 1:
+                    fails.append(f"{where}: expected exactly one Download button, in the head; found {dlw['n']} "
+                                 f"({dlw['inHead']} in the head)")
+                if width >= 1280 and (dlw["bottom"] or 10**6) > DL_FOLD_H:
+                    fails.append(f"{where}: the Download button ends at {dlw['bottom']}px, below the "
+                                 f"{DL_FOLD_W} x {DL_FOLD_H} fold")
+                if dlw["href"] != want["primary"]:
+                    fails.append(f"{where}: the button links {dlw['href']}, expected the {want['primary_format']} zip "
+                                 f"{want['primary']}")
+                if not dlw["dialog"] or dlw["dialogOpen"]:
+                    fails.append(f"{where}: the Download dialog is {'open on load' if dlw['dialogOpen'] else 'missing'}")
+                if "csv" in want["formats"] and (not dlw["options"] or dlw["options"][0] != "csv"):
+                    fails.append(f"{where}: the dialog's first option is {dlw['options'][:1]}, expected CSV first")
+                if "csv" in want["formats"] and dlw["firstHref"] != want["urls"]["csv"]:
+                    fails.append(f"{where}: the dialog's CSV links {dlw['firstHref']}, expected {want['urls']['csv']}")
+                if "xlsx" not in want["formats"] and "xlsx" in dlw["options"]:
+                    fails.append(f"{where}: the dialog offers Excel, which the manifest did not write")
+        else:
+            rec = _read_json(os.path.join(_data_dir(), "datasets.json")) or {}
+            keys = [x["dataset_key"] for x in rec.get("datasets", []) if x.get("visibility") != "internal"]
+            want_rows = sorted(k for k in keys if k in offers)
+            if sorted(dlw["rows"]) != want_rows:
+                fails.append(f"{where}: {len(dlw['rows'])} row Download control(s) for {len(want_rows)} datasets with "
+                             f"zips: missing {sorted(set(want_rows) - set(dlw['rows']))[:4]}, extra "
+                             f"{sorted(set(dlw['rows']) - set(want_rows))[:4]}")
+            if dlw["gridRows"] != len(want_rows):
+                fails.append(f"{where}: the By-category view draws {dlw['gridRows']} Download controls, expected {len(want_rows)}")
+        if dlw["inSummary"]:
+            fails.append(f"{where}: {dlw['inSummary']} Download control(s) inside a <summary> (nested interactive)")
+        if dlw["inHoldings"]:
+            fails.append(f"{where}: a holding row carries a Download control")
 
     # D2 S1 S2 (round 2, WS-R4): the dataset page's own licence chip, keyword leaves, Access tabset
     hl = r.get("headLicence")
@@ -2245,6 +2365,9 @@ def check(path, r, width, theme, fails, notes):
         if hr["licMissing"]:
             fails.append(f"{where}: {hr['licMissing']} homed row(s) have no .cc-chip-lic as their "
                          f"last column (D2)")
+        if hr.get("dlNotLast"):
+            fails.append(f"{where}: {hr['dlNotLast']} homed row(s) draw their Download control before the "
+                         f"licence (it ends the row, after the licence chip)")
         if hr["licCustomText"]:
             fails.append(f"{where}: {hr['licCustomText']} homed row(s) show the raw 'custom' id — "
                          f"never on a page (D5)")

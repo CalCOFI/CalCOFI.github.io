@@ -313,12 +313,15 @@ turned into pages by a Jekyll generator.
 ```
 scripts/fetch_release.sh   latest.txt → _data/{datasets,versions}.json + _data/grid.geojson, and beside
                            the record _data/{coverage_stations,release_catalog,release_coverage}.json
-                           + _data/{release_headings,release_anchors}.json (ALL git-ignored: the site
-                           renders the release, never copies it; an optional one that is missing
-                           collapses the thing it feeds rather than being typed)
+                           + _data/{release_headings,release_anchors}.json + _data/zip_manifest.json
+                           (the Download zips; ALL git-ignored: the site renders the release, never
+                           copies it; an optional one that is missing collapses the thing it feeds
+                           rather than being typed)
 _plugins/datasets.rb       the record → /datasets/, /datasets/{key}/, {key}.json, {key}.jsonld,
                            /datasets/release/, /datasets/sitemap.xml, /datasets/search.json,
                            /data.json — and site.data.catalog for index.html
+_plugins/downloads.rb      the record's `bundle` rows, else the zip manifest → what each Download
+                           button and dialog offers (Downloads.offer; _test/downloads_test.rb)
 scripts/check_jsonld.py    every page's JSON-LD, the sitemap, and data.json against DCAT-US 1.1
 scripts/check_news.py      every RELEASES.html#fragment the ship's log links is an id on that page
 ```
@@ -352,7 +355,9 @@ Re-cut to the review's decisions (D1–D17, all as recommended); nothing was rem
   then Environment (`realm-*`), one row per dataset: category glyph · name (category · provider) ·
   years · obs · licence. A row opens to its first sentence, what is in it (`el-taxa`/`el-variables`,
   `ui-years`, `el-contributes`, `el-release`) and its ways in (`way-*`). The category's description
-  is the name's hover in the row and the ⓘ (`_includes/info.html`) in the opened row (D9 B).
+  is the name's hover in the row and the ⓘ (`_includes/info.html`) in the opened row (D9 B). A row
+  with zips has a **Download** control beside it (see *Download* below) — beside the `<details>`,
+  in a `.dl-rowwrap`, never inside its `<summary>`.
 - **The tiles are a view tab**: *List* (`view-list`, default) · *By category* (`view-grid`) is
   `_includes/catalog_grid.html` unchanged (`filters="off"`: the page draws the filter row itself);
   `?tab=grid` links to it. The holdings (`el-holding`), the reference frame and the release
@@ -361,7 +366,8 @@ Re-cut to the review's decisions (D1–D17, all as recommended); nothing was rem
   category glyph as the mark and the short name, the full name, one facts line (key, provider,
   licence chip, DOI, release, stage), ONE sentence (the record's first sentence, then what CalCOFI
   holds — `Catalog#first_sentence` / `#holds_sentence`, cut and counted, never typed), the map
-  beside it at its own aspect (`assets/coverage.js`), one line of numbers. *What this is* folds the
+  beside it at its own aspect (`assets/coverage.js`), one line of numbers, and — where the dataset
+  has zips — the yellow **Download** button under the numbers (see *Download* below). *What this is* folds the
   whole description and the people. **What is in it** stays open (`el-contents`): the years strip on
   the release's own axis under the map (D15, `Catalog#years_strip`), then one line each for the
   variables, taxa, life stages and contributes-to, each opening in place to all of them (the old
@@ -445,10 +451,13 @@ search index and `page.variables` all read one shape; a build against either ren
 3. **Access is a tabset, one tab per group (round 2 S2, WS-R4)**, inside the *Every endpoint* fold since issue #30. Each row is two lines: label ·
    chips · meta · copy, and no URL line (2026-09-06): the label is the link, the chips and
    identifier say which endpoint it is, and the copy button beside every row copies the address.
-   *Tables from the release* is a table (table · holds · rows · size · since · sha256); *Code*
+   *Download as a zip* (the Download button's zips, where the dataset has them) leads *Get the
+   data*; *Tables from the release* is a table (table · holds · rows · size · since · sha256); *Code*
    follows it, so "DuckDB, anywhere" reads one of the objects just listed and explains the
-   content-hashed path; ERDDAP is listed **once**, as a matrix of id × (CSV · JSON · page · info ·
-   graph — no netCDF, the CF file is the netCDF) with the grain glossary under it. The tab row IS
+   content-hashed path; ERDDAP is listed **once**, as a matrix of id × (subset form · info · graph —
+   no netCDF, the CF file is the netCDF) with the grain glossary under it. The matrix's whole-table
+   CSV and JSON links were dropped on 2026-11-16: ERDDAP answers a request with no constraint 403,
+   so they promised a file that never came; ERDDAP's own CSV and JSON are taken from its subset form. The tab row IS
    the group's name (`_plugins/datasets.rb Catalog#access_groups` / `#holding_access`, each group's
    `g["n"]` its pill — the same sum `page.n_endpoints` totals for the sub-nav's "Access *n*"), so a
    group's own heading is not repeated inside its panel (D3, "say it once"); the pair left/right
@@ -465,11 +474,71 @@ search index and `page.variables` all read one shape; a build against either ren
    every URL shape in the record. calcofi4db 4.5.0 derives the same ids, so the two have one list
    to agree on.
 
+### Download: one button, plain formats, the citation in the file
+
+Measured on 2026-11-16: no route gave a newcomer a file Excel opens with its citation and licence.
+The dataset page's only downloads were three folds down (Every endpoint › Get the data: Parquet, CF
+netCDF, ERDDAP "CSV" links that answered 403), and /datasets/ had none. Now:
+
+```
+_data/zip_manifest.json    scripts/fetch_release.sh, from {calcofi-db}/publish/zip/manifest.json
+                           (workflows publish_to-zip.qmd, schema 1.0): per dataset, one zip per format
+                           — csv (every dataset) · xlsx (only where every table has <= 250,000 rows)
+                           · parquet — each with README.md, CITATION.md/.bib, LICENSE.txt, columns.csv;
+                           a format not written carries its reason in plain words
+_plugins/downloads.rb      Downloads.offer: the record's own `bundle` distributions first, else the
+                           manifest; nil for a holding or a dataset with nothing written. Every word
+                           about a FORMAT is written there once; every number and reason is read
+_includes/download_options.html   the options, drawn in the dialog and again in a <noscript> section
+assets/download.js         the dialog (the button, #download on the URL, Esc, Close, the backdrop),
+                           and one GA4 `dataset_download` event per zip link
+assets/download.css        the button, the dialog and the rows' control (loaded from default.html)
+```
+
+- **The dataset page**: a yellow **DOWNLOAD CSV · 32.4 MB** under the head's numbers — the space the
+  map beside it leaves empty, so the head is no taller — above the 1280 × 800 fold. It opens a native
+  `<dialog>`: **CSV** first (one click downloads it, and it has the focus), **Excel**, or the
+  manifest's own reason it is not offered; each with one plain line on what the format is for, its
+  zipped size and what is inside; *Only want part of it?* → the Explorer opened on the dataset;
+  *Other formats* — the Parquet zip, ERDDAP's subset form, the CF netCDF, *Every endpoint* (which
+  opens that fold); the **licence** from the record by the licence chip's rule (unstated: "No
+  licence has been established…", never open terms; custom: a link to the provider's terms); and
+  *register your use*, encouraged, never required (`_config.yml register_use_url`). Without
+  JavaScript the button is a plain link to the CSV zip and the dialog's options are a `<noscript>`
+  section (`#download`).
+- **/datasets/** and the front door's Find panel: a compact **Download** control per dataset row
+  (an icon in the `catalog_grid.html` rows, the front door and *By category*), linking
+  `/datasets/{key}/#download`, which opens the dialog on arrival. A holding has none. Front door →
+  a CSV zip is three clicks (Find · the row's Download · CSV). Before, no route reached a CSV: the
+  nearest file was one table's Parquet object, three clicks in and below the fold (Find · the row ·
+  *Parquet* in Ways in), and the ERDDAP "CSV", five clicks in, answered 403.
+- **Analytics**: `dataset_download` {dataset_key, format, file_name, link_url} through the layout's
+  gtag, skipped under `navigator.webdriver` as the layout's config is. Not `file_download`: GA4's
+  enhanced measurement already sends that for a `.zip` link, and the same name twice would double
+  every count.
+- **Before the first upload** there is no manifest: `fetch_release.sh` says so in one NOTE, and no
+  button, row control or *Download as a zip* block renders anywhere. To build against zips on disk,
+  `ZIP_MANIFEST_URL` takes a URL, a `file://` URL or a plain path:
+
+  ```bash
+  ZIP_MANIFEST_URL=~/_big/calcofi/publish/zip/manifest.json scripts/build.sh
+  ```
+
+- **Checked** by `_test/downloads_test.rb` (all three formats; Excel not written, with its reason;
+  the licence kinds; a holding; the manifest absent; the record's bundles winning) and
+  `check_layout.py`'s `download` block: exactly one button in a dataset page's head, ending above
+  the 1280 × 800 fold at 1280 and wider and linking the CSV zip; its dialog closed on load and CSV
+  first; none on a holding or without zips; one row control per dataset with zips on /datasets/,
+  none in a `<summary>` (`download_offers`, pinned by `_test/check_layout_downloads_test.py`).
+
 **Fallbacks awaiting the record.** Each is marked `# until the record carries …` in
 `_plugins/datasets.rb` and is deleted when the release that carries the field renders (plan D-9):
 `GRAIN_FALLBACK` (an ERDDAP grain's meaning), `PORTAL_NAMES` + `PORTAL_ABOUT` (a portal's name and
 one-liner), the EML probe (`url_ok?` on the release's `eml/{key}.xml` — until the record carries a
-`format: eml` distribution), `_plugins/derive_id.rb` (a registration's
+`format: eml` distribution), the DwC-A and EDI package probes (until the record carries them as
+`bundle` distributions — v2026.11.14 carries none), the zip manifest (until the record carries the
+csv/xlsx/parquet zips as `bundle` distributions; `Downloads.offer` already prefers them),
+`_plugins/derive_id.rb` (a registration's
 identifier), and `STAGE_MEANING`, which is site-side text by nature — the stage vocabulary is
 `dataset_status.csv`'s, not any one dataset's.
 
@@ -1051,6 +1120,7 @@ scripts/check_layout.py --url http://localhost:4000/datasets/ --widths 1470 --th
 scripts/check_layout.py --base https://calcofi.io          # against the deployed site
 
 ruby _test/derive_id_test.rb                     # the portal-identifier parser
+ruby _test/downloads_test.rb                     # what the Download button and dialog offer
 ```
 
 `check_layout.py` needs `shot-scraper` (`pipx install shot-scraper && shot-scraper install`), like

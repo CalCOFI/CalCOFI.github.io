@@ -8,7 +8,9 @@ layout: default
             search over the three indexes (D10 B) — which also filters this page's rows — and a
             "Filter" button that opens the six facets
     list    every dataset in the release in ONE list, Biology then Environment, one generous row
-            each: category glyph · name (category · provider under it) · years · obs · licence.
+            each: category glyph · name (category · provider under it) · years · obs · licence,
+            and beside the row (not inside its summary) a Download control where the dataset has
+            zips — it opens the dataset page's Download dialog (/datasets/{key}/#download).
             A row opens to its description, what is in it and the ways in. The category's own
             description is the ⓘ beside its name in the opened row, and the name's hover (D9 B).
     views   the category tiles of the old page are the second view tab ("By category"), unchanged
@@ -78,6 +80,11 @@ layout: default
         sorted from the generator, and the rows within each {%- endcomment -%}
       {%- for c in rlm.categories -%}
       {%- for d in c.datasets -%}
+      {%- comment -%} a row with zips carries a Download control BESIDE its <details>, never inside the
+        <summary> (a link inside a summary is an interactive element inside a button). The wrapper
+        lays the two out as one row; the control opens the dataset page's dialog (#download). It
+        hides with its row when the filter hides the <details>. {%- endcomment -%}
+      {%- if d.download %}<div class="dl-rowwrap">{% endif -%}
       <details class="calm-item ds-item" data-kind="dataset" data-key="{{ d.key | escape }}" data-cat="{{ c.name | escape }}"
                data-realm="{{ d.realm | escape }}" data-prov="{{ d.provider | escape }}"
                data-lic="{{ d.license | default: 'unstated' | escape }}" data-fmt="{{ d.formats | join: ' ' | escape }}"
@@ -120,6 +127,10 @@ layout: default
           </p>
         </div>
       </details>
+      {%- if d.download -%}
+      <a class="dl-rowlink" href="{{ d.download.url | relative_url }}" aria-label="{{ d.download.aria | escape }}" title="{{ d.download.what | escape }} · and other formats"><i class="cc-i cc-i-ui-download" aria-hidden="true"></i><span class="dl-rowlink-t">Download</span></a>
+      </div>
+      {%- endif -%}
       {%- endfor -%}
       {%- endfor -%}
       </div>

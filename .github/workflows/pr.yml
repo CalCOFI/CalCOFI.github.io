@@ -48,7 +48,9 @@ jobs:
           ruby _test/licence_pending_test.rb
           ruby _test/source_way_test.rb
           ruby _test/release_doi_test.rb
+          ruby _test/downloads_test.rb
           python3 _test/check_layout_exemplars_test.py
+          python3 _test/check_layout_downloads_test.py
           python3 _test/media_due_test.py
 
       # a products.yml `datasets:` key that is in neither datasets[] nor holdings[] of the record

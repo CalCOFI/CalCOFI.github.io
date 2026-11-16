@@ -4,9 +4,11 @@
   three ids became thirteen rows and the word "ERDDAP" never appeared beside them.
 
   A CSS grid, one row per ERDDAP dataset id: the id in mono · its grain · then the formats and the
-  service links together (CSV · JSON · page · info · graph — no netCDF: the CF netCDF the release
+  service links together (subset form · info · graph — no netCDF: the CF netCDF the release
   publishes is the netCDF to take, and an ERDDAP .nc beside it was a second, different netCDF of
-  the same rows). It folds to one id per row at 520 px. Under it: the grain glossary, and any
+  the same rows). Until 2026-11-16 the row led with whole-table CSV and JSON links; ERDDAP answers
+  a request with no constraint 403, so they are gone and the subset form (the tabledap .html page,
+  where ERDDAP's own CSV and JSON are taken with a constraint) is named for what it is. It folds to one id per row at 520 px. Under it: the grain glossary, and any
   legacy id with what replaced it, muted.
 
   include params: block (an Access block carrying matrix[], gloss[], legacy[])
@@ -20,9 +22,7 @@
   <span class="ds-matrix-id"{% if m.title %} title="{{ m.title | escape }}"{% endif %}>{{ m.id | escape }}</span>
   <span class="ds-matrix-g">{{ m.grain | escape }}</span>
   <span class="ds-matrix-f">
-    {%- for f in m.formats %}<a href="{{ f.url }}">{{ f.name | escape }}</a>{% endfor -%}
-    <span class="ds-matrix-sep" aria-hidden="true">·</span>
-    <a href="{{ m.page }}">page</a>
+    <a href="{{ m.page }}" title="ERDDAP's form: pick variables, years and an area, then CSV, JSON, netCDF …">subset form</a>
     {%- if m.info %}<a href="{{ m.info }}">info</a>{% endif -%}
     {%- if m.graph %}<a href="{{ m.graph }}">graph</a>{% endif -%}
     <button class="cc-copy ds-copy-sm" type="button" data-copy="{{ m.page }}" aria-label="Copy the ERDDAP URL for {{ m.id | escape }}" title="copy the URL"><i class="cc-i cc-i-ui-copy" aria-hidden="true"></i></button>

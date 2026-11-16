@@ -1,0 +1,58 @@
+{
+  "schema_version": "1.0",
+  "generated_by": "publish_to-zip.qmd",
+  "release": "v9.9.9",
+  "base_url": "https://storage.googleapis.com/calcofi-db/publish/zip",
+  "datasets": [
+    {
+      "dataset_key": "x_all",
+      "dataset_name": "Every format",
+      "version": "v9.9.9", "release_date": "2026-11-14", "checked_version": "v9.9.9",
+      "license": "CC-BY-4.0", "license_kind": "standard", "has_provider_citation": true,
+      "tables": [{"table": "obs", "rows": 148, "role": "observations"}, {"table": "sample", "rows": 47, "role": "samples"}],
+      "excluded": [],
+      "bundles": [
+        {"format": "csv", "written": true, "file": "x_all_v9.9.9_csv.zip",
+         "url": "https://storage.googleapis.com/calcofi-db/publish/zip/x_all/x_all_v9.9.9_csv.zip",
+         "bytes": 434812, "sha256": "aaa", "media_type": "application/zip", "excel_openable": true,
+         "rows": {"obs": 148, "sample": 47}},
+        {"format": "xlsx", "written": true, "file": "x_all_v9.9.9_xlsx.zip",
+         "url": "https://storage.googleapis.com/calcofi-db/publish/zip/x_all/x_all_v9.9.9_xlsx.zip",
+         "bytes": 1359146, "sha256": "bbb", "media_type": "application/zip", "excel_openable": true,
+         "rows": {"obs": 148, "sample": 47}},
+        {"format": "parquet", "written": true, "file": "x_all_v9.9.9_parquet.zip",
+         "url": "https://storage.googleapis.com/calcofi-db/publish/zip/x_all/x_all_v9.9.9_parquet.zip",
+         "bytes": 396433, "sha256": "ccc", "media_type": "application/zip", "excel_openable": false,
+         "rows": {"obs": 148, "sample": 47}}
+      ]
+    },
+    {
+      "dataset_key": "x_big",
+      "dataset_name": "Too long for Excel",
+      "version": "v9.9.9", "release_date": "2026-11-14", "checked_version": "v9.9.9",
+      "license": null, "license_kind": "unstated", "has_provider_citation": true,
+      "tables": [{"table": "obs", "rows": 11135334, "role": "observations"}],
+      "excluded": [],
+      "bundles": [
+        {"format": "csv", "written": true, "file": "x_big_v9.9.9_csv.zip",
+         "url": "https://storage.googleapis.com/calcofi-db/publish/zip/x_big/x_big_v9.9.9_csv.zip",
+         "bytes": 179518374, "sha256": "ddd", "media_type": "application/zip", "excel_openable": false,
+         "rows": {"obs": 11135334},
+         "note": "obs (11,135,334 rows) has more rows than a spreadsheet can open (Excel stops at 1,048,576): open it with R, Python, a database, or a text editor, or take a subset from the Explorer."},
+        {"format": "xlsx", "written": false,
+         "reason": "Not offered as an Excel workbook: its largest table, obs, has 11,135,334 rows, and a workbook is made only when every table has at most 250,000 rows (Excel itself stops at 1,048,576). Use the CSV download."},
+        {"format": "parquet", "written": true, "file": "x_big_v9.9.9_parquet.zip",
+         "url": "https://storage.googleapis.com/calcofi-db/publish/zip/x_big/x_big_v9.9.9_parquet.zip",
+         "bytes": 111932333, "sha256": "eee", "media_type": "application/zip", "excel_openable": false,
+         "rows": {"obs": 11135334}}
+      ]
+    },
+    {
+      "dataset_key": "x_none",
+      "dataset_name": "Nothing written",
+      "version": "v9.9.9", "license_kind": "unstated",
+      "tables": [], "excluded": [],
+      "bundles": [{"format": "csv", "written": false, "reason": "no rows"}]
+    }
+  ]
+}
