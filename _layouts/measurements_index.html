@@ -18,7 +18,6 @@ layout: default
 {%- assign try = "temperature,oxygen,nitrate,chlorophyll,salinity" | split: "," -%}
 <link rel="stylesheet" href="{{ '/assets/browse.css' | relative_url }}">
 <link rel="stylesheet" href="{{ '/assets/finder.css' | relative_url }}">
-<link rel="stylesheet" href="{{ '/assets/download.css' | relative_url }}">
 <header class="bd-head bd-wave">
   <div class="bd-in">
     <h1 class="sr-only">Measurements</h1>
@@ -47,7 +46,7 @@ layout: default
 
     <div class="tabpanel" data-panel="cat" role="tabpanel">
       <div id="cf" data-kind="measurements" data-src="{{ '/measurements/finder.json' | relative_url }}" data-tabset="ts-mm"
-           data-explore="{{ explore_url }}" data-builder="{{ explore_url }}builder.html">
+           data-explore="{{ explore_url }}" data-base="{{ site.baseurl }}">
         <div class="cf-find">
           <div class="cf-lists" id="cf-list"><noscript><p class="cf-empty">The list is drawn by JavaScript; every measurement is also in
             <a href="{{ '/measurements/sitemap.xml' | relative_url }}">the sitemap</a>.</p></noscript></div>
@@ -138,7 +137,6 @@ layout: default
 
 <script id="mm-data" type="application/json">{{ mm.inline }}</script>
 <script defer src="{{ '/assets/measurements.js' | relative_url }}"></script>
-<script defer src="{{ '/assets/download.js' | relative_url }}"></script>
 <script defer src="{{ '/assets/finder.js' | relative_url }}"></script>
 <script defer src="{{ '/assets/stick.js' | relative_url }}"></script>
 <script type="application/ld+json">{{ mm.jsonld }}</script>

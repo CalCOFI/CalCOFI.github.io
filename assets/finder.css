@@ -115,26 +115,22 @@
 .cf-dsl li { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 7px 11px; border-top: 1px solid color-mix(in srgb, var(--border) 60%, transparent); }
 .cf-dsl li:first-child { border-top: 0; }
 .cf-dsl li b { font-size: 14px; min-width: 0; }
+.cf-dsl li:has(> a) { padding: 0; }
+.cf-dsl li > a { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex: 1; padding: 7px 11px; color: inherit; text-decoration: none; }
+.cf-dsl li > a:hover { background: color-mix(in srgb, var(--accent-bg) 70%, var(--bg)); }
+.cf-dsl li > a:hover b { color: var(--accent); }
+.cf-dsl li > a > span { margin-left: auto; }
+.cf-go { font-style: normal; color: var(--muted); font-size: 16px; line-height: 1; }
+.cf-dsl li > a:hover .cf-go { color: var(--accent); }
 .cf-dsl li span { font-size: 12.5px; color: var(--muted); white-space: nowrap; }
 .cf-dsl li em { font-style: normal; font-weight: 600; color: var(--fg); font-variant-numeric: tabular-nums; }
 
-/* View on map · Full page, then Download */
+/* View on map · Full page */
 .cf-act { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
 .cf-b1 { height: 38px; padding: 0 16px; display: inline-flex; align-items: center; border-radius: 8px; background: var(--cta-bg); color: var(--cta-fg);
   font-weight: 700; font-size: 14px; text-decoration: none; white-space: nowrap; }
 .cf-b1:hover { filter: brightness(.95); }
 .cf-b3 { margin-left: auto; color: var(--accent); font-weight: 700; font-size: 13.5px; text-decoration: none; white-space: nowrap; }
-.cf-dl { margin-top: 14px; padding-top: 12px; border-top: 1px solid color-mix(in srgb, var(--border) 60%, transparent); }
-.cf-dlh { display: block; margin-bottom: 6px; }
-.cf-dlr { display: flex; gap: 8px; align-items: center; }
-.cf-from { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); flex: 1; min-width: 0; }
-.cf-from select { flex: 1; min-width: 0; height: 38px; font: 14px var(--sans); padding: 0 8px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--fg); }
-.cf-b2 { height: 38px; box-sizing: border-box; padding: 0 13px; display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--border); border-radius: 8px;
-  font-weight: 700; font-size: 14px; color: var(--fg); background: var(--bg); text-decoration: none; white-space: nowrap; }
-.cf-b2:hover { border-color: var(--fg); }
-.cf-qn { margin: 8px 0 0; font-size: 12.5px; line-height: 1.45; color: var(--muted); }
-.cf-qn b { color: var(--fg); font-weight: 600; }
-
 /* the old list markup species.js and measurements.js still read, never shown */
 .cf-legacy { display: none !important; }
 

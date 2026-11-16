@@ -15,7 +15,6 @@ layout: default
 {%- assign try = "anchovy,sardine,squid,seabirds,diatoms" | split: "," -%}
 <link rel="stylesheet" href="{{ '/assets/browse.css' | relative_url }}">
 <link rel="stylesheet" href="{{ '/assets/finder.css' | relative_url }}">
-<link rel="stylesheet" href="{{ '/assets/download.css' | relative_url }}">
 {%- comment -%}
   The species finder (Betty, 2026-11-15), in Browse datasets' shape: search in a navy band, then
   Groups (one card per class, with a plain name) and All species, each with a preview beside the
@@ -50,7 +49,7 @@ layout: default
 
     <div class="tabpanel" data-panel="groups" role="tabpanel">
       <div id="cf" data-kind="species" data-src="{{ '/species/finder.json' | relative_url }}" data-sils="{{ '/species/finder-sils.json' | relative_url }}" data-tabset="ts-species"
-           data-explore="{{ explore_url }}" data-builder="{{ explore_url }}builder.html">
+           data-explore="{{ explore_url }}" data-base="{{ site.baseurl }}">
         <div class="cf-find">
           <div class="cf-lists" id="cf-list"><noscript><p class="cf-empty">The list is drawn by JavaScript; every species is also in
             <a href="{{ '/species/sitemap.xml' | relative_url }}">the sitemap</a>.</p></noscript></div>
@@ -103,7 +102,6 @@ layout: default
 
 <script id="sp-data" type="application/json">{{ sp.inline }}</script>
 <script defer src="{{ '/assets/species.js' | relative_url }}"></script>
-<script defer src="{{ '/assets/download.js' | relative_url }}"></script>
 <script defer src="{{ '/assets/finder.js' | relative_url }}"></script>
 <script defer src="{{ '/assets/stick.js' | relative_url }}"></script>
 <script type="application/ld+json">{{ sp.jsonld }}</script>

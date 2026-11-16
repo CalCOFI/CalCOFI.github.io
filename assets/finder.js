@@ -1,14 +1,14 @@
 /* The Species and Measurements finders (/species/, /measurements/; Betty 2026-11-15).
    One search band, a list, and a preview beside it, as on Browse datasets. The rows come from
-   /species/finder.json or /measurements/finder.json (_plugins/finder.rb); downloads go through
-   assets/download.js. The older views (the tree, the matrix, the timeline) stay as tabs and are drawn
+   /species/finder.json or /measurements/finder.json (_plugins/finder.rb). No download here (Betty
+   2026-11-16): each dataset in the preview links its page, which has a CSV button per species or
+   measurement. The older views (the tree, the matrix, the timeline) stay as tabs and are drawn
    by species.js / measurements.js as before. */
 (function () {
   "use strict";
   var root = document.getElementById("cf");
   if (!root) return;
   var KIND = root.getAttribute("data-kind"), SP = KIND === "species";
-  var BUILDER = root.getAttribute("data-builder");
   var Y0 = 1949, Y1 = new Date().getFullYear(), W;
   var D = null, q = "", grp = "", sel = null, view = SP ? "groups" : "cat";
   /* the search box is #door-q, so species.js and measurements.js fold the tree and the timeline to it too */
@@ -35,7 +35,7 @@
   }
   function dsName(k) { return (D.files[k] || {}).name || k; }
   function gname(g, c) { return esc(g) + (g !== c ? ' <span class="cf-sci">(' + esc(c) + ")</span>" : ""); }
-  var unit = SP ? "records" : "values";
+  var unit = SP ? "records" : "values", base = root.getAttribute("data-base") || "";
 
   /* ── rows ── */
   function spRow(r, hit) {
@@ -62,15 +62,11 @@
 
   /* ── the preview ── */
   function dsList(r) {
-    return r.ds.map(function (d) { return "<li><b>" + esc(dsName(d[0])) + '</b><span><em>' + yrs(d[1], d[2]) + "</em> · " + big(d[3]) + " " + unit + "</span></li>"; }).join("");
-  }
-  function pickUrl(r, dsKey) {
-    if (!BUILDER) return null;
-    return BUILDER + "?pick=" + encodeURIComponent((SP ? "bio:" : "env:") + dsKey + ":" + r.k) + "&download=1";
-  }
-  function quickNote(r, i) {
-    var d = r.ds[i || 0];
-    return '<p class="cf-qn">Gets <b>' + esc(SP ? r.com || r.sci : r.lab) + "</b> only, from <b>" + esc(dsName(d[0])) + "</b> (" + yrs(d[1], d[2]) + ", " + big(d[3]) + " " + unit + '). <button type="button" class="cf-lnk" data-more>Whole dataset or other files</button></p>';
+    /* each row links its dataset page, where a CSV button beside every species or measurement downloads just that one */
+    return r.ds.map(function (d) {
+      var f = D.files[d[0]] || {}, inner = "<b>" + esc(dsName(d[0])) + '</b><span><em>' + yrs(d[1], d[2]) + "</em> · " + big(d[3]) + " " + unit + "</span>";
+      return "<li>" + (f.page ? '<a href="' + esc(base + f.page) + '">' + inner + '<i class="cf-go" aria-hidden="true">›</i></a>' : inner) + "</li>";
+    }).join("");
   }
   function preview(r) {
     var name = SP ? r.com || r.sci : r.lab, h = "";
@@ -96,31 +92,14 @@
     h += '<div class="cf-y"><div><b>Years with data</b><span>' + (yrs(r.y0, r.y1) || "not listed") + "</span></div>" + strip(r.years, "ys big") + '<div class="cf-ax">' + axis() + "</div></div>";
     h += '<div class="cf-dsl"><b>' + (SP ? "Found in " + r.ds.length + " dataset" + (r.ds.length > 1 ? "s" : "") : "Measured in") + "</b><ul>" + dsList(r) + "</ul></div>";
     h += '<div class="cf-act">' + (r.map ? '<a class="cf-b1" href="' + esc(root.getAttribute("data-explore") + r.map) + '">View on map</a>' : "") + '<a class="cf-b3" href="' + esc(r.url) + '">Full page →</a></div>';
-    h += '<div class="cf-dl"><span class="cf-dlh">Download</span><div class="cf-dlr">' +
-      (r.ds.length > 1 ? '<label class="cf-from">From <select class="cf-qds">' + r.ds.map(function (d, i) { return '<option value="' + i + '">' + esc(dsName(d[0])) + "</option>"; }).join("") + "</select></label>" : "") +
-      '<a class="cf-b2" data-quick href="' + esc(pickUrl(r, r.ds[0][0]) || r.url) + '" target="_blank" rel="noopener"><i class="cc-i cc-i-ui-download" aria-hidden="true"></i>Download CSV</a></div>' + quickNote(r, 0) + "</div>";
     return h + "</div>";
-  }
-  function wirePreview(r, pv) {
-    var qs = pv.querySelector(".cf-qds"), qb = pv.querySelector("[data-quick]");
-    function more() {
-      var i = qs ? +qs.value : 0;
-      CCDownload.open({ name: SP ? r.com || r.sci : r.lab, unit: unit, kind: SP ? "species" : "measurement", files: D.files,
-        ds: r.ds, dsKey: r.ds[i][0], start: "whole", pick: function (k) { return pickUrl(r, k); } });
-    }
-    function wireMore() { var b = pv.querySelector("[data-more]"); if (b) b.onclick = more; }
-    if (qs) qs.onchange = function () {
-      var i = +qs.value; qb.href = pickUrl(r, r.ds[i][0]) || r.url;
-      var old = pv.querySelector(".cf-qn"); old.outerHTML = quickNote(r, i); wireMore();
-    };
-    wireMore();
   }
   function pick(k) {
     sel = k;
     [].forEach.call(root.querySelectorAll(".cf-r[data-k]"), function (a) { var on = a.getAttribute("data-k") === k; a.classList.toggle("on", on); a.setAttribute("aria-current", on ? "true" : "false"); });
     var r = D.rows.filter(function (x) { return x.k === k; })[0], pv = document.getElementById("cf-pv");
     if (!r) { pv.hidden = true; return; }
-    pv.innerHTML = preview(r); pv.hidden = false; wirePreview(r, pv);
+    pv.innerHTML = preview(r); pv.hidden = false;
   }
 
   /* ── the list views ── */
