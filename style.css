@@ -2045,3 +2045,51 @@ a.cc-chip-lic:hover { color: var(--accent); border-color: var(--accent); text-de
 [data-theme="light"] .cc-header { border-bottom-color: #c9d4e2; box-shadow: 0 1px 0 rgba(24, 43, 73, .05), 0 6px 16px -6px rgba(24, 43, 73, .18); }
 /* over a navy band the soft shadow would vanish (navy on navy), so it is deeper there */
 [data-theme="light"] body:has(.bd-head) .cc-header { box-shadow: 0 1px 0 rgba(24, 43, 73, .05), 0 8px 18px -4px rgba(0, 0, 0, .45); }
+
+/* ═══ the site nav (Betty, 2026-11-16; _includes/site_nav.html) ══════════════════════════════════
+   Data ▾ · Map ▾ · Query Builder · Cite the data · Learn ▾ · calcofi.org ↗ in sentence case. A menu
+   opens on hover or focus, under its own word, with a clear edge (outline + deep shadow + a notch),
+   and closes a moment after the pointer leaves (the visibility delay), so crossing the gap is easy. */
+.cc-header .cc-links.cc-nav2 { gap: 22px; flex-wrap: nowrap; }
+.cc-header .cc-links.cc-nav2 a { text-transform: none; letter-spacing: 0; }
+.cc-header .cc-nav2 > a, .cc-header .cc-nav2 > .cc-m2 > a { font-weight: 600; font-size: 15.5px; display: inline-flex; align-items: center; gap: 4px; padding: 6px 0; }
+.cc-header .cc-nav2 > a.cc-ext { font-weight: 500; color: var(--muted); }
+.cc-header .cc-nav2 .cc-car { width: 10px; height: 10px; fill: currentColor; opacity: .7; }
+.cc-header .cc-m2 { position: relative; }
+.cc-header .cc-dd {
+  --edge: color-mix(in srgb, var(--fg) 22%, var(--bg));
+  position: absolute; top: calc(100% + 12px); left: -16px; z-index: 1030; min-width: 270px; padding: 10px 8px;
+  background: var(--bg); border: 1px solid var(--edge); border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,.08), 0 18px 44px rgba(10,20,36,.28);
+  visibility: hidden; opacity: 0; transition: visibility 0s linear .18s, opacity .12s ease .06s;
+}
+:root[data-theme="dark"] .cc-header .cc-dd { box-shadow: 0 18px 44px rgba(0,0,0,.6); }
+.cc-header .cc-dd::before { content: ""; position: absolute; left: 0; right: 0; bottom: 100%; height: 16px; } /* the hover bridge */
+.cc-header .cc-dd::after { content: ""; position: absolute; top: -7px; left: 26px; width: 12px; height: 12px; background: var(--bg);
+  border-left: 1px solid var(--edge); border-top: 1px solid var(--edge); transform: rotate(45deg); }
+.cc-header .cc-dd-r { left: auto; right: -16px; } .cc-header .cc-dd-r::after { left: auto; right: 30px; }
+.cc-header .cc-m2:hover > .cc-dd, .cc-header .cc-m2:focus-within > .cc-dd { visibility: visible; opacity: 1; transition-delay: 0s; }
+.cc-header .cc-m2:hover > a, .cc-header .cc-m2:focus-within > a { color: var(--accent); }
+.cc-header .cc-dd-2 { display: grid; grid-template-columns: repeat(2, 230px); gap: 2px 16px; padding: 12px 10px; }
+.cc-header .cc-dd h5 { margin: 0 10px 4px; font: 700 12.5px var(--sans); letter-spacing: 0; text-transform: none; color: var(--muted); }
+.cc-header .cc-dd a { display: grid; grid-template-columns: 22px 1fr; gap: 10px; align-items: start; padding: 7px 10px; border-radius: 8px;
+  color: var(--fg); font-weight: 400; font-size: 14px; white-space: normal; }
+.cc-header .cc-dd a:hover, .cc-header .cc-dd a:focus-visible { background: var(--accent-bg); color: var(--fg); }
+.cc-header .cc-dd a .cc-i { font-size: 17px; color: var(--accent); margin-top: 2px; }
+.cc-header .cc-dd b { display: block; font-size: 14.5px; font-weight: 700; }
+.cc-header .cc-dd small { display: block; margin-top: 1px; font-size: 12.5px; color: var(--muted); }
+.cc-header .cc-dd hr { border: 0; border-top: 1px solid var(--border); margin: 4px 8px; }
+@media (max-width: 1100px) { .cc-header .cc-tagline { display: none; } }
+@media (max-width: 900px) { .cc-header .cc-links.cc-nav2 { gap: 16px; } .cc-header .cc-nav2 > a.cc-ext { display: none; } }
+/* the phone menu: every item in one column, the menus inline */
+@media (max-width: 479px) {
+  .cc-header.cc-nav-open .cc-links.cc-nav2 { flex-wrap: nowrap; }
+  .cc-header.cc-nav-open .cc-nav2 > a, .cc-header.cc-nav-open .cc-nav2 > .cc-m2 > a { display: flex; padding: 10px 4px; }
+  .cc-header.cc-nav-open .cc-nav2 > a.cc-ext { display: flex; }
+  .cc-header.cc-nav-open .cc-nav2 .cc-car { display: none; }
+  .cc-header.cc-nav-open .cc-dd, .cc-header.cc-nav-open .cc-dd-2 { position: static; display: block; visibility: visible; opacity: 1; min-width: 0;
+    margin: -4px 0 6px; padding: 0 0 0 12px; border: 0; box-shadow: none; background: transparent; }
+  .cc-header.cc-nav-open .cc-dd::after, .cc-header.cc-nav-open .cc-dd::before, .cc-header.cc-nav-open .cc-dd hr,
+  .cc-header.cc-nav-open .cc-dd small, .cc-header.cc-nav-open .cc-dd h5 { display: none; }
+  .cc-header.cc-nav-open .cc-dd a { padding: 6px 8px; }
+}

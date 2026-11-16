@@ -70,10 +70,8 @@
   {%- comment -%}
     The v2 header: the "CalCOFI.io" lockup far left → calcofi.io (absolute, so the brand check's
     back-link test passes on a local build too) with the tagline beside it — no second title: this
-    site IS CalCOFI.io, so a "CALCOFI.IO" item linking the current page only repeated the lockup and
-    looked like a way home (Ben, 2026-09-11) — then the section anchors as uppercase links (from
-    products.yml, so the header can never drift from the sections rendered), calcofi.org ↗ where the
-    SIO template's utility strip would carry UCSD.EDU, and the toggle.
+    site IS CalCOFI.io (Ben, 2026-09-11) — then the nav (_includes/site_nav.html: Data, Map,
+    Query Builder, Cite the data, Learn, calcofi.org ↗; Betty 2026-11-16), feedback and the toggle.
   {%- endcomment -%}
   <header class="cc-header">
     <a class="cc-home" href="https://calcofi.io" aria-label="CalCOFI.io — home">
@@ -84,64 +82,7 @@
 
     <span class="cc-spacer"></span>
 
-    <nav class="cc-links cc-submenus" id="cc-nav" aria-label="Sections">
-      {%- comment -%}
-        Six words and calcofi.org ↗ — DATA · APPS · ACCESS · BUILD · DOCS · NEWS (plan 2026-09-10
-        § D7, Ben's scheme). The section list drives the header, so it can never drift from the
-        page: a `kind: page` section (docs, news) is a link to its `url:`, everything else is the
-        landing page's anchor, absolute so it works from a dataset page too (the whole catalog is
-        on the landing page; /datasets/ is reached from its "All datasets" link, 2026-09-06).
-
-        A section with `tabs:` carries a SUBMENU of them with a count pill — CSS only: the section
-        link itself is the trigger, `:hover` / `:focus-within` opens it, Escape closes it (one line
-        in assets/tabs.js), and it is display:none under 760 px where the brand hides the nav
-        anyway, so a phone tap on the word goes to the section. The whole behaviour hangs off ONE
-        class on this nav — `cc-submenus`: remove it and the header is flat six words again
-        (open question 8), with no other change anywhere.
-      {%- endcomment -%}
-      {%- for s in site.data.products.sections -%}
-      {%- assign s_title = s.title | split: " — " | first -%}
-      {%- if s.kind == "page" -%}
-      {%- assign s_url = s.url | relative_url -%}
-      <a href="{{ s_url }}"{% if page.url == s.url %} aria-current="page"{% endif %}>{{ s_title }}</a>
-      {%- elsif s.tabs -%}
-      <span class="cc-m">
-        <a href="{{ '/' | relative_url }}#{{ s.id }}" aria-haspopup="true" aria-expanded="false">{{ s_title }}</a>
-        <ul>
-          {%- for t in s.tabs -%}
-          {%- capture tn %}{% include tab_count.html s=s t=t %}{% endcapture -%}
-          {%- comment -%}
-            A tab whose full listing lives on its own page (Species, Measurements — the homepage only
-            carries their heads) links that page from the header, when the site has its record
-            (`url:` + `data:` on the tab in products.yml; Ben, 2026-09-10). Datasets does too now, to
-            Browse datasets (Betty, 2026-11-16). Without the record the item falls back to
-            the tab, whose head links the Explorer.
-            Issue #30 (D3 A): a homepage item links /#<tab id>, not /#<section id> — the front door's
-            doors resolve it to the door that now holds that tab (General → Visualize, Student →
-            Other data visualizations …); data-go still selects the tab where a tabset carries it.
-          {%- endcomment -%}
-          {%- assign t_page = nil -%}
-          {%- if t.url -%}
-            {%- if t.data == nil or site.data[t.data] -%}{%- assign t_page = t.url | relative_url -%}{%- endif -%}
-          {%- endif -%}
-          {%- if t_page -%}
-          <li><a href="{{ t_page }}">{{ t.title }}
-            {%- if tn != "" %}<span class="pill">{{ tn }}</span>{% endif -%}
-          </a></li>
-          {%- else -%}
-          <li><a href="{{ '/' | relative_url }}#{{ t.id }}" data-go="{{ s.id }}:{{ t.id }}">{{ t.title }}
-            {%- if tn != "" %}<span class="pill">{{ tn }}</span>{% endif -%}
-          </a></li>
-          {%- endif -%}
-          {%- endfor -%}
-        </ul>
-      </span>
-      {%- else -%}
-      <a href="{{ '/' | relative_url }}#{{ s.id }}">{{ s_title }}</a>
-      {%- endif -%}
-      {%- endfor -%}
-      <a href="https://calcofi.org">calcofi.org ↗</a>
-    </nav>
+    {% include site_nav.html %}
 
     {%- comment -%}
       Feedback (the Explorer's dialog, ported to plain JS — assets/feedback.js): captures this view, lets
