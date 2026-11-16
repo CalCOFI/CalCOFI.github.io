@@ -252,6 +252,7 @@ release or a dataset entry — the release does.
 | dataset | `datasets[].since_version` in the record | nobody — the release that first carries the dataset | with that release | the dataset's page |
 | app | `products.yml` `added:` (back-filled from each product's first commit) | whoever adds the card | on push to `main` (`pages.yml`) | the product |
 | data · site · paper | [`_data/news.yml`](_data/news.yml) | whoever has the story: a feature, a change to the site, a paper | on push to `main` | the row's `url` |
+| story | [`_data/news.yml`](_data/news.yml) | whoever made it: something the data show — a cruise's finding, a film made from the release | on push to `main` | its page under `/stories/` |
 
 A `news.yml` row carrying `version:` or `dataset_key:` **replaces** the generated entry of that key —
 for a wrong `since_version`, or a notes heading that is not the story. The header's **News** link

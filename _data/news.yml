@@ -4,12 +4,15 @@
 # data cannot say — a feature, a change to the site, a paper.
 #
 #   date:   YYYY-MM-DD
-#   type:   data | site | paper   (release · dataset · app are generated; a row with `version:` or
+#   type:   story | data | site | paper   (release · dataset · app are generated; a row with `version:` or
 #           `dataset_key:` OVERRIDES the generated entry of that key — for a wrong since_version or a
 #           notes heading that is not the story)
 #   title:  one line, declarative
 #   body:   one or two sentences
-#   url:    where to read more
+#   url:    where to read more (a story: its page under /stories/)
+#
+# A STORY is something the data show (a cruise's finding, a film made from the release), where every other type
+# is about the system. It is the first chip on /news/, so it is not lost among the release notes.
 #
 # Types are quiet chips, none is yellow: --warn marks a state that needs attention, never a kind of
 # thing. Dates below are from RELEASES.md and the repos' merge dates.
@@ -18,6 +21,12 @@
 # RELEASES.html stamps a slug id on every `##` (`#one-climatology-for-every-anomaly`) and the version
 # string itself on each version heading (`#v2026.09.06`). scripts/check_news.py GETs that page once
 # after a build and fails on a fragment it cannot find, so an anchor cannot rot unnoticed.
+
+- date: 2026-11-16
+  type: story
+  title: "The warmest fall ocean in CalCOFI's record"
+  body: "The fall 2026 cruise found the upper 50 m off Southern California 4.5 °C (8.0 °F) above the 1993–2013 fall average, and 11.9 °C (21.3 °F) above it at 50–60 m off San Diego: the largest departures since 1949. A one-minute film, in °C, °F or both. Preliminary data."
+  url: /stories/elnino-2026/
 
 - date: 2026-09-07
   type: site

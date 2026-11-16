@@ -12,7 +12,7 @@
 {%- if include.filter -%}
 <div class="log-filter" id="log-filter" role="group" aria-label="Filter the log by kind">
   <button type="button" class="cc-chip cc-chip-accent on" data-f="all" aria-pressed="true">all</button>
-  {%- assign types = "release,dataset,app,data,site,paper" | split: "," -%}
+  {%- assign types = "story,release,dataset,app,data,site,paper" | split: "," -%}
   {%- for t in types -%}
   {%- assign n = site.data.log | where: "type", t | size -%}
   {%- if n > 0 -%}
