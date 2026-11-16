@@ -2093,3 +2093,77 @@ a.cc-chip-lic:hover { color: var(--accent); border-color: var(--accent); text-de
   .cc-header.cc-nav-open .cc-dd small, .cc-header.cc-nav-open .cc-dd h5 { display: none; }
   .cc-header.cc-nav-open .cc-dd a { padding: 6px 8px; }
 }
+
+/* ═══ Maps and apps (#explore; Betty, 2026-11-16) ══════════════════════════════════════════════════
+   On the panel's sand: white cards, sentence case, the Explorer large, the Dataset Finder beside the
+   apps for one dataset, then the student projects. Every card ends with Open · Source · Status · Usage. */
+.fd-apps .ap-head { display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px 16px; margin: 0 0 20px; padding-right: 90px; }
+.fd-apps .ap-head h2 { margin: 0; font: 700 24px/1.2 var(--sans); letter-spacing: 0; text-transform: none; color: var(--fg); }
+.fd-apps .ap-head p { margin: 0; font-size: 15px; color: var(--muted); }
+.fd-apps a { text-decoration: none; }
+.fd-apps .ap-feat, .fd-apps .ap-mid, .fd-apps .ap-box, .fd-apps .ap-card {
+  background: var(--bg); border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 2px 10px rgba(0,0,0,.05); }
+.fd-apps .ap-feat { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); overflow: hidden; }
+.fd-apps .ap-feat-shot { display: block; border-right: 1px solid var(--border); background: var(--panel); }
+.fd-apps .ap-feat-shot img { display: block; width: 100%; height: 460px; object-fit: cover; object-position: left top; }
+.fd-apps .ap-feat-b { padding: 24px 26px; display: flex; flex-direction: column; }
+.fd-apps .ap-k { font-size: 13px; font-weight: 700; color: var(--muted); }
+.fd-apps .ap-feat h3 { margin: 4px 0 0; font: 700 26px/1.2 var(--sans); letter-spacing: 0; text-transform: none; }
+.fd-apps h3 a, .fd-apps h4 a { color: var(--fg); }
+.fd-apps h3 a:hover, .fd-apps h4 a:hover { color: var(--accent); }
+.fd-apps .ap-feat-b > p { margin: 10px 0 0; font-size: 15px; line-height: 1.55; }
+.fd-apps .ap-lenses { list-style: none; display: grid; grid-template-columns: repeat(3, auto); gap: 8px 18px; justify-content: start; margin: 16px 0 0; padding: 0; font-size: 14px; color: var(--muted); }
+.fd-apps .ap-lenses .cc-i { color: var(--accent); margin-right: 6px; }
+.fd-apps .ap-acts { display: flex; align-items: center; gap: 16px; margin: 20px 0 0; }
+.fd-apps .ap-y { display: inline-flex; align-items: center; height: 42px; padding: 0 20px; border-radius: 9px; background: #ffcd00; color: #182b49; font-weight: 700; font-size: 15px; }
+.fd-apps .ap-y:hover { filter: brightness(.96); }
+.fd-apps .ap-y.ap-sm { height: 36px; padding: 0 14px; font-size: 14px; }
+.fd-apps .ap-how { color: var(--accent); font-weight: 600; font-size: 14px; }
+.fd-apps .ap-feat .ap-lk { margin-top: auto; }
+
+.fd-apps .ap-row { display: grid; grid-template-columns: 1fr 2fr; gap: 16px; margin-top: 16px; }
+.fd-apps .ap-mid { display: flex; flex-direction: column; overflow: hidden; }
+.fd-apps .ap-shot { display: block; background: var(--panel); border-bottom: 1px solid var(--border); overflow: hidden; }
+.fd-apps .ap-shot img { display: block; width: 100%; height: 190px; object-fit: cover; object-position: left top; }
+.fd-apps .ap-b { padding: 14px 16px 14px; display: flex; flex-direction: column; flex: 1; }
+.fd-apps .ap-mid h3 { margin: 0; font: 700 17.5px/1.3 var(--sans); letter-spacing: 0; text-transform: none; }
+.fd-apps .ap-b > p { margin: 5px 0 0; font-size: 14px; line-height: 1.45; color: var(--muted); }
+.fd-apps .ap-mid .ap-acts { margin-top: 12px; }
+.fd-apps .ap-box { padding: 14px 16px 16px; }
+.fd-apps .ap-box h3, .fd-apps .ap-sh { margin: 0 0 12px; font: 700 17.5px/1.3 var(--sans); letter-spacing: 0; text-transform: none; color: var(--fg); }
+.fd-apps .ap-box h3 span, .fd-apps .ap-sh span { margin-left: 8px; font-size: 13.5px; font-weight: 500; color: var(--muted); }
+.fd-apps .ap-sh { margin: 36px 0 14px; padding-top: 18px; border-top: 2px solid color-mix(in srgb, var(--fg) 14%, transparent); }
+
+.fd-apps .ap-grid { display: grid; gap: 14px; }
+.fd-apps .ap-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.fd-apps .ap-card { display: flex; flex-direction: column; overflow: hidden; border-radius: 12px; transition: border-color .15s, transform .15s; }
+.fd-apps .ap-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+.fd-apps .ap-box .ap-card { box-shadow: none; }
+.fd-apps .ap-card .ap-shot img { height: 140px; }
+.fd-apps .ap-tall .ap-card .ap-shot img { height: 190px; }
+.fd-apps .ap-card h4 { margin: 0; font: 700 15px/1.3 var(--sans); letter-spacing: 0; text-transform: none; }
+.fd-apps .ap-card .ap-b > p { font-size: 13px; }
+
+.fd-apps .ap-lk { display: flex; align-items: center; gap: 14px; margin-top: auto; padding-top: 10px; font-size: 13px; }
+.fd-apps .ap-mid .ap-acts + .ap-lk { margin-top: 12px; }
+.fd-apps .ap-lk { border-top: 1px solid color-mix(in srgb, var(--border) 60%, transparent); }
+.fd-apps .ap-card .ap-lk { margin-top: auto; }
+.fd-apps .ap-card .ap-b > p { margin-bottom: 10px; }
+.fd-apps .ap-l { display: flex; gap: 14px; } .fd-apps .ap-l a { color: var(--accent); font-weight: 600; }
+.fd-apps .ap-r { margin-left: auto; display: flex; gap: 12px; } .fd-apps .ap-r a { color: var(--muted); }
+.fd-apps .ap-lk a { white-space: nowrap; }
+.fd-apps .ap-lk a:hover { text-decoration: underline; }
+.fd-apps .ap-box .ap-lk { gap: 10px; font-size: 12.5px; } .fd-apps .ap-box .ap-l, .fd-apps .ap-box .ap-r { gap: 10px; }
+
+@media (max-width: 1000px) {
+  .fd-apps .ap-feat { grid-template-columns: 1fr; }
+  .fd-apps .ap-feat-shot { border-right: 0; border-bottom: 1px solid var(--border); }
+  .fd-apps .ap-feat-shot img { height: 300px; }
+  .fd-apps .ap-row { grid-template-columns: 1fr; }
+  .fd-apps .ap-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 640px) {
+  .fd-apps .ap-3 { grid-template-columns: 1fr; }
+  .fd-apps .ap-lenses { grid-template-columns: repeat(2, auto); }
+  .fd-apps .ap-head { padding-right: 0; }
+}

@@ -253,43 +253,58 @@ layout: default
 </section>
 
 {%- comment -%}
-  ── 2 · Visualize and explore (was APPS' Explorer and General tabs, and the Explore tile). The
-  Explorer's own card, featured, then the apps that each go deep on one grain. The Dataset and
-  Student tabs moved to "Other data visualizations". #explore is this panel, as before.
+  ── 2 · Maps and apps (Betty, 2026-11-16; apps-under-front-door-2 mockup). The Explorer, large; then the
+  Dataset Finder beside the apps for one dataset; then the student projects. Apps the Explorer replaced
+  (status: superseded) are no longer drawn. Ben's sand, as every panel. #explore is this panel, as before;
+  "More visualizations" and the header's Map ▾ All apps open it.
 {%- endcomment -%}
-{%- assign xp_items = data.products | where: "tab", "explorer" -%}
-{%- assign xg_items = data.products | where: "tab", "general" -%}
-{%- assign xt_explorer = xs.tabs | where: "id", "explorer" | first -%}
-{%- assign xt_general = xs.tabs | where: "id", "general" | first -%}
-{%- assign xp = xp_items | first -%}
-<section class="fd-panel" id="explore" hidden aria-labelledby="explore-h">
+{%- assign xp = data.products | where: "key", "explore" | first -%}
+{%- assign xf = data.products | where: "key", "db-viz-station" | first -%}
+{%- assign xd_items = data.products | where: "tab", "dataset" -%}
+{%- assign xs_items = data.products | where: "tab", "student" -%}
+<section class="fd-panel fd-apps" id="explore" hidden aria-labelledby="explore-h">
   <div class="cc-container">
     {{ close_btn }}
-    <div class="fd-phead">
-      <div class="cc-eyebrow">{{ xs.title }} · the Explorer, and {{ xg_items | size }} that go deep on one grain</div>
-      <h2 class="cc-h2" id="explore-h">Visualize and explore</h2>
-      <p class="blurb">Explore observations collected on the CalCOFI platform in the California Current Ecosystem,
-        integrated across species, ocean conditions, stations and decades. {{ xt_explorer.blurb }}</p>
-      <p class="fd-pact"><a class="cc-btn cc-btn-cta" href="{{ xp.live_url | default: 'https://calcofi.io/explore/' }}">Open the CalCOFI Explorer</a></p>
-    </div>
-    {%- if xs.lenses -%}
-    <p class="lens-key" aria-label="Lenses">
-      {%- for l in xs.lenses %}<span title="{{ l.blurb | escape }}"><i class="cc-i cc-i-lens-{{ l.id | escape }}" aria-hidden="true"></i>{{ l.title | escape }}</span>{% endfor -%}
-      <span title="a capstone or fellowship project"><i class="cc-i cc-i-ui-student" aria-hidden="true"></i>student contribution</span>
-    </p>
+    <div class="ap-head"><h2 id="explore-h">Maps and apps</h2><p>See CalCOFI data on a map, by station, or for one dataset.</p></div>
+
+    {%- if xp -%}
+    <article class="ap-feat prod-card" data-key="{{ xp.key | escape }}" id="explorer">
+      <a class="ap-feat-shot" href="{{ xp.live_url }}" tabindex="-1" aria-hidden="true">
+        <img src="{{ 'images/explore_light.png' | relative_url }}" alt="" loading="lazy"></a>
+      <div class="ap-feat-b">
+        <span class="ap-k">Start here</span>
+        <h3><a href="{{ xp.live_url }}">{{ xp.title | escape }}</a></h3>
+        <p>One organism or one ocean variable at a time, across every dataset in the release. Every view is a link you can share, and every download carries the query that made it.</p>
+        {%- if xs.lenses -%}
+        <ul class="ap-lenses">{% for l in xs.lenses %}<li title="{{ l.blurb | escape }}"><i class="cc-i cc-i-lens-{{ l.id | escape }}" aria-hidden="true"></i>{{ l.title | escape }}</li>{% endfor %}</ul>
+        {%- endif -%}
+        <p class="ap-acts"><a class="ap-y" href="{{ xp.live_url }}">Open the Explorer</a><a class="ap-how" href="https://calcofi.io/docs/explore.html">How to use it ↗</a></p>
+        {% include app_links.html p=xp open=false %}
+      </div>
+    </article>
     {%- endif -%}
-    <div class="card-grid featured-grid card-grid-solo" id="explorer">
-      {%- for p in xp_items -%}
-        {% include product_card.html p=p section=xt_explorer.title featured=true %}
-      {%- endfor -%}
+
+    <div class="ap-row" id="general">
+      {%- if xf -%}
+      <article class="ap-mid prod-card" data-key="{{ xf.key | escape }}">
+        {%- comment -%} the dark screenshot in both themes (Betty) {%- endcomment -%}
+        <a class="ap-shot" href="{{ xf.live_url }}" tabindex="-1" aria-hidden="true"><img src="{{ 'images/db-viz-station_dark.png' | relative_url }}" alt="" loading="lazy"></a>
+        <div class="ap-b">
+          <h3><a href="{{ xf.live_url }}">Dataset Finder</a></h3>
+          <p>What was sampled at each station: which datasets, years and depths.</p>
+          <p class="ap-acts"><a class="ap-y ap-sm" href="{{ xf.live_url }}">Open →</a></p>
+          {% include app_links.html p=xf open=false %}
+        </div>
+      </article>
+      {%- endif -%}
+      <div class="ap-box" id="dataset">
+        <h3>For one dataset <span>a closer look at one kind of data</span></h3>
+        <div class="ap-grid ap-3">{% for p in xd_items %}{% include app_card.html p=p %}{% endfor %}</div>
+      </div>
     </div>
-    <h3 class="fd-h3" id="general">{{ xt_general.title }} · one grain at a time <span class="pill">{{ xg_items | size }}</span></h3>
-    <p class="blurb tab-blurb">{{ xt_general.blurb }}</p>
-    <div class="card-grid">
-      {%- for p in xg_items -%}
-        {% include product_card.html p=p section=xt_general.title %}
-      {%- endfor -%}
-    </div>
+
+    <h3 class="ap-sh" id="student">Student projects <span>capstones and fellowships</span></h3>
+    <div class="ap-grid ap-3 ap-tall">{% for p in xs_items %}{% include app_card.html p=p %}{% endfor %}</div>
   </div>
 </section>
 
@@ -439,47 +454,6 @@ SELECT * FROM read_json('{{ rel.catalog_url }}')</pre>
   </div>
 </section>
 
-{%- comment -%}
-  ── 7 · Other data visualizations (was APPS' Dataset and Student tabs). The same tabs, from the
-  same `tab:` keys, with their count pills. #dataset and #student land on their tab.
-{%- endcomment -%}
-{%- assign vt = xs.tabs | where_exp: "t", "t.id == 'dataset' or t.id == 'student'" -%}
-{%- assign vd_first = data.products | where: "tab", "dataset" | first -%}
-<section class="fd-panel" id="viz" hidden aria-labelledby="viz-h">
-  <div class="cc-container">
-    {{ close_btn }}
-    <div class="fd-phead">
-      <div class="cc-eyebrow">{{ xs.title }}{% for t in vt %}{% capture tn %}{% include tab_count.html s=xs t=t %}{% endcapture %} · {{ tn }} {{ t.title | downcase }}{% endfor %}</div>
-      <h2 class="cc-h2" id="viz-h">Other data visualizations</h2>
-      <p class="blurb">{% for t in vt %}{{ t.blurb }} {% endfor %}</p>
-      {%- if vd_first %}<p class="fd-pact"><a class="cc-btn cc-btn-cta" href="{{ vd_first.live_url }}">Open {{ vd_first.title | escape }}</a></p>{% endif -%}
-    </div>
-    <div class="tabset" id="ts-viz">
-      <div class="tabrow" role="tablist" aria-label="Other data visualizations">
-        {%- for t in vt -%}
-        {%- capture tn %}{% include tab_count.html s=xs t=t %}{% endcapture -%}
-        <button type="button" role="tab" id="tab-{{ t.id }}" aria-controls="panel-{{ t.id }}"
-                data-tab="{{ t.id }}" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
-                tabindex="{% if forloop.first %}0{% else %}-1{% endif %}">{{ t.title }}
-          {%- if tn != "" %}<span class="pill">{{ tn }}</span>{% endif -%}
-        </button>
-        {%- endfor -%}
-      </div>
-      {%- for t in vt -%}
-      {%- assign titems = data.products | where: "tab", t.id -%}
-      <div class="tabpanel" id="panel-{{ t.id }}" data-panel="{{ t.id }}" role="tabpanel"
-           aria-labelledby="tab-{{ t.id }}"{% unless forloop.first %} hidden{% endunless %}>
-        <div class="card-grid">
-          {%- for p in titems -%}
-            {% include product_card.html p=p section=t.title %}
-          {%- endfor -%}
-        </div>
-      </div>
-      {%- endfor -%}
-    </div>
-  </div>
-</section>
-
 <script defer src="{{ '/assets/section.js' | relative_url }}"></script>
 <script defer src="{{ '/assets/reach.js' | relative_url }}"></script>
 {%- comment -%}
@@ -496,8 +470,8 @@ SELECT * FROM read_json('{{ rel.catalog_url }}')</pre>
 <script>
 (function () {
   'use strict';
-  var KEYS = ['find', 'explore', 'program', 'build', 'learn', 'monitor', 'viz'];
-  var OLD = { data: 'find', apps: 'explore', docs: 'learn', monitoring: 'monitor', students: 'viz' };
+  var KEYS = ['find', 'explore', 'program', 'build', 'learn', 'monitor'];
+  var OLD = { data: 'find', apps: 'explore', docs: 'learn', monitoring: 'monitor', students: 'explore', viz: 'explore' };
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   function panel(k) { return document.getElementById(k); }
   function door(k) { return document.getElementById('door-' + k); }

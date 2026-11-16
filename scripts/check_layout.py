@@ -206,10 +206,14 @@ def resolve_face_exemplars(paths, record, media, notes=None):
 
 
 def _product_keys():
-    """Every product key in _data/products.yml (the front door must draw each one behind a door)."""
+    """Every current product key in _data/products.yml (the front door must draw each one behind a door)."""
     try:
         with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "_data", "products.yml")) as f:
-            return re.findall(r"^  - key: *([\w.-]+)", f.read(), re.M)
+            text = f.read()
+        # a superseded or archived app is no longer drawn (Maps and apps, Betty 2026-11-16)
+        blocks = re.split(r"^(?=  - key:)", text, flags=re.M)
+        return [m.group(1) for b in blocks for m in [re.match(r"  - key: *([\w.-]+)", b)]
+                if m and not re.search(r"^    status: *(superseded|archived)\b", b, re.M)]
     except OSError:
         return []
 

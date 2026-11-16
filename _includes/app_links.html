@@ -1,0 +1,14 @@
+{%- comment -%} one app's small link row: Open ↗ · Source ↗ on the left, Status · Usage on the right
+  (the same links product_card.html carries). include.p = the product; include.open = false hides Open
+  where the card already has an Open button. {%- endcomment -%}
+{%- assign p = include.p -%}
+<span class="ap-lk">
+  <span class="ap-l">
+    {%- unless include.open == false %}<a href="{{ p.live_url }}">Open ↗</a>{% endunless -%}
+    {%- if p.source_url and p.source_url != p.live_url %}<a href="{{ p.source_url }}">Source ↗</a>{% endif -%}
+  </span>
+  <span class="ap-r">
+    {%- if p.uptime %}<a href="{{ site.status_url }}/history/{{ p.uptime | escape }}" title="uptime history for {{ p.title | escape }}">Status</a>{% endif -%}
+    {%- if p.usage %}<a href="{{ site.analytics_url }}/{{ p.usage | escape }}/" title="usage analytics for {{ p.title | escape }}">Usage</a>{% endif -%}
+  </span>
+</span>
