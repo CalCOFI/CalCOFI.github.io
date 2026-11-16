@@ -14,6 +14,7 @@
   <div class="ap-b">
     <h4><a href="{{ p.live_url }}">{{ p.title | escape }}</a></h4>
     <p>{{ line | strip | escape }}</p>
+    {%- if p.credits %}<p class="ap-cr">{{ p.credits.org | escape }}{% if p.credits.year %} · {{ p.credits.year | escape }}{% endif %}{% if p.credits.team %} · {{ p.credits.team | join: ", " | escape }}{% endif %}</p>{% endif %}
     {% include app_links.html p=p %}
   </div>
 </article>

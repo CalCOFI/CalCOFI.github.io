@@ -2149,6 +2149,8 @@ a.cc-chip-lic:hover { color: var(--accent); border-color: var(--accent); text-de
 .fd-apps .ap-lk { border-top: 1px solid color-mix(in srgb, var(--border) 60%, transparent); }
 .fd-apps .ap-card .ap-lk { margin-top: auto; }
 .fd-apps .ap-card .ap-b > p { margin-bottom: 10px; }
+.fd-apps .ap-card .ap-b > p:has(+ .ap-cr) { margin-bottom: 0; }
+.fd-apps .ap-card .ap-b > p.ap-cr { margin: 6px 0 10px; font-size: 12.5px; line-height: 1.4; color: var(--fg); opacity: .75; }
 .fd-apps .ap-l { display: flex; gap: 14px; } .fd-apps .ap-l a { color: var(--accent); font-weight: 600; }
 .fd-apps .ap-r { margin-left: auto; display: flex; gap: 12px; } .fd-apps .ap-r a { color: var(--muted); }
 .fd-apps .ap-lk a { white-space: nowrap; }
