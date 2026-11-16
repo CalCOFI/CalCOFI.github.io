@@ -74,7 +74,9 @@
     Query Builder, Cite the data, Learn, calcofi.org ↗; Betty 2026-11-16), feedback and the toggle.
   {%- endcomment -%}
   <header class="cc-header">
-    <a class="cc-home" href="https://calcofi.io" aria-label="CalCOFI.io — home">
+    {%- comment -%} site.url: https://calcofi.io on the live build (the brand check's back-link), the
+      dev server's own address on localhost, so the lockup opens this site's landing page {%- endcomment -%}
+    <a class="cc-home" href="{{ site.url }}{{ site.baseurl }}/" aria-label="CalCOFI.io — home">
       <img class="cc-logo-dark"  src="{{ '/brand/v2/logo_calcofi_h.svg'       | relative_url }}" alt="CalCOFI.io">
       <img class="cc-logo-light" src="{{ '/brand/v2/logo_calcofi_h_light.svg' | relative_url }}" alt="CalCOFI.io">
     </a>
