@@ -101,7 +101,7 @@ layout: default
       </div>
       <p class="bd-empty" id="bd-empty" hidden>Nothing matches. Try a species (<i>anchovy</i>), a measurement (<i>oxygen</i>) or a group (<i>krill</i>). <button type="button" id="bd-clear">Clear</button></p>
     </div>
-    <aside class="bd-pv" id="bd-pv" aria-live="polite" hidden></aside>
+    <aside class="bd-pv" id="bd-pv" aria-live="polite" data-stick hidden></aside>
   </div>
 </div>
 <script type="application/json" id="bd-rows">{{ b.rows | jsonify }}</script>
@@ -140,6 +140,7 @@ layout: default
 
 <script src="{{ '/assets/reach.js' | relative_url }}" defer></script>
 <script src="{{ '/assets/download.js' | relative_url }}" defer></script>
+<script src="{{ '/assets/stick.js' | relative_url }}" defer></script>
 <script src="{{ '/assets/browse.js' | relative_url }}" defer
         data-maps="{{ '/datasets/browse.json' | relative_url }}"></script>
 <script type="application/ld+json">{{ cat.jsonld }}</script>

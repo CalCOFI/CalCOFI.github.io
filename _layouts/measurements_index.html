@@ -51,7 +51,7 @@ layout: default
         <div class="cf-find">
           <div class="cf-lists" id="cf-list"><noscript><p class="cf-empty">The list is drawn by JavaScript; every measurement is also in
             <a href="{{ '/measurements/sitemap.xml' | relative_url }}">the sitemap</a>.</p></noscript></div>
-          <aside class="cf-pv" id="cf-pv" aria-live="polite" hidden></aside>
+          <aside class="cf-pv" id="cf-pv" aria-live="polite" data-stick hidden></aside>
         </div>
       </div>
     </div>
@@ -140,4 +140,5 @@ layout: default
 <script defer src="{{ '/assets/measurements.js' | relative_url }}"></script>
 <script defer src="{{ '/assets/download.js' | relative_url }}"></script>
 <script defer src="{{ '/assets/finder.js' | relative_url }}"></script>
+<script defer src="{{ '/assets/stick.js' | relative_url }}"></script>
 <script type="application/ld+json">{{ mm.jsonld }}</script>
