@@ -11,6 +11,8 @@
 #   holding     never an offer, even if the manifest names its key
 #   absent      no manifest (or a non-1.x one), or nothing written: nil — no button anywhere
 #   record      the record's own `bundle` distributions win over the manifest
+#   1.1         content-addressed URLs used as given; "verified against" checked_version, "unchanged
+#               since" only when `since` is earlier; a higher schema still read
 #   catalog     Catalog#downloads, the tile row's #download control, "Download as a zip" first in Get
 #               the data, and no whole-table ERDDAP .csv/.json link (ERDDAP answers those 403)
 require "minitest/autorun"
@@ -124,23 +126,34 @@ class DownloadsTest < Minitest::Test
     assert_nil offer("x_not_in_manifest")
   end
 
-  # ── the announced contract: content-addressed names, checked_version, history, schema 2.x ──
-  HASHED = JSON.parse(File.read(File.join(__dir__, "fixtures", "zip_manifest_hashed.json")))
+  # ── the live 1.1 shape: content-addressed URLs, since / checked_version / hashes ──────────
+  M11 = JSON.parse(File.read(File.join(__dir__, "fixtures", "zip_manifest_1_1.json")))
 
-  def test_content_addressed_shape_survives
-    idx = D.index(HASHED)
-    assert_equal ["x_hash"], idx.keys, "a higher schema_version is read, unknown fields ignored"
+  def test_schema_1_1_content_addressed
+    idx = D.index(M11)
+    assert_equal %w[x_hash x_new], idx.keys.sort, "1.1 is read, unknown fields ignored"
     o = D.offer(record("x_hash", license: "CC0-1.0"), idx["x_hash"], bytes: BYTES)
-    # the URL is used exactly as given; the download name is its last path segment, never `file`
-    assert_equal "https://storage.googleapis.com/calcofi-db/publish/zip/x_hash/x_hash_csv_3a91359fe9086d33.zip", o["primary"]["url"]
-    assert_equal "x_hash_csv_3a91359fe9086d33.zip", o["primary"]["file"]
+    # the URL is used exactly as given (hash directory and all); the name is its last path segment
+    assert_equal "https://storage.googleapis.com/calcofi-db/publish/zip/x_hash/3872789ed24411383f47ae8a/x_hash_v9.9.9_csv.zip", o["primary"]["url"]
+    assert_equal "x_hash_v9.9.9_csv.zip", o["primary"]["file"]
     xl = o["main"].find { |x| x["format"] == "xlsx" }
-    assert_equal "https://storage.googleapis.com/calcofi-db/publish/zip/x_hash/x_hash_xlsx_b45cce5c29f5cecd.zip?generation=1", xl["url"]
-    assert_equal "x_hash_xlsx_b45cce5c29f5cecd.zip", xl["file"]
-    # the version shown is the release the zip was last CONFIRMED against, not where it was built
+    assert_equal "https://storage.googleapis.com/calcofi-db/publish/zip/x_hash/3872789ed24411383f47ae8a/x_hash_v9.9.9_xlsx.zip?generation=1", xl["url"]
+    assert_equal "x_hash_v9.9.9_xlsx.zip", xl["file"]
+    # verified against the current release; unchanged since the release the content first appeared
     assert_equal "v9.9.12", o["version"]
+    assert_equal "v9.9.9", o["since"]
     assert_empty o["other"], "parquet not written, and an unknown format is never offered"
     assert_equal %w[csv xlsx], o["formats"]
+  end
+
+  def test_since_said_only_when_it_differs
+    o = D.offer(record("x_new"), D.index(M11)["x_new"], bytes: BYTES)
+    assert_equal "v9.9.12", o["version"]
+    assert_nil o["since"]
+  end
+
+  def test_a_higher_schema_is_still_read
+    assert_equal %w[x_hash x_new], D.index(M11.merge("schema_version" => "2.0")).keys.sort
   end
 
   def test_version_prefers_checked_version

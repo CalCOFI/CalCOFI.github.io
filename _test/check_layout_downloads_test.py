@@ -9,7 +9,7 @@ exactly (pinned in _test/downloads_test.rb), or the layout check and the page wo
   record     the record's own `bundle` rows win over the manifest
   holding    a holding (in holdings[], not datasets[]) never has an offer
   absent     no manifest, or one older than 1.x: no offers at all (no button anywhere)
-  hashed     the announced shape (schema 2.x, content-addressed names, checked_version, history)
+  1.1        the live shape: content-addressed URLs compared exactly as given
 """
 import importlib.util, json, os, shutil, tempfile, unittest
 
@@ -63,13 +63,13 @@ class DownloadOffers(unittest.TestCase):
         self.write("zip_manifest.json", dict(MANIFEST, schema_version="0.9"))
         self.assertEqual(cl.download_offers(self.dir), {})
 
-    def test_content_addressed_shape(self):
-        hashed = json.load(open(os.path.join(HERE, "fixtures", "zip_manifest_hashed.json")))
+    def test_schema_1_1_content_addressed(self):
+        hashed = json.load(open(os.path.join(HERE, "fixtures", "zip_manifest_1_1.json")))
         self.record("x_hash")
         self.write("zip_manifest.json", hashed)
         o = cl.download_offers(self.dir)["x_hash"]
         self.assertEqual(o["formats"], ["csv", "xlsx"])
-        self.assertEqual(o["primary"], "https://storage.googleapis.com/calcofi-db/publish/zip/x_hash/x_hash_csv_3a91359fe9086d33.zip")
+        self.assertEqual(o["primary"], "https://storage.googleapis.com/calcofi-db/publish/zip/x_hash/3872789ed24411383f47ae8a/x_hash_v9.9.9_csv.zip")
 
 
 if __name__ == "__main__":

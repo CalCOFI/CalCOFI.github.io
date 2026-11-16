@@ -20,16 +20,18 @@
 # _includes/licence_chip.html's rule on the RECORD's attribution: an unstated licence is said to be
 # unstated and never implies open terms; custom terms link the provider's own page.
 #
-# The contract is read defensively, because it is going to move (coordinator, 2026-11-16): file
-# names will become content-addressed, each bundle will gain `built_version` / `checked_version` /
-# `history`, and `schema_version` will bump. So a file name or URL is NEVER parsed or built here —
-# each bundle's `url` is used exactly as given and the suggested download name is that URL's last
-# path segment; unknown fields are ignored; any schema_version of major 1 or higher is read. The
-# version beside the button is the release the zip was last CONFIRMED against (`checked_version`,
-# else `version`), so "from release v…" stays true when the data are unchanged across releases.
+# The contract is read defensively. Since schema 1.1 (2026-11-16) the zips are content-addressed:
+# a URL carries a hash directory (…/swfsc_ichthyo/3872789ed24411383f47ae8a/…_csv.zip) and the
+# version in a file name is `since`, the release where that content first appeared; each dataset
+# entry carries `since`, `checked_version` (the latest release it was verified identical against),
+# `content_hash` and `data_hash`. So a file name or URL is NEVER parsed or built here — each
+# bundle's `url` is used exactly as given and the suggested download name is that URL's last path
+# segment; unknown fields are ignored; any schema_version of major 1 or higher is read. The dialog
+# says which release the zip was verified against (`checked_version`, else `version`) and, only
+# when `since` differs, that the data are unchanged since then — true however many releases pass.
 #
-# Pure functions with no Jekyll dependency, so _test/downloads_test.rb pins them on fixtures (one in
-# today's shape, one in the announced content-addressed shape).
+# Pure functions with no Jekyll dependency, so _test/downloads_test.rb pins them on fixtures (the
+# 1.0 shape and the live 1.1 shape).
 module CalCOFI
   module Downloads
     module_function
@@ -79,18 +81,21 @@ module CalCOFI
           "url" => x["url"],
           "bytes" => x["bytes"], "sha256" => x["sha256"], "excel_openable" => x["excel_openable"],
           "rows" => x["rows"], "note" => x["note"], "reason" => x["reason"],
-          "checked_version" => x["checked_version"], "version" => x["version"] || x["since"] }
+          "checked_version" => x["checked_version"], "since" => x["since"], "version" => x["version"] || x["since"] }
       end
     end
 
-    # the bundles to offer for a record, the record's own first: [bundles, "record"|"manifest", version]
+    # the bundles to offer for a record, the record's own first:
+    # [bundles, "record"|"manifest", checked (verified against), since (content first appeared)]
     def bundles_for(r, entry)
       if (rb = record_bundles(r))
-        [rb, "record", rb.map { |b| b["checked_version"] || b["version"] }.compact.first]
+        [rb, "record", rb.map { |b| b["checked_version"] || b["version"] }.compact.first,
+         rb.map { |b| b["since"] }.compact.first]
       elsif entry.is_a?(Hash) && entry["bundles"].is_a?(Array)
-        [entry["bundles"].select { |b| b.is_a?(Hash) }, "manifest", entry["checked_version"] || entry["version"]]
+        [entry["bundles"].select { |b| b.is_a?(Hash) }, "manifest",
+         entry["checked_version"] || entry["version"], entry["since"]]
       else
-        [[], nil, nil]
+        [[], nil, nil, nil]
       end
     end
 
@@ -138,7 +143,7 @@ module CalCOFI
     # a size (Fmt.bytes, injected so the tests need no site).
     def offer(r, entry, part: nil, contact: "data@calcofi.io", holding: false, bytes: ->(b) { b.to_s })
       return nil if holding || r.nil?
-      bundles, source, version = bundles_for(r, entry)
+      bundles, source, version, since = bundles_for(r, entry)
       by = {}
       bundles.each { |b| by[b["format"]] ||= b if ORDER.include?(b["format"]) }
       written = ORDER.select { |f| by[f] && by[f]["written"] && present?(by[f]["url"]) }
@@ -152,7 +157,7 @@ module CalCOFI
           n = (entry.is_a?(Hash) ? (entry["tables"] || []).size : 0) if n.zero?
           { "format" => f, "label" => meta["label"], "about" => meta["about"], "written" => true,
             "url" => b["url"], "file" => file_name(b["url"]), "bytes" => b["bytes"],
-            "checked_version" => b["checked_version"],
+            "checked_version" => b["checked_version"], "since" => b["since"],
             "size" => b["bytes"] ? bytes.call(b["bytes"]) : nil, "sha256" => b["sha256"],
             "n_tables" => n.positive? ? n : nil,
             "inside" => "#{n.positive? ? "#{n} data table#{'s' unless n == 1}" : 'the data tables'}, #{INSIDE}",
@@ -164,13 +169,17 @@ module CalCOFI
       end
       primary = opts.find { |o| o["written"] && o["format"] == "csv" } || opts.find { |o| o["written"] }
       opts.each { |o| o["primary"] = o.equal?(primary) }
-      # the release the default zip was last confirmed against, else the dataset entry's
+      # the release the default zip was verified against, else the dataset entry's; and the release
+      # its content first appeared in, said only when it is an earlier one
       version = primary["checked_version"] || version
+      since   = primary["since"] || since
+      since   = nil if since.to_s.empty? || since == version
       key = r["dataset_key"]
       {
         "key"     => key,
         "name"    => r["dataset_name_short"] || r["dataset_name"] || key,
         "version" => version,
+        "since"   => since,
         "source"  => source,
         "primary" => primary,
         # the button names the thing: the default format and its size

@@ -399,6 +399,7 @@ layout: default
               <li class="fd-yrow" data-key="{{ d.key | escape }}">
                 <a class="fd-yname" href="{{ d.url }}"><i class="cc-i cc-i-{{ d.cat | default: 'cat-other' }}" aria-hidden="true"></i><span>{{ d.name | escape }}</span></a>
                 <span class="fd-ycells"><span class="fd-yspan">{% if d.ymin %}{{ d.ymin }}{% if d.ymax != d.ymin %} – {{ d.ymax }}{% endif %}{% else %}{{ d.temporal | escape }}{% endif %}</span></span>
+                {%- include dl_rowlink.html key=d.key %}
               </li>
               {%- endfor %}
             </ul>

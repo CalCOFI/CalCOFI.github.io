@@ -80,10 +80,25 @@
 .ds-row.ds-row-dataset:has(> .dl-rowlink) { grid-template-columns: auto minmax(0, 1fr) auto auto; grid-template-areas: "name name lic dl" "prov meta meta dl"; }
 .ds-row.ds-row-dataset > .dl-rowlink { grid-area: dl; align-self: center; padding: 0; width: 32px; }
 
+/* the front door's Find list (index.html .fd-ylist, one grid with subgrid rows): a third column
+   for the control, so every name and every row's year cells keep their own columns and x; the
+   icon is a 28 px square inside the 30 px row, so no row grows */
+.fd-ylist:has(.dl-rowlink) { grid-template-columns: max-content minmax(0, 1fr) auto; }
+.fd-yrow > .dl-rowlink { align-self: center; width: 28px; min-width: 28px; min-height: 28px; height: 28px; padding: 0; margin-left: 2px; }
+
 @media (max-width: 760px) {
   .dl-in { padding: 14px 16px 16px; }
   .dl-top h2 { font-size: 26px; }
   .dl-cta .dl-btn { width: 100%; }
   .dl-rowwrap > .dl-rowlink { margin-top: 10px; padding: 0; width: 36px; }
   .dl-rowwrap > .dl-rowlink .dl-rowlink-t { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+}
+
+/* the Find list on a phone: style.css stacks each name above its years in one column; the control
+   takes a second, narrow column beside both, so the name and the years keep the full width */
+@media (max-width: 640px) {
+  .fd-ylist:has(.dl-rowlink) { grid-template-columns: minmax(0, 1fr) auto; }
+  .fd-ylist:has(.dl-rowlink) .fd-yhead > *, .fd-ylist:has(.dl-rowlink) .fd-yrow > .fd-yname,
+  .fd-ylist:has(.dl-rowlink) .fd-yrow > .fd-ycells { grid-column: 1; }
+  .fd-yrow > .dl-rowlink { grid-column: 2; grid-row: 1 / span 2; width: 36px; height: 36px; }
 }

@@ -18,7 +18,8 @@
 {%- assign idp = include.idp | default: "dl" -%}
 {%- assign lic = dl.licence -%}
 <p class="dl-lede" id="{{ idp }}-desc">Each download is one zip: the data tables, {{ dl.inside }}.
-  {%- if dl.version %} From release <span class="mono">{{ dl.version | escape }}</span>.{% endif %}</p>
+  {%- if dl.version %} Verified against release <span class="mono">{{ dl.version | escape }}</span>
+  {%- if dl.since %}; the data are unchanged since <span class="mono">{{ dl.since | escape }}</span>{% endif %}.{% endif %}</p>
 <ul class="dl-opts">
   {%- for o in dl.main -%}
   {%- if o.written -%}

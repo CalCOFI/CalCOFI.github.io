@@ -1355,7 +1355,8 @@ module CalCOFI
         end
         blocks << { "title" => "Download as a zip",
                     "lede" => "One zip per format, each with the data tables, #{Downloads::INSIDE}" \
-                              "#{dl['version'] ? " — release #{dl['version']}" : ''}. Excel is offered only " \
+                              "#{dl['version'] ? " — verified against release #{dl['version']}" : ''}" \
+                              "#{dl['since'] ? ", unchanged since #{dl['since']}" : ''}. Excel is offered only " \
                               "where every table fits a workbook.",
                     "rows" => zrows }
       end
@@ -2327,6 +2328,9 @@ module CalCOFI
              "url"  => cat.page_url(r) }]
         end,
         "versions"   => (site.data.dig("versions", "versions") || []),
+        # key → the row's Download control ({url, what, aria}), only for a dataset with zips: what
+        # _includes/dl_rowlink.html draws beside a name in the front door's Find list
+        "downloads"  => cat.datasets.filter_map { |d| (t = cat.tile_row(d)["download"]) && [d["dataset_key"], t] }.to_h,
         "contact"    => cat.contact,
         # the front door's numbers band (plan 2026-09-07 § D-2); every value read, none typed
         "numbers"    => cat.numbers

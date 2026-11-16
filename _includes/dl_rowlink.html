@@ -1,0 +1,10 @@
+{%- comment -%}
+  A dataset row's compact Download control, for a list that carries only the key (the front door's
+  Find list): site.data.catalog.downloads[key] is set only for a dataset with zips
+  (_plugins/downloads.rb), so a holding or a dataset without zips draws nothing. It links the
+  dataset page's #download, which opens the Download dialog there (assets/download.js).
+
+  include params: key
+{%- endcomment -%}
+{%- assign dlr = site.data.catalog.downloads[include.key] -%}
+{%- if dlr %}<a class="dl-rowlink dl-rowlink-ico" href="{{ dlr.url | relative_url }}" aria-label="{{ dlr.aria | escape }}" title="Download · {{ dlr.what | escape }} · and other formats"><i class="cc-i cc-i-ui-download" aria-hidden="true"></i></a>{% endif -%}

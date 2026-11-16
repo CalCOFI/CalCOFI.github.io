@@ -541,6 +541,8 @@ PROBE = r"""
       // Find's list of datasets (Ben, 2026-11-16): one HTML row per dataset, the name an <a> to its page
       stripRows: d.querySelectorAll(".fd-yrow a.fd-yname[href]").length, datasets: reach && reach.datasets.length,
       stripDrawn: d.querySelectorAll(".fd-yrow .fd-ycells svg.fd-ysvg").length,
+      // the Download control beside each name with zips (2026-11-16): the keys whose rows carry one
+      stripDl: [...d.querySelectorAll(".fd-yrow[data-key]")].filter(r => r.querySelector(".dl-rowlink")).map(r => r.dataset.key),
       stripLinks: [...d.querySelectorAll(".fd-yrow")].map(r => ({ key: r.dataset.key,
         href: (r.querySelector("a.fd-yname") || { getAttribute: () => null }).getAttribute("href") })),
       finderLinks: [...d.querySelectorAll("#find a[href]")].map(a => a.getAttribute("href")).filter(h => /app\.calcofi\.io\/station/.test(h)),
@@ -2182,6 +2184,13 @@ def check(path, r, width, theme, fails, notes):
             want_h = f"/datasets/{row['key']}/"
             if row["href"] != want_h:
                 fails.append(f"{where}: Find's list links {row['key']!r} to {row['href']!r}, expected {want_h}")
+        # the Download control (2026-11-16): beside every name with zips in Find's list, and only there
+        if "stripDl" in fr:
+            reach_keys = {row["key"] for row in fr.get("stripLinks") or []}
+            want_dl = sorted(k for k in download_offers(_data_dir()) if k in reach_keys)
+            if sorted(fr["stripDl"]) != want_dl:
+                fails.append(f"{where}: Find's list draws a Download control on {len(fr['stripDl'])} rows, expected "
+                             f"{len(want_dl)} (the datasets with zips)")
         # the Explorer replaces the Data Finder (Ben, 2026-11-16): Find calls to it nowhere
         if fr.get("finderLinks"):
             fails.append(f"{where}: Find still links the Data Finder: {fr['finderLinks']}")
