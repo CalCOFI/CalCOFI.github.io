@@ -63,6 +63,8 @@ sections:
       - id: datasets
         title: Datasets
         count: datasets
+        url: /datasets/          # Browse datasets, its own page now (Betty, 2026-11-16), as Species and Measurements
+        data: catalog            # …when the release record built it; otherwise the homepage tab
         blurb: Who collected what — coverage, every endpoint, licence and citation.
       - id: species
         title: Species

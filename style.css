@@ -1206,103 +1206,14 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
   .sp-dots { display: none; }
 }
 
-/* ═══ the front door's six words, tabs and one search (plan 2026-09-10 § D7) ═══════════════════
-   Additive: nothing above this block changed. The header is brand territory (brand/v2/theme.css),
-   so the submenu is written HERE, scoped to .cc-links.cc-submenus — remove that ONE class from
-   the <nav class="cc-links"> in _layouts/default.html and the header is flat six words again
-   (open question 8), with no other edit anywhere. */
-
-.cc-header .cc-links .cc-m { position: relative; display: inline-flex; align-items: center; }
-.cc-header .cc-links .cc-m > ul { display: none; }
-.cc-header .cc-links.cc-submenus .cc-m > a::after { content: " ▾"; font-size: 0.72em; opacity: 0.7; }
-.cc-header .cc-links.cc-submenus .cc-m > ul {
-  position: absolute; top: calc(100% + 10px); left: -10px; z-index: 1030;
-  margin: 0; padding: 6px 0; list-style: none; min-width: 232px;
-  background: var(--panel, var(--bg)); border: 1px solid var(--border); border-radius: var(--radius-card, 8px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
-}
-.cc-header .cc-links.cc-submenus .cc-m:hover > ul,
-.cc-header .cc-links.cc-submenus .cc-m:focus-within > ul { display: block; }
-/* the trigger keeps the header's uppercase nav type; the items are ordinary sentence-case links */
-.cc-header .cc-links.cc-submenus .cc-m ul a {
-  display: flex; justify-content: space-between; align-items: baseline; gap: 14px;
-  padding: 6px 12px; font-weight: 600; font-size: 13.5px; letter-spacing: 0; text-transform: none;
-  white-space: nowrap;
-}
-.cc-header .cc-links.cc-submenus .cc-m ul a:hover,
-.cc-header .cc-links.cc-submenus .cc-m ul a:focus-visible { background: var(--accent-bg); color: var(--accent); text-decoration: none; }
-/* the hover bridge: the submenu floats 10 px under its trigger, and without this the pointer left
-   the group's hover area on its way down, so the menu closed before a click could land (Ben,
-   2026-09-10, live). A transparent strip belonging to the list itself spans the gap: the pointer is
-   always over the group or the list, never over nothing. */
-.cc-header .cc-links.cc-submenus .cc-m > ul::before {
-  content: ""; position: absolute; left: 0; right: 0; bottom: 100%; height: 14px;
-}
-/* on a touch-width screen the submenus stay closed and a tap on the word goes to the section;
-   the phone menu below shows the same items inline instead */
-@media (max-width: 760px) { .cc-header .cc-links.cc-submenus .cc-m > ul { display: none !important; } }
-
-/* ── the menu button (Ben, 2026-09-10: "there is NO menu in the mobile version") ───────────────
-   The brand hides .cc-links under 480 px (brand/v2/theme.css) and left nothing in its place. A
-   hamburger joins the icon cluster at the right — the lockup stays far left, as the brand contract
-   says — and opens the SAME nav as a column under the header row, each section word with its tab
-   items inline. One class on the header (`cc-nav-open`, assets/tabs.js) is the whole state; no
-   second nav, no framework.
-
-   THE BREAKPOINT IS 1100 px (2026-11-16, with FAQ the eighth item): the header row holds the
-   lockup, the tagline, the eight items and two icon buttons on ONE line from 1,089 px (measured on
-   every page, both themes), so the menu button takes over below 1,100 and the nav never wraps —
-   before this, 480–1,040 px drew it on two to five lines, a 187 px header at 640. The same number
-   is in assets/tabs.js (NAV_BREAK) and scripts/check_layout.py (NAV_BREAK); change all three
-   together. brand/v2 stays as it is (frozen): its own rule under 480 px still hides the tagline
-   there; this block only adds, from this site's stylesheet. No other product loads it. */
-@media (max-width: 1099px) {
-  .cc-header:not(.cc-nav-open) .cc-links { display: none; }
-}
-.cc-header .cc-menu-button { display: none; }
-.cc-header .cc-menu-button svg { width: 1.25rem; height: 1.25rem; fill: currentColor; }
-.cc-header .cc-menu-button .cc-menu-icon-close { display: none; }
-.cc-header.cc-nav-open .cc-menu-button .cc-menu-icon-close { display: block; }
-.cc-header.cc-nav-open .cc-menu-button .cc-menu-icon-open { display: none; }
-@media (max-width: 479px) {
-  /* the row must hold the lockup and three icon buttons at 375 px; the "CalCOFI.io" title goes on
-     this site alone — its root IS the lockup's, and the brand already hides its subtitle here */
-  .cc-header .cc-title { display: none; }
-}
-/* the header row is ONE line at every width (2026-11-16). Under 600 px the brand's gap also fell
-   either side of the empty spacer, so the theme toggle wrapped to a second line: a 101 px header
-   at 375 px, 109 px at 480–552 px where the tagline returns. The spacer goes (the first icon
-   button's auto margin does its job), the gap is 8 px, and from 480 px the tagline — kept, as the
-   brand shows it there — sets on two short lines in its own box. One line from 360 px. */
-@media (max-width: 599px) {
-  .cc-header { gap: 8px; }
-  .cc-header .cc-spacer { display: none; }
-  .cc-header .cc-menu-button { margin-left: auto; }
-  .cc-header .cc-tagline { white-space: normal; max-width: 6.5em; line-height: 1.15; }
-}
-@media (max-width: 1099px) {
-  .cc-header { flex-wrap: wrap; }
-  .cc-header .cc-menu-button { display: inline-flex; }
-  .cc-header.cc-nav-open .cc-links {
-    display: flex; flex-direction: column; align-items: stretch; gap: 0;
-    flex-basis: 100%; order: 10; margin: var(--space) 0 0; padding: var(--space) 0 2px;
-    border-top: 1px solid var(--border);
-  }
-  .cc-header.cc-nav-open .cc-links > a,
-  .cc-header.cc-nav-open .cc-links .cc-m > a { display: block; padding: 10px 4px; }
-  .cc-header.cc-nav-open .cc-links .cc-m { display: block; position: static; }
-  .cc-header.cc-nav-open .cc-links.cc-submenus .cc-m > a::after { content: none; }
-  .cc-header.cc-nav-open .cc-links .cc-m > ul,
-  .cc-header.cc-nav-open .cc-links.cc-submenus .cc-m > ul {
-    display: block !important; position: static; margin: -4px 0 6px; padding: 0 0 0 calc(var(--space) * 2);
-    min-width: 0; background: transparent; border: 0; box-shadow: none;
-  }
-  .cc-header.cc-nav-open .cc-links .cc-m > ul::before { content: none; }
-  .cc-header.cc-nav-open .cc-links .cc-m ul a {
-    display: flex; justify-content: space-between; align-items: baseline; gap: 14px;
-    padding: 6px 8px; font-weight: 600; font-size: 14px; letter-spacing: 0; text-transform: none;
-  }
-}
+/* ═══ the front door's tabs and one search (plan 2026-09-10 § D7) ════════════════════════════════
+   The header — its words, their menus, the menu button and its column — is the brand's since v3
+   (brand/v3/header.css, 2026-11-17); the rules that lived here for it (main's submenus of 2026-09-10
+   and its menu button of 2026-11-16) moved there, so every product wears the same header.
+   What stays here is this site's own: on a phone its bar has no title of its own, and under 600 px
+   the tagline sets on two short lines. */
+@media (max-width: 479px) { .cc-header .cc-title { display: none; } }
+@media (max-width: 599px) { .cc-header .cc-tagline { white-space: normal; max-width: 6.5em; line-height: 1.15; } }
 
 /* the count pill: a number beside a tab or a submenu item, never the only cue */
 .pill {
@@ -2167,3 +2078,93 @@ a.cc-chip-lic:hover { color: var(--accent); border-color: var(--accent); text-de
      units so they still read at ~9 px */
   .calm-strip.mm-strip text { font-size: 18px; }
 }
+
+/* (the header's edge and the site nav — Data ▾ · Map ▾ · Query · Cite · Learn · Docs · FAQ · News · calcofi.org ↗, Betty's
+   design of 2026-11-16 — are the brand's since v3: brand/v3/header.css) */
+
+/* the wave under the bar (brand v3 § 4): the layout draws a slim one on every page, and a page whose own head IS a
+   wave band (the catalogs' search, a dataset's title and numbers) marks it .cc-wave-own and the slim one steps aside */
+body:has(.cc-wave-own) .cc-wave-auto { display: none; }
+
+/* ═══ Maps and apps (#explore; Betty, 2026-11-16) ══════════════════════════════════════════════════
+   On the panel's sand: white cards, sentence case, the Explorer large, the Dataset Finder beside the
+   apps for one dataset, then the student projects. Every card ends with Open · Source · Status · Usage. */
+.fd-apps .ap-head { display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px 16px; margin: 0 0 20px; padding-right: 90px; }
+.fd-apps .ap-head h2 { margin: 0; font: 700 24px/1.2 var(--sans); letter-spacing: 0; text-transform: none; color: var(--fg); }
+.fd-apps .ap-head p { margin: 0; font-size: 15px; color: var(--muted); }
+.fd-apps a { text-decoration: none; }
+.fd-apps .ap-feat, .fd-apps .ap-mid, .fd-apps .ap-box, .fd-apps .ap-card {
+  background: var(--bg); border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 2px 10px rgba(0,0,0,.05); }
+.fd-apps .ap-feat { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); overflow: hidden; }
+.fd-apps .ap-feat-shot { display: block; border-right: 1px solid var(--border); background: var(--panel); }
+.fd-apps .ap-feat-shot img { display: block; width: 100%; height: 460px; object-fit: cover; object-position: left top; }
+.fd-apps .ap-feat-b { padding: 24px 26px; display: flex; flex-direction: column; }
+.fd-apps .ap-k { font-size: 13px; font-weight: 700; color: var(--muted); }
+.fd-apps .ap-feat h3 { margin: 4px 0 0; font: 700 26px/1.2 var(--sans); letter-spacing: 0; text-transform: none; }
+.fd-apps h3 a, .fd-apps h4 a { color: var(--fg); }
+.fd-apps h3 a:hover, .fd-apps h4 a:hover { color: var(--accent); }
+.fd-apps .ap-feat-b > p { margin: 10px 0 0; font-size: 15px; line-height: 1.55; }
+.fd-apps .ap-lenses { list-style: none; display: grid; grid-template-columns: repeat(3, auto); gap: 8px 18px; justify-content: start; margin: 16px 0 0; padding: 0; font-size: 14px; color: var(--muted); }
+.fd-apps .ap-lenses .cc-i { color: var(--accent); margin-right: 6px; }
+.fd-apps .ap-acts { display: flex; align-items: center; gap: 16px; margin: 20px 0 0; }
+.fd-apps .ap-y { display: inline-flex; align-items: center; height: 42px; padding: 0 20px; border-radius: 9px; background: #ffcd00; color: #182b49; font-weight: 700; font-size: 15px; }
+.fd-apps .ap-y:hover { filter: brightness(.96); }
+.fd-apps .ap-y.ap-sm { height: 36px; padding: 0 14px; font-size: 14px; }
+/* one yellow button to a panel (main, D6 A): the Explorer's. The Dataset Finder's "Open" is outlined. */
+.fd-apps .ap-mid .ap-y.ap-sm { background: transparent; color: var(--accent); border: 1.5px solid var(--accent); }
+.fd-apps .ap-mid .ap-y.ap-sm:hover { filter: none; background: var(--accent); color: var(--bg); }
+.fd-apps .ap-how { color: var(--accent); font-weight: 600; font-size: 14px; }
+.fd-apps .ap-feat .ap-lk { margin-top: auto; }
+
+.fd-apps .ap-row { display: grid; grid-template-columns: 1fr 2fr; gap: 16px; margin-top: 16px; }
+.fd-apps .ap-mid { display: flex; flex-direction: column; overflow: hidden; }
+.fd-apps .ap-shot { display: block; background: var(--panel); border-bottom: 1px solid var(--border); overflow: hidden; }
+.fd-apps .ap-shot img { display: block; width: 100%; height: 190px; object-fit: cover; object-position: left top; }
+.fd-apps .ap-b { padding: 14px 16px 14px; display: flex; flex-direction: column; flex: 1; }
+.fd-apps .ap-mid h3 { margin: 0; font: 700 17.5px/1.3 var(--sans); letter-spacing: 0; text-transform: none; }
+.fd-apps .ap-b > p { margin: 5px 0 0; font-size: 14px; line-height: 1.45; color: var(--muted); }
+.fd-apps .ap-mid .ap-acts { margin-top: 12px; }
+.fd-apps .ap-box { padding: 14px 16px 16px; }
+.fd-apps .ap-box h3, .fd-apps .ap-sh { margin: 0 0 12px; font: 700 17.5px/1.3 var(--sans); letter-spacing: 0; text-transform: none; color: var(--fg); }
+.fd-apps .ap-box h3 span, .fd-apps .ap-sh span { margin-left: 8px; font-size: 13.5px; font-weight: 500; color: var(--muted); }
+.fd-apps .ap-sh { margin: 36px 0 14px; padding-top: 18px; border-top: 2px solid color-mix(in srgb, var(--fg) 14%, transparent); }
+
+.fd-apps .ap-grid { display: grid; gap: 14px; }
+.fd-apps .ap-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.fd-apps .ap-card { display: flex; flex-direction: column; overflow: hidden; border-radius: 12px; transition: border-color .15s, transform .15s; }
+.fd-apps .ap-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+.fd-apps .ap-box .ap-card { box-shadow: none; }
+.fd-apps .ap-card .ap-shot img { height: 140px; }
+.fd-apps .ap-tall .ap-card .ap-shot img { height: 190px; }
+.fd-apps .ap-card h4 { margin: 0; font: 700 15px/1.3 var(--sans); letter-spacing: 0; text-transform: none; }
+.fd-apps .ap-card .ap-b > p { font-size: 13px; }
+
+.fd-apps .ap-lk { display: flex; align-items: center; gap: 14px; margin-top: auto; padding-top: 10px; font-size: 13px; }
+.fd-apps .ap-mid .ap-acts + .ap-lk { margin-top: 12px; }
+.fd-apps .ap-lk { border-top: 1px solid color-mix(in srgb, var(--border) 60%, transparent); }
+.fd-apps .ap-card .ap-lk { margin-top: auto; }
+.fd-apps .ap-card .ap-b > p { margin-bottom: 10px; }
+.fd-apps .ap-card .ap-b > p:has(+ .ap-cr) { margin-bottom: 0; }
+.fd-apps .ap-card .ap-b > p.ap-cr { margin: 6px 0 10px; font-size: 12.5px; line-height: 1.4; color: var(--fg); opacity: .75; }
+.fd-apps .ap-l { display: flex; gap: 14px; } .fd-apps .ap-l a { color: var(--accent); font-weight: 600; }
+.fd-apps .ap-r { margin-left: auto; display: flex; gap: 12px; } .fd-apps .ap-r a { color: var(--muted); }
+.fd-apps .ap-lk a { white-space: nowrap; }
+.fd-apps .ap-lk a:hover { text-decoration: underline; }
+.fd-apps .ap-box .ap-lk { gap: 10px; font-size: 12.5px; } .fd-apps .ap-box .ap-l, .fd-apps .ap-box .ap-r { gap: 10px; }
+
+@media (max-width: 1000px) {
+  .fd-apps .ap-feat { grid-template-columns: 1fr; }
+  .fd-apps .ap-feat-shot { border-right: 0; border-bottom: 1px solid var(--border); }
+  .fd-apps .ap-feat-shot img { height: 300px; }
+  .fd-apps .ap-row { grid-template-columns: 1fr; }
+  .fd-apps .ap-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 640px) {
+  .fd-apps .ap-3 { grid-template-columns: 1fr; }
+  .fd-apps .ap-lenses { grid-template-columns: repeat(2, auto); }
+  .fd-apps .ap-head { padding-right: 0; }
+}
+/* main's line from Explore to Find (Erin's split, 2026-11-16), kept in Maps and apps under its head */
+.fd-apps .ap-xref { margin: -6px 0 18px; }
+/* two people under one footer heading (Technical): a little air between them */
+.v2-footer .cols p + p { margin-top: 10px; }

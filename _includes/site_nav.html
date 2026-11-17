@@ -1,0 +1,43 @@
+{%- comment -%}
+  The site header's nav, drawn from the ONE list of words (_data/nav.yml, resolved by _plugins/nav.rb into
+  site.data.nav_words — the same list /brand/v3/nav.json carries to the other products, where
+  brand/v3/header.js draws this same markup). Brand v3 § 4 (brand/v3/README.md):
+
+    Data ▾ · Map ▾ · Query · Cite · Learn · Docs · FAQ · News · calcofi.org ↗        sentence case
+
+  A word with a menu is a BUTTON (aria-expanded, aria-controls) that opens its panel: on hover, staying
+  open a moment after the pointer leaves (brand/v3/header.css), and on a click, a tap or Enter / Space
+  (brand/v3/header.js), which is what a touch screen and a keyboard have. Escape closes it and returns
+  focus to its button; so does a click outside or focus leaving. Under 1100 px (NAV_BREAK: header.css,
+  header.js, scripts/check_layout.py) the menu button takes over, so the header never wraps (main
+  618d959); the open menu shows every line in one column, the menus inline, and scrolls inside itself.
+  The counts are the catalog's own. `go` is this site's: the front-door tab a link selects.
+{%- endcomment -%}
+{%- assign here = page.url | split: "/" | slice: 1 | first -%}
+{%- capture car %}<svg class="cc-car" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 9l5 6 5-6z"/></svg>{% endcapture -%}
+<nav class="cc-links cc-nav" id="cc-nav" aria-label="Sections" data-cc-nav>
+  {%- for w in site.data.nav_words -%}
+  {%- assign cur = false -%}{%- if here and w.here contains here -%}{%- assign cur = true -%}{%- endif -%}
+  {%- if w.menu -%}
+  <div class="cc-m2" data-word="{{ w.id | escape }}">
+    <button type="button" class="cc-m2-t" aria-expanded="false" aria-controls="cc-dd-{{ w.id | escape }}"{% if cur %} aria-current="true"{% endif %}>{{ w.title | escape }}{{ car }}</button>
+    {%- assign titled = false -%}{%- if w.menu.size > 1 -%}{%- assign titled = true -%}{%- endif -%}
+    <div class="cc-dd{% if titled %} cc-dd-2{% endif %}{% if w.align == 'right' %} cc-dd-r{% endif %}" id="cc-dd-{{ w.id | escape }}">
+      {%- for c in w.menu -%}
+      {%- if titled %}<div>{% if c.title %}<h5>{{ c.title | escape }}</h5>{% endif %}{% endif -%}
+      {%- for i in c.items -%}
+      {%- if i.rule %}<hr>{% else -%}
+      {%- assign first = i.path | slice: 0 -%}
+      <a href="{% if first == '/' %}{{ i.path | relative_url }}{% else %}{{ i.path }}{% endif %}"{% if i.go %} data-go="{{ i.go | escape }}"{% endif %}>{% if i.icon %}<i class="cc-i cc-i-{{ i.icon | escape }}" aria-hidden="true"></i>{% endif %}<span><b>{{ i.title | escape }}</b>{% if i.small %}<small>{{ i.small | escape }}</small>{% endif %}</span></a>
+      {%- endif -%}
+      {%- endfor -%}
+      {%- if titled %}</div>{% endif -%}
+      {%- endfor -%}
+    </div>
+  </div>
+  {%- else -%}
+  {%- assign first = w.path | slice: 0 -%}
+  <a{% if w.ext %} class="cc-ext"{% endif %} data-word="{{ w.id | escape }}" href="{% if first == '/' %}{{ w.path | relative_url }}{% else %}{{ w.path }}{% endif %}"{% if cur %} aria-current="page"{% endif %}>{{ w.title | escape }}</a>
+  {%- endif -%}
+  {%- endfor -%}
+</nav>

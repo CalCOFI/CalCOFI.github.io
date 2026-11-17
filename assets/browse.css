@@ -1,0 +1,143 @@
+/* Browse datasets (/datasets/, _layouts/datasets.html; Betty 2026-11-14). Brand tokens throughout, so
+   dark mode follows. A navy band with the search (and a wave for its lower edge), "Years covered"
+   folded, then the rows on the left and the preview on the right. */
+
+/* ── the band ─────────────────────────────────────────────────────────────── */
+.bd-head { position: relative; background: linear-gradient(180deg, #14284a 0%, #1d3d66 100%); color: #fff; padding-bottom: 26px; }
+.bd-in { max-width: var(--container, 1280px); margin: 0 auto; padding: 24px calc(var(--space, 8px) * 3) 6px; }
+.bd-tools { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.bd-q { flex: 1 1 360px; display: flex; align-items: center; gap: 10px; height: 46px; padding: 0 14px; border-radius: 10px;
+        background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.25); }
+.bd-q:focus-within { border-color: rgba(255,255,255,.6); }
+.bd-q .cc-i { color: #b9c6da; font-size: 18px; }
+.bd-q input { flex: 1; min-width: 0; border: 0; outline: 0; background: none; color: #fff; font: 15.5px var(--sans); }
+.bd-q input::placeholder { color: #b9c6da; }
+.bd-qn { font: 12px var(--mono); color: #b9c6da; }
+.bd-sel select { font: 14px var(--sans); height: 46px; color: #fff; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.25); border-radius: 10px; padding: 0 12px; }
+.bd-sel select option { color: #182b49; }
+.bd-try { margin: 12px 0 0; font-size: 14px; color: #c9d4e3; display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: center; }
+.bd-try button { all: unset; cursor: pointer; color: #fff; text-decoration: underline; text-underline-offset: 3px; }
+.bd-try button:hover, .bd-try button:focus-visible { color: var(--cc-yellow, #ffcd00); }
+.bd-wave-edge { position: absolute; left: 0; right: 0; bottom: -1px; width: 100%; height: 28px; }
+.bd-wave-edge path { fill: var(--bg); }
+
+.ds-browse { background: transparent; padding-top: 20px; }
+
+/* ── Years covered (the front door's strip, folded) ───────────────────────── */
+.bd-when { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; margin-bottom: 24px; }
+.bd-when > summary { list-style: none; display: flex; align-items: center; gap: 10px; padding: 14px 20px; cursor: pointer; }
+.bd-when > summary::-webkit-details-marker { display: none; }
+.bd-when > summary .cc-i { font-size: 19px; color: var(--accent); }
+.bd-when > summary span { color: var(--muted); font-size: 14px; }
+.bd-when > summary .calm-chev { margin-left: auto; color: var(--muted); transition: transform .15s; }
+.bd-when[open] > summary .calm-chev { transform: rotate(180deg); }
+.bd-strip { padding: 0 20px 16px; overflow-x: auto; }
+
+/* ── tabs ─────────────────────────────────────────────────────────────────── */
+.bd-views > .tabrow { display: flex; align-items: center; border-bottom: 1px solid var(--border); margin-bottom: 14px; }
+.bd-views > .tabrow button { font-size: 14px; letter-spacing: .08em; }
+.bd-count { margin-left: auto; font-size: 13.5px; color: var(--muted); }
+
+/* ── rows + preview ───────────────────────────────────────────────────────── */
+.bd-find { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 28px; align-items: start; }
+.bd-lists { min-width: 0; }
+.bd-colh { position: sticky; top: var(--header-h, 72px); z-index: 3; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr) 150px; gap: 20px;
+           padding: 9px 18px 8px; margin-bottom: 10px; background: var(--bg); border-bottom: 1px solid var(--border);
+           font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.bd-colh-2 { grid-template-columns: minmax(0, 1fr) 150px; }
+
+.bd-list, .bd-card { background: var(--bg); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,.05); }
+.bd-r { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr) 150px; gap: 20px; align-items: center; padding: 12px 18px;
+        border-top: 1px solid color-mix(in srgb, var(--border) 60%, transparent); color: var(--fg); text-decoration: none; }
+.bd-r:first-child { border-top: 0; }
+.bd-r[hidden] { display: none; }
+.bd-r:hover { background: color-mix(in srgb, var(--panel) 70%, var(--bg)); }
+.bd-r.on { background: var(--accent-bg); }
+.bd-r.on .bd-rn b { color: var(--accent); }
+.bd-r:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.bd-rn b { display: block; font-size: 15.5px; line-height: 1.3; }
+.bd-rn > span { font-size: 12.5px; color: var(--muted); }
+.bd-rn .cc-i { font-size: 13px; color: var(--accent); margin-right: 4px; vertical-align: -1px; }
+.bd-rw { font-size: 13.5px; line-height: 1.4; color: color-mix(in srgb, var(--fg) 80%, var(--bg)); }
+.bd-rw mark { background: var(--warn-bg); color: var(--fg); padding: 0 2px; border-radius: 2px; }
+.bd-ry > span { display: block; font-size: 12.5px; font-weight: 600; margin-bottom: 5px; font-variant-numeric: tabular-nums; }
+.ys { display: block; width: 100%; height: 5px; border-radius: 3px; overflow: hidden; }
+.ys .bg { fill: color-mix(in srgb, var(--border) 60%, var(--bg)); } .ys .on { fill: var(--accent); }
+
+/* By category: a label over a card of its datasets */
+.bd-realm h2 { margin: 6px 0 12px; font-size: 20px; font-weight: 700; }
+.bd-realm + .bd-realm h2 { margin-top: 30px; }
+.bd-realm[hidden], .bd-grp[hidden] { display: none; }
+.bd-grp { scroll-margin-top: 130px; }
+.bd-grp + .bd-grp { margin-top: 26px; }
+.bd-gh { display: flex; align-items: center; gap: 10px; padding: 0 4px 9px; }
+.bd-gi { flex: none; width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; background: var(--accent-bg); }
+.bd-gi .cc-i { font-size: 17px; color: var(--accent); }
+.bd-gh h3 { margin: 0; font-size: 14px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; white-space: nowrap; }
+.bd-gd { flex: 1; min-width: 0; font-size: 13px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bd-gn { margin-left: auto; font-size: 12.5px; color: var(--muted); white-space: nowrap; }
+.bd-card .bd-r { grid-template-columns: minmax(0, 1fr) 150px; grid-template-areas: "n y" "w y"; row-gap: 3px; }
+.bd-card .bd-rn { grid-area: n; } .bd-card .bd-rw { grid-area: w; } .bd-card .bd-ry { grid-area: y; }
+.bd-card .bd-rn b { display: inline; margin-right: 8px; }
+
+.bd-empty { padding: 30px 20px; color: var(--muted); }
+.bd-empty i { font-style: normal; color: var(--fg); font-weight: 600; }
+.bd-empty button { all: unset; cursor: pointer; color: var(--accent); font-weight: 700; margin-left: 6px; }
+
+/* the preview */
+.bd-pv { position: sticky; top: calc(var(--header-h, 72px) + 14px); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; background: var(--bg); box-shadow: 0 8px 30px rgba(0,0,0,.08); }
+.bd-pv-map { position: relative; height: 200px; background: var(--cc-map-water); border-bottom: 1px solid var(--border); }
+.bd-pv-map .cc-map { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 0; }
+.bd-pv-map .ticks { display: none; }
+.bd-pv-cap { position: absolute; left: 12px; bottom: 10px; font-size: 12px; font-weight: 600; background: color-mix(in srgb, var(--bg) 88%, transparent); padding: 3px 8px; border-radius: 6px; }
+.bd-pv-nomap { position: absolute; inset: 0; display: grid; place-items: center; font-size: 13px; color: var(--muted); }
+.bd-pv-b { padding: 14px 18px 16px; }
+.bd-pv-cat { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
+.bd-pv-cat .cc-i { font-size: 16px; color: var(--accent); }
+.bd-pv h2 { margin: 6px 0 0; font-size: 21px; font-weight: 700; line-height: 1.2; }
+.bd-pv-full { margin: 4px 0 0; font-size: 14px; font-weight: 600; color: color-mix(in srgb, var(--fg) 75%, var(--bg)); }
+.bd-pv-by { margin: 1px 0 0; font-size: 13.5px; color: var(--muted); }
+.bd-pv-desc { margin: 8px 0 0; font-size: 14px; line-height: 1.5; color: color-mix(in srgb, var(--fg) 80%, var(--bg)); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.bd-pv-has { margin-top: 10px; font-size: 14px; line-height: 1.45; }
+.bd-pv-has b, .bd-pv-yr b { display: block; font-size: 12.5px; color: var(--muted); margin-bottom: 2px; }
+.bd-pv-yr { margin-top: 10px; }
+.bd-pv-yr > div:first-child { display: flex; justify-content: space-between; align-items: baseline; }
+.bd-pv-yr > div:first-child span { font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.bd-pv .ys.big { height: 9px; margin-top: 6px; }
+.bd-pv-ax { position: relative; height: 14px; margin-top: 3px; font-size: 11px; color: var(--muted); }
+.bd-pv-ax span { position: absolute; top: 0; transform: translateX(-50%); }
+.bd-pv-ax span:first-child { transform: none; } .bd-pv-ax span:last-child { transform: none; }
+.bd-pv-f { display: flex; gap: 26px; margin: 10px 0 0; padding-top: 10px; border-top: 1px solid color-mix(in srgb, var(--border) 60%, transparent); }
+.bd-pv-f dt { font-size: 12.5px; color: var(--muted); } .bd-pv-f dd { margin: 1px 0 0; font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.bd-pv-act { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 14px; }
+.bd-b1 { height: 38px; padding: 0 16px; display: inline-flex; align-items: center; border-radius: 8px; background: var(--cta-bg); color: var(--cta-fg); font-weight: 700; font-size: 14px; text-decoration: none; }
+.bd-b1:hover { filter: brightness(.95); }
+.bd-b2 { height: 38px; padding: 0 14px; display: inline-flex; align-items: center; gap: 6px; border-radius: 8px; border: 1px solid var(--border); color: var(--fg); font-weight: 700; font-size: 14px; text-decoration: none; }
+.bd-b2:hover { border-color: var(--fg); }
+.bd-b3 { margin-left: auto; font-weight: 700; font-size: 13.5px; color: var(--accent); text-decoration: none; }
+
+@media (max-width: 1000px) {
+  .bd-find { grid-template-columns: 1fr; }
+  /* one column: a row opens its own page. The preview was stacked ABOVE the list (order: -1), so on a phone or a
+     tablet in portrait the first screen was one dataset's map and a tap on a row changed a pane out of sight */
+  .bd-pv { display: none !important; }
+}
+@media (max-width: 700px) {
+  .bd-colh { display: none; }
+  .bd-r, .bd-card .bd-r { grid-template-columns: 1fr; grid-template-areas: none; }
+  .bd-card .bd-rn, .bd-card .bd-rw, .bd-card .bd-ry { grid-area: auto; }
+}
+.bd-pv-map { height: 230px; }
+.bd-pv-map .bbox { display: none; }
+.bd-r, .bd-r:hover, .bd-r * { text-decoration: none; }
+
+/* Download: a link to the dataset page's Download dialog (main's assets/download.js), with what the default is */
+button.bd-b2 { font: inherit; font-weight: 700; font-size: 14px; background: var(--bg); cursor: pointer; }
+.bd-pv { overflow: visible; }
+.bd-pv-map { border-radius: 14px 14px 0 0; overflow: hidden; }
+
+/* one row: View on map · Download · Full details (Betty 2026-11-14) */
+.bd-pv-act { flex-wrap: nowrap; gap: 8px; }
+.bd-pv-act .bd-b1 { padding: 0 14px; white-space: nowrap; }
+.bd-pv-act .bd-b2 { padding: 0 11px; white-space: nowrap; }
+.bd-pv-act .bd-b3 { white-space: nowrap; }

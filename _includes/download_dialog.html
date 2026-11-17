@@ -1,0 +1,28 @@
+{%- comment -%}
+  The Download dialog and its no-JavaScript twin, for a dataset with zips (page.download,
+  _plugins/downloads.rb). Shared by the two dataset pages: the redesigned one
+  (_includes/dataset_page.html) and the one kept for a holding (_layouts/dataset.html), so the ids
+  assets/download.js and scripts/check_layout.py read (#dl-btn, #dl-dialog, #download) are the same
+  on both. include params: dl (page.download)
+{%- endcomment -%}
+{%- assign dl = include.dl -%}
+{%- if dl -%}
+{%- comment -%} the Download dialog (assets/download.js: the button, #download on the URL, Esc,
+  Close, a click on the backdrop; focus goes to the CSV link and back to the button). Closed, it is
+  display: none, so the page's height and the one-column rule never see it. {%- endcomment -%}
+<dialog class="dl-dialog" id="dl-dialog" aria-labelledby="dl-title" aria-describedby="dl-desc">
+  <div class="dl-in">
+    <div class="dl-top">
+      <h2 id="dl-title">Download {{ dl.name | escape }}</h2>
+      <button type="button" class="dl-close" data-dl-close aria-label="Close"><i class="cc-i cc-i-ui-close" aria-hidden="true"></i></button>
+    </div>
+    {% include download_options.html dl=dl idp="dl" autofocus=true %}
+  </div>
+</dialog>
+<noscript>
+  <section class="calm-sec dl-nojs" id="download" aria-labelledby="dl-nj-title">
+    <h2 id="dl-nj-title"><i class="cc-i cc-i-ui-download" aria-hidden="true"></i>Download</h2>
+    {% include download_options.html dl=dl idp="dl-nj" %}
+  </section>
+</noscript>
+{%- endif -%}

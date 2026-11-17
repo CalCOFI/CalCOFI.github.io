@@ -1,0 +1,6 @@
+# A Netlify preview (scripts/build_netlify.sh): the site and the Explorer together on ONE address, so the
+# logo, the Explorer and the Query Builder all stay on the preview instead of jumping to the live calcofi.io.
+#   url ""                links and the logo are relative to wherever the preview is served
+#   local_explore         the Explorer and the Query Builder are built into /explore/ of the same upload
+url: ""
+local_explore: "/explore/"

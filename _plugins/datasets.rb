@@ -2311,6 +2311,7 @@ module CalCOFI
       rec = deep_unescape(rec)
       cat = Catalog.new(site, rec, read_grid(site), read_land(site), read_coverage_stations(site))
       cat.products_by_dataset # validate products.yml before anything is written
+      BrowseData.catalog = cat # _plugins/browse.rb reads it (Browse datasets rows and maps)
 
       site.data["catalog"] = {
         "release"    => cat.release,
@@ -2318,6 +2319,7 @@ module CalCOFI
                           "reference" => cat.reference.size },
         "categories" => cat.categories,
         "realms"     => cat.realms,
+        "span"       => cat.strip_span,
         "reference"  => cat.reference_band.merge("map" => cat.map_svg(nil)),
         "facets"     => cat.facets,
         "jsonld"     => JSON.pretty_generate(cat.catalog_jsonld),

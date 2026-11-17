@@ -24,130 +24,90 @@ layout: default
 {%- assign rel = cat.release -%}
 {%- assign ref = cat.reference -%}
 {%- assign nums = cat.numbers -%}
-<main class="calm-page ds-cat">
+<link rel="stylesheet" href="{{ '/assets/browse.css' | relative_url }}">
+<link rel="stylesheet" href="{{ '/assets/finder.css' | relative_url }}">
+{%- comment -%}
+  Browse datasets (Betty, 2026-11-14). A finder: search and filters in a navy band (no title — the
+  page's h1 is kept for screen readers), "Years covered" folded, then two views of the same rows with
+  a preview beside them. Click a row and the preview shows its station map, what is in it, its years
+  and the ways in (View on map, Download, Full details); without JavaScript the row is a link to the
+  dataset's page. Rows are site.data.browse (_plugins/browse.rb): core datasets first, newest last.
+    List         one row per dataset: name (category · provider), what's in it, years with data
+    By category  Biology | Environment, each category a label over a card of its datasets
+  Search matches names, providers, categories AND the species and measurements inside each dataset.
+{%- endcomment -%}
+{%- assign b = site.data.browse -%}
+{%- assign try = "anchovy,oxygen,krill,chlorophyll,seabirds" | split: "," -%}
 
-<header class="calm-cathead ds-cathead">
-  <nav class="calm-siblings" aria-label="The three catalogs">
-    <a href="{{ '/datasets/' | relative_url }}" aria-current="page"><i class="cc-i cc-i-ui-data" aria-hidden="true"></i>Datasets</a>
-    <a href="{{ '/species/' | relative_url }}"><i class="cc-i cc-i-realm-bio" aria-hidden="true"></i>Species</a>
-    <a href="{{ '/measurements/' | relative_url }}"><i class="cc-i cc-i-el-measured" aria-hidden="true"></i>Measurements</a>
-  </nav>
-  <div class="ds-cathead-g">
-    <div class="ds-cathead-l">
-      <h1>Datasets</h1>
-      <p class="calm-sentence">Who collected what, with its coverage, every endpoint, the licence and how to cite it.</p>
-      <p class="ds-counts">{{ cat.counts.datasets }} in the release · {{ cat.counts.holdings }} held · {{ cat.counts.reference }} reference rows · <a href="{{ '/datasets/release/' | relative_url }}">{{ rel.version | escape }}</a></p>
-      <details class="ds-more">
-        <summary>What this is <i class="cc-i cc-i-ui-down" aria-hidden="true"></i></summary>
-        <p>Every dataset CalCOFI holds: the {{ cat.counts.datasets }} in the integrated database, each with
-          its coverage, every endpoint it can be reached through and how to cite it, and the
-          {{ cat.counts.holdings }} holdings that are not in the database yet. One page per dataset. The
-          machine-readable catalog is <a href="{{ '/data.json' | relative_url }}">data.json</a> and
-          <a href="{{ '/datasets/sitemap.xml' | relative_url }}">sitemap.xml</a>.</p>
-      </details>
+<header class="bd-head bd-wave cc-wave cc-wave-own">
+  <div class="bd-in">
+    <h1 class="sr-only">Browse datasets</h1>
+    <div class="bd-tools">
+      <label class="bd-q"><i class="cc-i cc-i-ui-search" aria-hidden="true"></i>
+        <span class="sr-only">Search datasets, species or measurements</span>
+        <input id="bd-q" type="search" autocomplete="off" spellcheck="false" placeholder="Search datasets, species or measurements">
+        <span class="bd-qn" id="bd-qn" aria-hidden="true">{{ b.rows.size }}</span></label>
+      <label class="bd-sel"><span class="sr-only">Type</span><select id="bd-type">
+        <option value="">All types</option>
+        {%- for r in b.realms %}<option value="{{ r.id | escape }}">{{ r.title | escape }}</option>{% endfor -%}
+      </select></label>
+      <label class="bd-sel"><span class="sr-only">Sort</span><select id="bd-sort">
+        <option value="core">Sort: Core first, newest last</option><option value="az">A–Z</option><option value="long">Longest record</option><option value="recent">Most recent</option><option value="cat">Category</option>
+      </select></label>
     </div>
-    <div class="ds-cathead-r">
-      {% include one_search.html placeholder="bottle · CUFES · zooplankton · CCE-LTER · eDNA …" hint=cat.counts.datasets %}
-      <div class="ds-tools">
-        <span>Rows open to the description, what is in them and the ways in.</span>
-        <button type="button" class="ds-filter-btn" id="ds-filter-btn" aria-expanded="false" aria-controls="ds-filters"><i class="cc-i cc-i-ui-filter" aria-hidden="true"></i>Filter</button>
-      </div>
-    </div>
+    <p class="bd-try">Try {% for w in try %}<button type="button" data-q="{{ w }}">{{ w }}</button>{% endfor %}</p>
   </div>
+  <svg class="bd-wave-edge" viewBox="0 0 1200 40" preserveAspectRatio="none" aria-hidden="true"><path d="M0 30 C150 10 300 34 450 22 S750 6 900 20 S1100 34 1200 18 V40 H0Z"/></svg>
 </header>
 
-{% include catalog_filters.html hidden=true %}
+<main class="calm-page ds-cat ds-browse">
+{% include catalog_crumb.html on="datasets" %}
 
-<div class="tabset calm-views ds-views" id="ts-ds-views" data-url-tab>
+<details class="bd-when">
+  <summary><i class="cc-i cc-i-ui-years" aria-hidden="true"></i><b>Years covered</b><span>which datasets were collected each year</span><i class="calm-chev cc-i cc-i-ui-down" aria-hidden="true"></i></summary>
+  <script type="application/json" id="reach">{{ site.data.reach | jsonify }}</script>
+  <div id="strip-host" class="fd-strip bd-strip" data-sprite="{{ '/brand/v2/icons/calcofi-icons.svg' | relative_url }}"></div>
+</details>
+
+<h2 class="sr-only">The datasets</h2>
+<div class="tabset calm-views ds-views bd-views" id="ts-ds-views" data-url-tab>
   <div class="tabrow" role="tablist" aria-label="How to see the datasets">
-    <button type="button" role="tab" id="ds-view-tab-list" aria-controls="ds-view-list" data-tab="list" aria-selected="true" tabindex="0"><i class="cc-i cc-i-view-list" aria-hidden="true"></i>List</button>
-    <button type="button" role="tab" id="ds-view-tab-grid" aria-controls="ds-view-grid" data-tab="grid" aria-selected="false" tabindex="-1"><i class="cc-i cc-i-view-grid" aria-hidden="true"></i>By category</button>
+    <button type="button" role="tab" id="ds-view-tab-list" aria-controls="ds-view-list" data-tab="list" aria-selected="true" tabindex="0">List</button>
+    <button type="button" role="tab" id="ds-view-tab-grid" aria-controls="ds-view-grid" data-tab="grid" aria-selected="false" tabindex="-1">By category</button>
+    <span class="bd-count">{{ cat.counts.datasets }} datasets · {{ nums.since | default: b.span[0] }} to today</span>
   </div>
 
-  <div class="tabpanel" id="ds-view-list" data-panel="list" role="tabpanel" aria-labelledby="ds-view-tab-list">
-    <div id="ds-list">
-    {%- for rlm in cat.realms -%}
-    {%- assign n_rlm = 0 -%}
-    {%- for c in rlm.categories %}{% assign n_rlm = n_rlm | plus: c.datasets.size %}{% endfor -%}
-    {%- if n_rlm > 0 -%}
-    <section class="ds-realm-grp" id="ds-realm-{{ rlm.id }}" aria-labelledby="ds-realm-h-{{ rlm.id }}">
-      <div class="ds-realm-h">
-        <h2 id="ds-realm-h-{{ rlm.id }}"><i class="cc-i cc-i-{{ rlm.icon | escape }}" aria-hidden="true"></i>{{ rlm.title | escape }}</h2>
-        <span class="calm-ans">{{ n_rlm }} dataset{% if n_rlm != 1 %}s{% endif %} · {{ rlm.lede | replace: " — ", ": " | escape }}</span>
-      </div>
-      <div class="calm-list">
-      {%- comment -%} every dataset of the realm, by category order then name: the categories come
-        sorted from the generator, and the rows within each {%- endcomment -%}
-      {%- for c in rlm.categories -%}
-      {%- for d in c.datasets -%}
-      {%- comment -%} a row with zips carries a Download control BESIDE its <details>, never inside the
-        <summary> (a link inside a summary is an interactive element inside a button). The wrapper
-        lays the two out as one row; the control opens the dataset page's dialog (#download). It
-        hides with its row when the filter hides the <details>. {%- endcomment -%}
-      {%- if d.download %}<div class="dl-rowwrap">{% endif -%}
-      <details class="calm-item ds-item" data-kind="dataset" data-key="{{ d.key | escape }}" data-cat="{{ c.name | escape }}"
-               data-realm="{{ d.realm | escape }}" data-prov="{{ d.provider | escape }}"
-               data-lic="{{ d.license | default: 'unstated' | escape }}" data-fmt="{{ d.formats | join: ' ' | escape }}"
-               data-stage="{{ d.stage | default: 'published' | escape }}">
-        <summary>
-          <span class="calm-item-g"{% if d.color %} style="--dot: {{ d.color | escape }}"{% endif %}><i class="cc-i cc-i-{{ d.icon | escape }}" aria-hidden="true"></i></span>
-          <span class="calm-item-tx">
-            <span class="calm-item-t">{{ d.name | escape }}</span>
-            <span class="calm-item-s"><span{% if c.description %} title="{{ c.description | escape }}"{% endif %}>{{ c.name | escape }}</span> · {{ d.provider | escape }}</span>
-          </span>
-          <span class="calm-item-k">
-            {%- if d.years %}<span>{{ d.years | escape }}</span>{% endif -%}
-            {%- if d.n_obs_short %}<span title="{{ d.n_obs_fmt }} observations">{{ d.n_obs_short }} obs</span>{% endif -%}
-            {% include licence_chip.html license=d.license license_url=d.license_url name=d.license_name %}
-          </span>
-          <i class="calm-chev cc-i cc-i-ui-down" aria-hidden="true"></i>
-        </summary>
-        <div class="calm-item-b">
-          <p>{% if d.full_name and d.full_name != d.name %}<b>{{ d.full_name | escape }}.</b> {% endif %}{{ d.sentence | escape }}</p>
-          <div class="ds-item-what">
-            <span class="ds-item-cat"><i class="cc-i cc-i-{{ d.icon | escape }}" aria-hidden="true"></i>{{ c.name | escape }}
-              {%- if c.description -%}
-              {%- capture cbody %}<p>{{ c.description | escape }}.</p>{% endcapture -%}
-              {% include info.html label="What this category holds" body=cbody %}
-              {%- endif -%}</span>
-            {%- if d.n_taxa and d.n_taxa > 0 -%}
-            <span><i class="cc-i cc-i-el-taxa" aria-hidden="true"></i><b>{{ d.n_taxa }} taxa</b>{% if d.taxa_names.size > 0 %} · <i>{{ d.taxa_names | join: ", " | escape }}</i>{% if d.n_taxa > d.taxa_names.size %} …{% endif %}{% endif %}</span>
-            {%- elsif d.n_var and d.n_var > 0 -%}
-            <span><i class="cc-i cc-i-el-variables" aria-hidden="true"></i><b>{{ d.n_var }} variable{% if d.n_var != 1 %}s{% endif %}</b> · <span class="mono">{{ d.var_names | join: ", " | escape }}</span>{% if d.n_var > d.var_names.size %} …{% endif %}</span>
-            {%- endif -%}
-            {%- if d.years %}<span><i class="cc-i cc-i-ui-years" aria-hidden="true"></i>{{ d.years | escape }}{% if d.n_stations %} · {{ d.n_stations }} stations{% endif %}</span>{% endif -%}
-            {%- if d.contrib.size > 0 -%}
-            <span><i class="cc-i cc-i-el-contributes" aria-hidden="true"></i>also in {% for ct in d.contrib %}{{ ct.category | escape }} ({{ ct.n }}){% unless forloop.last %} · {% endunless %}{% endfor %}</span>
-            {%- endif -%}
-            {%- if d.since %}<span><i class="cc-i cc-i-el-release" aria-hidden="true"></i>in the release since <span class="mono">{{ d.since | escape }}</span>{% if d.stage %} · {{ d.stage | escape }}{% endif %}</span>{% endif -%}
-          </div>
-          <p class="calm-ways">
-            <a href="{{ d.url | relative_url }}"><i class="cc-i cc-i-ui-open" aria-hidden="true"></i>Dataset page</a>
-            {%- for w in d.ways %}<a href="{{ w.url | escape }}"><i class="cc-i cc-i-{{ w.icon }}" aria-hidden="true"></i>{{ w.label | escape }}</a>{% endfor -%}
-          </p>
+  <div class="bd-find">
+    <div class="bd-lists">
+      <div class="tabpanel" id="ds-view-list" data-panel="list" role="tabpanel" aria-labelledby="ds-view-tab-list">
+        <div class="bd-colh"><span>Dataset</span><span>What&#8217;s in it</span><span>Years with data</span></div>
+        <div class="bd-list" id="bd-list"{% if cat.span %} data-span="{{ cat.span | join: ',' }}"{% endif %}>
+          {%- for d in b.rows %}{% include browse_row.html d=d sub=true %}{% endfor -%}
         </div>
-      </details>
-      {%- if d.download -%}
-      <a class="dl-rowlink" href="{{ d.download.url | relative_url }}" aria-label="{{ d.download.aria | escape }}" title="{{ d.download.what | escape }} · and other formats"><i class="cc-i cc-i-ui-download" aria-hidden="true"></i><span class="dl-rowlink-t">Download</span></a>
       </div>
-      {%- endif -%}
-      {%- endfor -%}
-      {%- endfor -%}
+      <div class="tabpanel" id="ds-view-grid" data-panel="grid" role="tabpanel" aria-labelledby="ds-view-tab-grid" hidden>
+        <div class="bd-colh bd-colh-2"><span>Dataset and what&#8217;s in it</span><span>Years with data</span></div>
+        {%- for r in b.realms %}
+        <section class="bd-realm" data-realm="{{ r.id }}">
+          <h2>{{ r.title | escape }}</h2>
+          {%- for g in r.groups %}
+          <section class="bd-grp" id="cat-{{ g.cat | slugify }}" data-cat="{{ g.cat | escape }}">
+            <header class="bd-gh"><span class="bd-gi"><i class="cc-i cc-i-{{ g.icon | escape }}" aria-hidden="true"></i></span><h3>{{ g.cat | escape }}</h3>{% if g.desc %}<span class="bd-gd">{{ g.desc | escape }}</span>{% endif %}<span class="bd-gn">{{ g.n }} dataset{% if g.n != 1 %}s{% endif %}</span></header>
+            <div class="bd-card">
+              {%- for d in g.rows %}{% if g.solo %}{% include browse_row.html d=d title=d.full %}{% else %}{% include browse_row.html d=d %}{% endif %}{% endfor -%}
+            </div>
+          </section>
+          {%- endfor %}
+        </section>
+        {%- endfor %}
       </div>
-    </section>
-    {%- endif -%}
-    {%- endfor -%}
+      <p class="bd-empty" id="bd-empty" hidden>Nothing matches. Try a species (<i>anchovy</i>), a measurement (<i>oxygen</i>) or a group (<i>krill</i>). <button type="button" id="bd-clear">Clear</button></p>
     </div>
-    <p class="ds-empty" id="ds-empty" hidden>No dataset matches. <button type="button" class="cc-text-link" id="ds-clear2">Clear</button></p>
-  </div>
-
-  <div class="tabpanel ds-view-grid" id="ds-view-grid" data-panel="grid" role="tabpanel" aria-labelledby="ds-view-tab-grid" hidden>
-    {%- comment -%} the old page's tiles, unchanged: the realm columns, each category's datasets,
-      contributions and holdings (the h2 rung the tiles' h3s need is this view's own) {%- endcomment -%}
-    <h2 class="sr-only">Datasets by category</h2>
-    {% include catalog_grid.html filters="off" %}
+    <aside class="bd-pv" id="bd-pv" role="region" aria-label="Preview of the chosen row" data-stick hidden></aside>
+    <p class="sr-only" id="bd-pv-say" role="status"></p>
   </div>
 </div>
+<script type="application/json" id="bd-rows">{{ b.rows | jsonify }}</script>
 
 <div class="calm-folds ds-cat-folds">
   {%- assign n_held = cat.counts.holdings -%}
@@ -181,6 +141,8 @@ layout: default
 
 </main>
 
-<script src="{{ '/assets/catalog.js' | relative_url }}" defer
-        data-search="{{ '/datasets/search.json' | relative_url }}"></script>
+<script src="{{ '/assets/reach.js' | relative_url }}" defer></script>
+<script src="{{ '/assets/stick.js' | relative_url }}" defer></script>
+<script src="{{ '/assets/browse.js' | relative_url }}" defer
+        data-maps="{{ '/datasets/browse.json' | relative_url }}"></script>
 <script type="application/ld+json">{{ cat.jsonld }}</script>

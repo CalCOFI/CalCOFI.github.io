@@ -15,6 +15,8 @@
 #               since" only when `since` is earlier; a higher schema still read
 #   catalog     Catalog#downloads, the tile row's #download control, "Download as a zip" first in Get
 #               the data, and no whole-table ERDDAP .csv/.json link (ERDDAP answers those 403)
+#   browse      Browse datasets' rows (_plugins/browse.rb) carry the same #download control and no
+#               second whole-dataset download
 require "minitest/autorun"
 require "logger"
 require "json"
@@ -224,6 +226,27 @@ class DownloadsTest < Minitest::Test
     erd = data["blocks"].find { |b| b["matrix"] }
     urls = erd["matrix"].flat_map { |m| [m["page"], m["info"], m["graph"]] + (m["formats"] || []).map { |f| f["url"] } }.compact
     assert urls.none? { |u| u =~ /\.(csv|json)\z/ }, "no whole-table ERDDAP CSV/JSON link: #{urls}"
+  end
+
+  # Browse datasets (_plugins/browse.rb, front door v2): the preview's Download is the same control as a
+  # tile row's — the dataset page's dialog — and carries no second whole-dataset download (the form's
+  # ERDDAP / Parquet / NetCDF files and the in-browser CSV went on 2026-11-17, reconciling with main)
+  def test_browse_row_download_is_the_zip_dialog
+    ENV["CALCOFI_SKIP_LINK_CHECK"] = "1"
+    require_relative "../_plugins/browse"
+    c = catalog(JSON.parse(File.read(File.join(__dir__, "fixtures", "zip_manifest.json"))))
+    rows = c.browse(nil)["rows"]
+    row = rows.find { |x| x["key"] == "x_all" }
+    assert_equal c.tile_row(c.datasets.find { |d| d["dataset_key"] == "x_all" })["download"]["url"], row["download"]["url"]
+    assert_match %r{/datasets/x_all/#download\z}, row["download"]["url"]
+    assert_equal c.downloads(c.datasets.find { |d| d["dataset_key"] == "x_all" })["what"], row["download"]["what"]
+    rows.each { |x| %w[file dl dl_label].each { |k| refute x.key?(k), "browse row carries #{k}" } }
+  end
+
+  def test_browse_row_without_a_manifest_has_no_download
+    ENV["CALCOFI_SKIP_LINK_CHECK"] = "1"
+    require_relative "../_plugins/browse"
+    assert(catalog(nil).browse(nil)["rows"].all? { |x| x["download"].nil? })
   end
 
   def test_catalog_without_a_manifest_draws_nothing

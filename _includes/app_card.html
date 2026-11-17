@@ -1,0 +1,20 @@
+{%- comment -%} a small app card for the Maps and apps panel: screenshot, name, the description's
+  first sentence, the link row. include.p = the product. `data-key` keeps check_layout.py's
+  every-product-is-drawn test. {%- endcomment -%}
+{%- assign p = include.p -%}
+{%- assign line = p.description | strip_newlines | split: ". " | first | split: " — " | first -%}
+<article class="ap-card prod-card" data-key="{{ p.key | escape }}">
+  <a class="ap-shot" href="{{ p.live_url }}" tabindex="-1" aria-hidden="true">
+    {%- if p.shots == "themed" -%}
+    <img loading="lazy" src="{{ 'images/' | append: p.key | append: '_light.png' | relative_url }}" alt="">
+    {%- else -%}
+    <img loading="lazy" src="{{ p.img | relative_url }}" alt="">
+    {%- endif -%}
+  </a>
+  <div class="ap-b">
+    <h4><a href="{{ p.live_url }}">{{ p.title | escape }}</a></h4>
+    <p>{{ line | strip | escape }}</p>
+    {%- if p.credits %}<p class="ap-cr">{{ p.credits.org | escape }}{% if p.credits.year %} · {{ p.credits.year | escape }}{% endif %}{% if p.credits.team %} · {{ p.credits.team | join: ", " | escape }}{% endif %}</p>{% endif %}
+    {% include app_links.html p=p %}
+  </div>
+</article>

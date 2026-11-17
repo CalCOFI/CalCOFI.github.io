@@ -1,0 +1,10 @@
+{%- comment -%} One dataset row on /datasets/ (_layouts/datasets.html). A link to the dataset's page;
+browse.js turns the click into "show it in the preview". include.sub adds the category under the name
+(the List, which is not grouped); include.title replaces the short name (a category of one dataset
+with the category's own name uses the dataset's full name, so the name is not said twice).{%- endcomment -%}
+{%- assign d = include.d -%}
+<a class="bd-r" href="{{ d.url | relative_url }}" data-k="{{ d.key | escape }}" data-r="{{ d.realm | escape }}">
+  <span class="bd-rn"><b>{{ include.title | default: d.name | escape }}</b><span>{% if include.sub %}<i class="cc-i cc-i-{{ d.icon | escape }}" aria-hidden="true"></i>{{ d.cat | escape }} · {% endif %}{{ d.prov | escape }}</span></span>
+  <span class="bd-rw">{{ d.has | default: "—" | escape }}</span>
+  <span class="bd-ry"><span>{{ d.years | default: "Years not listed" | escape }}</span>{{ d.strip }}</span>
+</a>

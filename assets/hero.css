@@ -1,0 +1,213 @@
+/* the front door, v2 (_includes/front_door_hero.html): one screen under the header — the sky, the water and Line 90's sea
+   floor behind three goals. Light and dark follow the brand's data-theme. */
+.hero {
+  --sky1:#ffffff; --sky2:#f1f6fb; --sky3:#dce9f4; --w1:#8cc3e6; --w2:#4a92c6; --w3:#1e5f93; --w4:#123f68; --f1:#183a5e; --f2:#0f2a47;
+  --hl:#00629b; --h-ink:#182b49; --h-body:#3d5172; --h-mute:#5b6e8c; --h-eyebrow:#00629b; --h-ship:#182b49;
+  --c-bg:rgba(255,255,255,.94); --c-b:rgba(255,255,255,.6); --c-ink:#182b49; --c-mute:#5b6e8c; --c-who:#00629b; --c-link:#00629b; --c-line:#e3eaf2;
+  --foot:#b9cde3;
+  position: relative; overflow: hidden; min-height: max(606px, calc(100vh - var(--header-h, 72px) - 34px)); display: flex; flex-direction: column; background: var(--w4);
+}
+[data-theme="dark"] .hero {
+  --sky1:#0a1426; --sky2:#14284a; --sky3:#22436f; --w1:#1b5d8f; --w2:#103d66; --w3:#0a2443; --w4:#06162b; --f1:#0b1a30; --f2:#040b16;
+  --hl:#8ad0f0; --h-ink:#ffffff; --h-body:#c9d4e3; --h-mute:#9fb0c8; --h-eyebrow:#8ad0f0; --h-ship:#e9edf3;
+  --c-bg:rgba(10,30,56,.55); --c-b:rgba(138,208,240,.22); --c-ink:#ffffff; --c-mute:#9fb0c8; --c-who:#8ad0f0; --c-link:#8ad0f0; --c-line:rgba(138,208,240,.22);
+  --foot:#7d8fa9;
+}
+.hero-sea { position: absolute; inset: 0; width: 100%; height: 100%; }
+.hero-sea .ridge { fill: none; stroke: var(--hl); stroke-opacity: .45; stroke-width: 1.2; }
+.hero-sea .surf { stroke: var(--hl); stroke-opacity: .75; stroke-width: 1.2; }
+.hero-sea .ship { fill: var(--h-ship); } .hero-sea .wire { stroke: var(--h-ship); fill: none; }
+.hero-in { position: relative; flex: 1; width: 100%; max-width: var(--container, 1280px); margin: 0 auto; padding: 0 calc(var(--space, 8px) * 3); display: flex; flex-direction: column; }
+.hero-intro { margin-top: 30px; max-width: 760px; }
+.hero-eyebrow { font-size: 12px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--h-eyebrow); }
+.hero .hero-h1 { font-family: var(--display, Teko, sans-serif); font-weight: 500; font-size: clamp(48px, 6vw, 78px); line-height: .86; text-transform: uppercase; margin: 10px 0 10px; color: var(--h-ink); letter-spacing: 0; }
+.hero-lede { margin: 0; font-size: 18.5px; line-height: 1.4; color: var(--h-body); max-width: 760px; }
+.hero-lede-2 { margin-top: 6px; color: var(--h-ink); font-weight: 600; }
+.hero-nums { position: absolute; right: calc(var(--space, 8px) * 3); top: 36px; display: grid; grid-template-columns: repeat(2, auto); gap: 14px 34px; text-align: right; margin: 0; }
+.hero-nums > div { display: flex; flex-direction: column; }
+.hero-nums dd { margin: 0; font-family: var(--display, Teko, sans-serif); font-weight: 500; font-size: 40px; line-height: .9; color: var(--h-ink); font-variant-numeric: tabular-nums; }
+.hero-nums dt { font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--h-mute); }
+.hero-start { margin-top: auto; margin-bottom: 72px; padding-top: 40px; }
+.hero .hero-h2 { font-family: var(--display, Teko, sans-serif); font-weight: 500; font-size: 34px; line-height: 1; text-transform: uppercase; color: #fff; margin: 0 0 14px; letter-spacing: .01em; }
+.hero-goals { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.hero-goal { position: relative; display: flex; flex-direction: column; padding: 14px 18px; border-radius: 14px; background: var(--c-bg); border: 1px solid var(--c-b); color: var(--c-ink); text-decoration: none;
+  backdrop-filter: blur(10px) saturate(130%); -webkit-backdrop-filter: blur(10px) saturate(130%); box-shadow: 0 8px 24px rgba(4,12,24,.18); transition: transform .18s ease, border-color .18s ease; }
+.hero-goal:hover { transform: translateY(-3px); border-color: var(--cc-yellow, #ffcd00); }
+.hero-who { display: flex; align-items: center; gap: 8px; font-size: 11.5px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--c-who); }
+.hero-who .cc-i { font-size: 18px; }
+.hero-goal h3 { margin: 8px 0 1px; font-size: 20px; font-weight: 700; color: var(--c-ink); }
+.hero-goal p { margin: 0 0 10px; font-size: 14px; color: var(--c-mute); }
+.hero-dest { margin-top: auto; display: flex; align-items: flex-start; gap: 10px; padding-top: 10px; border-top: 1px solid var(--c-line); font-size: 14px; font-weight: 700; }
+.hero-opt { display: flex; flex-direction: column; gap: 3px; text-decoration: none; }
+.hero-opt small { font-size: 11.5px; font-weight: 400; color: var(--c-mute); line-height: 1.1; }
+.hero-btn { display: inline-block; padding: 5px 12px; border-radius: 6px; border: 1.5px solid var(--c-link); color: var(--c-link); white-space: nowrap; }
+.hero-btn.main { background: var(--cc-yellow, #ffcd00); border-color: var(--cc-yellow, #ffcd00); color: #182b49; }
+.hero-opt:hover .hero-btn, a.hero-goal:hover .hero-btn:not(.main) { background: var(--c-link); color: #fff; }
+[data-theme="dark"] .hero-opt:hover .hero-btn { color: #0a1e38; }
+.hero-foot { position: absolute; left: 0; right: 0; bottom: 18px; }
+.hero-in-row { max-width: var(--container, 1280px); margin: 0 auto; padding: 0 calc(var(--space, 8px) * 3); display: flex; justify-content: space-between; gap: 16px; font-size: 12.5px; color: var(--foot); }
+.hero-foot nav { display: flex; flex-wrap: wrap; gap: 6px 22px; }
+.hero-foot a { color: var(--foot); text-decoration: none; }
+.hero-foot a:hover { color: #fff; }
+@media (max-width: 900px) {
+  .hero-nums { position: static; justify-content: start; text-align: left; grid-template-columns: repeat(4, auto); margin-top: 18px; }
+  .hero-start { margin-bottom: 64px; }
+}
+/* the three cards stay side by side down to 700 px (Ben, 2026-11-17: they went to one column "with a surprisingly
+   wide screen", at 900 px, which is half of a laptop's screen). Between 700 and 900 px they are set a little tighter;
+   the widest thing in a card, the two buttons of the third, needs 180 px and has 190 at 700. One column under 700. */
+@media (max-width: 900px) and (min-width: 700px) {
+  .hero-goals { gap: 12px; }
+  .hero-goal { padding: 12px 14px; }
+  .hero-dest { gap: 8px; }
+}
+@media (max-width: 699px) {
+  .hero-goals { grid-template-columns: 1fr; }
+}
+
+/* Learn (#learn), opened from the ship's label and "Sampling methods": a navy header (what this is, one line, the
+   methods button and Close), then the annotated Line 90 drawing edge to edge with its caption. Nothing below it. */
+#learn.fd-learn { background: #fff; overflow-x: clip; border-top: 0; }
+#learn .fd-learnhead { background: linear-gradient(180deg, #14284a 0%, #1d3d66 100%); color: #fff; }
+#learn .fd-learnhead .cc-container { padding-top: 22px; padding-bottom: 20px; }
+#learn .fd-learntop { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; }
+#learn .fd-learneye { font-size: 12px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: #ffcd00; margin-bottom: 6px; }
+#learn .fd-learnh { font-family: var(--display, Teko, sans-serif); font-weight: 500; font-size: clamp(32px, 3.6vw, 44px); line-height: .92; text-transform: uppercase; margin: 0; color: #fff; }
+#learn .fd-learnrow { display: flex; align-items: center; gap: 20px; margin-top: 10px; }
+#learn .fd-learnrow p { margin: 0; color: #c9d4e3; font-size: 17px; }
+#learn .fd-learngo { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; background: var(--cc-yellow, #ffcd00); color: #182b49; padding: 5px 11px; border-radius: 6px; font-size: 13px; font-weight: 700; text-decoration: none; white-space: nowrap; }
+#learn .fd-learngo span { transition: transform .15s; } #learn .fd-learngo:hover span { transform: translateX(3px); }
+#learn .fd-close { position: static; color: #c9d4e3; font-size: 15px; font-weight: 600; padding: 4px 0; }
+#learn .fd-close:hover { color: #fff; }
+#learn .fd-close .cc-i { font-size: 18px; }
+#learn .fd-secscreen { margin: 0; min-height: 0; display: block; }
+#learn .fd-secscreen .fd-sec { border-radius: 0; border: 0; background: #fff; }
+#learn .fd-secscreen .fd-sec svg.sec { display: block; width: 100%; height: auto; max-height: calc(100vh - var(--header-h, 72px) - 150px); margin: 0 auto; }
+#learn .fd-secscreen .fd-cap { max-width: var(--container, 1280px); margin: 0 auto; padding: 10px calc(var(--space, 8px) * 3) 18px; }
+@media (max-width: 760px) { #learn .fd-learnrow { flex-direction: column; align-items: flex-start; } #learn .fd-learngo { margin-left: 0; } }
+
+/* the label by the ship (hero.js): the way in to the Learn drawing */
+.hero-sea .hero-tag { cursor: pointer; }
+.hero-sea .hero-tag rect { fill: var(--c-bg); stroke: var(--c-b); stroke-width: 1; filter: drop-shadow(0 4px 10px rgba(4,12,24,.18)); }
+.hero-sea .hero-tag:hover rect, .hero-sea .hero-tag:focus rect { stroke: var(--cc-yellow, #ffcd00); stroke-width: 1.5; }
+.hero-sea .hero-tag-t { font: 700 13.5px "Source Sans 3", system-ui, sans-serif; fill: var(--c-ink); }
+.hero-sea .hero-tag-s { font: 600 12.5px "Source Sans 3", system-ui, sans-serif; fill: var(--c-who); }
+.hero-sea { pointer-events: none; } .hero-sea .hero-tag { pointer-events: auto; }
+/* the text layer lies over the picture: let clicks through its empty space to the label */
+.hero-in { pointer-events: none; } .hero-in > * { pointer-events: auto; }
+.hero-start { pointer-events: none; } .hero-start > * { pointer-events: auto; } .hero .hero-h2 { width: fit-content; }
+
+/* white mode: the white header met the white sky with a hairline; give the edge a clear line and a soft shadow
+   (this page only — the brand's header is shared, so the rule lives here) */
+[data-theme="light"] .hero { --sky1: #f3f7fb; }
+/* the start cards' buttons are filled blue from the start (Betty 2026-11-14), not outlines that fill on hover;
+   Browse datasets stays the one yellow button */
+.hero-btn:not(.main) { background: var(--c-link); color: #fff; }
+[data-theme="dark"] .hero-btn:not(.main) { color: #0a1e38; }
+.hero-opt:hover .hero-btn:not(.main), a.hero-goal:hover .hero-btn:not(.main) { background: var(--accent-d, #004663); border-color: var(--accent-d, #004663); color: #fff; }
+[data-theme="dark"] .hero-opt:hover .hero-btn:not(.main) { background: #bfe5f7; border-color: #bfe5f7; color: #0a1e38; }
+.hero-opt:hover .hero-btn.main { background: #f2c200; border-color: #f2c200; color: #182b49; }
+
+/* Learn's header as a slim bar (Betty 2026-11-14): title and hint on one line, Sampling methods and Close on the
+   right, a wave edge into the drawing like Browse datasets. Replaces the tall uppercase head. */
+#learn .fd-learnhead { position: relative; padding-bottom: 16px; }
+#learn .fd-learnhead .cc-container { padding-top: 14px; padding-bottom: 4px; }
+#learn .fd-learnbar { display: flex; align-items: center; gap: 18px; }
+#learn .fd-learnbar .fd-learnh { font-family: var(--sans); font-size: 20px; font-weight: 700; line-height: 1.25; text-transform: none; letter-spacing: -.01em; margin: 0 auto 0 0; }
+#learn .fd-learnbar .fd-learnh span { margin-left: 12px; font-size: 14px; font-weight: 400; color: #b9c6da; }
+#learn .fd-learnbar .fd-learngo { margin-left: 0; padding: 7px 13px; font-size: 13.5px; }
+#learn .fd-learnwave { position: absolute; left: 0; right: 0; bottom: -1px; width: 100%; height: 16px; }
+#learn .fd-learnwave path { fill: #fff; }
+@media (max-width: 760px) { #learn .fd-learnbar { flex-wrap: wrap; } #learn .fd-learnbar .fd-learnh span { display: block; margin: 2px 0 0; } }
+[data-theme="dark"] #learn.fd-learn, [data-theme="dark"] #learn .fd-secscreen .fd-sec { background: var(--bg); }
+[data-theme="dark"] #learn .fd-learnwave path { fill: var(--bg); }
+/* Sampling methods: a small grey link beside Close (Betty 2026-11-14, option E2) — the drawing is the point
+   here, not a call to leave; it underlines and turns white on hover */
+#learn .fd-learnbar .fd-learngo { background: none; color: #b9c6da; border: 0; padding: 0; font-size: 13px; font-weight: 600; }
+#learn .fd-learnbar .fd-learngo:hover { color: #fff; text-decoration: underline; text-underline-offset: 3px; }
+/* the bar spans the drawing's width (the drawing is edge to edge), not the page column */
+#learn .fd-learnhead .cc-container { max-width: none; padding-left: 32px; padding-right: 32px; }
+
+/* the strip under the cards (Betty 2026-11-14, option A): "Share your data" leads it, bold white with an icon */
+.hero-in-row { align-items: center; }
+.hero-foot a.hero-share { color: #fff; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; }
+.hero-foot a.hero-share .cc-i { font-size: 16px; }
+.hero-foot a.hero-share:hover { color: var(--cc-yellow, #ffcd00); }
+
+/* ── phone and tablet (reconciled 2026-11-17, checked at 375 px in both themes) ───────────────────
+   Stacked, the hero is far taller than it is wide and the picture is scaled by its height, so three
+   things that hold on a desktop do not:
+   · "Where do you want to start?" is white for the deep water it sits on at desktop widths. Under 900 px
+     it sits at the surface or in the SKY (white on #f1f6fb, 1.1:1), so it takes the hero's ink.
+   · the four numbers ran off the right edge at 375 px ("MEASUREMENTS" cut): a tighter gap.
+   · the label by the ship is drawn in the picture, so it was cut by the screen's edge and lay under
+     the first card, still a focusable link. It goes; "What CalCOFI collects" in the strip is the
+     same link.
+   · the strip is absolutely placed for one line; wrapped to two or three it rode up over the last
+     card. It joins the flow, under the cards. */
+@media (max-width: 900px) {
+  /* Under 900 px the hero is as tall as what it holds, not as the window, and the cards follow the numbers
+     directly. The heading then always sits at the sea surface or above it (the picture's surface is at 49% of
+     the hero's height), on the sky or the palest water, where the hero's ink reads at 6:1 or better. Pinned to
+     the bottom of a window-tall hero, as on a desktop, it landed anywhere from the palest water (white 1.9:1)
+     to the deep (ink 3:1), depending on the window's height. */
+  .hero { min-height: 0; }
+  .hero-start { margin-top: 0; }
+  .hero .hero-h2 { color: var(--h-ink); }
+  .hero-sea .hero-tag { display: none; }
+  .hero-start { margin-bottom: 20px; }
+  .hero-foot { position: relative; bottom: auto; padding: 0 0 20px; }
+  .hero-in-row { flex-direction: column; align-items: flex-start; gap: 8px; }
+}
+@media (max-width: 480px) {
+  .hero-nums { gap: 12px 18px; }
+  .hero-nums dd { font-size: 34px; }
+  .hero-nums dt { letter-spacing: .08em; }
+}
+
+/* ── main's first-screen rules, kept on this screen (reconciled 2026-11-17; scripts/check_layout.py asserts each) ──
+   · every task link is a 32 px target: the strip's links were 18 px tall
+   · the dark theme's eyebrow was #ffcd00, which is --warn there: yellow marks a state, never a kind of thing. It
+     takes the hero's highlight (--hl), as the cards' own eyebrows do
+   · the numbers that count a catalog link it (species, measurements), in the hero's ink
+   · the whole first screen — the three cards AND the strip, so all seven tasks — fits a 1280 x 645 window, the
+     size issue #30 was measured at. The hero was min-height 640 px under a 72 px header, so in that window the
+     strip sat at 676 to 694 px. In a short, wide window the hero is exactly the window less the header, with a
+     smaller heading and tighter gaps. */
+.hero-foot nav a { display: inline-flex; align-items: center; min-height: 32px; }
+.hero-foot { bottom: 10px; }
+.hero-nums dd a { color: inherit; text-decoration: none; }
+.hero-nums dd a:hover, .hero-nums dd a:focus-visible { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px; }
+@media (max-height: 720px) and (min-width: 901px) {
+  /* the window less the header (72 px) and the brand's slim wave above the hero (34 px, brand v3 § 4) */
+  .hero { min-height: calc(100vh - var(--header-h, 72px) - 34px); }
+  .hero-intro { margin-top: 6px; }
+  .hero .hero-h1 { font-size: clamp(42px, 4.3vw, 56px); margin: 4px 0 6px; }
+  .hero-lede { font-size: 17px; line-height: 1.35; }
+  .hero-nums { top: 12px; gap: 10px 34px; }
+  .hero-start { padding-top: 8px; margin-bottom: 46px; }
+  .hero .hero-h2 { font-size: 28px; margin-bottom: 8px; }
+  .hero-goal { padding: 10px 16px; }
+  .hero-goal h3 { margin-top: 6px; }
+  .hero-goal p { margin-bottom: 8px; }
+  .hero-foot { bottom: 6px; }
+}
+
+/* the brand's wave (v3 § 4) cuts into the hero's sky here, not the page ground */
+body:has(.hero) .cc-wave-auto { --cc-wave-below: #f3f7fb; }
+[data-theme="dark"] body:has(.hero) .cc-wave-auto { --cc-wave-below: #0a1426; }
+
+/* the start heading is white on the water at desktop widths, and how deep the water is behind it depends on the
+   window: measured in the light theme it ran from 2.6:1 (901 x 700, 1100 x 800, 1200 x 750) to 4.9:1 (1920 x 1200),
+   against the 3:1 a heading this size needs. The water behind the heading and the cards is deepened by a navy
+   scrim that fades in above the heading, so the palest water there is no paler than mid-blue: white on it is
+   3.6:1 at worst, at any window size. Under 900 px the heading is in the hero's ink instead (above). The dark
+   theme's water is already deep (7:1 and more). */
+@media (min-width: 901px) {
+  .hero-start { position: relative; isolation: isolate; }
+  :root:not([data-theme="dark"]) .hero-start::before {
+    content: ""; position: absolute; z-index: -1; pointer-events: none;
+    left: 50%; width: 100vw; transform: translateX(-50%); top: -6px; bottom: -400px;
+    background: linear-gradient(180deg, rgba(18, 63, 104, 0) 0, rgba(18, 63, 104, .44) 40px, rgba(18, 63, 104, .44) 100%);
+  }
+}

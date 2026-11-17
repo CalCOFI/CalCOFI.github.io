@@ -2,75 +2,63 @@
 layout: default
 ---
 {%- comment -%}
-  /species/ — the species catalog's index (plan 2026-09-09 § D5, D8), re-cut calm (issue #30).
-
-  Nothing here is authored: the counts, the class list, the tree, the class × dataset matrix and the
-  icicle are all drawn by assets/species.js from the ONE inline JSON _plugins/species.rb builds out
-  of the release's taxa.json. A release without that record generates no page at all, so this
-  layout never has to say "no data".
-
-  The calm shape (assets/calm.css; D7 A, D10 B, D17): the catalog head (the three siblings, a name,
-  one sentence, the record's five counts in one quiet line, and the ONE search over the three
-  indexes), then ONE list — the classes, each with its silhouette, most observed first, each opening
-  to its most-observed taxa. The three dense views are view tabs beside the list, unchanged; the
-  icicle is drawn the first time its tab is chosen. A search fills the flat Matches list above the
-  views, folds the tree to its hits, and keeps only the classes that hold one.
+  /species/ — the species catalog's index. Nothing here is authored: the finder's rows come from
+  /species/finder.json (_plugins/finder.rb), and the tree and the matrix are drawn by assets/species.js
+  from the ONE inline JSON _plugins/species.rb builds out of the release's taxa.json, as before.
 {%- endcomment -%}
 {%- assign sp = site.data.species -%}
 {%- assign c = sp.counts_fmt -%}
 
-<div class="calm-page sp-cat">
-  <header class="calm-cathead">
-    <nav class="calm-siblings" aria-label="The three catalogs">
-      <a href="{{ '/datasets/' | relative_url }}"><i class="cc-i cc-i-ui-data" aria-hidden="true"></i>Datasets</a>
-      <a href="{{ '/species/' | relative_url }}" aria-current="page"><i class="cc-i cc-i-realm-bio" aria-hidden="true"></i>Species</a>
-      <a href="{{ '/measurements/' | relative_url }}"><i class="cc-i cc-i-el-measured" aria-hidden="true"></i>Measurements</a>
-    </nav>
-    <h1>Species</h1>
-    <div class="calm-sentence">Every organism CalCOFI has counted, from diatoms to whales, under one accepted name.
-      {%- capture sp_idx_info -%}
-      <p>From the diatoms of the phytoplankton slides to the whales of the Farallon census, keyed to one
-        accepted name (WoRMS; ITIS for birds) so the same species means the same thing in every dataset.
-        Every taxon has its own page, and the {{ c.taxa_observed }} observed carry {{ c.ancestors }}
-        ancestors that roll them up.</p>
-      <p>The machine-readable form is one JSON per taxon (<span class="mono">/species/{slug}.json</span>) and
-        <a href="{{ '/species/sitemap.xml' | relative_url }}">sitemap.xml</a>.</p>
-      {%- endcapture -%}
-      {% include info.html label="What this is" body=sp_idx_info align="right" %}</div>
-    <p class="calm-facts sp-counts">
-      <span data-count="species"><b class="tab">{{ c.species_observed }}</b> species</span>
-      <span data-count="taxa observed"><b class="tab">{{ c.taxa_observed }}</b> taxa observed</span>
-      <span data-count="datasets"><b class="tab">{{ c.datasets }}</b> datasets</span>
-      <span data-count="observations"><b class="tab" id="sp-obs">{{ c.obs_bio_rows }}</b> observations</span>
-      <span data-count="pages"><b class="tab">{{ c.pages }}</b> pages</span>
-      <span>release <a href="{{ '/datasets/release/' | relative_url }}">{{ sp.release.version | escape }}</a></span>
-    </p>
-    {% include one_search.html placeholder="sardine · Sardinops · diatoms · Aves · Euphausia …" %}
-  </header>
+{%- assign f = site.data.finder -%}
+{%- assign p_explore = site.data.products.products | where: "key", "explore" | first -%}
+{%- assign explore_url = site.local_explore | default: p_explore.live_url | default: "https://calcofi.io/explore/" -%}
+{%- assign try = "anchovy,sardine,squid,seabirds,diatoms" | split: "," -%}
+<link rel="stylesheet" href="{{ '/assets/browse.css' | relative_url }}">
+<link rel="stylesheet" href="{{ '/assets/finder.css' | relative_url }}">
+{%- comment -%}
+  The species finder (Betty, 2026-11-15), in Browse datasets' shape: search in a navy band, then
+  Groups (one card per class, with a plain name) and All species, each with a preview beside the
+  list (assets/finder.js, from /species/finder.json, _plugins/finder.rb). The tree and the matrix
+  stay as tabs, drawn by species.js as before. The search box is #door-q, so the tree folds to it too.
+{%- endcomment -%}
+<header class="bd-head bd-wave cc-wave cc-wave-own">
+  <div class="bd-in">
+    <h1 class="sr-only">Species</h1>
+    <div class="bd-tools">
+      <label class="bd-q"><i class="cc-i cc-i-ui-search" aria-hidden="true"></i>
+        <span class="sr-only">Search species by common or scientific name</span>
+        <input id="door-q" type="search" autocomplete="off" spellcheck="false" placeholder="Search species by common or scientific name">
+        <span class="bd-qn" id="cf-n" aria-hidden="true">{{ c.species_observed }}</span></label>
+    </div>
+    <p class="bd-try cf-try">Try {% for w in try %}<button type="button" data-q="{{ w }}">{{ w }}</button>{% endfor %}</p>
+  </div>
+  <svg class="bd-wave-edge" viewBox="0 0 1200 40" preserveAspectRatio="none" aria-hidden="true"><path d="M0 30 C150 10 300 34 450 22 S750 6 900 20 S1100 34 1200 18 V40 H0Z"/></svg>
+</header>
 
-  {%- comment -%} the Matches list (umbrella D9, I2): a flat, selectable list of the search's own
-    hits — R1's result-row shape — above the views, so which taxa matched is never buried among
-    their ancestors whichever view is showing. Empty and hidden until #door-q (or ?q=) has a query.
-    {%- endcomment -%}
-  <div id="sp-matches" role="status" hidden></div>
+<main class="calm-page sp-cat ds-browse cf-page">
+  {% include catalog_crumb.html on="species" %}
 
-  <div class="tabset calm-views sp-views" id="ts-species" data-url-tab>
+  <div class="tabset calm-views bd-views sp-views" id="ts-species" data-url-tab>
     <div class="tabrow" role="tablist" aria-label="Views of the species catalog">
-      <button type="button" role="tab" data-tab="classes" aria-selected="true"><i class="cc-i cc-i-view-list" aria-hidden="true"></i>Classes</button>
-      <button type="button" role="tab" data-tab="tree" aria-selected="false" tabindex="-1"><i class="cc-i cc-i-view-tree" aria-hidden="true"></i>The tree</button>
-      <button type="button" role="tab" data-tab="matrix" aria-selected="false" tabindex="-1"><i class="cc-i cc-i-view-matrix" aria-hidden="true"></i>Which species, in which datasets</button>
-      <button type="button" role="tab" data-tab="hierarchy" aria-selected="false" tabindex="-1"><i class="cc-i cc-i-view-hierarchy" aria-hidden="true"></i>The hierarchy</button>
+      <button type="button" role="tab" data-tab="groups" aria-selected="true">Groups</button>
+      <button type="button" role="tab" data-tab="list" aria-selected="false" tabindex="-1">All species</button>
+      <button type="button" role="tab" data-tab="tree" aria-selected="false" tabindex="-1">The tree</button>
+      <button type="button" role="tab" data-tab="matrix" aria-selected="false" tabindex="-1">Which species, in which datasets</button>
+      <span class="bd-count">{{ c.species_observed }} species{% if f.species_groups %} · {{ f.species_groups }} groups{% endif %}</span>
     </div>
 
-    {%- comment -%} D7 A: the first rung is the classes, with their PhyloPic silhouettes, by
-      observations; species.js fills the list from #sp-data {%- endcomment -%}
-    <div class="tabpanel" data-panel="classes" role="tabpanel">
-      <div class="calm-list sp-classes" id="sp-classes"></div>
-      <p class="sp-empty" id="sp-empty" hidden>No class holds a match; the Matches above and the tree have every rank.</p>
-      <p class="sp-foot" id="sp-foot"></p>
-      <noscript><p class="sp-foot">The class list is drawn from the page's own record by JavaScript; every taxon is also in
-        <a href="{{ '/species/sitemap.xml' | relative_url }}">the sitemap</a>.</p></noscript>
+    <div class="tabpanel" data-panel="groups" role="tabpanel">
+      <div id="cf"{% if site.data.catalog.span %} data-span="{{ site.data.catalog.span | join: ',' }}"{% endif %} data-kind="species" data-src="{{ '/species/finder.json' | relative_url }}" data-sils="{{ '/species/finder-sils.json' | relative_url }}" data-tabset="ts-species"
+           data-explore="{{ explore_url }}" data-base="{{ site.baseurl }}">
+        <div class="cf-find">
+          <div class="cf-lists" id="cf-list"><noscript><p class="cf-empty">The list is drawn by JavaScript; every species is also in
+            <a href="{{ '/species/sitemap.xml' | relative_url }}">the sitemap</a>.</p></noscript></div>
+          <aside class="cf-pv" id="cf-pv" role="region" aria-label="Preview of the chosen row" data-stick hidden></aside>
+    <p class="sr-only" id="cf-pv-say" role="status"></p>
+        </div>
+      </div>
     </div>
+    <div class="tabpanel" data-panel="list" role="tabpanel" hidden></div>
 
     <div class="tabpanel" data-panel="tree" role="tabpanel" hidden>
       <div class="sp-treebar">
@@ -102,28 +90,19 @@ layout: default
       </div>
     </div>
 
-    <div class="tabpanel" data-panel="hierarchy" role="tabpanel" hidden>
-      <div class="sp-ice-wrap">
-        <div class="sp-ice-bar">
-          <h2 class="cc-eyebrow">The hierarchy · kingdom → phylum → class → order → family</h2>
-          <div class="sp-seg" role="group" aria-label="Size the icicle by">
-            <button type="button" data-by="o" aria-pressed="true">observations</button>
-            <button type="button" data-by="sp" aria-pressed="false">species</button>
-          </div>
-          <div class="sp-crumb" id="sp-crumb"></div>
-        </div>
-        <svg class="sp-ice" id="sp-ice" role="img" aria-label="Icicle of the taxonomic hierarchy, sized by observations"></svg>
-        <p class="sp-note">Click a band to zoom into that clade; the breadcrumb climbs back out.
-          The two authorities are merged where they name the same rank twice — the taxon table keys birds
-          through ITIS and everything else through WoRMS, so Animalia, Chordata, Vertebrata and Gnathostomata each
-          appear once here and link to their WoRMS page. Dataset colour is never the only cue: a dot always has its
-          dataset's name beside it, and the matrix is one sequential ramp.</p>
-      </div>
-    </div>
+  </div>
+
+  {%- comment -%} species.js still fills the old class list, matches and icicle; they stay here unseen so it runs unchanged {%- endcomment -%}
+  <div class="cf-legacy" aria-hidden="true">
+    <div id="sp-matches" hidden></div>
+    <div id="sp-classes"></div><p id="sp-empty" hidden></p><p id="sp-foot"></p>
+    <div class="sp-crumb" id="sp-crumb"></div><svg id="sp-ice"></svg>
   </div>
   <div class="sp-ttip" id="sp-ttip" role="tooltip" aria-hidden="true"></div>
-</div>
+</main>
 
 <script id="sp-data" type="application/json">{{ sp.inline }}</script>
 <script defer src="{{ '/assets/species.js' | relative_url }}"></script>
+<script defer src="{{ '/assets/finder.js' | relative_url }}"></script>
+<script defer src="{{ '/assets/stick.js' | relative_url }}"></script>
 <script type="application/ld+json">{{ sp.jsonld }}</script>

@@ -32,6 +32,14 @@ if [ -z "${CC_SKIP_TESTS:-}" ]; then
   ruby _test/release_doi_test.rb >/dev/null || { echo "FAIL: _test/release_doi_test.rb" >&2; exit 1; }
   # what the Download button and its dialog offer: CSV first, Excel's reason, the licence said truthfully
   ruby _test/downloads_test.rb >/dev/null || { echo "FAIL: _test/downloads_test.rb" >&2; exit 1; }
+  # the redesigned dataset page's pure rules: the download form's whole dataset is the release zip
+  ruby _test/dataset_page_test.rb >/dev/null || { echo "FAIL: _test/dataset_page_test.rb" >&2; exit 1; }
+  # the header's words (brand v3): one list, resolved once, for this site's header and /brand/v3/nav.json
+  ruby _test/nav_test.rb >/dev/null || { echo "FAIL: _test/nav_test.rb" >&2; exit 1; }
+  # Browse datasets' rules: the order, what is in a dataset and how many, asserted years, no typed axis
+  ruby _test/browse_test.rb >/dev/null || { echo "FAIL: _test/browse_test.rb" >&2; exit 1; }
+  # the Species and Measurements finders: which rows, the groups (every species in one), the hidden datasets
+  ruby _test/finder_test.rb >/dev/null || { echo "FAIL: _test/finder_test.rb" >&2; exit 1; }
 fi
 
 scripts/fetch_release.sh
