@@ -24,6 +24,12 @@
 # string itself on each version heading (`#v2026.09.06`). scripts/check_news.py GETs that page once
 # after a build and fails on a fragment it cannot find, so an anchor cannot rot unnoticed.
 
+- date: 2026-11-17   # the day PR #45 was reconciled; set this to the day it is merged
+  type: site
+  title: "A new front door: three ways to start, and a finder for every catalog"
+  body: "The first screen asks where you want to start: see the data on a map, download a dataset, or pull exactly the rows you need. Datasets, species and measurements each open as a searchable list with a preview beside it, and every dataset page leads with what is in it and one Download button."
+  url: https://calcofi.io/
+
 - date: 2026-11-16
   type: story
   title: "The warmest fall ocean in CalCOFI's record"

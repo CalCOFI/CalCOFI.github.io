@@ -31,6 +31,65 @@ retired.
 
 ## The front door (`/`)
 
+### Front door v2 (2026-11-17): Betty's first screen over the seven tasks' panels
+
+PR #45 (Betty Huang, 2026-11-13 to 11-16, after the 12 November database tour) redrew the first screen,
+the header, the three catalog pages and the dataset page. It was reconciled with `main` on 2026-11-17 on
+one rule: **her design leads the presentation, and everything `main` does still works.** What follows in
+this section (the seven doors, the eight header words) is the record of what the panels and anchors are;
+where v2 changed how they are reached, this subsection is the current state.
+
+- **The first screen** is `_includes/front_door_hero.html` (`assets/hero.css`, `assets/hero.js`): the
+  eyebrow, "California's ocean, measured since {since}", two sentences, four numbers, and "Where do you
+  want to start?" with three start cards over Line 90's sea floor (`_data/line90_floor.json`), then a
+  strip of quiet links. There are no door buttons. Every one of the seven tasks is one click away:
+
+  ```
+  task (main, 2026-11-16)             on the first screen                          goes to
+  1 See what CalCOFI collects         strip "What CalCOFI collects" · the label    #learn
+                                      by the ship (hidden under 900 px)
+  2 Explore and download on a map     card 1 "Explorer" (the one yellow button)    the Explorer
+                                      strip "More visualizations"                  #explore (Maps and apps)
+  3 Find and download a dataset       card 2 "Browse datasets"                     /datasets/
+  4 Work with the data in code        card 3 "Code"                                #program
+  5 Cite the data                     strip "Cite the data"                        docs/cite.html
+  6 Contribute data                   strip "Share your data"                      docs/provide.html
+  7 Inform ocean and fisheries        strip "Statewide monitoring"                 #monitor
+    management
+  new: one table across datasets      card 3 "Query Builder"                       explore/builder.html
+  ```
+
+  Three things differ from the PR as opened, each because `main` had decided it: card 1 has one button,
+  not Explorer beside Data Finder (one app on the first screen: the reply to Ed Weber of 2026-11-10, and
+  `main` stopped calling to the station app from the front door on 2026-11-16; the Dataset Finder keeps its
+  card in Maps and apps and its line in the header's Map menu); "Code" opens `#program` (R, Python, SQL and
+  ERDDAP side by side) where it had opened the SQL shell alone; "Share your data" goes to the docs
+  chapter on contributing where it had gone to the workflows site.
+- **The panels are `main`'s**, in `main`'s order, with two redrawn: `#learn` opens on Betty's slim navy
+  bar over the annotated drawing alone, with `main`'s links (every dataset, measurement and species, the
+  docs, the FAQ), the kinds of data, the docs card and the ship's log below it for whoever scrolls;
+  `#explore` is her **Maps and apps** (the Explorer large, the Dataset Finder beside the apps for one
+  dataset, then the student projects, each card ending Open · Source · Status · Usage), which keeps
+  `main`'s line to Find. An app whose `status:` is `superseded` or `archived` is not drawn there
+  (`scripts/check_layout.py` `_product_keys` expects exactly that). `#find`, `#program` and `#monitor`
+  are unchanged; `#find` is reached from Maps and apps, from the old anchors and from `?q=` / `?tab=`.
+- **Anchors.** The routing script is `main`'s. `#viz` (a door until 2026-11-16, then a group of Explore)
+  lands on Maps and apps at the apps for one dataset (`#dataset`); `#students` on the student projects
+  (`#student`). Close puts focus back on the link that opened the panel, or on the start heading.
+- **The header** is `_includes/site_nav.html`: **Data ▾ · Map ▾ · Query Builder · Cite the data ·
+  Learn ▾ · calcofi.org ↗**, sentence case, the menus opening on hover or keyboard focus. FAQ and News
+  are lines of Learn (FAQ from the same `sections:` entry as before). `main`'s rule that the header never
+  wraps holds: the menu button takes over under 1100 px (`NAV_BREAK` in `style.css`, `assets/tabs.js` and
+  `scripts/check_layout.py`), and the open menu lists every item in one column with the menus inline.
+  `brand/v2/` is untouched, so no other product's header changes.
+- **Phone.** Stacked, the hero is scaled by its height, so under 900 px the start heading takes the
+  hero's ink (it was white on the sky), the label by the ship is not drawn and the strip sits under the
+  cards; under 480 px the four numbers close up to fit 375 px.
+- **Preview.** `scripts/build_netlify.sh` builds this site and the Explorer into one folder (`OUT`,
+  default `_site`) and points every link to the live Explorer at the copy, so the Query Builder links
+  stay inside the preview. `EXPLORE_DIST=` reuses a built Explorer. `scripts/dev_all.sh` runs both on one
+  machine for development.
+
 **One screen, seven doors** (issue #30, "calcofi.io, calmer"; decisions D2 A, D3 A, D4 B, D5 A, D6 A; the
 doors re-cut to seven *tasks* on 2026-11-16 from the program's users and coordinator).
 At 1280 × 645, the screen in Dan Rudnick's report, the whole first screen is visible: on the left, what
@@ -401,6 +460,18 @@ Re-cut to the review's decisions (D1–D17, all as recommended); nothing was rem
 
 The sections below are the record of the rules the grid and the Access model were built on.
 
+**Browse datasets, a finder with a preview (PR #45, 2026-11-14; reconciled 2026-11-17).** `/datasets/`
+is now `assets/browse.{js,css}` over `site.data.browse` (`_plugins/browse.rb`): a navy band with one
+search (names, providers, categories and the species and measurements inside each dataset), a type
+filter and a sort; the three catalogs as folder tabs (`_includes/catalog_crumb.html`); Years covered as a
+fold; then List and By category, each row a link to the dataset's page, and beside the list a sticky
+preview of the chosen row (its station map from `/datasets/browse.json`, what is in it, its years, View
+on map, Download, Full details). The preview's Download is the dataset page's dialog (`#download`),
+named by the default zip. `/species/` and `/measurements/` are the same finder (`assets/finder.{js,css}`,
+`_plugins/finder.rb` writing `/species/finder.json` and `/measurements/finder.json`); their previews
+link each dataset's page and download nothing themselves. The folds under the list (holdings, reference
+rows, the release) are unchanged.
+
 ### The grid: an emphasis ladder, packed, with the reference frame in its own band
 
 The catalog's layout follows four rules, and `scripts/check_layout.py` is what keeps them true
@@ -490,6 +561,20 @@ search index and `page.variables` all read one shape; a build against either ren
    every URL shape in the record. calcofi4db 4.5.0 derives the same ids, so the two have one list
    to agree on.
 
+**The dataset page, redesigned (PR #45, 2026-11-15; reconciled 2026-11-17).** A dataset (not a holding,
+which keeps the page above) is drawn by `_includes/dataset_page.html` from `page.dp`
+(`_plugins/dataset_page.rb`): a navy band with the name and five or six numbers; on the left About (the
+record's first sentence, the rest one click away), When it was sampled (records per year on the release's
+axis, and by month) and What's in it (every taxon, most recorded first, with a search, or every
+measurement by category), each row with a CSV button for just that one; on the right, sticky, the map
+with View on map and See stations, **Get the data** and **Cite this dataset**; then About the data
+(creators, credit, where else it is archived). Reconciled with `main`: the big button in Get the data
+is the Download link and dialog (`#dl-btn`, `#dl-dialog`, `/datasets/{key}/#download`,
+`_includes/download_dialog.html`), and the folds the redesign had dropped are back, closed, under About
+the data (`_includes/dataset_folds.html`, shared with the holding page): Every endpoint (`#access`),
+Provenance, Related, Open questions for the provider, Keywords. Cite is the card, so the Cite fold is
+skipped there.
+
 ### Download: one button, plain formats, the citation in the file
 
 Measured on 2026-11-16: no route gave a newcomer a file Excel opens with its citation and licence.
@@ -569,6 +654,19 @@ csv/xlsx/parquet zips as `bundle` distributions; `Downloads.offer` already prefe
 `_plugins/derive_id.rb` (a registration's
 identifier), and `STAGE_MEANING`, which is site-side text by nature — the stage vocabulary is
 `dataset_status.csv`'s, not any one dataset's.
+
+**Two download files, two jobs (2026-11-17).** PR #45 and `main` each added `assets/download.js` and
+`download.css` on the same days, for different features. `main`'s keep the names (the dialog above).
+Betty's form is `assets/download-form.js` / `download-form.css` (global `CCDownload`): it opens from
+the **CSV** button beside one species or one measurement on a dataset page and offers *Just that one*,
+which opens the Query Builder with it picked and starts the CSV
+(`explore/builder.html?pick=bio:<dataset>:<taxon>` or `env:<dataset>:<measurement>`, `&download=1`), or
+*The whole dataset*, which is the release zip, with a link to the dialog for the other formats. The form
+first built a whole-dataset CSV in the browser from the release Parquet (a vendored reader, files up to
+30 MB) or sent the reader to ERDDAP; the zip replaced both, so nothing whole-dataset is assembled in the
+browser. A measurement the record marks `grain: "sample"` (one value per cast) has no CSV button, since
+the Query Builder does not read `sample_measurement` (`DatasetPage.pickable?`,
+`_test/dataset_page_test.rb`).
 
 ## The species catalog (`/species/`, `/species/{slug}/`)
 
