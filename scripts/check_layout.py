@@ -503,11 +503,15 @@ async (w, d) => {
   // and its edge: the ::after mask the brand draws, or — for a band that says .cc-wave-own — the
   // page's own <svg> along its bottom.
   {
-    w.scrollTo(0, 0);
-    const hdr = d.querySelector(".cc-header");
+    // a URL that names a panel (?door=, ?q=, #…) has scrolled the page to it, and the site scrolls
+    // smoothly: go to the top at once, and measure in document coordinates all the same
+    w.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    const hdr = d.querySelector(".cc-header"), sy = w.scrollY;
     const cols = v => (String(v || "").match(/rgba?\([^)]*\)/g) || []).map(x => x.replace(/\s/g, ""));
     out.wave = {
-      headerBottom: hdr ? px(hdr.getBoundingClientRect().bottom) : null,
+      // where the bar ends with the page at the top (should the page not have gone to the top, the bar
+      // is stuck there and its height is that place)
+      headerBottom: hdr ? px(sy > 0 ? hdr.getBoundingClientRect().height : hdr.getBoundingClientRect().bottom) : null, scrolled: px(sy),
       ground: tok("--bg"),
       all: d.querySelectorAll(".cc-wave").length,
       drawn: [...d.querySelectorAll(".cc-wave")].filter(el => cs(el).display !== "none" && cs(el).visibility !== "hidden" && el.getBoundingClientRect().height > 0).map(el => {
@@ -517,14 +521,14 @@ async (w, d) => {
         const sb = svg && svg.getBoundingClientRect();
         const mask = af ? (af.maskImage || af.webkitMaskImage || "none") : "none";
         return {
-          cls: String(el.className), own, top: px(b.top), bottom: px(b.bottom), left: px(b.left), right: px(b.right), h: px(b.height),
+          cls: String(el.className), own, top: px(b.top + sy), bottom: px(b.bottom + sy), left: px(b.left), right: px(b.right), h: px(b.height),
           paint: cols(st.backgroundImage).concat(st.backgroundImage === "none" ? cols(st.backgroundColor) : []),
           // the brand's edge: a ::after along the bottom, masked to the wave, filled with what lies below
           after: af && af.content !== "none" ? { h: px(parseFloat(af.height) || 0), mask: mask !== "none", fill: cols(af.backgroundColor)[0] || null } : null,
           // a page's own edge: an <svg> with a path, as wide as the band, ending at its bottom
           svg: svg ? { h: px(sb.height), bottomGap: px(Math.abs(sb.bottom - b.bottom)), fill: cols(cs(svg.querySelector("path")).fill)[0] || null } : null,
           // what covers the band's top line, sampled at its middle: nothing but the band itself or something inside it
-          hidden: (() => { const e = d.elementFromPoint(Math.min(w.innerWidth - 2, Math.max(2, b.left + b.width / 2)), b.top + 2);
+          hidden: sy > 0 ? null : (() => { const e = d.elementFromPoint(Math.min(w.innerWidth - 2, Math.max(2, b.left + b.width / 2)), b.top + 2);
             return !!e && e !== el && !el.contains(e) && !(hdr && hdr.contains(e)) ? String(e.className || e.tagName).slice(0, 40) : null; })()
         };
       })
