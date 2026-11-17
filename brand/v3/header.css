@@ -140,8 +140,21 @@
 .cc-wave.cc-wave-own::after { content: none; }
 .cc-wave-in { box-sizing: border-box; max-width: var(--container); margin: 0 auto; padding: calc(var(--space) * 3) calc(var(--space) * 3) 6px; }
 .cc-wave a { color: #fff; }
-.cc-wave-slim { --cc-wave-h: 18px; height: 34px; padding-bottom: 0; box-sizing: border-box; }
+.cc-wave-slim { --cc-wave-h: 18px; --cc-wave-slim-h: 34px; height: var(--cc-wave-slim-h); padding-bottom: 0; box-sizing: border-box; }
 /* an app: the band is a strip under the app's bar, so the map keeps its height */
-[data-cc-scale="app"] .cc-wave-slim { --cc-wave-h: 9px; height: 15px; }
+[data-cc-scale="app"] .cc-wave-slim { --cc-wave-h: 9px; --cc-wave-slim-h: 15px; }
+/* the wave OVER what follows (an app whose first thing is a map, a page that opens on a picture): it takes no room,
+   what follows runs up under it and shows through below the edge, so there is no strip of page ground between the
+   wave and the map. The band itself is cut to the wave (a mask on the element, not a ground-coloured ::after).
+   Nothing sits in it and it takes no pointer; the app keeps its own floating controls clear of it by
+   --cc-wave-slim-h (15 px in an app, 34 px on a page). */
+.cc-wave-slim.cc-wave-over {
+  z-index: 3; margin-bottom: calc(-1 * var(--cc-wave-slim-h)); pointer-events: none;
+  -webkit-mask: linear-gradient(#000, #000) top / 100% calc(100% - var(--cc-wave-h) + 1px) no-repeat,
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 40' preserveAspectRatio='none'%3E%3Cpath d='M0 30 C150 10 300 34 450 22 S750 6 900 20 S1100 34 1200 18 V0 H0Z'/%3E%3C/svg%3E") bottom / 100% var(--cc-wave-h) no-repeat;
+          mask: linear-gradient(#000, #000) top / 100% calc(100% - var(--cc-wave-h) + 1px) no-repeat,
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 40' preserveAspectRatio='none'%3E%3Cpath d='M0 30 C150 10 300 34 450 22 S750 6 900 20 S1100 34 1200 18 V0 H0Z'/%3E%3C/svg%3E") bottom / 100% var(--cc-wave-h) no-repeat;
+}
+.cc-wave-slim.cc-wave-over::after { content: none; }
 [data-cc-scale="app"] .cc-wave { --cc-wave-h: 14px; }
 [data-cc-scale="app"] .cc-wave-in { padding: calc(var(--space) * 3) calc(var(--space) * 4) 4px; }

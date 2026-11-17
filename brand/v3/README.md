@@ -68,6 +68,12 @@ v2's contract (`../v2/README.md` § The contract) stands, point for point, excep
    The edge is drawn by `header.css` (a mask on `::after`), so the markup is one element. `--cc-wave-below` is
    the colour the wave cuts into: the page ground by default; a page whose first band is another colour sets it.
    A band that draws its own edge with an inline `<svg>` adds `.cc-wave-own`.
+   **Over a map.** An app whose first thing under the bar is a map (the Explorer) adds `.cc-wave-over` to the
+   slim wave: `<div class="cc-wave cc-wave-slim cc-wave-over"></div>`. The wave then takes no room; the map runs
+   up under it and shows through below the edge, so no strip of page ground sits between the wave and the map
+   (the owner, 2026-11-17: "the plain white sliver underneath and before the map" looked wrong, most in the light
+   theme). Nothing sits in it and it takes no pointer. The app keeps its own floating controls clear of it by
+   `--cc-wave-slim-h` (15 px in an app, 34 px on a page).
 6. Where a framework owns the bar (Quarto, pkgdown, mkdocs, bslib `page_navbar`), v2's rule stands: the lockup
    goes in its brand slot and its native toggle is bridged. Such a product adopts v3's words by linking the
    same destinations in its own navbar config, in sentence case, and puts a `.cc-wave.cc-wave-slim` under its
