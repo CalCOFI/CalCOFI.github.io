@@ -53,7 +53,7 @@ layout: default
         <div class="cf-find">
           {%- comment -%} without JavaScript: main's own list (the unified keys, then one fold per category), which
             the finder replaces when it runs. In <noscript>, so a browser with scripting never builds it. {%- endcomment -%}
-          <div class="cf-lists" id="cf-list"><noscript>
+          <div class="cf-lists" id="cf-list"><noscript><div class="cf-nojs">
       <h2 class="calm-group mm-grp-h" id="mm-unified-h"><i class="cc-i cc-i-el-measured" aria-hidden="true"></i>Measured across datasets
         <span class="mm-grp-n">{{ L.unified.size }} keys, bottle and CTD alike</span></h2>
       <ul class="mm-rows mm-unified" id="mm-unified">
@@ -86,7 +86,7 @@ layout: default
       <p class="mm-note">Category is the registry's (<span class="mono">metadata/category.csv</span>, the same the
         Explorer folds its picker by). A key is the registry's variable where the crosswalk unifies two series, else
         the measurement type itself; {{ c.n_p01 }} keys carry a NERC P01 concept.</p>
-          </noscript></div>
+          </div></noscript></div>
           <aside class="cf-pv" id="cf-pv" role="region" aria-label="Preview of the chosen row" data-stick hidden></aside>
     <p class="sr-only" id="cf-pv-say" role="status"></p>
         </div>

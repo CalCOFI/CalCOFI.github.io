@@ -91,6 +91,8 @@
 .cf-gn { flex: none; margin-left: auto; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .cf-chev { flex: none; font-size: 16px; color: var(--muted); transition: transform .15s; }
 @media (prefers-reduced-motion: reduce) { .cf-chev { transition: none; } }
+/* without JavaScript the list is main's own, in <noscript>: no preview beside it, so it takes the row */
+.cf-find:has(.cf-nojs) { grid-template-columns: minmax(0, 1fr); }
 /* with nothing chosen (every category closed) the preview says what to do */
 .cf-none h2 { font-size: 19px; }
 .cf-none .cf-d { display: block; -webkit-line-clamp: none; overflow: visible; }

@@ -214,14 +214,15 @@
   }
   /* after a draw, or a category opened or shut: the preview is on a row that is in view — the chosen
      one if it still is, else the first of `from` (the category just opened) or of the list. Species
-     with no row in view (Groups) preview the most recorded one; measurements with every category
-     closed say to choose. */
+     with no row in view preview the most recorded one on Groups, and nothing on a search that finds
+     no species (the pane would show a fish the search did not ask for); measurements with every
+     category closed say to choose. */
   function settle(from) {
     var vis = inView();
     if (sel && vis.some(function (a) { return a.getAttribute("data-k") === sel; })) return pick(sel);
     chose = false;
     var a = (from && from.querySelector(".cf-r[data-k]")) || vis[0];
-    pick(a ? a.getAttribute("data-k") : (SP ? D.rows[0] && D.rows[0].k : null));
+    pick(a ? a.getAttribute("data-k") : (SP && !q ? D.rows[0] && D.rows[0].k : null));
   }
   // what a screen reader hears after a search: one short line, once the typing pauses. The preview pane itself
   // is not a live region (it was: typing "sardine" queued the whole pane seven times, 5,264 characters)
