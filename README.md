@@ -47,7 +47,7 @@ where v2 changed how they are reached, this subsection is the current state.
 
   ```
   task (main, 2026-11-16)             on the first screen                          goes to
-  1 See what CalCOFI collects         header Learn ▾ › How CalCOFI samples ·       #learn
+  1 See what CalCOFI collects         header "Learn" ·                             #learn
                                       the label by the ship (hidden under 900 px)
   2 Explore and download on a map     card 1 "Explorer" (the one yellow button)    the Explorer
                                       header Map ▾ › All apps                      #explore (Maps and apps)
@@ -84,13 +84,14 @@ where v2 changed how they are reached, this subsection is the current state.
   lands on Maps and apps at the apps for one dataset (`#dataset`); `#students` on the student projects
   (`#student`). Close puts focus back on the link that opened the panel, or on the start heading.
 - **The header is the brand's** since 2026-11-17 (brand v3, [`brand/v3/README.md`](brand/v3/README.md) § 4):
-  **Data ▾ · Map ▾ · Query · Cite · Learn ▾ · FAQ · News · calcofi.org ↗**, sentence case, from the one list
+  **Data ▾ · Map ▾ · Query · Cite · Learn · Docs · FAQ · News · calcofi.org ↗**, sentence case, from the one list
   `_data/nav.yml`, which `_plugins/nav.rb` resolves for this site's `_includes/site_nav.html` and for
   `/brand/v3/nav.json`, drawn by `brand/v3/header.js` into the Explorer and the Query Builder. A word with a
-  menu is a button: it opens on hover and on a press, and Escape closes it. FAQ and News were lines of the
-  Learn menu in the PR as reconciled; the owner asked for them back as words ("we lost items like News and
-  FAQ"), and they are not also in Learn. Where `main`'s eight uppercase words went: DATA is Data ▾; APPS is
-  Map ▾; ACCESS and BUILD are Data ▾ › Get it; DOCS is Learn ▾ › Docs; FAQ and NEWS are FAQ and News;
+  menu is a button: it opens on hover and on a press, and Escape closes it. Docs, FAQ and News were lines of
+  the Learn menu in the PR as reconciled; the owner asked for them back as words ("we lost items like News
+  and FAQ", then "Yes, Docs too"), and each is said once: no menu also lists them. That left Learn's menu
+  with one line, so Learn is a plain word that opens the front door's `#learn` panel. Where `main`'s eight uppercase words went: DATA is Data ▾; APPS is
+  Map ▾; ACCESS and BUILD are Data ▾ › Get it; DOCS, FAQ and NEWS are Docs, FAQ and News;
   calcofi.org ↗ is itself. `main`'s rule that the header never wraps holds: the menu button takes over under
   1100 px (`NAV_BREAK` in `brand/v3/header.css`, `brand/v3/header.js` and `scripts/check_layout.py`), and
   the open column lists every line and scrolls inside itself.
@@ -102,7 +103,7 @@ where v2 changed how they are reached, this subsection is the current state.
   cards; under 480 px the four numbers close up to fit 375 px.
 - **The layout contract was re-anchored, not loosened** (`scripts/check_layout.py`, 2f7c4dc). The PR's markup had
   moved out from under its selectors, so the front-door block, the header menus and the redesigned dataset page
-  were passing without being measured. It now reads `section.hero`, the header's words and their three menus,
+  were passing without being measured. It now reads `section.hero`, the header's words and their menus,
   the finders and `main.dp-page`, at the old thresholds: every task link on the first screen of a 1280 × 645
   window and 32 px tall, nothing open on load, every old anchor opened from a shut page, one Download button per
   dataset page, a dataset page under 2,200 px. Three rules follow the new design and say so in the script's

@@ -23,9 +23,12 @@
 #   here     this site only: the first path segments that mark the word as the current one
 #   ext      true for a link that leaves calcofi.io (drawn quieter, hidden first when room runs out)
 #
-# The eight words (Ben, 2026-11-17: FAQ and News are words again, as on main since dfdbdc2; "Query" and
-# "Cite" are the short forms of Query Builder and Cite the data). Where main's eight words went:
-#   DATA → Data ▾ · APPS → Map ▾ · ACCESS and BUILD → Data ▾ › Get it · DOCS → Learn ▾ › Docs ·
+# The nine words (Ben, 2026-11-17: Docs, FAQ and News are words again, as on main, where DOCS · FAQ · NEWS
+# closed the bar; "Query" and "Cite" are the short forms of Query Builder and Cite the data). Each is said
+# once: Docs, FAQ and News are not also lines of a menu. That left Learn's menu with one line (How CalCOFI
+# samples), so Learn is a plain word that opens it: the front door's #learn panel, the annotated Line 90
+# drawing. Where main's eight words went:
+#   DATA → Data ▾ · APPS → Map ▾ · ACCESS and BUILD → Data ▾ › Get it · DOCS → Docs ·
 #   FAQ → FAQ · NEWS → News · calcofi.org ↗ → calcofi.org ↗
 words:
   - id: data
@@ -52,12 +55,8 @@ words:
       - { title: All apps,       href: "/#explore",            small: "Dashboards, student projects", icon: ui-more }
   - { id: query, title: Query, explore: builder.html }
   - { id: cite,  title: Cite,  href: "https://calcofi.io/docs/cite.html" }
-  - id: learn
-    title: Learn
-    align: right
-    menu:
-      - { title: How CalCOFI samples, href: "/#learn", small: "Ships, nets, bottles, stations", icon: ui-about }
-      - { title: Docs,                section: docs,   small: Guides and how-tos,             icon: ui-help }
-  - { id: faq,  title: FAQ,  section: faq }
+  - { id: learn, title: Learn, href: "/#learn" }
+  - { id: docs,  title: Docs,  section: docs }
+  - { id: faq,   title: FAQ,   section: faq }
   - { id: news, title: News, href: /news/, here: [news] }
   - { id: org,  title: "calcofi.org ↗", href: "https://calcofi.org", ext: true }

@@ -9,9 +9,10 @@
 #   dropped    an item whose product or section is not there is dropped (no dead line), a menu emptied that way
 #              is dropped, and a rule is kept only between two items
 #   counts     the grey line is the release's own number ("All 20" for datasets), absent when the build has none
-#   the words  the committed list reads Data · Map · Query · Cite · Learn · FAQ · News · calcofi.org ↗, FAQ and
-#              News are words of the bar (Ben, 2026-11-17) and are not also lines of Learn, and everything main's
-#              eight words reached (the catalogs, the apps, access, build, docs, FAQ, news) is still linked
+#   the words  the committed list reads Data · Map · Query · Cite · Learn · Docs · FAQ · News · calcofi.org ↗;
+#              Docs, FAQ and News are words of the bar (Ben, 2026-11-17) and not also lines of a menu; Learn is a
+#              plain word to the #learn panel; and everything main's eight words reached (the catalogs, the apps,
+#              access, build, docs, FAQ, news) is still linked
 require "minitest/autorun"
 require "yaml"
 require "date"
@@ -109,19 +110,32 @@ class NavTest < Minitest::Test
   end
 
   def test_the_committed_words
-    assert_equal ["Data", "Map", "Query", "Cite", "Learn", "FAQ", "News", "calcofi.org ↗"], N.titles(committed)
+    assert_equal ["Data", "Map", "Query", "Cite", "Learn", "Docs", "FAQ", "News", "calcofi.org ↗"], N.titles(committed)
   end
 
-  # regression (2026-11-17): front door v2 had FAQ and News only as lines of the Learn menu; Ben: "we lost items
-  # like News and FAQ". They are words of the bar, and each is said once.
-  def test_faq_and_news_are_words_and_not_also_lines_of_learn
+  # regression (2026-11-17): front door v2 had Docs, FAQ and News only as lines of the Learn menu; Ben: "we lost
+  # items like News and FAQ", then "Yes, Docs too". They are words of the bar, in main's order, and each is said
+  # once: no menu also lists them.
+  def test_docs_faq_and_news_are_words_and_not_also_lines_of_a_menu
     ws = committed
-    faq = ws.find { |w| w["id"] == "faq" }
-    news = ws.find { |w| w["id"] == "news" }
-    assert_equal "https://calcofi.io/docs/faq.html", faq["url"]
-    assert_equal "https://calcofi.io/news/", news["url"]
-    learn = ws.find { |w| w["id"] == "learn" }["menu"].flat_map { |c| c["items"] }.map { |i| i["title"] }
-    assert_equal ["How CalCOFI samples", "Docs"], learn
+    assert_equal %w[docs faq news], ws.map { |w| w["id"] } & %w[docs faq news]
+    assert_equal ["https://calcofi.io/docs/", "https://calcofi.io/docs/faq.html", "https://calcofi.io/news/"],
+                 %w[docs faq news].map { |id| ws.find { |w| w["id"] == id }["url"] }
+    %w[docs faq news].each { |id| assert_nil ws.find { |w| w["id"] == id }["menu"], "#{id} is a plain word" }
+    lines = ws.select { |w| w["menu"] }.flat_map { |w| w["menu"].flat_map { |c| c["items"] } }.reject { |i| i["rule"] }
+    assert_empty lines.map { |i| i["url"] } & ["https://calcofi.io/docs/", "https://calcofi.io/docs/faq.html", "https://calcofi.io/news/"]
+  end
+
+  # Learn's menu was left with one line once Docs, FAQ and News were words, so Learn is a plain word that opens
+  # that line: the front door's #learn panel
+  def test_learn_is_a_plain_word_to_the_learn_panel
+    learn = committed.find { |w| w["id"] == "learn" }
+    assert_nil learn["menu"]
+    assert_equal "https://calcofi.io/#learn", learn["url"]
+  end
+
+  def test_two_words_open_menus
+    assert_equal %w[data map], committed.select { |w| w["menu"] }.map { |w| w["id"] }
   end
 
   # everything main's eight words reached is still linked from the header (a word, or a line of a menu)
