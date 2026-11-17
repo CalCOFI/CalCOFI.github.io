@@ -43,7 +43,8 @@ echo "3/3  links to the live Explorer → this preview's copy"
 # perl -pi is the same on macOS, Linux and Git Bash. The .js files too: assets/species.js builds Explorer links.
 find "$OUT" -path "$OUT/explore" -prune -o \( -name '*.html' -o -name '*.json' -o -name '*.js' \) -type f -print0 \
   | xargs -0 perl -pi -e 's#https://calcofi\.io/explore/#/explore/#g'
-left=$(grep -rl --include='*.html' --include='*.js' --include='*.json' 'https://calcofi\.io/explore/' "$OUT" --exclude-dir=explore | wc -l | tr -d ' ')
+# (grep exits 1 when it finds nothing, which is the good case: `|| true` keeps pipefail from ending the script on it)
+left=$( (grep -rl --include='*.html' --include='*.js' --include='*.json' --exclude-dir=explore 'https://calcofi\.io/explore/' "$OUT" || true) | wc -l | tr -d ' ')
 [ "$left" = "0" ] || { echo "$left file(s) under $OUT still link the live Explorer" >&2; exit 1; }
 
 echo "done: upload $OUT to Netlify (Deploy manually), or serve it: python3 -m http.server --directory $OUT"
