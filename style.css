@@ -2311,3 +2311,5 @@ a.cc-chip-lic:hover { color: var(--accent); border-color: var(--accent); text-de
   .fd-apps .ap-lenses { grid-template-columns: repeat(2, auto); }
   .fd-apps .ap-head { padding-right: 0; }
 }
+/* main's line from Explore to Find (Erin's split, 2026-11-16), kept in Maps and apps under its head */
+.fd-apps .ap-xref { margin: -6px 0 18px; }
