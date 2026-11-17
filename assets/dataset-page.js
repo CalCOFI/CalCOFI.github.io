@@ -39,7 +39,7 @@
       var name = t[2] || t[1];
       h += '<div class="dp-tr" data-q="' + esc((t[1] + " " + (t[2] || "")).toLowerCase()) + '" data-extra hidden><span>' + (t[7] ? '<svg class="dp-si" aria-hidden="true"><use href="#' + esc(t[7]) + '"/></svg>' : "") + "</span>" +
         '<span class="dp-nm">' + (t[6] ? '<a href="' + esc(base + t[6]) + '">' + nm + "</a>" : nm) + '</span><span class="dp-nb">' + esc(t[4]) + ' records<span class="dp-bar"><i style="width:' + t[8] + '%"></i></span></span>' +
-        '<button type="button" class="dp-csv" data-one="bio" data-k="' + esc(t[0]) + '" data-name="' + esc(name) + '" data-n="' + t[5] + '" title="Download just ' + esc(name) + ', from this dataset"><i class="cc-i cc-i-ui-download" aria-hidden="true"></i>CSV</button></div>';
+        '<button type="button" class="dp-csv" data-one="bio" data-k="' + esc(t[0]) + '" data-name="' + esc(name) + '" data-n="' + t[5] + '" aria-label="CSV of ' + esc(name) + '" title="Download just ' + esc(name) + ', from this dataset"><i class="cc-i cc-i-ui-download" aria-hidden="true"></i>CSV</button></div>';
     });
     src.insertAdjacentHTML("beforebegin", h);
   }
@@ -64,13 +64,15 @@
   root.addEventListener("click", function (e) {
     var b = e.target.closest && e.target.closest("button");
     if (!b) return;
-    // just one species or measurement, from this dataset (the Query Builder picks it and downloads)
+    // just one species or measurement, from this dataset (the Query Builder picks it and downloads). The form
+    // counts records, so the link asks the builder for one row per sample at every station (&rows=sample&stations=all);
+    // the builder's own default is a yearly mean per standard station, which is not what "73k records" promises
     if (b.hasAttribute("data-one") && window.CCDownload) {
       var bio = b.getAttribute("data-one") === "bio", k = b.getAttribute("data-k");
       var y0 = bio ? D.y0 : +b.getAttribute("data-y0") || D.y0, y1 = bio ? D.y1 : +b.getAttribute("data-y1") || D.y1;
       CCDownload.open({ name: b.getAttribute("data-name"), unit: bio ? "records" : "values", kind: bio ? "species" : "measurement",
         files: files(), ds: [[D.key, y0, y1, +b.getAttribute("data-n")]], dsKey: D.key, start: "just", base: root.getAttribute("data-base") || "",
-        pick: function () { return BUILDER ? BUILDER + "?pick=" + encodeURIComponent((bio ? "bio:" : "env:") + D.key + ":" + k) + "&download=1" : null; } });
+        pick: function () { return BUILDER ? BUILDER + "?pick=" + encodeURIComponent((bio ? "bio:" : "env:") + D.key + ":" + k) + "&rows=sample&stations=all&download=1" : null; } });
     }
     // copy the citation or the BibTeX
     if (b.hasAttribute("data-copy")) {

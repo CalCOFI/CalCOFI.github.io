@@ -49,7 +49,7 @@
     </section>
 
     {%- if dp.years -%}
-    <section class="dp-sec">
+    <section class="dp-sec" id="coverage">
       <h2>When it was sampled</h2>
       <div class="dp-when">
         <div><div class="dp-wh"><b>Records per year</b><span>{{ dp.n_years }} year{% unless dp.n_years == 1 %}s{% endunless %} with data</span></div>{{ dp.years }}</div>
@@ -59,7 +59,7 @@
     {%- endif -%}
 
     {%- if dp.n_taxa > 0 -%}
-    <section class="dp-sec" id="inside">
+    <section class="dp-sec" id="taxa">
       <div class="dp-ih"><h2>What&#8217;s in it</h2><span>{{ dp.n_taxa }} {% if dp.n_taxa == 1 %}taxon{% else %}taxa{% endif %}, most recorded first</span>
         {%- if dp.n_taxa > 8 %}<label class="dp-q"><i class="cc-i cc-i-ui-search" aria-hidden="true"></i><span class="sr-only">Find a species in this dataset</span><input type="search" data-find placeholder="Find a species"></label>{% endif -%}
       </div>
@@ -70,7 +70,7 @@
           <span>{% if t.sil %}<svg class="dp-si" aria-hidden="true"><use href="#{{ t.sil }}"/></svg>{% endif %}</span>
           <span class="dp-nm">{% if t.url %}<a href="{{ t.url | relative_url }}">{% endif %}{% if t.com %}<b>{{ t.com | escape }}</b><span><i>{{ t.sci | escape }}</i></span>{% else %}<b><i>{{ t.sci | escape }}</i></b>{% if t.rank %}<span>{{ t.rank | escape }}</span>{% endif %}{% endif %}{% if t.url %}</a>{% endif %}</span>
           <span class="dp-nb">{{ t.n }} records<span class="dp-bar"><i style="width:{{ t.pct }}%"></i></span></span>
-          <button type="button" class="dp-csv" data-one="bio" data-k="{{ t.k | escape }}" data-name="{{ t.com | default: t.sci | escape }}" data-n="{{ t.n_raw }}" title="Download just {{ t.com | default: t.sci | escape }}, from this dataset"><i class="cc-i cc-i-ui-download" aria-hidden="true"></i>CSV</button>
+          <button type="button" class="dp-csv" data-one="bio" data-k="{{ t.k | escape }}" data-name="{{ t.com | default: t.sci | escape }}" data-n="{{ t.n_raw }}" aria-label="CSV of {{ t.com | default: t.sci | escape }}" title="Download just {{ t.com | default: t.sci | escape }}, from this dataset"><i class="cc-i cc-i-ui-download" aria-hidden="true"></i>CSV</button>
         </div>
         {%- endfor -%}
         <p class="dp-none" data-none hidden>No species here matches.</p>
@@ -82,7 +82,7 @@
     {%- endif -%}
 
     {%- if dp.n_meas > 0 -%}
-    <section class="dp-sec"{% if dp.n_taxa == 0 %} id="inside"{% endif %}>
+    <section class="dp-sec" id="variables">
       <div class="dp-ih"><h2>{% if dp.n_taxa > 0 %}Measurements{% else %}What&#8217;s in it{% endif %}</h2><span>{{ dp.n_meas }} measurement{% unless dp.n_meas == 1 %}s{% endunless %}, by category</span></div>
       <div class="dp-tbl dp-m">
         <div class="dp-tr dp-th"><span>Measurement</span><span>Values here</span><span>Years</span><span></span></div>
@@ -95,7 +95,7 @@
           {%- comment -%} a CSV button only where the Query Builder can serve the pick (dp: "pick", DatasetPage.pickable?):
             a per-cast value (one per cast, not per depth) is in the whole-dataset zip, not in the builder {%- endcomment -%}
           {%- if m.pick -%}
-          <button type="button" class="dp-csv" data-one="env" data-k="{{ m.k | escape }}" data-name="{{ m.lab | escape }}" data-n="{{ m.n_raw }}" data-y0="{{ m.y0 }}" data-y1="{{ m.y1 }}" title="Download just {{ m.lab | escape }}, from this dataset"><i class="cc-i cc-i-ui-download" aria-hidden="true"></i>CSV</button>
+          <button type="button" class="dp-csv" data-one="env" data-k="{{ m.k | escape }}" data-name="{{ m.lab | escape }}" data-n="{{ m.n_raw }}" data-y0="{{ m.y0 }}" data-y1="{{ m.y1 }}" aria-label="CSV of {{ m.lab | escape }}" title="Download just {{ m.lab | escape }}, from this dataset"><i class="cc-i cc-i-ui-download" aria-hidden="true"></i>CSV</button>
           {%- else -%}
           <span class="dp-nocsv" title="One value per cast: in the whole-dataset download">per cast</span>
           {%- endif -%}
@@ -107,7 +107,7 @@
     {%- endif -%}
   </div>
 
-  <aside class="dp-side" data-stick>
+  <aside class="dp-side" data-stick aria-label="Map, download and citation">
     {%- if page.map -%}
     <div class="dp-card">
       <div class="dp-map">{{ page.map.svg }}</div>
@@ -148,10 +148,14 @@
 
     {%- assign cite = dp.cite | default: page.cite_text -%}
     {%- if cite -%}
-    <div class="dp-card">
+    <div class="dp-card" id="cite">
       <div class="dp-chr"><h3 class="dp-ch">Cite this dataset</h3><button type="button" class="dp-cpy" data-copy="{{ cite | escape }}">Copy</button></div>
       <p class="dp-cite">{{ cite | escape }}</p>
-      {%- if dp.license %}<p class="dp-lic">License: {% if dp.license_url %}<a href="{{ dp.license_url | escape }}">{{ dp.license | escape }}</a>{% else %}{{ dp.license | escape }}{% endif %}</p>{% endif -%}
+      {%- comment -%} the licence, for EVERY dataset, by the one rule (_includes/licence_chip.html): a licence the provider
+        has not stated reads "unstated", an open question "licence pending" — never a blank that the line under the page
+        ("everything here is open") would then seem to fill (Ben, 2026-11-16: published with a "no licence established" notice) {%- endcomment -%}
+      <p class="dp-lic">Licence: {% include licence_chip.html license=a.license license_url=a.license_url name=a.license_name %}
+        {%- if a.license == nil or a.license == "" or a.license == "unknown" %} <span class="dp-lic-n">The provider has not stated reuse terms yet; write to <a href="mailto:{{ site.contact_email | escape }}">{{ site.contact_email | escape }}</a> to ask.</span>{% endif %}</p>
       <div class="dp-cfoot">
         {%- if dp.doi %}<a href="https://doi.org/{{ dp.doi | escape }}">DOI</a>{% endif -%}
         {%- if page.bibtex %}<button type="button" class="dp-lnk" data-copy="{{ page.bibtex | escape }}" title="Copy the BibTeX">BibTeX</button>{% endif -%}
@@ -166,14 +170,14 @@
   <h2>About the data</h2>
   <div class="dp-ag">
     {%- if dp.creators or dp.contact -%}
-    <div><h4>Creators</h4>
+    <div><h3>Creators</h3>
       {%- if dp.creators %}<p>{{ dp.creators | escape }}</p>{% endif -%}
       {%- if dp.contact %}<p class="dp-sm">Contact <a href="mailto:{{ dp.contact | escape }}">{{ dp.contact | escape }}</a></p>{% endif -%}</div>
     {%- endif -%}
     {%- if dp.funding or dp.ack -%}
-    <div class="dp-wide"><h4>Credit</h4><p>{% if dp.funding %}Funded by {{ dp.funding | escape }}.{% endif %} {{ dp.ack | escape }}</p></div>
+    <div class="dp-wide"><h3>Credit</h3><p>{% if dp.funding %}Funded by {{ dp.funding | escape }}.{% endif %} {{ dp.ack | escape }}</p></div>
     {%- endif -%}
-    <div><h4>Also archived at</h4>
+    <div><h3>Also archived at</h3>
       {%- if dp.archived.size > 0 %}<p>{% for x in dp.archived %}<a href="{{ x.url | escape }}">{{ x.name | escape }}</a>{% unless forloop.last %}{% if forloop.rindex == 2 %} and {% else %}, {% endif %}{% endunless %}{% endfor %}</p>{% else %}<p class="dp-sm">Nowhere else yet</p>{% endif -%}
       <p class="dp-sm"><a href="{{ '/datasets/' | append: page.dataset_key | append: '.json' | relative_url }}">Full record (JSON) ↗</a></p></div>
   </div>
