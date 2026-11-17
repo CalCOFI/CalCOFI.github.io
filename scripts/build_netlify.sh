@@ -17,34 +17,47 @@ EXPLORE="${EXPLORE_DIR:-}"
 for d in "$ROOT/../explore" "$ROOT/.."; do
   [ -z "$EXPLORE" ] && [ -f "$d/package.json" ] && grep -q '"name": "explore"' "$d/package.json" && EXPLORE="$(cd "$d" && pwd)"
 done
-# EXPLORE_DIST=/path/to/an/already/built/dist skips the Explorer build (it must hold index.html and builder.html,
-# built with the Explorer's own base "./"); OUT=/some/folder writes the preview there instead of _site
+# EXPLORE_DIST=/path/to/an/already/built/dist skips the Explorer build (it must hold index.html, built with the
+# Explorer's own base "./"); QUERY_DIST=/path/to/a/built/dist-query does the same for the Query Builder, which has
+# its own address (/query/; `npm run build:query` in the explore repo, where its code lives);
+# OUT=/some/folder writes the preview there instead of _site
 DIST="${EXPLORE_DIST:-}"
+QDIST="${QUERY_DIST:-}"
 OUT="${OUT:-_site}"
-[ -n "$EXPLORE" ] || [ -n "$DIST" ] || { echo "no explore repo found (set EXPLORE_DIR=/path/to/explore, or EXPLORE_DIST=/path/to/dist)" >&2; exit 1; }
+[ -n "$EXPLORE" ] || { [ -n "$DIST" ] && [ -n "$QDIST" ]; } || { echo "no explore repo found (set EXPLORE_DIR=/path/to/explore, or EXPLORE_DIST and QUERY_DIST to built folders)" >&2; exit 1; }
 
 echo "1/3  the site"
 bundle exec jekyll build --config _config.yml,_config.netlify.yml -d "$OUT"
 
 if [ -n "$DIST" ]; then
-  echo "2/3  the Explorer and the Query Builder (already built: $DIST)"
+  echo "2/3  the Explorer (already built: $DIST)"
 else
-  echo "2/3  the Explorer and the Query Builder ($EXPLORE)"
+  echo "2/3  the Explorer ($EXPLORE)"
   [ -d "$EXPLORE/node_modules" ] || (cd "$EXPLORE" && npm install --no-audit --no-fund)
-  (cd "$EXPLORE" && npm run build)
+  (cd "$EXPLORE" && VITE_QUERY_URL=/query/ npm run build)
   DIST="$EXPLORE/dist"
 fi
-[ -f "$DIST/index.html" ] && [ -f "$DIST/builder.html" ] || { echo "no index.html and builder.html in $DIST" >&2; exit 1; }
+[ -f "$DIST/index.html" ] || { echo "no index.html in $DIST" >&2; exit 1; }
 rm -rf "$OUT/explore" && mkdir -p "$OUT/explore" && cp -R "$DIST/." "$OUT/explore/"
+if [ -n "$QDIST" ]; then
+  echo "     the Query Builder (already built: $QDIST)"
+else
+  echo "     the Query Builder ($EXPLORE, build:query)"
+  [ -d "$EXPLORE/node_modules" ] || (cd "$EXPLORE" && npm install --no-audit --no-fund)
+  (cd "$EXPLORE" && VITE_BASE=/query/ npm run build:query)
+  QDIST="$EXPLORE/dist-query"
+fi
+[ -f "$QDIST/index.html" ] || { echo "no index.html in $QDIST" >&2; exit 1; }
+rm -rf "$OUT/query" && mkdir -p "$OUT/query" && cp -R "$QDIST/." "$OUT/query/"
 
-echo "3/3  links to the live Explorer → this preview's copy"
+echo "3/3  links to the live Explorer and the live Query Builder → this preview's copies"
 # perl, not `sed -i`: GNU sed takes -i alone and BSD sed (macOS) takes the next word as a backup suffix, so
 # `sed -i 's#…#g'` stopped here on a Mac with "invalid command code" and left every link on the live site.
 # perl -pi is the same on macOS, Linux and Git Bash. The .js files too: assets/species.js builds Explorer links.
-find "$OUT" -path "$OUT/explore" -prune -o \( -name '*.html' -o -name '*.json' -o -name '*.js' \) -type f -print0 \
-  | xargs -0 perl -pi -e 's#https://calcofi\.io/explore/#/explore/#g'
+find "$OUT" \( -path "$OUT/explore" -o -path "$OUT/query" \) -prune -o \( -name '*.html' -o -name '*.json' -o -name '*.js' \) -type f -print0 \
+  | xargs -0 perl -pi -e 's#https://calcofi\.io/(explore|query)/#/$1/#g'
 # (grep exits 1 when it finds nothing, which is the good case: `|| true` keeps pipefail from ending the script on it)
-left=$( (grep -rl --include='*.html' --include='*.js' --include='*.json' --exclude-dir=explore 'https://calcofi\.io/explore/' "$OUT" || true) | wc -l | tr -d ' ')
-[ "$left" = "0" ] || { echo "$left file(s) under $OUT still link the live Explorer" >&2; exit 1; }
+left=$( (grep -rl --include='*.html' --include='*.js' --include='*.json' --exclude-dir=explore --exclude-dir=query -E 'https://calcofi\.io/(explore|query)/' "$OUT" || true) | wc -l | tr -d ' ')
+[ "$left" = "0" ] || { echo "$left file(s) under $OUT still link the live Explorer or Query Builder" >&2; exit 1; }
 
 echo "done: upload $OUT to Netlify (Deploy manually), or serve it: python3 -m http.server --directory $OUT"

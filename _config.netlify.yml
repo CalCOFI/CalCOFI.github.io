@@ -4,3 +4,5 @@
 #   local_explore         the Explorer and the Query Builder are built into /explore/ of the same upload
 url: ""
 local_explore: "/explore/"
+# the Query Builder, built into /query/ of the same upload (its live address is https://calcofi.io/query/)
+local_query: "/query/"

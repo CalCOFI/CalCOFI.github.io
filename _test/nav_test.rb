@@ -55,15 +55,30 @@ class NavTest < Minitest::Test
   end
 
   def test_product_section_and_explore_links
-    ws = resolve([{ "id" => "q", "title" => "Query", "explore" => "builder.html" },
+    ws = resolve([{ "id" => "q", "title" => "Lens", "explore" => "?lens=hex" },
                   { "id" => "d", "title" => "Docs", "section" => "docs" },
                   { "id" => "m", "title" => "Map", "product" => "map-x" }])
-    assert_equal ["https://calcofi.io/explore/builder.html", "https://calcofi.io/docs/", "https://x.example/map/"], ws.map { |w| w["url"] }
+    assert_equal ["https://calcofi.io/explore/?lens=hex", "https://calcofi.io/docs/", "https://x.example/map/"], ws.map { |w| w["url"] }
   end
 
   def test_explore_follows_the_previews_own_explorer
-    w = resolve([{ "id" => "q", "title" => "Query", "explore" => "builder.html" }], explore_url: "/explore/").first
-    assert_equal "/explore/builder.html", w["path"]
+    w = resolve([{ "id" => "q", "title" => "Lens", "explore" => "?lens=hex" }], explore_url: "/explore/").first
+    assert_equal "/explore/?lens=hex", w["path"]
+  end
+
+  # the Query Builder has its own address, calcofi.io/query/ (Ben, 2026-11-17), not a page of the Explorer
+  def test_query_is_its_own_address
+    w = resolve([{ "id" => "query", "title" => "Query", "query" => "" }]).first
+    assert_equal ["https://calcofi.io/query/", "https://calcofi.io/query/"], w.values_at("path", "url")
+    assert_equal "https://calcofi.io/query/", N.titles(committed).zip(committed).to_h["Query"]["url"], "the committed word"
+  end
+
+  def test_query_follows_the_previews_own_copy
+    w = resolve([{ "id" => "query", "title" => "Query", "query" => "" }], query_url: "/query/").first
+    assert_equal "/query/", w["path"]
+    w = resolve([{ "id" => "query", "title" => "Query", "query" => "" }], query_url: "").first
+    assert_equal "https://calcofi.io/query/", w["path"], "an empty setting is not an address"
+    assert_equal ["https://calcofi.io/query/", "https://calcofi.io/query/", "/query/"], [nil, "", "/query/"].map { |l| N.query_address(l) }
   end
 
   def test_a_word_whose_product_or_section_is_gone_is_dropped
@@ -145,7 +160,7 @@ class NavTest < Minitest::Test
     %w[https://calcofi.io/datasets/ https://calcofi.io/species/ https://calcofi.io/measurements/
        https://calcofi.io/explore/ https://calcofi.io/#explore https://calcofi.io/#services https://calcofi.io/#packages
        https://calcofi.io/#build https://calcofi.io/docs/ https://calcofi.io/docs/faq.html https://calcofi.io/news/
-       https://calcofi.io/docs/cite.html https://calcofi.io/explore/builder.html https://calcofi.org].each do |u|
+       https://calcofi.io/docs/cite.html https://calcofi.io/query/ https://calcofi.org].each do |u|
       assert_includes urls, u
     end
   end

@@ -1,3 +1,5 @@
 # local preview only (scripts/dev_all.sh): the front door's Explorer and Table builder buttons open the Explorer running
 # on this machine (npm run dev in the explore repo) instead of calcofi.io/explore/. Never used by the Pages build.
 local_explore: "http://localhost:5178/"
+# the Query Builder, served by the same Vite dev server as a second page
+local_query: "http://localhost:5178/builder.html"

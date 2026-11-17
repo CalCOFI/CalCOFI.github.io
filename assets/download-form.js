@@ -4,7 +4,7 @@
    Nothing downloads without saying what it is. Two choices:
      · Just this species or measurement, from ONE dataset (methods differ — eDNA reads, pumped eggs and
        net tows are not one table): the Query Builder opens with it picked and downloads the CSV
-       (explore/builder.html?pick=…&download=1).
+       (calcofi.io/query/?pick=…&download=1).
      · The whole dataset, as CalCOFI publishes it: the release's zip (main 3add72f, _plugins/downloads.rb:
        CSV tables with how to cite and the licence inside), and a link to the dataset page's Download
        dialog for Excel, Parquet and the rest. Reconciled 2026-11-17: this was a CSV built in the browser

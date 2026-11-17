@@ -123,7 +123,7 @@ not re-checked on the live products for this change):
 |---|---|---|---|
 | calcofi.io (this site: front door, catalogs, dataset, species and measurement pages, news, stories, tutorials) | v2, uppercase words typed in the layout | **v3** | — |
 | Explorer (`/explore/`) | v2, its own bar, no site words | **v3**: the words behind the menu button, a slim wave | — |
-| Query Builder (`/explore/builder.html`) | new | **v3**: the words inline, its title in the wave | — |
+| Query Builder (`/query/`; `/explore/builder.html` until it moves) | new | **v3**: the words inline, its title in the wave | — |
 | docs, workflows (Quarto) | v2 through `libs/brand/quarto_head.html` | v2, unchanged | the head include and the navbar's words; § 4.6 |
 | db-schema, db-query, ctd-transects (plain pages) | v2 | v2, unchanged | the head block and the empty nav, as above |
 | calcofi4r, calcofi4db (pkgdown), calcofi4py (mkdocs) | v2 | v2, unchanged | `_pkgdown.yml` / `mkdocs.yml` includes; § 4.6 |

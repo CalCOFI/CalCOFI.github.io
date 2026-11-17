@@ -57,7 +57,7 @@ where v2 changed how they are reached, this subsection is the current state.
   6 Contribute data                   strip "Contribute"                           docs/provide.html
   7 Inform ocean and fisheries        strip "Statewide monitoring"                 #monitor
     management
-  new: one table across datasets      card 3 "Query Builder" · header "Query"      explore/builder.html
+  new: one table across datasets      card 3 "Query Builder" · header "Query"      calcofi.io/query/
   ```
 
   **The strip had five links until 2026-11-17** (Share your data · Cite the data · What CalCOFI collects ·
@@ -96,6 +96,17 @@ where v2 changed how they are reached, this subsection is the current state.
   calcofi.org ↗ is itself. `main`'s rule that the header never wraps holds: the menu button takes over under
   1100 px (`NAV_BREAK` in `brand/v3/header.css`, `brand/v3/header.js` and `scripts/check_layout.py`), and
   the open column lists every line and scrolls inside itself.
+- **The Query Builder has its own address, `https://calcofi.io/query/`** (the owner, 2026-11-17: "move the
+  Query Builder to its own dedicated query, and then cross-link"). Its code stays in `CalCOFI/explore`
+  (`src/builder`, which shares the Explorer's engine); a thin repo `CalCOFI/query` builds and serves it.
+  Here the address is written once, as `CalCOFI::Nav::QUERY_URL`, and read by the header's Query word
+  (`query: ""` in `_data/nav.yml`), the third start card and each dataset page's one-species and
+  one-measurement CSV links (`…/query/?pick=…`). A preview or a local build names its own copy with
+  `local_query` (`_config.netlify.yml`: `/query/`, placed there by `scripts/build_netlify.sh` from
+  `QUERY_DIST` or `npm run build:query`; `_config.local.yml`: the Vite dev server's `builder.html`).
+  `/explore/builder.html` redirects to it, query string and all. **Order of going live:** `/query/` first,
+  then this site, then the Explorer's redirect; a deploy of this site before `/query/` answers would send the
+  header's Query word to a 404.
 - **The wave** (brand v3 § 4.5) is under the bar on every page: the catalogs' search band and a dataset
   page's title band are the wave with a head in it; every other page, the front door included, has a slim
   one (34 px), drawn by `_layouts/default.html`. On the front door it cuts into the hero's sky.
@@ -688,7 +699,7 @@ identifier), and `STAGE_MEANING`, which is site-side text by nature — the stag
 Betty's form is `assets/download-form.js` / `download-form.css` (global `CCDownload`): it opens from
 the **CSV** button beside one species or one measurement on a dataset page and offers *Just that one*,
 which opens the Query Builder with it picked and starts the CSV
-(`explore/builder.html?pick=bio:<dataset>:<taxon>` or `env:<dataset>:<measurement>`, `&download=1`), or
+(`calcofi.io/query/?pick=bio:<dataset>:<taxon>` or `env:<dataset>:<measurement>`, `&download=1`), or
 *The whole dataset*, which is the release zip, with a link to the dialog for the other formats. The form
 first built a whole-dataset CSV in the browser from the release Parquet (a vendored reader, files up to
 30 MB) or sent the reader to ERDDAP; the zip replaced both, so nothing whole-dataset is assembled in the

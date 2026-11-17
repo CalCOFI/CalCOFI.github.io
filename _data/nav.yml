@@ -15,7 +15,8 @@
 #   product  a key of _data/products.yml: the link is its live_url (and `title: product` takes its title);
 #            an unknown key drops the item, so removing a product removes its line
 #   section  an id of products.yml `sections:` of kind page: the link is its url; unknown drops the item
-#   explore  a path under the Explorer (builder.html)
+#   explore  a path under the Explorer
+#   query    a path under the Query Builder, https://calcofi.io/query/ ("" = the builder itself)
 #   small    the grey line under the title, or
 #   count    datasets | species | measurements: the release's own number as the grey line (never typed)
 #   icon     a brand glyph (brand/v2/icons.css), drawn where that sheet is loaded
@@ -53,7 +54,7 @@ words:
       - { title: product,        product: ucla-monitoring-map, small: "Who monitors what, statewide", icon: way-explorer }
       - { rule: true }
       - { title: All apps,       href: "/#explore",            small: "Dashboards, student projects", icon: ui-more }
-  - { id: query, title: Query, explore: builder.html }
+  - { id: query, title: Query, query: "" }
   - id: learn
     title: Learn
     align: right

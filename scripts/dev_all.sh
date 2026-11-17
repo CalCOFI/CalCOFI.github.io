@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # dev_all.sh — the homepage and the Explorer on this machine, from ONE terminal:
 #   http://localhost:4000         this site (Jekyll), its Explorer / Table builder buttons pointing at ↓
-#   http://localhost:5178         the Explorer (Vite, from the explore repo), /builder.html = the Table builder
+#   http://localhost:5178         the Explorer (Vite, from the explore repo), /builder.html = the Query Builder (live: calcofi.io/query/)
 # Ctrl+C stops both. The explore repo is found beside this one (../explore), around it (..), or at $EXPLORE_DIR.
 #
 #   bash scripts/dev_all.sh            reuse the release record already in _data/ (skips the download, the gem install and
@@ -19,7 +19,7 @@ for d in "$ROOT/../explore" "$ROOT/.."; do
   [ -z "$EXPLORE" ] && [ -f "$d/package.json" ] && grep -q '"name": "explore"' "$d/package.json" && EXPLORE="$(cd "$d" && pwd)"
 done
 if [ -n "$EXPLORE" ]; then
-  echo "Explorer: $EXPLORE → http://localhost:5178  (Table builder: http://localhost:5178/builder.html)"
+  echo "Explorer: $EXPLORE → http://localhost:5178  (Query Builder: http://localhost:5178/builder.html)"
   [ -d "$EXPLORE/node_modules" ] || (cd "$EXPLORE" && npm install --no-audit --no-fund)
   # the Explorer's log lives OUTSIDE this site: Jekyll watches every file here and rebuilds the whole site (minutes) on
   # any change, so a log inside it kept the homepage rebuilding forever
