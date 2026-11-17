@@ -124,10 +124,21 @@ where v2 changed how they are reached, this subsection is the current state.
   window and 32 px tall, nothing open on load, every old anchor opened from a shut page, one Download button per
   dataset page, a dataset page under 2,200 px. Three rules follow the new design and say so in the script's
   docstring: one yellow button on the first screen (the Explorer's; D6 A had none), four numbers (five before), and
-  the first screen one window tall. As of 2026-11-17 it fails on three things, all on the catalog pages and all
-  waiting for a decision, not a fix: `/datasets/` is 2,575 px with nothing open (ceiling 2,300), `/measurements/`
-  is 8,643 px with all 104 rows open (ceiling 1,625; issue #30 D8 had collapsed the categories), and
-  `/species/?q=sardin` lists one row where the one search listed the genus too.
+  the first screen one window tall. When front door v2 merged (2026-11-17) it failed on three things, all on
+  the catalog pages, left for the owner to decide; he decided them the same evening ("fix with mix … add species
+  hierarchy view back as another tab") and the check is green:
+  - `/measurements/` opens with its five categories closed (1,145 px at 1470 against the 1,625 ceiling, which did
+    not move; it was 8,643 px with all 104 rows open). A press opens a category in place, a search opens the
+    ones that hold a match, `?q=` and `?cat=` land the same way. Without JavaScript the full list is in
+    `<noscript>`.
+  - `/species/` finds higher taxa again: `_plugins/finder.rb` (`CalCOFI::Finder.higher_taxa`) writes
+    `/species/finder-taxa.json`, the taxa with a page that are not species rows, and a search lists the matches
+    under the species rows as "Groups and other taxa" (`?q=sardin`: the sardine, then *Sardinops*). The
+    hierarchy (the icicle) is a view tab again, drawn when shown; `?tab=hierarchy` lands on it. The hidden
+    legacy block that still fed the old class list is gone.
+  - `/datasets/` is unchanged at 2,575 px and **its ceiling is restated, 2,300 → 2,725**: a finder with every
+    dataset as a row is the page's point. The arithmetic is beside the constant in `scripts/check_layout.py`
+    (the fixed parts plus 22 rows), so a 23rd dataset fails. This is the one threshold that moved.
 - **Preview.** `scripts/build_netlify.sh` builds this site and the Explorer into one folder (`OUT`,
   default `_site`) and points every link to the live Explorer at the copy, so the Query Builder links
   stay inside the preview. `EXPLORE_DIST=` reuses a built Explorer. `scripts/dev_all.sh` runs both on one
