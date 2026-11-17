@@ -58,6 +58,15 @@
     if (shown && btn) { var tot = btn.getAttribute("data-n"); shown.textContent = all ? "All " + tot : "8 of " + tot; btn.textContent = all ? "Show fewer" : "Show all " + tot; }
   }
   if (find) find.addEventListener("input", filter);
+  // the measurement list: 8 at first, all on request (rows and their category heads carry data-extra)
+  var allM = root.querySelector("[data-all-m]");
+  if (allM) allM.addEventListener("click", function () {
+    var open = allM.getAttribute("aria-expanded") !== "true", tot = allM.getAttribute("data-n");
+    [].forEach.call(root.querySelectorAll(".dp-m [data-extra]"), function (el) { el.hidden = !open; });
+    allM.setAttribute("aria-expanded", open ? "true" : "false");
+    allM.textContent = open ? "Show fewer" : "Show all " + tot;
+    var sh = root.querySelector("[data-shown-m]"); if (sh) sh.textContent = open ? "All " + tot : "8 of " + tot;
+  });
   var allBtn = root.querySelector("[data-all]");
   if (allBtn) allBtn.addEventListener("click", function () { all = !all; filter(); });
 

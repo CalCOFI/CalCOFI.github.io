@@ -24,6 +24,7 @@
   <svg class="dp-wave" viewBox="0 0 1200 40" preserveAspectRatio="none" aria-hidden="true"><path d="M0 30 C150 10 300 34 450 22 S750 6 900 20 S1100 34 1200 18 V40 H0Z"/></svg>
 </header>
 
+<noscript><style>.dp-tbl .dp-tr[hidden] { display: grid !important; } .dp-tbl .dp-cath[hidden] { display: flex !important; } .dp-tbl .dp-more, .dp-q { display: none !important; }</style></noscript>
 <main class="dp-page" id="dp" data-builder="{{ explore_url }}builder.html" data-base="{{ site.baseurl }}">
 {{ dp.sprite }}
 <div class="dp-row">
@@ -86,10 +87,15 @@
       <div class="dp-ih"><h2>{% if dp.n_taxa > 0 %}Measurements{% else %}What&#8217;s in it{% endif %}</h2><span>{{ dp.n_meas }} measurement{% unless dp.n_meas == 1 %}s{% endunless %}, by category</span></div>
       <div class="dp-tbl dp-m">
         <div class="dp-tr dp-th"><span>Measurement</span><span>Values here</span><span>Years</span><span></span></div>
+        {%- comment -%} eight rows at first, as the species list above: CTD Cast Files has 44 measurements and its page was
+          4,211 px tall with nothing open (the layout contract's ceiling for a dataset page is 2,200). A category's
+          head hides with its rows; "Show all" (assets/dataset-page.js) shows the rest; with JavaScript off all show. {%- endcomment -%}
+        {%- assign mi = 0 -%}
         {%- for g in dp.meas -%}
-        <div class="dp-cath">{{ g.cat | escape }}<span>{{ g.rows.size }}</span></div>
+        <div class="dp-cath"{% if mi >= 8 %} data-extra hidden{% endif %}>{{ g.cat | escape }}<span>{{ g.rows.size }}</span></div>
         {%- for m in g.rows -%}
-        <div class="dp-tr">
+        {%- assign mi = mi | plus: 1 -%}
+        <div class="dp-tr"{% if mi > 8 %} data-extra hidden{% endif %}>
           <span class="dp-nm"><a href="{{ m.url | relative_url }}"><b>{{ m.lab | escape }}</b></a><span>{{ m.units | default: "no units" | escape }}</span></span>
           <span class="dp-nb">{{ m.n }}</span><span class="dp-nb">{{ m.years }}</span>
           {%- comment -%} a CSV button only where the Query Builder can serve the pick (dp: "pick", DatasetPage.pickable?):
@@ -102,6 +108,7 @@
         </div>
         {%- endfor -%}
         {%- endfor -%}
+        {%- if dp.n_meas > 8 %}<div class="dp-more"><span data-shown-m>8 of {{ dp.n_meas }}</span><button type="button" class="dp-lnk" data-all-m data-n="{{ dp.n_meas }}" aria-expanded="false">Show all {{ dp.n_meas }}</button></div>{% endif -%}
       </div>
     </section>
     {%- endif -%}

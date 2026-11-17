@@ -141,3 +141,5 @@ a.dp-big, .dp-page a.dp-big, .dp-page a.dp-big:hover { box-sizing: border-box; t
 /* the licence chip in the Cite card: "unstated" and "licence pending" keep their dashed edge but not the 60% shade,
    which on this card measured under 3:1 for the one word the line is there to say */
 .dp-lic .cc-chip { opacity: 1; color: var(--fg); }
+/* rows and category heads past the first eight are [hidden]; their own display rules must not undo that */
+.dp-tbl .dp-tr[hidden], .dp-tbl .dp-cath[hidden] { display: none; }
