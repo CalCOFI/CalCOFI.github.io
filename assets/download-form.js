@@ -22,14 +22,17 @@
   function yrs(a, b) { return a ? (a === b ? "" + a : a + "–" + b) : ""; }
 
   var dlg = null, last = null;
+  // a native <dialog>, opened with showModal(): the page behind is inert, Tab stays inside, Esc closes — as
+  // main's Download dialog (assets/download.js). It was a <div role="dialog" aria-modal="true"> that focus
+  // walked out of after four Tabs.
   function host() {
     if (dlg) return dlg;
-    dlg = document.createElement("div"); dlg.className = "ccd"; dlg.hidden = true; document.body.appendChild(dlg);
-    dlg.addEventListener("click", function (e) { if (e.target === dlg) close(); });
-    document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !dlg.hidden) close(); });
+    dlg = document.createElement("dialog"); dlg.className = "ccd"; dlg.setAttribute("aria-labelledby", "ccd-h"); document.body.appendChild(dlg);
+    dlg.addEventListener("click", function (e) { if (e.target === dlg) close(); });   // the backdrop: the <dialog> fills the window
+    dlg.addEventListener("close", function () { if (last && document.contains(last) && last.focus) last.focus(); });
     return dlg;
   }
-  function close() { dlg.hidden = true; if (last) last.focus(); }
+  function close() { if (dlg.open) { if (dlg.close) dlg.close(); else dlg.removeAttribute("open"); } }
 
   function open(o) {
     host(); last = document.activeElement;
@@ -45,7 +48,7 @@
       if (st.what === "just") {
         var u = o.pick && o.pick(st.ds);
         return { text: "<b>" + esc(o.name) + "</b> only, from <b>" + esc(nm) + "</b>" + (d[1] ? " (" + yrs(d[1], d[2]) + ", " + big(d[3]) + " " + o.unit + ")" : "") + ", as a CSV.",
-                 note: "The Query Builder opens with it picked and downloads the CSV. You can then change the rows or years and download again.",
+                 note: "The Query Builder opens with it picked and downloads the CSV, one row per sample. You can then change the rows or years and download again.",
                  go: u ? { label: "Download CSV", href: u, tab: true } : null };
       }
       var what = "The whole <b>" + esc(nm) + "</b> dataset, as CalCOFI publishes it, including every " + (o.kind === "species" ? "species" : "measurement") + " in it, ";
@@ -57,18 +60,18 @@
     function draw() {
       var p = plan();
       var dsOpts = o.ds.map(function (d) { var y = st.what === "just" && d[1] ? " (" + yrs(d[1], d[2]) + ")" : ""; return [d[0], ((o.files[d[0]] || {}).name || d[0]) + y]; });
-      dlg.innerHTML = '<div class="ccd-box" role="dialog" aria-modal="true" aria-labelledby="ccd-h"><header><h2 id="ccd-h">Download ' + esc(o.name) + '</h2><button type="button" class="ccd-x" aria-label="Close">✕</button></header>' +
+      dlg.innerHTML = '<div class="ccd-box"><header><h2 id="ccd-h">Download ' + esc(o.name) + '</h2><button type="button" class="ccd-x" aria-label="Close">✕</button></header>' +
         '<fieldset class="ccd-row"><legend class="ccd-l">What</legend><span class="ccd-c"><label><input type="radio" name="what" value="just"' + (st.what === "just" ? " checked" : "") + ">Just " + esc(o.name) + '</label><label><input type="radio" name="what" value="whole"' + (st.what === "whole" ? " checked" : "") + ">The whole dataset</label></span></fieldset>" +
         (o.ds.length > 1 ? '<div class="ccd-row"><span class="ccd-l">Dataset</span><span class="ccd-c">' + sel("ds", dsOpts) + "</span></div>" : "") +
         '<div class="ccd-sum"><span>You will get</span><p>' + p.text + "</p>" + (p.note ? "<small>" + p.note + "</small>" : "") + "</div>" +
         '<div class="ccd-act">' + (p.go ? '<a class="ccd-go" href="' + esc(p.go.href) + '"' + (p.go.file != null ? ' download="' + esc(p.go.file) + '"' : "") + (p.go.tab ? ' target="_blank" rel="noopener"' : "") + ">" + esc(p.go.label) + "</a>" : "") +
         '<button type="button" class="ccd-cancel">Cancel</button>' + (p.more ? '<a class="ccd-src" href="' + esc(p.more) + '" data-more>Excel, Parquet and other formats</a>' : "") + "</div></div>";
-      dlg.hidden = false;
+      if (!dlg.open) { if (dlg.showModal) dlg.showModal(); else dlg.setAttribute("open", ""); }
       [].forEach.call(dlg.querySelectorAll("input,select"), function (i) { i.addEventListener("change", function () { st[i.name] = i.value; draw(); }); });
       dlg.querySelector(".ccd-x").onclick = close; dlg.querySelector(".ccd-cancel").onclick = close;
       // "other formats" is the dataset page's own dialog: on that page, this form steps aside for it
       var more = dlg.querySelector("[data-more]");
-      if (more) more.addEventListener("click", function () { dlg.hidden = true; });
+      if (more) more.addEventListener("click", function () { close(); });
       (dlg.querySelector("input:checked,select,.ccd-go") || dlg.querySelector(".ccd-x")).focus();
     }
     draw();
