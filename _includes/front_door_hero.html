@@ -1,8 +1,8 @@
 {%- comment -%}
   The front door, v2 (Betty, 2026-11-13, after the 12 Nov database tour: Ed, Mark, Nastassia, Erin's "what do you want to
-  do?"). One screen: what CalCOFI is, then three goals, each with its destinations named — Visualize on a map (Explorer ·
-  Data Finder), Download a dataset (the dataset pages), Pull exact data (the Table builder · code). Data providers and the
-  old doors' panels are one row of quiet links under them. Behind it, Line 90's real sea floor (_data/line90_floor.json,
+  do?"). One screen: what CalCOFI is, then three goals, each with its destinations named — Visualize on a map (the
+  Explorer), Download a dataset (the dataset pages), Pull exact data (the Query Builder · code). Data providers and the
+  seven tasks' panels (main, 2026-11-16) are one row of quiet links under them. Behind it, Line 90's real sea floor (_data/line90_floor.json,
   GEBCO 2025, drawn by assets/hero.js) — no figure is drawn from anything else.
   Every number is read at build (site.data.catalog.numbers); a number the build cannot read is not rendered.
 {%- endcomment -%}
@@ -18,12 +18,12 @@
 {%- assign provide_url = include.provide_url | default: "https://calcofi.io/docs/provide.html" -%}
 <link rel="stylesheet" href="{{ '/assets/hero.css' | relative_url }}">
 <section class="hero" aria-label="CalCOFI ocean data">
-  <svg class="hero-sea" id="hero-sea" viewBox="0 0 1280 720" preserveAspectRatio="xMidYMax slice" aria-hidden="true"></svg>
+  <svg class="hero-sea" id="hero-sea" viewBox="0 0 1280 720" preserveAspectRatio="xMidYMax slice" role="group" aria-label="Line 90: the survey ship over the sea floor"></svg>
   <script type="application/json" id="hero-floor">{{ site.data.line90_floor | jsonify }}</script>
   <div class="hero-in">
     <div class="hero-intro">
       <div class="hero-eyebrow">CalCOFI ocean data</div>
-      <h1 class="hero-h1">California's ocean,<br>measured since {{ nums.since | default: 1949 }}</h1>
+      <h1 class="hero-h1">California's ocean,<br>measured{% if nums.since %} since {{ nums.since }}{% endif %}</h1>
       <p class="hero-lede">Data from CalCOFI's quarterly ocean surveys off California: water temperature and chemistry, plankton, larval fish, seabirds and marine mammals.</p>
       <p class="hero-lede hero-lede-2">Visualize it on a map, download it, or pull the exact data you need.</p>
     </div>
