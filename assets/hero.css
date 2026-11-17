@@ -9,7 +9,7 @@
 }
 [data-theme="dark"] .hero {
   --sky1:#0a1426; --sky2:#14284a; --sky3:#22436f; --w1:#1b5d8f; --w2:#103d66; --w3:#0a2443; --w4:#06162b; --f1:#0b1a30; --f2:#040b16;
-  --hl:#8ad0f0; --h-ink:#ffffff; --h-body:#c9d4e3; --h-mute:#9fb0c8; --h-eyebrow:#ffcd00; --h-ship:#e9edf3;
+  --hl:#8ad0f0; --h-ink:#ffffff; --h-body:#c9d4e3; --h-mute:#9fb0c8; --h-eyebrow:#8ad0f0; --h-ship:#e9edf3;
   --c-bg:rgba(10,30,56,.55); --c-b:rgba(138,208,240,.22); --c-ink:#ffffff; --c-mute:#9fb0c8; --c-who:#8ad0f0; --c-link:#8ad0f0; --c-line:rgba(138,208,240,.22);
   --foot:#7d8fa9;
 }
@@ -146,4 +146,29 @@
   .hero-nums { gap: 12px 18px; }
   .hero-nums dd { font-size: 34px; }
   .hero-nums dt { letter-spacing: .08em; }
+}
+
+/* ── main's first-screen rules, kept on this screen (reconciled 2026-11-17; scripts/check_layout.py asserts each) ──
+   · every task link is a 32 px target: the strip's links were 18 px tall
+   · the dark theme's eyebrow was #ffcd00, which is --warn there: yellow marks a state, never a kind of thing. It
+     takes the hero's highlight (--hl), as the cards' own eyebrows do
+   · the numbers that count a catalog link it (species, measurements), in the hero's ink
+   · the whole first screen — the three cards AND the strip, so all seven tasks — fits a 1280 x 645 window, the
+     size issue #30 was measured at. The hero was min-height 640 px under a 72 px header, so in that window the
+     strip sat at 676 to 694 px. In a short, wide window the hero is exactly the window less the header, with a
+     smaller heading and tighter gaps. */
+.hero-foot nav a { display: inline-flex; align-items: center; min-height: 32px; }
+.hero-foot { bottom: 10px; }
+.hero-nums dd a { color: inherit; text-decoration: none; }
+.hero-nums dd a:hover, .hero-nums dd a:focus-visible { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px; }
+@media (max-height: 720px) and (min-width: 901px) {
+  .hero { min-height: calc(100vh - var(--header-h, 72px)); }
+  .hero-intro { margin-top: 18px; }
+  .hero .hero-h1 { font-size: clamp(44px, 4.6vw, 60px); margin: 6px 0 8px; }
+  .hero-lede { font-size: 17px; }
+  .hero-nums { top: 22px; }
+  .hero-start { padding-top: 14px; margin-bottom: 52px; }
+  .hero .hero-h2 { font-size: 30px; margin-bottom: 10px; }
+  .hero-goal { padding: 12px 16px; }
+  .hero-goal p { margin-bottom: 8px; }
 }

@@ -30,8 +30,9 @@
     <dl class="hero-nums" aria-label="CalCOFI by the numbers">
       {%- if nums.years %}<div><dd>{{ nums.years }}</dd><dt>years</dt></div>{% endif -%}
       {%- if nums.cruises %}<div><dd>{{ nums.cruises }}</dd><dt>cruises</dt></div>{% endif -%}
-      {%- if nums.species %}<div><dd>{{ nums.species_fmt }}</dd><dt>species</dt></div>{% endif -%}
-      {%- if nums.measurements %}<div><dd>{{ nums.measurements_m }} M</dd><dt>measurements</dt></div>{% endif -%}
+      {%- comment -%} the two COUNTED things link their catalogs (main, plan 2026-09-09 § D9), when the release built them {%- endcomment -%}
+      {%- if nums.species %}<div><dd>{% if site.data.species %}<a href="{{ '/species/' | relative_url }}">{{ nums.species_fmt }}</a>{% else %}{{ nums.species_fmt }}{% endif %}</dd><dt>species</dt></div>{% endif -%}
+      {%- if nums.measurements %}<div><dd>{% if site.data.measurements %}<a href="{{ '/measurements/' | relative_url }}">{{ nums.measurements_m }} M</a>{% else %}{{ nums.measurements_m }} M{% endif %}</dd><dt>measurements</dt></div>{% endif -%}
     </dl>
 
     <div class="hero-start">

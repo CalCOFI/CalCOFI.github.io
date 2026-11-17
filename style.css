@@ -2260,6 +2260,9 @@ a.cc-chip-lic:hover { color: var(--accent); border-color: var(--accent); text-de
 .fd-apps .ap-y { display: inline-flex; align-items: center; height: 42px; padding: 0 20px; border-radius: 9px; background: #ffcd00; color: #182b49; font-weight: 700; font-size: 15px; }
 .fd-apps .ap-y:hover { filter: brightness(.96); }
 .fd-apps .ap-y.ap-sm { height: 36px; padding: 0 14px; font-size: 14px; }
+/* one yellow button to a panel (main, D6 A): the Explorer's. The Dataset Finder's "Open" is outlined. */
+.fd-apps .ap-mid .ap-y.ap-sm { background: transparent; color: var(--accent); border: 1.5px solid var(--accent); }
+.fd-apps .ap-mid .ap-y.ap-sm:hover { filter: none; background: var(--accent); color: var(--bg); }
 .fd-apps .ap-how { color: var(--accent); font-weight: 600; font-size: 14px; }
 .fd-apps .ap-feat .ap-lk { margin-top: auto; }
 
