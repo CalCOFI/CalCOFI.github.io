@@ -15,15 +15,17 @@ measures; these functions decide, so each is pinned here on a small synthetic me
   tasks      task_links / task_words / check_first_screen: each of the seven tasks and the Query
              Builder is reached from the first screen in one step — a visible link under the bar, at
              least a tap target tall and above the 1280 x 645 fold when asked, or, for the two tasks
-             the strip gave to the header on 2026-11-17 (learn, cite) and only those, a word of the
-             bar; the strip under the cards; the numbers inside the window; the ship's label gone on
-             a phone
+             the strip gave to the header on 2026-11-17 (learn, cite) and only those, the header: a
+             word of the bar that is the link, or a word whose menu holds it (both are lines of the
+             Learn menu since the evening of 2026-11-17); the strip under the cards; the numbers
+             inside the window; the ship's label gone on a phone
   nav        nav_words: the header's words are read from _data/nav.yml, the ONE list — and the list
-             itself is pinned here: Data · Map · Query · Cite · Learn · Docs · FAQ · News · calcofi.org ↗
+             itself is pinned here: Data ▾ · Map ▾ · Learn ▾ · calcofi.org ↗, three menus (the Query
+             Builder, at its own address /query/, is a line of Data)
   wave       is_navy / check_wave (brand v3 § 4): one navy band directly under the bar, edge to edge,
              never the page ground, its edge drawn and a visible step from the band
 """
-import importlib.util, os, sys, unittest
+import importlib.util, os, re, sys, unittest
 
 sys.dont_write_bytecode = True    # the script is loaded by path: leave no scripts/__pycache__ behind
 
@@ -61,26 +63,28 @@ def word(wid, title, href=None, lines=(), visible=True):
             "top": 20, "bottom": 52, "left": 0, "right": 60, "h": 32, "w": 60}
 
 
+LEARN_LINES = ["/#learn", "https://calcofi.io/docs/faq.html", "https://calcofi.io/docs/cite.html", "https://calcofi.io/docs/",
+               "/news/?type=tutorial", "/news/?type=story", "/news/"]
+
+
 def bar(visible=True):
-    """the header's nine words as the page draws them (brand v3): two open menus, the rest are links"""
-    return [word("data", "Data", lines=["/datasets/", "/species/", "/measurements/", "/#services", "/#packages", "/#build"], visible=visible),
+    """the header's four words as the page draws them (brand v3, 2026-11-17 evening): Data, Map and
+    Learn open menus, calcofi.org is a link. Data holds the catalogs and the ways to get the data, the
+    Query Builder first among them; Learn holds the guides (How CalCOFI samples, FAQ, Cite the data,
+    Documentation) and the news (Tutorials, Stories, All news)"""
+    return [word("data", "Data", lines=["/datasets/", "/species/", "/measurements/", "https://calcofi.io/query/", "/#services", "/#packages", "/#build"], visible=visible),
             word("map", "Map", lines=["https://calcofi.io/explore/", "https://app.calcofi.io/station/", "/#explore"], visible=visible),
-            word("query", "Query", "https://calcofi.io/explore/builder.html", visible=visible),
-            word("cite", "Cite", "https://calcofi.io/docs/cite.html", visible=visible),
-            word("learn", "Learn", "/#learn", visible=visible),
-            word("docs", "Docs", "https://calcofi.io/docs/", visible=visible),
-            word("faq", "FAQ", "https://calcofi.io/docs/faq.html", visible=visible),
-            word("news", "News", "/news/", visible=visible),
+            word("learn", "Learn", lines=LEARN_LINES, visible=visible),
             word("org", "calcofi.org ↗", "https://calcofi.org", visible=visible)]
 
 
 def hero(**over):
     """a first screen on which every assertion passes, at 1280 wide: the strip is Contribute and
-    Statewide monitoring (2026-11-17); Cite is the header's word; What CalCOFI collects is the ship's
-    label in the drawing and a line of Learn"""
+    Statewide monitoring (2026-11-17); Cite the data is a line of the header's Learn menu; What CalCOFI
+    collects is the ship's label in the drawing and the first line of Learn"""
     links = [link("#learn", "drawing", h=50), link("https://calcofi.io/explore/", "card"), link("/datasets/", "card"),
              link("#program", "card"), link("https://calcofi.io/docs/provide.html"), link("#monitor"),
-             link("https://calcofi.io/explore/builder.html", "card")]
+             link("https://calcofi.io/query/", "card")]
     cards = [{"title": t, "top": 380, "bottom": 560, "left": x, "right": x + 380, "h": 180, "w": 380}
              for t, x in (("Visualize on a map", 20), ("Download a dataset", 420), ("Pull exact data", 820))]
     H = {"top": 106, "bottom": 712, "innerH": 645, "innerW": 1280, "links": links, "cards": cards,
@@ -248,9 +252,19 @@ class FirstScreen(unittest.TestCase):
         self.assertTrue(hit("explore", "https://calcofi.io/explore/"))
         self.assertTrue(hit("explore", "/explore/"))                       # a preview build's own folder
         self.assertFalse(hit("explore", "https://calcofi.io/explore/builder.html"))
+        self.assertFalse(hit("explore", "https://calcofi.io/query/"))
         self.assertFalse(hit("explore", "#explore"))                       # the panel is not the app
-        self.assertTrue(hit("builder", "/explore/builder.html"))
-        self.assertTrue(hit("builder", "https://calcofi.io/explore/builder.html?pick=bio:a:b"))
+        # the Query Builder's own address (2026-11-17): calcofi.io/query/, /query/ in a preview, with or
+        # without a query string; its old place under the Explorer no longer answers the task
+        self.assertTrue(hit("builder", "https://calcofi.io/query/"))
+        self.assertTrue(hit("builder", "/query/"))
+        self.assertTrue(hit("builder", "https://calcofi.io/query/?pick=bio:a:b&download=1"))
+        self.assertFalse(hit("builder", "https://calcofi.io/explore/builder.html"))
+        self.assertFalse(hit("builder", "/explore/builder.html?pick=bio:a:b"))
+        self.assertFalse(hit("builder", "https://calcofi.io/query/help.html"))
+        self.assertFalse(hit("builder", "https://calcofi.io/db-query/"))    # the SQL console is another product
+        self.assertFalse(hit("builder", "/datasets/?q=query/"))
+        self.assertFalse(hit("builder", "https://calcofi.io/query/#about"))
         self.assertTrue(hit("find", "/datasets/"))
         self.assertFalse(hit("find", "/datasets/swfsc_ichthyo/"))
         self.assertTrue(hit("cite", "https://calcofi.io/docs/cite.html"))
@@ -259,28 +273,39 @@ class FirstScreen(unittest.TestCase):
         self.assertTrue(hit("learn", "/#learn"))                           # the header's line, written from any page
         self.assertFalse(hit("learn", "https://calcofi.io/docs/#learn"))
 
-    # 2026-11-17: the strip is Contribute and Statewide monitoring; the header says Cite and Learn
+    # 2026-11-17: the strip is Contribute and Statewide monitoring; the header's Learn menu holds How
+    # CalCOFI samples (/#learn) and Cite the data
     def test_only_learn_and_cite_may_be_answered_by_the_header(self):
         self.assertEqual({t[0] for t in cl.FRONT_TASKS if "header" in t[3]}, {"learn", "cite"})
         self.assertTrue(all("hero" in t[3] for t in cl.FRONT_TASKS))
 
     def test_task_words(self):
         pat = {t[0]: t[2] for t in cl.FRONT_TASKS}
-        self.assertEqual([x["id"] for x in cl.task_words(bar(), pat["cite"])], ["cite"])          # a word that is the link
-        self.assertEqual([x["id"] for x in cl.task_words(bar(), pat["learn"])], ["learn"])        # Learn: a word that is the link (/#learn)
-        menu = [word("learn", "Learn", lines=["/#learn", "https://calcofi.io/docs/"])]
-        self.assertEqual([x["id"] for x in cl.task_words(menu, pat["learn"])], ["learn"])         # …or a word whose menu holds the line
+        self.assertEqual([x["id"] for x in cl.task_words(bar(), pat["cite"])], ["learn"])         # a word whose menu holds the line
+        self.assertEqual([x["id"] for x in cl.task_words(bar(), pat["learn"])], ["learn"])        # (How CalCOFI samples → /#learn)
+        plain = [word("cite", "Cite", "https://calcofi.io/docs/cite.html")]
+        self.assertEqual([x["id"] for x in cl.task_words(plain, pat["cite"])], ["cite"])          # …or a word that is the link
+        self.assertEqual([x["id"] for x in cl.task_words(bar(), pat["builder"])], ["data"])       # Data ▾ › Get it › Query Builder
         self.assertEqual([x["id"] for x in cl.task_words(bar(), pat["explore"])], ["map"])
+        # the news lines are not the Learn panel, and a docs page is not the citation chapter
+        self.assertEqual(cl.task_words([word("learn", "Learn", lines=["/news/", "https://calcofi.io/docs/"])], pat["learn"]), [])
+        self.assertEqual(cl.task_words([word("learn", "Learn", lines=["/news/", "https://calcofi.io/docs/"])], pat["cite"]), [])
         self.assertEqual(cl.task_words(bar(), pat["monitor"]), [])
         self.assertEqual(cl.task_words(None, pat["cite"]), [])
 
-    def test_cite_is_the_headers_word(self):
+    def test_cite_is_a_line_of_the_headers_learn_menu(self):
         self.assertEqual(run(hero()), [])
         H = hero()
-        H["header"] = [x for x in H["header"] if x["id"] != "cite"]
+        for x in H["header"]:
+            if x["id"] == "learn":
+                x["lines"] = [u for u in x["lines"] if not u.endswith("/docs/cite.html")]
         f = run(H)
         self.assertEqual(len(f), 1)
         self.assertIn("no visible link on the first screen for: cite (Cite the data)", f[0])
+        H = hero()                                                         # Learn gone from the bar: both of its tasks
+        H["header"] = [x for x in H["header"] if x["id"] != "learn"]
+        H["links"] = [x for x in H["links"] if x["href"] != "#learn"]
+        self.assertIn("learn (See what CalCOFI collects), cite (Cite the data)", run(H)[0])
 
     def test_learn_without_the_ships_label_is_the_headers_line(self):
         H = hero()
@@ -289,7 +314,7 @@ class FirstScreen(unittest.TestCase):
         self.assertEqual([x for x in run(H) if "no visible link" in x], [])
         for x in H["header"]:
             if x["id"] == "learn":
-                x["href"] = "https://calcofi.io/docs/"
+                x["lines"] = [u for u in x["lines"] if u != "/#learn"]
         self.assertTrue(any("learn (See what CalCOFI collects)" in x for x in run(H)))
 
     # nothing loosened: a card or a strip link that goes missing is NOT excused by a line of a menu
@@ -302,6 +327,18 @@ class FirstScreen(unittest.TestCase):
         H = hero()
         H["links"] = [x for x in H["links"] if x["href"] != "#program"]
         self.assertTrue(any("program (Work with the data in code)" in x for x in run(H)))
+        # the third card's link gone: a line of the header's Data menu still links calcofi.io/query/, and does not excuse it
+        H = hero()
+        H["links"] = [x for x in H["links"] if x["href"] != "https://calcofi.io/query/"]
+        self.assertEqual([x["id"] for x in cl.task_words(H["header"], cl.QUERY_PAT)], ["data"])
+        f = run(H)
+        self.assertEqual(len(f), 1)
+        self.assertIn("builder (the Query Builder) — a link on the first screen itself, not a line of a menu", f[0])
+        H = hero()                                                         # a card still linking the old address is a missing card
+        for x in H["links"]:
+            if x["href"] == "https://calcofi.io/query/":
+                x["href"] = "https://calcofi.io/explore/builder.html"
+        self.assertTrue(any("builder (the Query Builder)" in x for x in run(H)))
 
     def test_under_the_breakpoint_the_menu_button_carries_the_headers_tasks(self):
         self.assertEqual(run(phone(), width=375), [])
@@ -314,11 +351,11 @@ class FirstScreen(unittest.TestCase):
 
     def test_in_the_folds_window_every_word_of_the_bar_is_drawn(self):
         H = hero()
-        H["header"][6]["visible"] = False
+        H["header"][3]["visible"] = False
         self.assertEqual(run(H), [])
         f = run(H, fold=True)
         self.assertEqual(len(f), 1)
-        self.assertIn("the header's words ['FAQ'] are not drawn in a 1280 x 645 window", f[0])
+        self.assertIn("the header's words ['calcofi.org ↗'] are not drawn in a 1280 x 645 window", f[0])
 
     def test_a_hidden_link_does_not_count(self):
         H = hero()
@@ -403,7 +440,7 @@ words:
       - title: Find
         items:
           - { title: Datasets, href: /datasets/, count: datasets }
-  - { id: query, title: Query, explore: builder.html }
+  - { id: query, title: Query, query: "" }
   - id: learn
     title: Learn
     menu:
@@ -430,18 +467,36 @@ class Nav(unittest.TestCase):
         self.assertEqual(cl.nav_words(None), [])
         self.assertEqual(cl.nav_words("products:\n  - key: a\n"), [])
 
-    # THE list (Ben, 2026-11-17): Docs, FAQ and News are words of the bar again, as on main since
-    # dfdbdc2; Learn is a plain word that opens the front door's Learn panel; Query and Cite are the
-    # short forms; two words open menus. The check holds the bar to _data/nav.yml, and this holds
-    # _data/nav.yml: a word cannot leave the bar by leaving the list.
-    def test_the_sites_own_list_is_the_eight_words(self):
+    # THE list (Ben, 2026-11-17, evening: "simplify the nav and fold under [Learn]: How CalCOFI samples,
+    # Frequently asked questions, Cite the data, Documentation, News with subnav to Tutorials, Stories(,
+    # All)"; then Query off the bar, the Query Builder the first line of Data ▾ › Get it): four words,
+    # three of them menus. Query, Cite, Docs, FAQ and News were words of the bar for a few hours that
+    # day; they are lines of Data and Learn now, and NAV_REACH (judged on the built page) still holds
+    # the header to linking each. The check holds the bar to _data/nav.yml, and this holds
+    # _data/nav.yml: a word cannot leave the bar, or join it, by editing the list unseen.
+    def test_the_sites_own_list_is_the_four_words(self):
         with open(os.path.join(HERE, "..", "_data", "nav.yml"), encoding="utf-8") as f:
             words = cl.nav_words(f.read())
-        self.assertEqual([x["title"] for x in words], ["Data", "Map", "Query", "Cite", "Learn", "Docs", "FAQ", "News", "calcofi.org ↗"])
-        self.assertEqual([x["id"] for x in words], ["data", "map", "query", "cite", "learn", "docs", "faq", "news", "org"])
-        self.assertEqual([x["title"] for x in words if x["menu"]], ["Data", "Map"])
+        self.assertEqual([x["title"] for x in words], ["Data", "Map", "Learn", "calcofi.org ↗"])
+        self.assertEqual([x["id"] for x in words], ["data", "map", "learn", "org"])
+        self.assertEqual([x["title"] for x in words if x["menu"]], ["Data", "Map", "Learn"])
         self.assertEqual(cl.NAV_WORDS, [x["title"] for x in words])
         self.assertEqual(cl.NAV_IDS, [x["id"] for x in words])
+        self.assertEqual(cl.NAV_MENUS, ["Data", "Map", "Learn"])
+
+    # what the header must still link somewhere, a word or a line of a menu: everything main's eight
+    # words reached. With four words, five of these are reached only through Learn, and the Query
+    # Builder only through Data.
+    def test_nav_reach_is_met_by_lines_of_the_menus(self):
+        links = [u for x in bar() for u in ([x["href"]] if x["href"] else []) + x["lines"]]
+        missing = [label for label, pat in cl.NAV_REACH if not any(re.search(pat, u) for u in links)]
+        self.assertEqual(missing, [])
+        through_learn = [label for label, pat in cl.NAV_REACH if any(re.search(pat, u) for u in LEARN_LINES)]
+        self.assertEqual(through_learn, ["how to cite", "the docs", "the FAQ", "News", "what CalCOFI collects (#learn)"])
+        no_learn = [u for x in bar() if x["id"] != "learn" for u in ([x["href"]] if x["href"] else []) + x["lines"]]
+        self.assertEqual([label for label, pat in cl.NAV_REACH if not any(re.search(pat, u) for u in no_learn)], through_learn)
+        no_query = [u for u in links if u != "https://calcofi.io/query/"]
+        self.assertEqual([label for label, pat in cl.NAV_REACH if not any(re.search(pat, u) for u in no_query)], ["the Query Builder"])
 
     def test_nav_json_titles(self):
         self.assertEqual(cl.nav_json_titles({"version": "3", "words": [{"id": "a", "title": "A"}, {"id": "b", "title": "B", "menu": []}]}), ["A", "B"])

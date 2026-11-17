@@ -150,8 +150,9 @@ can only pass by the layout actually being fixed:
              stations.length marks; every product of _data/products.yml is a card in some panel
              except a `superseded` one, which is in none; no horizontal scroll.
   header     (every page; brand v3, 2026-11-17) the bar reads exactly the ONE list of words,
-             _data/nav.yml, in order — Data · Map · Query · Cite · Learn · Docs · FAQ · News ·
-             calcofi.org ↗, pinned by this script's unit test — each word marked data-word with its id, in the
+             _data/nav.yml, in order — Data ▾ · Map ▾ · Learn ▾ · calcofi.org ↗ (four words
+             since the evening of 2026-11-17; Learn holds the guides and the news), pinned by
+             this script's unit test — each word marked data-word with its id, in the
              brand's .cc-nav, in sentence case (text-transform none), and the built
              /brand/v3/nav.json (what every other product's header is drawn from) carries the same
              titles; no destination is linked twice (a word of the bar is not also a line of a
@@ -164,8 +165,10 @@ can only pass by the layout actually being fixed:
              hover bridge spans the gap under the word; every line links a page or a place a panel
              of the front door answers; the three catalogs carry their counts; and the header still
              links somewhere everything main's eight words reached (NAV_REACH: the catalogs, the
-             Explorer, the Query Builder, cite, docs, FAQ, News, code access, the pipeline, the apps,
-             what CalCOFI collects, calcofi.org). Under NAV_BREAK the button opens ONE column: the
+             Explorer, the Query Builder at its own address /query/, cite, docs, FAQ, News, code
+             access, the pipeline, the apps, what CalCOFI collects, calcofi.org), a word or a line of
+             a menu: cite, docs, FAQ, News and what CalCOFI collects are lines of Learn, the Query
+             Builder a line of Data. Under NAV_BREAK the button opens ONE column: the
              words, the menus inline, every line drawn and none beside another, the menus'
              words saying expanded, every line scrollable into the window (`--nav` adds a 375 x 667
              window for this), no horizontal scroll, Escape closes it.
@@ -1755,6 +1758,10 @@ FOLD_W, FOLD_H = 1280, 645
 # A hash is this page's panel (the header writes it /#learn); the Explorer and the Query Builder are
 # matched by their path, since a preview build serves them from its own folder; Cite and Contribute
 # are their docs chapters, exactly.
+# The Query Builder has its own address since 2026-11-17 (Ben: "move the Query Builder to its own
+# dedicated 'query'"): https://calcofi.io/query/, /query/ in a preview, with or without a query string
+# (a dataset page's pick links carry one). It was explore/builder.html, which no longer answers the task.
+QUERY_PAT = r"(^|/)query/(\?[^#]*)?$"
 FRONT_LINKS = {"cite": "https://calcofi.io/docs/cite.html", "contribute": "https://calcofi.io/docs/provide.html"}
 FRONT_TASKS = [
     ("learn",      "See what CalCOFI collects",             r"(^|^/)#learn$",                          ("hero", "header")),
@@ -1764,7 +1771,7 @@ FRONT_TASKS = [
     ("cite",       "Cite the data",                         "^" + re.escape(FRONT_LINKS["cite"]) + "$", ("hero", "header")),
     ("contribute", "Contribute data",                       "^" + re.escape(FRONT_LINKS["contribute"]) + "$", ("hero",)),
     ("monitor",    "Inform ocean and fisheries management", r"^#monitor$",                             ("hero",)),
-    ("builder",    "the Query Builder",                     r"(^|/)explore/builder\.html(\?[^#]*)?$",   ("hero",)),
+    ("builder",    "the Query Builder",                     QUERY_PAT,                                 ("hero",)),
 ]
 # the numbers the first screen states (front door v2 draws four; stations are on Find's map), each
 # equal to the page's own #reach record; the two COUNTED things link their catalogs, as they always did
@@ -1816,10 +1823,11 @@ MAX_MM_PAGE_H = 1850
 # _plugins/nav.rb writes it to /brand/v3/nav.json for every other product (brand/v3/header.js). The
 # check reads the same file rather than typing the words a third time: the bar must read exactly that
 # list, in order, with each word's data-word its id — and _test/check_layout_front_test.py pins the
-# list itself (Data · Map · Query · Cite · Learn · Docs · FAQ · News · calcofi.org ↗), so a word cannot
-# leave the bar by leaving the list unseen. main's DATA · APPS · ACCESS · BUILD · DOCS · FAQ · NEWS: Docs,
-# FAQ and News are words again (Ben, 2026-11-17), the others are lines of Data and Map; NAV_REACH is what
-# the header must still link somewhere, a word or a line, so none of them can drop out unseen.
+# list itself (Data ▾ · Map ▾ · Learn ▾ · calcofi.org ↗), so a word cannot leave the bar, or join it,
+# by editing the list unseen. main's DATA · APPS · ACCESS · BUILD · DOCS · FAQ · NEWS are lines of the
+# three menus (Ben, 2026-11-17, evening: Cite, Docs, FAQ and News, words of the bar for a few hours, fold
+# under Learn with How CalCOFI samples; Query is the first line of Data ▾ › Get it); NAV_REACH is what the
+# header must still link somewhere, a word or a line of a menu, so none of them can drop out unseen.
 def nav_words(text):
     """[{id, title, menu}] of a _data/nav.yml text: the entries of its top-level `words:` list, in
     order. An entry is a block (`  - id: data` then `    title: Data`, `    menu:`) or one line
@@ -1868,7 +1876,7 @@ NAV_REACH = [
     ("the species catalog (/species/)",         r"(^|/)species/$"),
     ("the measurements catalog (/measurements/)", r"(^|/)measurements/$"),
     ("the Explorer",                            r"(^|/)explore/?$"),
-    ("the Query Builder",                       r"(^|/)explore/builder\.html$"),
+    ("the Query Builder",                       QUERY_PAT),
     ("how to cite",                             r"/docs/cite\.html$"),
     ("the docs",                                r"/docs/?$"),
     ("the FAQ",                                 r"/docs/faq\.html$"),
@@ -1881,7 +1889,7 @@ NAV_REACH = [
 ]
 # below this width the menu button carries the nav (= brand/v3/header.css @media (max-width: 1099px)
 # and brand/v3/header.js NAV_BREAK; scripts/check_brand.py holds every v3 product to it too): the
-# words fit one line from there (nine since 5dd1253, with 179 px to spare at 1100), so the header never wraps
+# words fit one line from there (four since 9f2b542; nine had 179 px to spare at 1100), so the header never wraps
 NAV_BREAK = 1100
 # the widths the header's own assertions are run at by --nav (one line from NAV_BREAK, the menu below)
 NAV_WIDTHS = [1100, 1280, 1470, 1024, 800, 640, 375]
@@ -3310,7 +3318,7 @@ def check(path, r, width, theme, fails, notes):
                 elif not ok:
                     fails.append(f"{where}: pin {href} does not answer 200/206")
 
-    # ── the header: six words and their menus (front door v2, _includes/site_nav.html) ───────────
+    # ── the header: the words of _data/nav.yml and their menus (_includes/site_nav.html) ─────────
     nav = r.get("nav")
     if nav and nav["visible"]:
         notes.append(f"{where}: header {' · '.join(nav['words'])}; "
