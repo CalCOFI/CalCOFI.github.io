@@ -2166,3 +2166,5 @@ body:has(.cc-wave-own) .cc-wave-auto { display: none; }
 }
 /* main's line from Explore to Find (Erin's split, 2026-11-16), kept in Maps and apps under its head */
 .fd-apps .ap-xref { margin: -6px 0 18px; }
+/* two people under one footer heading (Technical): a little air between them */
+.v2-footer .cols p + p { margin-top: 10px; }
