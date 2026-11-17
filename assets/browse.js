@@ -111,7 +111,7 @@
   function dlMenu(r) {
     var d = r.download;
     if (!d || !d.url) return "";
-    return '<a class="bd-b2" href="' + esc(d.url) + '" aria-label="Download ' + esc(r.name) + ": " + esc(d.what) + ', or another format"><i class="cc-i cc-i-ui-download" aria-hidden="true"></i>Download<small>' + esc(d.what) + "</small></a>";
+    return '<a class="bd-b2" href="' + esc(d.url) + '" aria-label="Download ' + esc(d.what) + ": " + esc(r.name) + ', or another format"><i class="cc-i cc-i-ui-download" aria-hidden="true"></i>Download <small>' + esc(d.what) + "</small></a>";
   }
 
   function select(key) {

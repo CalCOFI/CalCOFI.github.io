@@ -154,7 +154,7 @@
       {%- comment -%} the licence, for EVERY dataset, by the one rule (_includes/licence_chip.html): a licence the provider
         has not stated reads "unstated", an open question "licence pending" — never a blank that the line under the page
         ("everything here is open") would then seem to fill (Ben, 2026-11-16: published with a "no licence established" notice) {%- endcomment -%}
-      <p class="dp-lic">Licence: {% include licence_chip.html license=a.license license_url=a.license_url name=a.license_name %}
+      <p class="dp-lic">Licence: {% include licence_chip.html license=a.license license_url=a.license_url name=a.license_name chip_size="md" %}
         {%- if a.license == nil or a.license == "" or a.license == "unknown" %} <span class="dp-lic-n">The provider has not stated reuse terms yet; write to <a href="mailto:{{ site.contact_email | escape }}">{{ site.contact_email | escape }}</a> to ask.</span>{% endif %}</p>
       <div class="dp-cfoot">
         {%- if dp.doi %}<a href="https://doi.org/{{ dp.doi | escape }}">DOI</a>{% endif -%}
