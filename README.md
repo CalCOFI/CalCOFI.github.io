@@ -76,7 +76,7 @@ where v2 changed how they are reached, this subsection is the current state.
 - **Anchors.** The routing script is `main`'s. `#viz` (a door until 2026-11-16, then a group of Explore)
   lands on Maps and apps at the apps for one dataset (`#dataset`); `#students` on the student projects
   (`#student`). Close puts focus back on the link that opened the panel, or on the start heading.
-- **The header** is `_includes/site_nav.html`: **Data ▾ · Map ▾ · Query Builder · Cite the data ·
+- **The header** is `_includes/site_nav.html`: **Data ▾ · Map ▾ · Query · Cite ·
   Learn ▾ · calcofi.org ↗**, sentence case, the menus opening on hover or keyboard focus. FAQ and News
   are lines of Learn (FAQ from the same `sections:` entry as before). `main`'s rule that the header never
   wraps holds: the menu button takes over under 1100 px (`NAV_BREAK` in `style.css`, `assets/tabs.js` and

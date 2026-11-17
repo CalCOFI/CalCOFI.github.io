@@ -1,6 +1,6 @@
 {%- comment -%}
   The site header's nav (Betty, 2026-11-16; header-and-catalogs-6 mockup):
-    Data ▾ · Map ▾ · Query Builder · Cite the data · Learn ▾ · calcofi.org ↗
+    Data ▾ · Map ▾ · Query · Cite · Learn ▾ · calcofi.org ↗
   Sentence case. Data, Map and Learn are BUTTONS (aria-expanded, aria-controls) that open their menu:
   on hover, staying open a moment after the pointer leaves (CSS, style.css § the site nav), and on a
   click, a tap or Enter / Space (assets/tabs.js), which is what a touch screen and a keyboard have.
@@ -48,8 +48,8 @@
       <a href="{{ '/' | relative_url }}#explore"><i class="cc-i cc-i-ui-more" aria-hidden="true"></i><span><b>All apps</b><small>Dashboards, student projects</small></span></a>
     </div>
   </div>
-  <a href="{{ explore_url }}builder.html">Query Builder</a>
-  <a href="https://calcofi.io/docs/cite.html">Cite the data</a>
+  <a href="{{ explore_url }}builder.html">Query</a>
+  <a href="https://calcofi.io/docs/cite.html">Cite</a>
   <div class="cc-m2">
     <button type="button" class="cc-m2-t" aria-expanded="false" aria-controls="cc-dd-learn"{% if here == "news" %} aria-current="true"{% endif %}>Learn{{ car }}</button>
     <div class="cc-dd cc-dd-r" id="cc-dd-learn">

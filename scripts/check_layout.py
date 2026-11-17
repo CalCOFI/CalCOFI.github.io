@@ -139,7 +139,7 @@ can only pass by the layout actually being fixed:
              a map card no taller than the head; Find links the Data Finder nowhere; the map has
              stations.length marks; every product of _data/products.yml is a card in some panel
              except a `superseded` one, which is in none; no horizontal scroll.
-  header     (every page) Data · Map · Query Builder · Cite the data · Learn · calcofi.org ↗ on one
+  header     (every page) Data · Map · Query · Cite · Learn · calcofi.org ↗ on one
              line from NAV_BREAK (1100) up, clear of the icon buttons; below it the menu button and
              never a wrap (`--nav`: the widths either side). A menu's word is a button naming its
              panel (aria-controls) and saying its state (aria-expanded): shut at rest with none of
@@ -882,8 +882,8 @@ async (w, d) => {
     }
   }
 
-  // ── the header (front door v2, _includes/site_nav.html: Data ▾ · Map ▾ · Query Builder · Cite the
-  // data · Learn ▾ · calcofi.org ↗) ──
+  // ── the header (front door v2, _includes/site_nav.html: Data ▾ · Map ▾ · Query · Cite ·
+  // Learn ▾ · calcofi.org ↗) ──
   // The words, the menus and what they link. A menu's word is a BUTTON (aria-expanded, aria-controls)
   // over its panel: the CSS opens it on hover, assets/tabs.js on a press — never on focus alone, so
   // tabbing along the header does not throw three panels open. Everything is measured on the real
@@ -1701,7 +1701,7 @@ MAX_MM_PAGE_H = 1850
 # Six items in sentence case: three are menus. main's DATA · APPS · ACCESS · BUILD · DOCS · FAQ · NEWS
 # (FAQ joined on 2026-11-16, the owner's request) became lines of those menus; NAV_REACH is what the
 # header must still link somewhere, a word or a line, so none of them can drop out unseen.
-NAV_WORDS = ["Data", "Map", "Query Builder", "Cite the data", "Learn", "calcofi.org ↗"]
+NAV_WORDS = ["Data", "Map", "Query", "Cite", "Learn", "calcofi.org ↗"]
 NAV_MENUS = ["Data", "Map", "Learn"]
 NAV_REACH = [
     ("the datasets catalog (/datasets/)",       r"(^|/)datasets/$"),

@@ -2175,7 +2175,7 @@ a.cc-chip-lic:hover { color: var(--accent); border-color: var(--accent); text-de
 [data-theme="light"] body:has(.bd-head) .cc-header { box-shadow: 0 1px 0 rgba(24, 43, 73, .05), 0 8px 18px -4px rgba(0, 0, 0, .45); }
 
 /* ═══ the site nav (Betty, 2026-11-16; _includes/site_nav.html) ══════════════════════════════════
-   Data ▾ · Map ▾ · Query Builder · Cite the data · Learn ▾ · calcofi.org ↗ in sentence case. A menu
+   Data ▾ · Map ▾ · Query · Cite · Learn ▾ · calcofi.org ↗ in sentence case. A menu
    opens on hover or focus, under its own word, with a clear edge (outline + deep shadow + a notch),
    and closes a moment after the pointer leaves (the visibility delay), so crossing the gap is easy. */
 .cc-header .cc-links.cc-nav2 { gap: 22px; flex-wrap: nowrap; }
