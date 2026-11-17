@@ -130,3 +130,4 @@
 a.dp-big { box-sizing: border-box; text-decoration: none; }
 .dp-folds { margin-top: 32px; }
 .dp-folds .calm-folds { margin: 0; }
+.dp-nocsv { justify-self: end; font-size: 12px; color: var(--muted); white-space: nowrap; }

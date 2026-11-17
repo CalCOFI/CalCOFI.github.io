@@ -92,7 +92,13 @@
         <div class="dp-tr">
           <span class="dp-nm"><a href="{{ m.url | relative_url }}"><b>{{ m.lab | escape }}</b></a><span>{{ m.units | default: "no units" | escape }}</span></span>
           <span class="dp-nb">{{ m.n }}</span><span class="dp-nb">{{ m.years }}</span>
+          {%- comment -%} a CSV button only where the Query Builder can serve the pick (dp: "pick", DatasetPage.pickable?):
+            a per-cast value (one per cast, not per depth) is in the whole-dataset zip, not in the builder {%- endcomment -%}
+          {%- if m.pick -%}
           <button type="button" class="dp-csv" data-one="env" data-k="{{ m.k | escape }}" data-name="{{ m.lab | escape }}" data-n="{{ m.n_raw }}" data-y0="{{ m.y0 }}" data-y1="{{ m.y1 }}" title="Download just {{ m.lab | escape }}, from this dataset"><i class="cc-i cc-i-ui-download" aria-hidden="true"></i>CSV</button>
+          {%- else -%}
+          <span class="dp-nocsv" title="One value per cast: in the whole-dataset download">per cast</span>
+          {%- endif -%}
         </div>
         {%- endfor -%}
         {%- endfor -%}

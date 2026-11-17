@@ -32,6 +32,16 @@ module CalCOFI
       out["zip"] = { "url" => pr["url"], "file" => pr["file"], "what" => offer["what"] } if pr && pr["url"]
       out
     end
+
+    # Can the Query Builder serve this measurement from this dataset (explore/builder.html?pick=env:<dataset>:<key>)?
+    # The builder reads the release's observation tables. A series the record marks `grain: "sample"` is one value
+    # per cast (the sample_measurement table: mixed-layer depth, chlorophyll maximum …), which the builder does not
+    # read, so its row gets no CSV button rather than a button that opens the builder on "not in this release".
+    # The series' own grain wins; the measurement's is the fallback.
+    def pickable?(measurement, series)
+      grain = (series.is_a?(Hash) ? series["grain"] : nil) || (measurement.is_a?(Hash) ? measurement["grain"] : nil)
+      grain.to_s != "sample"
+    end
   end
 
   class DatasetPageData < Jekyll::Generator
@@ -246,7 +256,8 @@ module CalCOFI
         { "k" => m["key"], "lab" => m["short_label"] || m["label"], "units" => units(m["units"]),
           "cat" => m.dig("category", "name") || "Other", "order" => m.dig("category", "order").to_i,
           "n" => big(s["n_values"]), "n_raw" => s["n_values"].to_i, "years" => yrs(s["year_min"], s["year_max"]),
-          "y0" => s["year_min"], "y1" => s["year_max"], "url" => "/measurements/#{m['slug']}/", "unified" => !!m["is_unified"] }
+          "y0" => s["year_min"], "y1" => s["year_max"], "url" => "/measurements/#{m['slug']}/", "unified" => !!m["is_unified"],
+          "pick" => DatasetPage.pickable?(m, s) }
       end
       rows.uniq! { |x| x["k"] }
       rows.group_by { |x| [x["order"], x["cat"]] }.sort_by { |(o, _), _| o }
