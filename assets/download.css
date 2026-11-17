@@ -1,28 +1,104 @@
-/* The download form (assets/download.js), shared by Browse datasets, Species and Measurements. */
-.ccd { position: fixed; inset: 0; z-index: 1000; background: rgba(10, 20, 36, .45); display: grid; place-items: center; padding: 20px; }
-.ccd[hidden] { display: none; }
-.ccd-box { width: min(500px, 100%); max-height: calc(100vh - 40px); overflow: auto; box-sizing: border-box; background: var(--bg); color: var(--fg);
-  border-radius: 16px; box-shadow: 0 20px 60px rgba(0, 0, 0, .3); padding: 20px 22px 18px; }
-.ccd-box header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.ccd-box h2 { margin: 0; font-size: 21px; line-height: 1.25; }
-.ccd-x { all: unset; cursor: pointer; font-size: 16px; color: var(--muted); padding: 4px 6px; border-radius: 6px; }
-.ccd-x:hover, .ccd-x:focus-visible { color: var(--fg); background: var(--panel); }
-.ccd-row { display: grid; grid-template-columns: 70px minmax(0, 1fr); gap: 12px; align-items: start; margin-top: 14px; }
-.ccd-l { font-size: 13px; font-weight: 700; color: var(--muted); padding-top: 3px; }
-.ccd-c { display: flex; flex-direction: column; gap: 6px; font-size: 14.5px; }
-.ccd-c label { display: flex; gap: 8px; align-items: center; cursor: pointer; }
-.ccd-c input { accent-color: var(--accent); margin: 0; }
-.ccd-c select { max-width: 100%; font: 14px var(--sans); padding: 7px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--fg); }
-.ccd-sum { margin-top: 16px; padding: 12px 14px; border-radius: 10px; background: var(--panel); border: 1px solid var(--border); }
-.ccd-sum > span { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
-.ccd-sum p { margin: 4px 0 2px; font-size: 14.5px; line-height: 1.45; }
-.ccd-sum small { display: block; color: var(--muted); font-size: 12.5px; line-height: 1.45; }
-.ccd-act { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 14px; }
-.ccd-go { height: 38px; padding: 0 16px; display: inline-flex; align-items: center; border-radius: 8px; background: var(--cta-bg); color: var(--cta-fg);
-  font-weight: 700; font-size: 14px; text-decoration: none; }
-.ccd-go:hover { filter: brightness(1.08); }
-.ccd-cancel { all: unset; cursor: pointer; color: var(--muted); font-weight: 600; font-size: 14px; }
-.ccd-cancel:hover, .ccd-cancel:focus-visible { color: var(--fg); }
-.ccd-src { margin-left: auto; color: var(--accent); font-size: 13px; font-weight: 600; }
-.ccd-msg { margin: 10px 0 0; font-size: 13.5px; color: var(--muted); }
-.ccd-msg a { color: var(--accent); }
+/* download.css — the Download button, its dialog and the catalog rows' Download control
+   (_plugins/downloads.rb, _includes/download_options.html, assets/download.js).
+
+   Its own file, loaded on every page from _layouts/default.html, so nothing here touches style.css or
+   the front door's markup: the rows' control rides _includes/catalog_grid.html (the front door's Find
+   panel and /datasets/'s "By category" view) and _layouts/datasets.html (the list). Every colour is a
+   brand/v2 token, so both themes follow; the head's button is the page's one yellow CTA. */
+
+/* ── the head's button ─────────────────────────────────────────────────────────────────────── */
+.dl-cta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; margin: 14px 0 12px; }
+.dl-cta .dl-btn { min-width: 0; padding-inline: 1.1em; gap: 0.55em; }
+.dl-cta .dl-btn .cc-i { font-size: 18px; }
+.dl-cta-s { font-size: var(--fs-sm, 13.5px); color: var(--muted); }
+
+/* ── the dialog ────────────────────────────────────────────────────────────────────────────── */
+.dl-dialog { width: min(640px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); padding: 0; margin: auto;
+  border: 1px solid var(--border); border-radius: var(--radius-card, 12px); background: var(--bg); color: var(--fg);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.28); overflow: auto; overscroll-behavior: contain; }
+.dl-dialog::backdrop { background: rgba(15, 26, 46, 0.55); }
+:root[data-theme="dark"] .dl-dialog::backdrop { background: rgba(0, 0, 0, 0.6); }
+.dl-in { padding: 18px 22px 18px; }
+.dl-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.dl-top h2 { margin: 2px 0 0; font-family: var(--display); font-weight: 500; font-size: 32px; line-height: 1; text-transform: uppercase; letter-spacing: 0.02em; overflow-wrap: anywhere; }
+.dl-close { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; margin: -6px -8px 0 0;
+  border: 0; border-radius: 50%; background: transparent; color: var(--fg); cursor: pointer; font-size: 22px; }
+.dl-close:hover { background: var(--panel); color: var(--accent); }
+.dl-dialog :focus-visible, .dl-cta :focus-visible, .dl-rowlink:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* the options (also the no-JS section's) */
+.dl-lede { margin: 8px 0 12px; color: var(--muted); font-size: 15px; line-height: 1.4; }
+.dl-opts { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.dl-opt { padding: 12px 14px; border: 1px solid var(--border); border-radius: 10px; background: var(--panel); }
+.dl-opt.is-primary { border-color: var(--accent); }
+.dl-opt.is-off { background: transparent; border-style: dashed; }
+.dl-opt > p { margin: 6px 0 0; font-size: 14.5px; line-height: 1.4; }
+.dl-get { min-width: 0; padding-inline: 1.1em; }
+.dl-get .cc-i { font-size: 18px; }
+.dl-get-n { font-weight: 400; text-transform: none; letter-spacing: 0; opacity: 0.9; }
+.dl-get-n::before { content: "·"; margin-right: 0.5em; }
+.dl-about { color: var(--fg); }
+.dl-inside { color: var(--muted); }
+.dl-note { color: var(--muted); }
+.dl-opt.is-off .dl-note { margin-top: 4px; }
+.dl-off { font-weight: 700; font-size: 14px; color: var(--muted); }
+.dl-off-t { color: var(--fg); text-transform: uppercase; letter-spacing: 0.08em; }
+.dl-part { margin: 14px 0 0; font-size: 15px; line-height: 1.4; }
+.dl-h { margin: 16px 0 6px; font-size: 12.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+.dl-more { list-style: none; margin: 0; padding: 0; font-size: 14.5px; line-height: 1.4; }
+.dl-more li { padding: 6px 0; border-top: 1px solid var(--border); }
+.dl-more li:first-child { border-top: 0; }
+.dl-more a { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; margin-right: 6px; }
+.dl-more a .cc-i { color: var(--muted); }
+.dl-more span { color: var(--muted); }
+.dl-part a, .dl-more a, .dl-lic a, .dl-reg a { color: var(--accent); }
+.dl-lic { display: flex; gap: 8px; align-items: flex-start; margin: 14px 0 0; padding: 10px 12px; border-radius: 8px; background: var(--panel); font-size: 14.5px; line-height: 1.4; }
+.dl-lic-i { flex: none; width: 15px; height: 15px; margin-top: 3px; fill: currentColor; color: var(--muted); }
+.dl-lic-unstated, .dl-lic-pending { border: 1px dashed var(--border); background: transparent; }
+.dl-reg { margin: 10px 0 0; font-size: 14px; color: var(--muted); line-height: 1.4; }
+
+/* the no-JS section (a <noscript> under the head) */
+.dl-nojs { scroll-margin-top: 88px; }   /* #download from a catalog row lands below the sticky header */
+.dl-nojs > h2 { display: flex; align-items: center; gap: 8px; }
+
+/* ── a catalog row's control ───────────────────────────────────────────────────────────────── */
+.dl-rowlink { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 32px; min-width: 32px;
+  padding: 0 10px; border: 1px solid var(--border); border-radius: var(--radius, 6px); background: var(--bg);
+  color: var(--accent); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; text-decoration: none; white-space: nowrap; }
+.dl-rowlink .cc-i { font-size: 16px; }
+.dl-rowlink:hover { border-color: var(--accent); background: var(--accent-bg); text-decoration: none; }
+
+/* /datasets/ list: the control sits beside the row's <details>, never inside its <summary>; the
+   wrapper carries the row's bottom rule so the two read as one row */
+.dl-rowwrap { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; column-gap: 10px; border-bottom: 1px solid var(--border); }
+.dl-rowwrap > .calm-item { border-bottom: 0; min-width: 0; }
+.dl-rowwrap > .dl-rowlink { margin-top: 12px; }
+.dl-rowwrap:has(> .calm-item[hidden]) { display: none; }
+.calm-item[hidden] + .dl-rowlink { display: none; }
+
+/* the front door's Find panel and "By category": an icon at the row's right end, both lines */
+.ds-row.ds-row-dataset:has(> .dl-rowlink) { grid-template-columns: auto minmax(0, 1fr) auto auto; grid-template-areas: "name name lic dl" "prov meta meta dl"; }
+.ds-row.ds-row-dataset > .dl-rowlink { grid-area: dl; align-self: center; padding: 0; width: 32px; }
+
+/* the front door's Find list (index.html .fd-ylist, one grid with subgrid rows): a third column
+   for the control, so every name and every row's year cells keep their own columns and x; the
+   icon is a 28 px square inside the 30 px row, so no row grows */
+.fd-ylist:has(.dl-rowlink) { grid-template-columns: max-content minmax(0, 1fr) auto; }
+.fd-yrow > .dl-rowlink { align-self: center; width: 28px; min-width: 28px; min-height: 28px; height: 28px; padding: 0; margin-left: 2px; }
+
+@media (max-width: 760px) {
+  .dl-in { padding: 14px 16px 16px; }
+  .dl-top h2 { font-size: 26px; }
+  .dl-cta .dl-btn { width: 100%; }
+  .dl-rowwrap > .dl-rowlink { margin-top: 10px; padding: 0; width: 36px; }
+  .dl-rowwrap > .dl-rowlink .dl-rowlink-t { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+}
+
+/* the Find list on a phone: style.css stacks each name above its years in one column; the control
+   takes a second, narrow column beside both, so the name and the years keep the full width */
+@media (max-width: 640px) {
+  .fd-ylist:has(.dl-rowlink) { grid-template-columns: minmax(0, 1fr) auto; }
+  .fd-ylist:has(.dl-rowlink) .fd-yhead > *, .fd-ylist:has(.dl-rowlink) .fd-yrow > .fd-yname,
+  .fd-ylist:has(.dl-rowlink) .fd-yrow > .fd-ycells { grid-column: 1; }
+  .fd-yrow > .dl-rowlink { grid-column: 2; grid-row: 1 / span 2; width: 36px; height: 36px; }
+}

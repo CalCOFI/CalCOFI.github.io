@@ -20,8 +20,8 @@
 
    Two drawings from one function (issue #30, D2/D5): the front door's first screen draws it QUIET
    (#sec-quiet: the sky, the water, the floor, the ship and its gear — no depth grid, no axes, no
-   captions, no pins, cropped at the floor line, an image with one label), and the "Learn how CalCOFI
-   sampling and data work" door draws it ANNOTATED (#sec-full: everything above, the pins included).
+   captions, no pins, cropped at the floor line, an image with one label), and the "See what CalCOFI
+   collects" door (#learn) draws it ANNOTATED (#sec-full: everything above, the pins included).
    Each build suffixes its gradient ids, so two drawings on one page never share a <defs>. */
 (function () {
   'use strict';

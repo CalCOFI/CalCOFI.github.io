@@ -50,6 +50,13 @@ can only pass by the layout actually being fixed:
              sample_measurement. It listed 2 of 9: the per-cast types live in sample_measurement.
   erddap     (dataset pages) each ERDDAP dataset id's tabledap page appears exactly once. It was
              listed twice: once under Download for its formats, once under Services for its page.
+  download   (2026-11-16) a dataset with zips (the record's `bundle` rows, else _data/zip_manifest.json)
+             has exactly ONE Download button, in its head, ending above the 1280 x 800 fold at 1280
+             and wider, linking the CSV zip (no-JS: the button IS that link); its dialog is closed on
+             load and lists CSV first, linking the manifest's URL, and never offers an Excel the
+             manifest did not write. A holding, or any dataset without zips (no manifest at all
+             before the first upload), draws none. /datasets/ has one row control per dataset with
+             zips in the list and in "By category", none for a holding, none inside a <summary>.
   species    (/species/ and one taxon page, plan 2026-09-09 § S3; round 2 § I1, I2, P1–P3, WS-R5;
              issue #30 D7, D10–D12, D14, D17) the index's five counts equal the inline record's and
              its h1 carries no digit (the quiet line is the numbers' only home); the class list is
@@ -89,17 +96,25 @@ can only pass by the layout actually being fixed:
              every end label inside its column, the month strip is 12 cells per series, and each
              `.mm-url` is one line elided from the middle.
 
-  front door (/, issue #30: one screen, seven doors) the seven doors, in order, each controlling
-             its own panel and >= 32 px tall, end above the 1280 x 645 fold at >= 1280; on a phone the
+  front door (/, issue #30: one screen, seven doors; the seven tasks of 2026-11-16) the seven doors,
+             in order (See what CalCOFI collects · Explore · Find · Code · Cite · Contribute ·
+             Management), each >= 32 px tall: a panel door controls its own panel, Cite and
+             Contribute are links to their docs chapters; all end above the 1280 x 645 fold at
+             >= 1280; on a phone the
              head, the quiet drawing and the doors stack in that order (the ship stays at the top); no door is open on load unless
-             the URL names one (#door, ?door=, ?q=, ?tab=), and then exactly one is; the page is
-             <= 950 px at 1470 with none open; opening Find then Visualize leaves only Visualize open
+             the URL names one (#door, ?door=, ?q=, ?tab=), and then exactly one is, the one that
+             ?door= names; every old anchor (#datasets #access #build #viz #general #student …, and
+             the retired words) opens the door it now lives behind; the page is
+             <= 950 px at 1470 with none open; opening Find then Explore leaves only Explore open
              and a second click closes it; nothing on the first screen is --warn or yellow, and each
              panel carries exactly one yellow button, except #program, which carries none (Get the
-             data is its destination); the quiet drawing has no pins and the Learn
-             panel's has them, each answering 200/206 to a ranged GET (checked once, not per theme);
-             the five numbers equal the inline #reach record's; the years strip has
-             datasets.length rows and the map stations.length marks; every product key in
+             data is its destination); the quiet drawing has no pins and the See-what-CalCOFI-
+             collects panel's has them, each answering 200/206 to a ranged GET (checked once, not per theme);
+             the five numbers equal the inline #reach record's; Find's list of datasets has
+             datasets.length rows, each name an <a> to /datasets/{key}/ with its years drawn, at
+             >= 16 px in --accent and underlined, and at >= 1280 the search and the first eight
+             names fit an 800 px window with Find open, beside a map card no taller than the head;
+             Find links the Data Finder nowhere; the map has stations.length marks; every product key in
              _data/products.yml is drawn as a card behind some door; no horizontal scroll.
 
 Lighthouse is NOT run here (it needs its own Chrome and ~30 s a page); README says how, and
@@ -111,6 +126,7 @@ import argparse, json, os, re, subprocess, sys
 
 DEFAULT_PATHS = [
     "/",                             # the front door: one screen, seven doors, none open (issue #30)
+    "/?door=viz",                    # an old door's name lands in the door that now holds it (Explore)
     "/?q=sardine&tab=species",       # D9 (round 2, WS-R4): a shared link lands on the Species tab
                                      #   with the box filled and >= 1 .cc-result already rendered
     "/?q=krill",                     # …and on the Datasets tab, the same box still filters the grid
@@ -218,6 +234,41 @@ def _product_keys():
         return []
 
 
+def _data_dir():
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "_data")
+
+
+DL_ORDER = ("csv", "xlsx", "parquet")
+
+
+def download_offers(data_dir):
+    """{dataset_key: {formats, urls, primary, primary_format}} for every dataset the build would draw a
+    Download button for — _plugins/downloads.rb's rule: the record's own `bundle` distributions
+    first, else the zip manifest (schema 1.x or higher; unknown fields ignored); a holding never;
+    nothing written, no entry. URLs are compared exactly as given, never built."""
+    rec = _read_json(os.path.join(data_dir, "datasets.json")) or {}
+    man = _read_json(os.path.join(data_dir, "zip_manifest.json")) or {}
+    by_man = {}
+    if re.match(r"\d+", str(man.get("schema_version", ""))) and int(re.match(r"\d+", str(man["schema_version"])).group()) >= 1:
+        by_man = {d.get("dataset_key"): d.get("bundles") or [] for d in man.get("datasets") or []}
+    out = {}
+    for d in rec.get("datasets") or []:
+        k = d.get("dataset_key")
+        own = [x for x in d.get("distributions") or []
+               if x.get("kind") == "bundle" and x.get("format") in DL_ORDER and x.get("status") != "superseded"]
+        rows = [dict(x, written=x.get("written", True)) for x in own] if own else by_man.get(k, [])
+        urls = {}
+        for b in rows:
+            f = b.get("format")
+            if f in DL_ORDER and b.get("written") and b.get("url") and f not in urls:
+                urls[f] = b["url"]
+        if urls:
+            prim = "csv" if "csv" in urls else next(f for f in DL_ORDER if f in urls)
+            out[k] = {"formats": [f for f in DL_ORDER if f in urls], "urls": urls,
+                      "primary": urls[prim], "primary_format": prim}
+    return out
+
+
 def _read_json(path):
     try:
         with open(path) as f:
@@ -280,6 +331,32 @@ PROBE = r"""
               .map(el => el.id || String(el.className).slice(0, 30)),
       // the list's rows are the record's datasets, once each
       rows: [...calmDs.querySelectorAll("#ds-list .ds-item[data-key]")].map(el => el.dataset.key)
+    };
+  }
+
+  // ── the Download button (2026-11-16): one in a dataset page's head, its dialog CSV first; one
+  // control beside each catalog row that has zips, never inside a <summary> — read before anything
+  // below opens or filters, so the button's position is the page as it loads
+  if (calmDs) {
+    const btns = [...calmDs.querySelectorAll(".dl-btn")];
+    const dlg = d.getElementById("dl-dialog");
+    const b0 = btns[0] && btns[0].getBoundingClientRect();
+    out.download = {
+      n: btns.length,
+      inHead: btns.filter(b => b.closest(".calm-head")).length,
+      bottom: b0 ? px(b0.bottom + w.scrollY) : null,
+      href: btns[0] ? btns[0].getAttribute("href") : null,
+      dialog: !!dlg, dialogOpen: !!(dlg && dlg.open),
+      // the dialog's plain options in order: the format a link offers, or "off:<label>" for one not offered
+      options: dlg ? [...dlg.querySelectorAll(".dl-opts > .dl-opt")].map(li => {
+        const a = li.querySelector("a[data-dl-format]");
+        return a ? a.dataset.dlFormat : "off:" + ((li.querySelector(".dl-off-t") || {}).textContent || "").trim();
+      }) : [],
+      firstHref: dlg && dlg.querySelector(".dl-opts a[data-dl-format]") ? dlg.querySelector(".dl-opts a[data-dl-format]").getAttribute("href") : null,
+      rows: [...calmDs.querySelectorAll("#ds-list .dl-rowlink")].map(a => (/\/datasets\/([^/]+)\/#download$/.exec(a.getAttribute("href") || "") || [])[1] || a.getAttribute("href")),
+      gridRows: [...calmDs.querySelectorAll("#ds-grid .ds-row-dataset .dl-rowlink")].length,
+      inSummary: calmDs.querySelectorAll("summary .dl-rowlink, summary .dl-btn").length,
+      inHoldings: calmDs.querySelectorAll("#ds-holdings .dl-rowlink, .ds-row-holding .dl-rowlink").length
     };
   }
 
@@ -451,7 +528,9 @@ PROBE = r"""
     const who = d.querySelector(".fd-who"), ask = d.querySelector(".fd-ask"), fig = d.querySelector(".fd-fig");
     const full = d.querySelector("#sec-full svg.sec");
     out.front = {
-      doors: doorEls.map(b => ({ id: b.dataset.door, title: (b.querySelector(".fd-door-t") || b).textContent.replace(/\s+/g, " ").trim(),
+      // a door is a button that opens a panel (data-door) or a link straight to its page (data-link)
+      doors: doorEls.map(b => ({ id: b.dataset.door || b.dataset.link, tag: b.tagName, href: b.getAttribute("href"),
+        title: (b.querySelector(".fd-door-t") || b).textContent.replace(/\s+/g, " ").trim(),
         top: px(top(b)), bottom: px(bot(b)), h: px(b.getBoundingClientRect().height), w: px(b.getBoundingClientRect().width),
         controls: b.getAttribute("aria-controls"), expanded: b.getAttribute("aria-expanded") })),
       screenBottom: px(bot(fds)),
@@ -463,7 +542,15 @@ PROBE = r"""
       quietDrawn: !!d.querySelector("#sec-quiet svg.sec"),
       pins: full ? [...full.querySelectorAll("a.pin")].map(a => a.getAttribute("href")) : [],
       band, reachNumbers: reach && reach.numbers,
-      stripRows: d.querySelectorAll("svg.strip a.rowlink").length, datasets: reach && reach.datasets.length,
+      // Find's list of datasets (Ben, 2026-11-16): one HTML row per dataset, the name an <a> to its page
+      stripRows: d.querySelectorAll(".fd-yrow a.fd-yname[href]").length, datasets: reach && reach.datasets.length,
+      stripDrawn: d.querySelectorAll(".fd-yrow .fd-ycells svg.fd-ysvg").length,
+      // the Download control beside each name with zips (2026-11-16): the keys whose rows carry one
+      stripDl: [...d.querySelectorAll(".fd-yrow[data-key]")].filter(r => r.querySelector(".dl-rowlink")).map(r => r.dataset.key),
+      stripLinks: [...d.querySelectorAll(".fd-yrow")].map(r => ({ key: r.dataset.key,
+        href: (r.querySelector("a.fd-yname") || { getAttribute: () => null }).getAttribute("href") })),
+      finderLinks: [...d.querySelectorAll("#find a[href]")].map(a => a.getAttribute("href")).filter(h => /app\.calcofi\.io\/station/.test(h)),
+      accent: tok("--accent"),
       mapMarks: d.querySelectorAll("svg.map .st").length - d.querySelectorAll("svg.map .keyg .st").length, stations: reach && reach.stations.length,
       cardKeys: [...new Set([...d.querySelectorAll(".prod-card[data-key]")].map(c => c.dataset.key))],
       warnEls, ctaEls
@@ -475,18 +562,49 @@ PROBE = r"""
       was.forEach(k => door(k) && door(k).click());              // start from every door closed
       door("find").click();
       const a = openNow();
+      // Find, open: the list's names read as links (body-text size, the link colour, underlined), and
+      // with the panel scrolled to its top the search and the first eight names sit inside an 800 px
+      // window under the sticky header — finding a dataset is the obvious thing (Ben, 2026-11-16)
+      const fp = d.getElementById("find"), names = [...d.querySelectorAll("#find .fd-yname")];
+      if (fp && names.length) {
+        const ft = fp.getBoundingClientRect().top, q = d.getElementById("door-q");
+        const n8 = names[Math.min(7, names.length - 1)], s0 = cs(names[0]);
+        out.front.findList = {
+          qBottom: q ? px(q.getBoundingClientRect().bottom - ft) : null,
+          n8Bottom: px(n8.getBoundingClientRect().bottom - ft),
+          headerH: parseFloat(cs(d.documentElement).getPropertyValue("--header-h")) || null,
+          fontPx: parseFloat(s0.fontSize), color: s0.color.replace(/\s/g, ""),
+          underline: s0.textDecorationLine, minH: px(Math.min(...names.map(x => x.getBoundingClientRect().height))),
+          mapH: px((d.querySelector("#find .fd-map") || { getBoundingClientRect: () => ({ height: 0 }) }).getBoundingClientRect().height),
+          headH: px((d.querySelector("#find .fd-phead") || { getBoundingClientRect: () => ({ height: 0 }) }).getBoundingClientRect().height)
+        };
+      }
       door("explore").click();
       const b = openNow(), findExp = door("find").getAttribute("aria-expanded"), expExp = door("explore").getAttribute("aria-expanded");
       door("explore").click();
       const c = openNow();
+      // the old anchors: a click on a link to each (the header's words do exactly this) opens the
+      // door it now lives behind. A tab anchor selects its tab, so every tabset's selection and the
+      // URL are put back afterwards — what is measured next sees the page the URL loaded.
+      const href0 = w.location.href;
+      const sel0 = [...d.querySelectorAll(".fd-panel .tabset")].map(ts => ts.querySelector('.tabrow [aria-selected="true"]')).filter(Boolean);
+      const anchors = {};
+      for (const h of __FD_ANCHORS__) {
+        const lk = d.createElement("a"); lk.href = "#" + h; d.body.appendChild(lk);
+        lk.click(); lk.remove();
+        anchors[h] = openNow();
+      }
+      sel0.forEach(b => b.click());
+      openNow().forEach(k => door(k) && door(k).click());
       if (was.length && door(was[0])) door(was[0]).click();      // put back what the URL opened
-      out.front.drive = { afterFind: a, afterExplore: b, findExpanded: findExp, exploreExpanded: expExp, afterClose: c, restored: openNow() };
+      try { w.history.replaceState(null, "", href0); } catch (e) {}
+      out.front.drive = { afterFind: a, afterExplore: b, findExpanded: findExp, exploreExpanded: expExp, afterClose: c, anchors, restored: openNow() };
       w.scrollTo(0, 0);
     }
   }
 
   // ── the front door's navigation (plan 2026-09-10 § D7, WS-M0) ──────────────
-  // The header's six words plus calcofi.org, the submenus, the sticky section bar, the tabsets and
+  // The header's seven words plus calcofi.org, the submenus, the sticky section bar, the tabsets and
   // the one search over the three indexes. Everything here is measured on the real page: the
   // submenu is opened by FOCUSING its trigger (that is the whole mechanism — :focus-within), and
   // the search is driven by typing into the box and reading what came back.
@@ -534,7 +652,7 @@ PROBE = r"""
     };
   }
 
-  // the phone menu (Ben, 2026-09-10): under 480 px the brand hides .cc-links and the hamburger in the
+  // the menu button (Ben, 2026-09-10; under NAV_BREAK px since 2026-11-16): the hamburger in the
   // icon cluster must open the same nav as a column — every word, every submenu inline, no
   // horizontal scroll while open — and Escape must close it. Measured by clicking the button.
   const header = d.querySelector(".cc-header"), burger = header && header.querySelector(".cc-menu-button");
@@ -552,6 +670,23 @@ PROBE = r"""
       closedOnEsc = !header.classList.contains("cc-nav-open");
     }
     out.phoneMenu = { buttonShown, opened, expanded, wordsOpen, subsOpen, scrollW, closedOnEsc };
+  }
+  // the header never wraps (2026-11-16): its row is one line at every width — the nav's items share
+  // one top when the nav shows, and the row's own children (lockup, tagline, nav or menu button,
+  // the icon buttons) share one line, measured with the menu closed
+  if (header) {
+    const row = [...header.children].filter(el => el.getBoundingClientRect().width > 0 && cs(el).position !== "absolute");
+    const items = nav && cs(nav).display !== "none" ? [...nav.children].filter(el => el.matches("a, .cc-m")) : [];
+    const mid = el => { const b = el.getBoundingClientRect(); return (b.top + b.bottom) / 2; };
+    out.headerRow = {
+      navShown: items.length > 0,
+      navTops: [...new Set(items.map(el => Math.round(el.getBoundingClientRect().top)))].length,
+      rowLines: row.length ? Math.round(Math.max(...row.map(mid)) - Math.min(...row.map(mid))) : 0,
+      height: Math.round(header.getBoundingClientRect().height),
+      overlap: items.length && burger ? (() => { const last = items[items.length - 1].getBoundingClientRect().right;
+        const btns = [...header.querySelectorAll("button")].filter(b => b.getBoundingClientRect().width > 0);
+        return btns.length ? Math.round(last - Math.min(...btns.map(b => b.getBoundingClientRect().left))) : null; })() : null
+    };
   }
 
   // do the two catalog pages exist on this build? (the DATA submenu must link them when they do)
@@ -585,20 +720,31 @@ PROBE = r"""
   }
 
   // the DATA section's height, so the front door cannot quietly grow (plan § Risks)
+  // Since 2026-11-16 #datasets also holds Find's list of datasets (it was the years strip above the
+  // block): that list is the panel's, one row per dataset, and is measured apart from the catalog
   const dataSec = d.getElementById("datasets");
-  if (dataSec) out.dataSectionH = px(dataSec.getBoundingClientRect().height);
+  if (dataSec) {
+    const yl = dataSec.querySelector(".fd-years"), ylR = yl ? yl.getBoundingClientRect().height : 0;
+    const ylH = ylR ? ylR + parseFloat(cs(yl).marginBottom || 0) : 0;   // nothing to subtract while Find is shut
+    out.dataSectionH = px(Math.max(0, dataSec.getBoundingClientRect().height - ylH));
+  }
 
   // ── D1–D5, D9 (round 2, WS-R4): the homed row, the one search box ──────────
   if (dataSec) {
     const homed = [...dataSec.querySelectorAll(".ds-row-dataset")];
+    const licOf = row => { const l = row.lastElementChild;
+      return l && l.classList.contains("dl-rowlink") ? l.previousElementSibling : l; };
     out.homedRows = {
       n: homed.length,
       // D1: the format phrase is gone from every homed row (the Format filter and the dataset
       // page keep it — data-fmt stays on the <li> for the select, checked separately below)
       dsFmt: dataSec.querySelectorAll(".ds-row-dataset .ds-fmt").length,
-      // D2: the licence chip is the row's LAST element, and its text is never the raw "custom" id
-      licMissing: homed.filter(row => !row.lastElementChild || !row.lastElementChild.classList.contains("cc-chip-lic")).length,
-      licCustomText: homed.filter(row => (row.lastElementChild || {}).textContent === "custom").length,
+      // D2: the licence chip is the row's LAST data column, and its text is never the raw "custom" id.
+      // A row with zips ends in its Download control (2026-11-16), drawn after the licence, so the
+      // licence is then the element just before it: still in the same place on every row.
+      licMissing: homed.filter(row => { const l = licOf(row); return !l || !l.classList.contains("cc-chip-lic"); }).length,
+      licCustomText: homed.filter(row => (licOf(row) || {}).textContent === "custom").length,
+      dlNotLast: homed.filter(row => row.querySelector(".dl-rowlink") && row.lastElementChild !== row.querySelector(".dl-rowlink")).length,
       // D3: a drawn expander is never empty (self-consistent with n_var/n_taxa > 0 gating the
       // template; the source record is cross-checked in Python from the SAME datasets.json)
       varsTotal: dataSec.querySelectorAll(".ds-vars").length,
@@ -1109,7 +1255,8 @@ def probe(url, width, theme, browser, wait):
     sep = "&" if "?" in url else "?"
     target = f"{url}{sep}theme={theme}&tour=off"
     js = (HOST.replace("__W__", str(width)).replace("__URL__", target)
-              .replace("__PROBE__", PROBE).replace("__WAIT__", str(wait)))
+              .replace("__PROBE__", PROBE.replace("__FD_ANCHORS__", json.dumps(list(FRONT_ANCHORS))))
+              .replace("__WAIT__", str(wait)))
     # the host page must be same-origin with the target, so load the target itself and let the
     # iframe inside it be the one that is measured at the width under test
     status = page_status(target)
@@ -1131,13 +1278,36 @@ MAX_STRETCH = 1.25    # a tile drawn more than a quarter taller than its content
 # issue #30: a page's height at 1470 with nothing open — the mockup's target + ~25 %, footer included
 # (the mockups: the dataset catalog ~1,750 px, a dataset page ~1,750 px). The old pages ran 3,500 /
 # 4,200–5,100 px; anything past these means something that should be a fold has come back open.
+# the Download button (2026-11-16): above the fold of a 1280 x 800 screen, at 1280 and wider
+DL_FOLD_W, DL_FOLD_H = 1280, 800
 MAX_DS_H = {"catalog": 2300, "dataset": 2200}   # catalog: 19 rows + the 347 px site footer the mockup lacked
 MAX_GRID_H = 4400     # px at 1470 with the staging record (was 4,910)
 MAX_SPECIES_INDEX_H = 2220   # issue #30: /species/ at 1470, nothing open — the mockup's 1,775 + 25 %
 MAX_SPECIES_PAGE_H = 1500    # issue #30: a taxon page at 1470, nothing open — ~1,200 + 25 %
 # the front door (issue #30): Dan's screen, the seven doors in order, and the page with none open
 FOLD_W, FOLD_H = 1280, 645
-FRONT_DOORS = ["find", "explore", "program", "build", "learn", "monitor", "viz"]
+# The seven tasks (2026-11-16, the users' and Erin's feedback): five open a panel, Cite and Contribute
+# are links straight to their chapter of the docs book.
+FRONT_DOORS = ["learn", "explore", "find", "program", "cite", "contribute", "monitor"]
+FRONT_LINKS = {"cite": "https://calcofi.io/docs/cite.html", "contribute": "https://calcofi.io/docs/provide.html"}
+# every anchor anyone may have bookmarked, and the door it must open now: the doors themselves, the
+# ids inside a panel (#build and #viz were doors until 2026-11-16 and are now groups inside Code and
+# Explore), the tabs inside a panel, and the retired words of the old sections
+FRONT_ANCHORS = {
+    "learn": "learn", "explore": "explore", "find": "find", "program": "program", "monitor": "monitor",
+    "datasets": "find", "species": "find", "measurements": "find",
+    "explorer": "explore", "general": "explore", "viz": "explore", "dataset": "explore", "student": "explore",
+    "access": "program", "services": "program", "packages": "program", "build": "program",
+    "kinds": "learn",
+    "data": "find", "apps": "explore", "docs": "learn", "monitoring": "monitor", "students": "explore",
+}
+# Find (Ben, 2026-11-16: "the find is still not obvious enough"): at 1280 x 800 with the panel open at
+# its top, the one search and the first eight dataset names are on screen; each name is a link at
+# body-text size (>= 16 px) in --accent, underlined, at least 28 px tall (MIN_TAP on a phone)
+FIND_FOLD_H = 800
+HEADER_H = 72         # the sticky header, when the page does not say (--header-h)
+FIND_NAME_MIN_PX = 16
+FIND_ROW_MIN_PX = 28
 FRONT_MAX_H = 950     # px at 1470 with no door open (the mockup's ~750 + 25 %, with the site's footer)
 MIN_TAP = 32
 # issue #30 (calm re-cut): full-page heights at 1470 px with nothing open, header and footer included.
@@ -1147,9 +1317,16 @@ MAX_MM_INDEX_H = 1625
 MAX_MM_PAGE_H = 1850
 
 # ── the front door's navigation (plan 2026-09-10 § D7, WS-M0) ─────────────────
-# The six words plus calcofi.org ↗ — seven items, as before D7. DOCS and NEWS are pages, so the
-# section bar draws four; the header draws all six and the outbound link.
-NAV_WORDS = ["Data", "Apps", "Access", "Build", "Docs", "News", "calcofi.org ↗"]
+# The seven words plus calcofi.org ↗ — eight items (FAQ joined after DOCS on 2026-11-16, the owner's
+# request). DOCS, FAQ and NEWS are pages, so the section bar draws four; the header draws all seven
+# and the outbound link.
+NAV_WORDS = ["Data", "Apps", "Access", "Build", "Docs", "FAQ", "News", "calcofi.org ↗"]
+# below this width the menu button carries the nav (= style.css @media (max-width: 1099px) and
+# assets/tabs.js NAV_BREAK): the eight items fit one line from 1,089 px, so the header never wraps
+NAV_BREAK = 1100
+# the widths the header's own assertions are run at by --nav (one line from NAV_BREAK, the menu below)
+NAV_WIDTHS = [1100, 1280, 1470, 1024, 800, 640, 375]
+NAV_PATHS = ["/", "/datasets/swfsc_ichthyo/", "/species/", "/measurements/"]
 # the sections whose tabs are CARDS, so a pill must equal the number of cards in its panel. DATA's
 # three pills count datasets, species and measurements — the release's numbers, checked against the
 # page's own inline record instead (the band assertions above already do it).
@@ -1255,6 +1432,52 @@ def check(path, r, width, theme, fails, notes):
                 fails.append(f"{where}: the list has {len(cd['rows'])} rows for {len(want)} datasets in the record")
     if r.get("twoCol"):
         fails.append(f"{where}: two-column region(s) under the head: {r['twoCol']}")
+
+    # the Download button (2026-11-16): the offers are read from the same _data/ files the build read
+    # (the record's own `bundle` rows first, else the zip manifest), so with no manifest every page
+    # must draw none
+    dlw = r.get("download")
+    if cd and dlw is not None:
+        offers = download_offers(_data_dir())
+        if cd["kind"] == "dataset":
+            key = path.rstrip("/").split("/")[-1].split("?")[0]
+            want = offers.get(key)
+            notes.append(f"{where}: download button {dlw['n']} · bottom {dlw['bottom']}px · options {dlw['options']}")
+            if want is None:
+                if dlw["n"] or dlw["dialog"]:
+                    fails.append(f"{where}: {key} has no zips (or is a holding) but draws {dlw['n']} Download button(s)")
+            else:
+                if dlw["n"] != 1 or dlw["inHead"] != 1:
+                    fails.append(f"{where}: expected exactly one Download button, in the head; found {dlw['n']} "
+                                 f"({dlw['inHead']} in the head)")
+                if width >= 1280 and (dlw["bottom"] or 10**6) > DL_FOLD_H:
+                    fails.append(f"{where}: the Download button ends at {dlw['bottom']}px, below the "
+                                 f"{DL_FOLD_W} x {DL_FOLD_H} fold")
+                if dlw["href"] != want["primary"]:
+                    fails.append(f"{where}: the button links {dlw['href']}, expected the {want['primary_format']} zip "
+                                 f"{want['primary']}")
+                if not dlw["dialog"] or dlw["dialogOpen"]:
+                    fails.append(f"{where}: the Download dialog is {'open on load' if dlw['dialogOpen'] else 'missing'}")
+                if "csv" in want["formats"] and (not dlw["options"] or dlw["options"][0] != "csv"):
+                    fails.append(f"{where}: the dialog's first option is {dlw['options'][:1]}, expected CSV first")
+                if "csv" in want["formats"] and dlw["firstHref"] != want["urls"]["csv"]:
+                    fails.append(f"{where}: the dialog's CSV links {dlw['firstHref']}, expected {want['urls']['csv']}")
+                if "xlsx" not in want["formats"] and "xlsx" in dlw["options"]:
+                    fails.append(f"{where}: the dialog offers Excel, which the manifest did not write")
+        else:
+            rec = _read_json(os.path.join(_data_dir(), "datasets.json")) or {}
+            keys = [x["dataset_key"] for x in rec.get("datasets", []) if x.get("visibility") != "internal"]
+            want_rows = sorted(k for k in keys if k in offers)
+            if sorted(dlw["rows"]) != want_rows:
+                fails.append(f"{where}: {len(dlw['rows'])} row Download control(s) for {len(want_rows)} datasets with "
+                             f"zips: missing {sorted(set(want_rows) - set(dlw['rows']))[:4]}, extra "
+                             f"{sorted(set(dlw['rows']) - set(want_rows))[:4]}")
+            if dlw["gridRows"] != len(want_rows):
+                fails.append(f"{where}: the By-category view draws {dlw['gridRows']} Download controls, expected {len(want_rows)}")
+        if dlw["inSummary"]:
+            fails.append(f"{where}: {dlw['inSummary']} Download control(s) inside a <summary> (nested interactive)")
+        if dlw["inHoldings"]:
+            fails.append(f"{where}: a holding row carries a Download control")
 
     # D2 S1 S2 (round 2, WS-R4): the dataset page's own licence chip, keyword leaves, Access tabset
     hl = r.get("headLicence")
@@ -1887,11 +2110,17 @@ def check(path, r, width, theme, fails, notes):
         doors = fr["doors"]
         notes.append(f"{where}: {len(doors)} doors, the last ending at {max((x['bottom'] for x in doors), default=0)}px; "
                      f"page {fr['heightOnLoad']}px with {fr['openOnLoad'] or 'no'} door open; strip {fr['stripRows']} rows, "
-                     f"map {fr['mapMarks']} marks, {len(fr['pins'])} pins behind Learn")
+                     f"map {fr['mapMarks']} marks, {len(fr['pins'])} pins behind See what CalCOFI collects; "
+                     f"{len((fr.get('drive') or {}).get('anchors') or {})} old anchors driven")
         if [x["id"] for x in doors] != FRONT_DOORS:
             fails.append(f"{where}: the doors are {[x['id'] for x in doors]}, expected {FRONT_DOORS}")
         for x in doors:
-            if x["controls"] != x["id"]:
+            if x["id"] in FRONT_LINKS:
+                # Cite and Contribute: one click to the page, no panel between
+                if x["tag"] != "A" or x["href"] != FRONT_LINKS[x["id"]] or x["controls"]:
+                    fails.append(f"{where}: the {x['id']!r} door is a {x['tag']} to {x['href']!r} "
+                                 f"(controls {x['controls']!r}), expected a link to {FRONT_LINKS[x['id']]}")
+            elif x["controls"] != x["id"]:
                 fails.append(f"{where}: the {x['id']!r} door controls {x['controls']!r}, not its own panel")
             if x["h"] < MIN_TAP:
                 fails.append(f"{where}: the {x['id']!r} door is {x['h']}px tall, under the {MIN_TAP}px tap target")
@@ -1911,6 +2140,10 @@ def check(path, r, width, theme, fails, notes):
             fails.append(f"{where}: {fr['openOnLoad']} open on load; the front door opens with every door closed")
         if names_one and len(fr["openOnLoad"]) != 1:
             fails.append(f"{where}: the URL names a door but {fr['openOnLoad'] or 'none'} opened")
+        mdoor = re.search(r"[?&]door=([\w-]+)", path)
+        if mdoor and mdoor.group(1) in FRONT_ANCHORS and fr["openOnLoad"] != [FRONT_ANCHORS[mdoor.group(1)]]:
+            fails.append(f"{where}: ?door={mdoor.group(1)} opened {fr['openOnLoad']}, expected "
+                         f"[{FRONT_ANCHORS[mdoor.group(1)]!r}]")
         if not names_one and width >= 1400 and fr["heightOnLoad"] > FRONT_MAX_H:
             fails.append(f"{where}: the front door is {fr['heightOnLoad']}px tall with no door open, max {FRONT_MAX_H}")
         dv = fr.get("drive")
@@ -1918,14 +2151,18 @@ def check(path, r, width, theme, fails, notes):
             if dv["afterFind"] != ["find"]:
                 fails.append(f"{where}: opening Find left {dv['afterFind']} open")
             if dv["afterExplore"] != ["explore"] or dv["findExpanded"] != "false" or dv["exploreExpanded"] != "true":
-                fails.append(f"{where}: opening Visualize did not close Find ({dv['afterExplore']}, "
+                fails.append(f"{where}: opening Explore did not close Find ({dv['afterExplore']}, "
                              f"find aria-expanded={dv['findExpanded']}, explore={dv['exploreExpanded']})")
             if dv["afterClose"]:
                 fails.append(f"{where}: a second click on the open door left {dv['afterClose']} open")
+            for h, want_k in FRONT_ANCHORS.items():
+                got = (dv.get("anchors") or {}).get(h)
+                if got != [want_k]:
+                    fails.append(f"{where}: a link to #{h} opened {got}, expected [{want_k!r}]")
             if dv["restored"] != fr["openOnLoad"]:
                 fails.append(f"{where}: the probe could not put the doors back ({dv['restored']} vs {fr['openOnLoad']})")
         # D6 A: no yellow and no --warn on the first screen; each panel carries exactly one yellow,
-        # but Download programmatically none: its destination is the Get the data box (Erin, 2026-10-19)
+        # but Work with the data in code none: its destination is the Get the data box (Erin, 2026-10-19)
         if fr["warnEls"]:
             fails.append(f"{where}: --warn on the first screen: {', '.join(sorted(set(fr['warnEls']))[:4])}")
         if fr["ctaEls"]:
@@ -1940,7 +2177,7 @@ def check(path, r, width, theme, fails, notes):
         if fr["quietPins"]:
             fails.append(f"{where}: the first screen's drawing carries {fr['quietPins']} pins; it is drawn quiet")
         if not fr["pins"]:
-            fails.append(f"{where}: the Learn panel's annotated drawing carries no pins")
+            fails.append(f"{where}: the See-what-CalCOFI-collects panel's annotated drawing carries no pins")
         # the five numbers equal the record's (organism obs. moved to the species number's title)
         n = fr.get("reachNumbers") or {}
         want = {"years": n.get("years"), "cruises": n.get("cruises"), "stations": n.get("stations"),
@@ -1968,7 +2205,45 @@ def check(path, r, width, theme, fails, notes):
             fails.append(f"{where}: measurements {mm} M + organism observations {om} M "
                          f"exceed the release's {rm} M rows")
         if fr["datasets"] is not None and fr["stripRows"] != fr["datasets"]:
-            fails.append(f"{where}: the years strip has {fr['stripRows']} rows for {fr['datasets']} datasets")
+            fails.append(f"{where}: Find's list has {fr['stripRows']} linked rows for {fr['datasets']} datasets")
+        if fr["datasets"] is not None and fr["stripDrawn"] != fr["datasets"]:
+            fails.append(f"{where}: Find's list draws the years of {fr['stripDrawn']} rows for {fr['datasets']} datasets")
+        for row in fr.get("stripLinks") or []:
+            want_h = f"/datasets/{row['key']}/"
+            if row["href"] != want_h:
+                fails.append(f"{where}: Find's list links {row['key']!r} to {row['href']!r}, expected {want_h}")
+        # the Download control (2026-11-16): beside every name with zips in Find's list, and only there
+        if "stripDl" in fr:
+            reach_keys = {row["key"] for row in fr.get("stripLinks") or []}
+            want_dl = sorted(k for k in download_offers(_data_dir()) if k in reach_keys)
+            if sorted(fr["stripDl"]) != want_dl:
+                fails.append(f"{where}: Find's list draws a Download control on {len(fr['stripDl'])} rows, expected "
+                             f"{len(want_dl)} (the datasets with zips)")
+        # the Explorer replaces the Data Finder (Ben, 2026-11-16): Find calls to it nowhere
+        if fr.get("finderLinks"):
+            fails.append(f"{where}: Find still links the Data Finder: {fr['finderLinks']}")
+        fl = fr.get("findList")
+        if fl:
+            notes.append(f"{where}: Find's names {fl['fontPx']}px {fl['color']} {fl['underline']}, rows >= {fl['minH']}px; "
+                         f"search ends {fl['qBottom']}px and name 8 {fl['n8Bottom']}px below the panel's top; "
+                         f"map card {fl['mapH']}px beside a {fl['headH']}px head")
+            if fl["fontPx"] < FIND_NAME_MIN_PX:
+                fails.append(f"{where}: Find's dataset names are {fl['fontPx']}px, under {FIND_NAME_MIN_PX}px")
+            if fl["color"] != fr.get("accent"):
+                fails.append(f"{where}: Find's dataset names are {fl['color']}, not the link colour --accent {fr.get('accent')}")
+            if "underline" not in (fl["underline"] or ""):
+                fails.append(f"{where}: Find's dataset names are not underlined ({fl['underline']!r})")
+            tap = MIN_TAP if width < 900 else FIND_ROW_MIN_PX
+            if fl["minH"] < tap:
+                fails.append(f"{where}: a Find dataset name is {fl['minH']}px tall, under {tap}px")
+            if width >= FOLD_W:
+                room = FIND_FOLD_H - (fl.get("headerH") or HEADER_H)
+                if fl["qBottom"] is None or fl["qBottom"] > room or fl["n8Bottom"] > room:
+                    fails.append(f"{where}: with Find open the search ends {fl['qBottom']}px and the 8th name "
+                                 f"{fl['n8Bottom']}px below the panel's top, beyond the {room}px under the header "
+                                 f"of a {FOLD_W} x {FIND_FOLD_H} window")
+                if fl["mapH"] > fl["headH"] + 40:
+                    fails.append(f"{where}: Find's map card is {fl['mapH']}px beside a {fl['headH']}px head: it sets the block's height again")
         if fr["stations"] is not None and fr["mapMarks"] != fr["stations"]:
             fails.append(f"{where}: the map has {fr['mapMarks']} marks for {fr['stations']} grid cells")
         # nothing removed: every product in products.yml is drawn behind some door
@@ -1996,7 +2271,7 @@ def check(path, r, width, theme, fails, notes):
                 elif not ok:
                     fails.append(f"{where}: pin {href} does not answer 200/206")
 
-    # ── the header: six words, calcofi.org, and the submenus (plan 2026-09-10 § D7) ────────────
+    # ── the header: seven words, calcofi.org, and the submenus (plan 2026-09-10 § D7) ────────────
     nav = r.get("nav")
     if nav and nav["visible"]:
         notes.append(f"{where}: header {' · '.join(nav['words'])}; "
@@ -2031,14 +2306,27 @@ def check(path, r, width, theme, fails, notes):
                     want = {"species": "/species/", "measurements": "/measurements/"}.get(t["title"].split()[0].lower())
                     if want and r.get("pageExists", {}).get(want) and (t.get("href") or "").rstrip("/") + "/" != want:
                         fails.append(f"{where}: the DATA submenu's {t['title']!r} links {t.get('href')!r}, not {want} (the page exists)")
-    elif nav and width < 900:
-        notes.append(f"{where}: the header nav is hidden (the brand hides it under 480px); the phone menu carries it")
+    elif nav and width < NAV_BREAK:
+        notes.append(f"{where}: the header nav is hidden under {NAV_BREAK}px; the menu button carries it")
 
-    # ── the phone menu: the hamburger under 480 px (Ben, 2026-09-10: "NO menu in the mobile version") ─
+    # ── the header never wraps (2026-11-16): one line of nav from NAV_BREAK up, the menu button below
+    hrow = r.get("headerRow")
+    if hrow:
+        if width >= NAV_BREAK and not hrow["navShown"]:
+            fails.append(f"{where}: the header nav is hidden at {width}px; it shows from {NAV_BREAK}px")
+        if hrow["navShown"] and hrow["navTops"] > 1:
+            fails.append(f"{where}: the header nav wraps onto {hrow['navTops']} lines at {width}px")
+        if hrow["rowLines"] > 8:
+            fails.append(f"{where}: the header row is not one line ({hrow['rowLines']}px between its items' middles, "
+                         f"{hrow['height']}px tall)")
+        if hrow["overlap"] is not None and hrow["overlap"] > -8:
+            fails.append(f"{where}: the header nav runs into the icon buttons ({hrow['overlap']}px)")
+
+    # ── the menu button under NAV_BREAK px (Ben, 2026-09-10: "NO menu in the mobile version") ─
     pm = r.get("phoneMenu")
-    if width < 480:
+    if width < NAV_BREAK:
         if not pm or not pm["buttonShown"]:
-            fails.append(f"{where}: no phone menu button under 480px, where the brand hides the nav")
+            fails.append(f"{where}: no menu button under {NAV_BREAK}px, where the nav would wrap")
         else:
             if not pm["opened"]:
                 fails.append(f"{where}: the phone menu button does not open the nav")
@@ -2055,7 +2343,7 @@ def check(path, r, width, theme, fails, notes):
             if not fails or not any(where in f and "phone menu" in f for f in fails):
                 notes.append(f"{where}: the phone menu opens with {pm['wordsOpen']} items and {pm['subsOpen']} submenus inline, no horizontal scroll, closes on Escape")
     elif pm and pm["buttonShown"]:
-        fails.append(f"{where}: the phone menu button is visible at {width}px; it belongs under 480px only")
+        fails.append(f"{where}: the menu button is visible at {width}px; it belongs under {NAV_BREAK}px only")
 
     # ── the tabsets: one selected tab, one drawn panel, and a pill that is the panel's own count ─
     for ts in r.get("tabsets") or []:
@@ -2128,6 +2416,9 @@ def check(path, r, width, theme, fails, notes):
         if hr["licMissing"]:
             fails.append(f"{where}: {hr['licMissing']} homed row(s) have no .cc-chip-lic as their "
                          f"last column (D2)")
+        if hr.get("dlNotLast"):
+            fails.append(f"{where}: {hr['dlNotLast']} homed row(s) draw their Download control before the "
+                         f"licence (it ends the row, after the licence chip)")
         if hr["licCustomText"]:
             fails.append(f"{where}: {hr['licCustomText']} homed row(s) show the raw 'custom' id — "
                          f"never on a page (D5)")
@@ -2168,6 +2459,8 @@ def main():
     ap.add_argument("--themes", nargs="+", default=["light", "dark"])
     ap.add_argument("--browser", default="chromium")
     ap.add_argument("--wait", type=int, default=2500, help="ms to settle (fonts, masonry) before measuring")
+    ap.add_argument("--nav", action="store_true",
+                    help="the header's breakpoint only: NAV_PATHS at NAV_WIDTHS (pr.yml runs it after the full check)")
     a = ap.parse_args()
 
     fails, notes = [], []
@@ -2175,8 +2468,13 @@ def main():
     paths = resolve_face_exemplars(DEFAULT_PATHS, _read_json(os.path.join(data, "measurements.json")),
                                    _read_json(os.path.join(data, "measurements_media.json")), notes)
     urls = a.url or [a.base.rstrip("/") + p for p in paths]
+    widths = a.widths
+    if a.nav:
+        # the header alone, at the widths either side of NAV_BREAK: one line from it, the menu below
+        urls = a.url or [a.base.rstrip("/") + p for p in NAV_PATHS]
+        widths = NAV_WIDTHS
     for url in urls:
-        for width in a.widths:
+        for width in widths:
             for theme in a.themes:
                 r = probe(url, width, theme, a.browser, a.wait)
                 if "error" in r:

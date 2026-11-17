@@ -142,7 +142,7 @@ module CalCOFI
       out
     end
 
-    # the same, shaped for the one download form (assets/download.js): CalCOFI's ERDDAP table, the
+    # the same, shaped for the one download form (assets/download-form.js): CalCOFI's ERDDAP table, the
     # release Parquet (with its bytes, so the browser knows whether it can build the CSV) and NetCDF,
     # and the provider's original files. Species and Measurements read it through _plugins/finder.rb.
     def download_files(d)

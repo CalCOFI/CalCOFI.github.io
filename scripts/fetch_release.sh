@@ -54,6 +54,15 @@
 #                                 variable, probed once here from erddap.calcofi.io/erddap/info —
 #                                 a species page constrains its ERDDAP link only where the server
 #                                 says the column exists
+#   _data/zip_manifest.json       the per-dataset zips a person downloads (publish_to-zip.qmd in
+#                                 workflows, schema 1.x+): csv · xlsx (where it fits a sheet) · parquet, each
+#                                 with its URL, bytes, sha256 and, where a format is not written, the
+#                                 reason in plain words. _plugins/downloads.rb draws the Download
+#                                 button, its dialog and the catalog rows' control from it. Silently
+#                                 ABSENT until the first upload: then no Download button renders
+#                                 anywhere and nothing else changes. ZIP_MANIFEST_URL overrides it
+#                                 (a URL, a file:// URL or a plain local path), for a local build
+#                                 against zips that are not uploaded yet
 #
 # All of them are git-ignored: the site is a rendering of the promoted release, never a copy of it.
 # `_data/land.geojson` is NOT here: the coastline is cartography, not a dataset fact, so it is a
@@ -366,6 +375,43 @@ PYM2
 else
   rm -f "$DATA/measurements_media.json"
   echo "NOTE: no measurements_media.json under $MEAS_MEDIA_BASE — the measurement pages draw no faces"
+fi
+
+# the per-dataset zips (csv · xlsx · parquet) and what is in each: the Download button's source until
+# the record itself carries them as `bundle` distributions (_plugins/downloads.rb reads the record
+# first). NOT keyed by release in the path: one manifest at {calcofi-db}/publish/zip/, whose own
+# `release` field says which release its zips hold. Optional and silently absent — before the first
+# upload the site renders exactly as it did, with no Download button anywhere. ZIP_MANIFEST_URL points
+# the build at another copy: a URL, a file:// URL or a plain local path (a manifest on this disk,
+# e.g. ~/_big/calcofi/publish/zip/manifest.json, before the zips are uploaded).
+rm -f "$DATA/zip_manifest.json"
+ZIP_MANIFEST="${ZIP_MANIFEST_URL:-https://storage.googleapis.com/calcofi-db/publish/zip/manifest.json}"
+case "$ZIP_MANIFEST" in
+  http://*|https://*) get "$ZIP_MANIFEST" "$DATA/zip_manifest.json" 2>/dev/null || true ;;
+  file://*)           cp "${ZIP_MANIFEST#file://}" "$DATA/zip_manifest.json" 2>/dev/null || true ;;
+  *)                  cp "$ZIP_MANIFEST" "$DATA/zip_manifest.json" 2>/dev/null || true ;;
+esac
+if [ -s "$DATA/zip_manifest.json" ] && python3 - "$DATA/zip_manifest.json" "$ZIP_MANIFEST" "$version" <<'PYZ'
+import json, sys
+path, url, promoted = sys.argv[1:4]
+d = json.load(open(path))
+import re
+m = re.match(r"\d+", str(d.get("schema_version", "")))
+if not m or int(m.group()) < 1:      # a HIGHER schema is read: its fields are additive, the rest ignored
+    print(f"NOTE: zip manifest schema {d.get('schema_version')!r}, expected 1.x or later — no Download buttons")
+    sys.exit(1)
+ds = d.get("datasets") or []
+n = sum(1 for x in ds for b in x.get("bundles") or [] if b.get("written"))
+print(f"zip manifest: schema {d.get('schema_version')} · release {d.get('release')} · "
+      f"{len(ds)} datasets · {n} zips")
+print(f"       {url}")
+if d.get("release") and d.get("release") != promoted:
+    print(f"NOTE: the zips are release {d.get('release')}, the promoted release is {promoted} — "
+          f"the dialog names the zips' own release")
+PYZ
+then :; else
+  rm -f "$DATA/zip_manifest.json"
+  echo "NOTE: no zip manifest at $ZIP_MANIFEST — the dataset pages draw no Download button"
 fi
 
 # versions.json is release-history, kept at the prefix root, never inside a version folder

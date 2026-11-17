@@ -118,6 +118,11 @@
           {%- endif -%}
         </span>
         {% include licence_chip.html license=d.license license_url=d.license_url name=d.license_name %}
+        {%- comment -%} a compact Download control where the dataset has zips (assets/download.css): it
+          opens the dataset page's Download dialog through its #download anchor {%- endcomment -%}
+        {%- if d.download %}
+        <a class="dl-rowlink dl-rowlink-ico" href="{{ d.download.url | relative_url }}" aria-label="{{ d.download.aria | escape }}" title="Download · {{ d.download.what | escape }} · and other formats"><i class="cc-i cc-i-ui-download" aria-hidden="true"></i></a>
+        {%- endif %}
       </li>
       {%- endfor -%}
 

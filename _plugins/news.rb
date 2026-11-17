@@ -20,7 +20,11 @@
 #   app       products.yml `added: YYYY-MM-DD` (back-filled from each product's first commit) —
 #             "New: <title>". (Until 2026-09-11 the header's News link wore a dot while any entry was
 #             under 30 days old; it could not know what a visitor had read, so it only confused. Gone.)
-#   data · site · paper   _data/news.yml rows {date, type, title, body, url} — hand-written
+#   data · site · paper · story · tutorial   _data/news.yml rows {date, type, title, body, url} — hand-written. A
+#             story is something the data show (a cruise's finding, a film made from the release); it links a page
+#             of its own, under /stories/. A tutorial is a recorded walk-through with its materials (the recording,
+#             slides, notes, scripts) and a summary; its page is under /tutorials/. Everything else in the log is
+#             about the system itself.
 #
 # A news.yml row may carry `dataset_key:` or `version:` to OVERRIDE a generated entry of the same key
 # (a wrong `since_version`, a notes heading that is not the story) — the generated one is dropped.
@@ -37,7 +41,7 @@ require "yaml"
 
 module CalCOFI
   module News
-    TYPES    = %w[release dataset app data site paper].freeze
+    TYPES    = %w[release dataset app data site paper story tutorial].freeze
     # the rendered changelog every release entry opens (storage.calcofi.io, not the raw .md on
     # googleapis); the two hand-written `data` rows of news.yml link their own `##` section of it
     RELEASES = "https://storage.calcofi.io/calcofi-db/ducklake/releases/RELEASES.html"

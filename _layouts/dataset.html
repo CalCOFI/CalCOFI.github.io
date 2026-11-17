@@ -7,8 +7,12 @@ layout: default
 
     head            the category glyph as the mark and the name · the full name · one facts line
                     (key, provider, licence, DOI, release, stage) · ONE sentence (the record's first,
-                    then what CalCOFI holds) · one line of numbers · the map beside it
+                    then what CalCOFI holds) · one line of numbers · the Download button (where the
+                    dataset has zips, _plugins/downloads.rb) · the map beside it
                     (assets/coverage.js's hover card). A holding has a note where the map would be.
+    Download        one <dialog> (assets/download.js): CSV first, then Excel, then other formats,
+                    the licence and "register your use". With JavaScript off the button is a plain
+                    link to the CSV zip and the same options are a <noscript> section (#download).
     What is in it   OPEN: the years strip under the map (D15), then one line each for the variables,
                     the taxa, the life stages and what it contributes to — each line opens to all of
                     them in place
@@ -30,6 +34,7 @@ layout: default
 {%- assign m = page.map -%}
 {%- assign st = r.status -%}
 {%- assign relv = site.data.catalog.release.version -%}
+{%- assign dl = page.download -%}
 
 {%- if page.dp -%}
 {% include dataset_page.html %}
@@ -82,6 +87,21 @@ layout: default
       {%- if page.depth %}<div><dd>{{ page.depth | escape }}</dd><dt>depth</dt></div>{% endif -%}
     </dl>
     {%- endunless -%}
+    {%- if dl -%}
+    {%- comment -%} the Download button: in the head's left column, under the numbers — the space
+      the map beside it leaves empty, so the head is no taller. A plain link to the CSV zip until
+      assets/download.js makes it open the dialog. {%- endcomment -%}
+    <p class="dl-cta">
+      <a class="cc-btn cc-btn-cta dl-btn" id="dl-btn" href="{{ dl.primary.url | escape }}" download="{{ dl.primary.file | escape }}"
+         data-dl-key="{{ dl.key | escape }}" data-dl-format="{{ dl.primary.format | escape }}" aria-describedby="dl-cta-s"><i class="cc-i cc-i-ui-download" aria-hidden="true"></i>Download {{ dl.what | escape }}</a>
+      <span class="dl-cta-s" id="dl-cta-s">a zip with how to cite and the licence
+        {%- assign alts = "" -%}
+        {%- for o in dl.main %}{% if o.written and o.primary != true %}{% assign alts = alts | append: o.label | append: "|" %}{% endif %}{% endfor -%}
+        {%- for o in dl.other %}{% assign alts = alts | append: o.label | append: "|" %}{% endfor -%}
+        {%- assign alts = alts | split: "|" -%}
+        {%- if alts.size > 0 %} · also {{ alts | join: " and " | escape }}{% endif %}</span>
+    </p>
+    {%- endif -%}
     {%- comment -%} the whole description and the people, one click away: the sentence above is
       its first sentence {%- endcomment -%}
     <details class="ds-more">
@@ -148,6 +168,27 @@ layout: default
   </aside>
   {%- endif -%}
 </header>
+
+{%- if dl -%}
+{%- comment -%} the Download dialog (assets/download.js: the button, #download on the URL, Esc,
+  Close, a click on the backdrop; focus goes to the CSV link and back to the button). Closed, it is
+  display: none, so the page's height and the one-column rule never see it. {%- endcomment -%}
+<dialog class="dl-dialog" id="dl-dialog" aria-labelledby="dl-title" aria-describedby="dl-desc">
+  <div class="dl-in">
+    <div class="dl-top">
+      <h2 id="dl-title">Download {{ dl.name | escape }}</h2>
+      <button type="button" class="dl-close" data-dl-close aria-label="Close"><i class="cc-i cc-i-ui-close" aria-hidden="true"></i></button>
+    </div>
+    {% include download_options.html dl=dl idp="dl" autofocus=true %}
+  </div>
+</dialog>
+<noscript>
+  <section class="calm-sec dl-nojs" id="download" aria-labelledby="dl-nj-title">
+    <h2 id="dl-nj-title"><i class="cc-i cc-i-ui-download" aria-hidden="true"></i>Download</h2>
+    {% include download_options.html dl=dl idp="dl-nj" %}
+  </section>
+</noscript>
+{%- endif -%}
 
 {%- comment -%} ── What is in it: OPEN. The years strip, then one line per kind of content, each
   opening in place to all of it (the full lists are the old Coverage band's, unchanged). ── {%- endcomment -%}
@@ -520,5 +561,8 @@ layout: default
 
 <script src="{{ '/assets/copy.js' | relative_url }}" defer></script>
 <script src="{{ '/assets/coverage.js' | relative_url }}" defer></script>
+{%- if dl %}
+<script src="{{ '/assets/download.js' | relative_url }}" defer></script>
+{%- endif %}
 {%- endif -%}
 <script type="application/ld+json">{{ page.jsonld }}</script>

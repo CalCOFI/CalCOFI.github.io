@@ -129,7 +129,7 @@
 .bd-pv-map .bbox { display: none; }
 .bd-r, .bd-r:hover, .bd-r * { text-decoration: none; }
 
-/* Download: one button that opens the download form (assets/download.js, download.css) */
+/* Download: one button that opens the download form (assets/download-form.js, download-form.css) */
 button.bd-b2 { font: inherit; font-weight: 700; font-size: 14px; background: var(--bg); cursor: pointer; }
 .bd-pv { overflow: visible; }
 .bd-pv-map { border-radius: 14px 14px 0 0; overflow: hidden; }

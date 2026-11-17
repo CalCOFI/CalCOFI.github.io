@@ -31,51 +31,71 @@ retired.
 
 ## The front door (`/`)
 
-**One screen, seven doors** (issue #30, "calcofi.io, calmer"; decisions D2 A, D3 A, D4 B, D5 A, D6 A).
+**One screen, seven doors** (issue #30, "calcofi.io, calmer"; decisions D2 A, D3 A, D4 B, D5 A, D6 A; the
+doors re-cut to seven *tasks* on 2026-11-16 from the program's users and coordinator).
 At 1280 × 645, the screen in Dan Rudnick's report, the whole first screen is visible: on the left, what
 CalCOFI is (the eyebrow, "From ship to screen", one lede, five numbers and the Line 90 section drawn
-**quiet**); on the right, "What do you want to do?" and Dan's seven pathways, in his words, as seven
-doors. The last two doors are drawn smaller. The first screen has no yellow (D6 A). Each door opens one
-full-width panel on the Sand band beneath the first screen, and opening another door closes it (D2 A).
-Every panel has one yellow button to its real destination. With no door open the page is about 920 px
-tall at 1470 px. Nothing was removed; every part moved behind the door it answers:
+**quiet**); on the right, "What do you want to do?" and seven doors, each a thing a person came to do, in
+plain words (no "integrated", "harmonized", "parquet" or "STAC" on the first screen). The last three doors
+are drawn smaller. The first screen has no yellow (D6 A). Five doors each open one full-width panel on
+the Sand band beneath the first screen, and opening another door closes it (D2 A); Cite and Contribute
+are plain links, one click to their chapter of the docs book. Every panel has one yellow button to its
+real destination, except Work with the data in code, where Get the data is the destination. With no door
+open the page is about 900 px tall at 1470 px.
 
 ```
-the hero's section + pins   quiet on the first screen (#sec-quiet: ship, gear, floor; no pins, no axes,
-                            no captions); ANNOTATED behind Learn (#sec-full: the 14 pins, the axes)
-the numbers band (6)        five numbers under the lede: years · cruises · stations · species ·
-                            measurements. Organism obs. moved to the species number's title and the
-                            Species tab's counts, and ships to the cruises number's title
-Where / When tiles          Find: the grid map beside the years strip (D4 B), under the panel's head
-DATA section (search, tabs) Find: the one search (_includes/one_search.html, D10 B) and the three catalog
-                            tabs, unchanged. #datasets is this catalog block
-Latest release tile         Find: one release line at the foot (version, date, tables, rows, DOI, links)
-What's observed tile        Find: the class silhouettes beside the Species tab's door; the caption on
-                            the release line
-Explore tile + APPS         Visualize and explore: the Explorer's featured card, the lens key, the
-  Explorer/General          General apps' cards (#explorer, #general)
-Get the data tile + ACCESS  Download programmatically: the five snippets, then Services · Packages as
-                            before (#access)
-BUILD                       Build something: its three cards (#build)
-DOCS card, ship's log tile  Learn how CalCOFI sampling and data work: the annotated section, the docs
-                            book's card, the four newest log entries
-—                           Ocean monitoring throughout California: the products whose products.yml
-                            entry has `doors: [monitor]` (the UCLA map, Offshore Wind Monitoring)
-APPS Dataset + Student      Other data visualizations: the same two tabs, from the same `tab:` keys
-the sticky section bar      retired: the doors do the bar's job (D17 A)
+door                                    opens        what is behind it
+1 See what CalCOFI collects             #learn       the annotated Line 90 section (#sec-full: the 14 pins, the axes);
+  "What is measured, where and how                   the kinds of data (#kinds), read from the record's categories —
+   deep, since 1949."                                the three long series first (fish eggs and larvae, hydrography,
+                                                     zooplankton), then the rest in category.order, each with its
+                                                     datasets, their years and its holdings; links to /datasets/,
+                                                     /measurements/, /species/, the docs, calcofi.org's sampling
+                                                     methods (the yellow); the docs card; the four newest log entries
+2 Explore and download on a map         #explore     the Explorer (the yellow), the lens key, its card (#explorer), the
+  "Pick species or measurements, a                   General apps (#general), then Other data visualizations (#viz:
+   time and a place. See them                        the Dataset · Student tabs). "Want one dataset as its provider
+   together and download the table."                 published it? Find the dataset →" opens door 3 in place
+3 Find and download a dataset           #find        the head beside a short grid map (context; "Explore by station →"
+  "Know which dataset you want? Each                 opens the Explorer's station view), then, as one step, the one
+   has its own page with its source                  search over the list of datasets (each name an underlined link
+   files and citation."                              to its page, its years drawn beside it), the three catalog tabs
+                                                     (#datasets holds all three), the release line. "Want several
+                                                     kinds of data together, or just one area and period? Use the
+                                                     Explorer →" goes straight to the Explorer. No Data Finder
+                                                     button: the Explorer replaces it (2026-11-16)
+4 Work with the data in code            #program     Get the data (five snippets), Services · Packages (#access), then
+  "R, Python, SQL and ERDDAP."                       Build on the pipeline (#build: calcofi4db, db-schema, workflows,
+                                                     GitHub as a quiet primary button) — no yellow
+5 Cite the data                         a link       https://calcofi.io/docs/cite.html
+6 Contribute data                       a link       https://calcofi.io/docs/provide.html
+7 Inform ocean and fisheries            #monitor     the products whose products.yml entry has `doors: [monitor]` (the
+  management · the statewide                         UCLA map, Offshore Wind Monitoring). Only what exists is drawn;
+  monitoring inventory, more to come                 a fact the build cannot read is omitted, so nothing is promised
 ```
 
-**The URL carries the open door.** Opening a door writes `#find` (or `#explore`, `#program`, `#build`,
-`#learn`, `#monitor`, `#viz`). On load, `?door=find` also opens it, and so do `?q=` (the search) and
+The split the coordinator asked to be visible: **one dataset in its original, authoritative form** is that
+dataset's page (door 3); **several kinds of observation together, or a subset by time and place**, is the
+Explorer (door 2). Each of the two panels carries one line saying when to use the other. Before
+2026-11-16 the doors were Dan's seven pathways (Find and download data · Visualize and explore · Download
+programmatically · Build something · Learn how CalCOFI sampling and data work · Ocean monitoring · Other
+data visualizations); Build and Other data visualizations are now the second groups of doors 4 and 2, so
+nothing a developer or a student project had was removed.
+
+**The URL carries the open door.** Opening a door writes `#learn` (or `#explore`, `#find`, `#program`,
+`#monitor`). On load, `?door=find` also opens it, and so do `?q=` (the search) and
 `?tab=<one of the Find tabs>`. The old anchors still land: an id inside a panel (`#datasets`, `#access`,
-`#general`) opens that panel and scrolls to the element. A tab id (`#species`, `#student`) opens the
-panel and selects the tab. The retired words `#data`, `#apps`, `#docs`, `#monitoring` and `#students`
-map to their doors. The header's words are the same links (D3 A), so DATA · APPS · ACCESS · BUILD open
-their doors in place, and the open door's word is marked `aria-current`. Each submenu item now links
-`/#<tab id>`, so General lands in Visualize and Student in Other data visualizations. DOCS and NEWS stay
+`#general`, `#explorer`, `#kinds`, and the two former doors `#build` and `#viz`) opens that panel and
+scrolls to the element, and `?door=build` / `?door=viz` do the same. A tab id (`#species`, `#student`)
+opens the panel and selects the tab. Either way the URL keeps that hash (not the door's), so the
+browser's own scroll to the fragment on load lands on the element, below the sticky header. The retired words `#data`, `#apps`, `#docs`, `#monitoring` and
+`#students` map to where they live now. The header's words are the same links (D3 A), so DATA · APPS ·
+ACCESS · BUILD open their doors in place (Find, Explore, Code, Code at its Build group), and the open
+door's word is marked `aria-current` (both ACCESS and BUILD while Code is open). Each submenu item links
+`/#<tab id>`, so General lands in Explore and Student in Explore's second group. DOCS, FAQ and NEWS stay
 pages. The logic is one inline script at the foot of `index.html`. It runs before the deferred scripts,
 so a door named in the URL is open before the first paint. Each open fires `cc:door` on the document.
-With JavaScript off, every panel shows (a `<noscript>` rule).
+With JavaScript off, every panel shows (a `<noscript>` rule), in door order.
 
 **Every product is still drawn.** The cards are `_includes/product_card.html`, unchanged except for a
 `data-key`. `check_layout.py` asserts that every key in `products.yml` is drawn behind some door.
@@ -90,8 +110,10 @@ assets/section.js        Line 90 as an oceanographic section. buildSection(host,
                          ids carry a per-drawing suffix, so the two drawings never share a <defs>.
 _data/line90_floor.json  the sea floor (GEBCO 2025 every 500 m), committed cartography; without it the
                          floor is drawn and the captions say so.
-assets/reach.js          the static grid map and the years strip (unchanged), drawn into #map-host and
-                         #strip-host inside Find.
+assets/reach.js          the static grid map (framed on the survey's core, its key in the caption) into
+                         #map-host, and each dataset row's years into Find's list (#strip-host). The rows
+                         and their linked names are HTML from site.data.reach.datasets, so they read
+                         without JS; the drawing only adds the cells, the decade rules and the bars.
 #reach                   ONE inline JSON the drawings read (_plugins/datasets.rb, site.data.reach).
 the five numbers         site.data.catalog.numbers. A value the build cannot read is not rendered.
 ```
@@ -99,32 +121,40 @@ the five numbers         site.data.catalog.numbers. A value the build cannot rea
 **Motion**: the rosette casts down the CTD wire and the CUFES dots flow. Both stop under
 `prefers-reduced-motion`, and so do the panel's 220 ms entrance and the chevron turn.
 
-**Checked** by `scripts/check_layout.py` on `/`, `/?q=sardine&tab=species` and `/?q=krill`, at 1470
-and 375 px, in both themes. These assertions hold:
+**Checked** by `scripts/check_layout.py` on `/`, `/?door=viz`, `/?q=sardine&tab=species` and `/?q=krill`,
+at 1470 and 375 px, in both themes. These assertions hold:
 
-- The seven doors are in order, each controls its own panel and is at least 32 px tall.
+- The seven doors are in order (`FRONT_DOORS`), each at least 32 px tall. A panel door controls its own
+  panel; Cite and Contribute are links to their docs chapters (`FRONT_LINKS`).
 - At 1280 px and wider, every door ends above the 645 px fold.
-- On a phone, the head, the doors and the drawing stack in that order.
-- No door is open on load unless the URL names one, and then exactly one is.
+- On a phone, the head, the drawing and the doors stack in that order.
+- No door is open on load unless the URL names one, and then exactly one is — the one `?door=` names.
+- A click on a link to every old anchor (`FRONT_ANCHORS`: the doors, the ids and tabs inside panels, the
+  retired words) opens the door it now lives behind.
 - The page is at most 950 px tall at 1470 with no door open.
-- Opening Find and then Visualize leaves only Visualize open, and a second click closes it.
-- The first screen has no `--warn` and no yellow, and each panel has exactly one yellow button.
-- The quiet drawing has no pins. Learn's drawing has them, and each answers a ranged GET.
+- Opening Find and then Explore leaves only Explore open, and a second click closes it.
+- The first screen has no `--warn` and no yellow, and each panel has exactly one yellow button (Code none).
+- The quiet drawing has no pins. The See-what-CalCOFI-collects drawing has them, and each answers a ranged GET.
 - The five numbers equal the record's.
-- The strip has one row per dataset, and the map has one mark per cell.
+- Find's list has one row per dataset, each name an `<a>` to `/datasets/{key}/` with its years drawn,
+  at body-text size (≥ 16 px) in `--accent`, underlined, ≥ 28 px tall (32 on a phone). At ≥ 1280 px,
+  with Find open at its top, the search and the first eight names fit an 800 px window, and the map card
+  is no taller than the head beside it. Find links the Data Finder nowhere. The map has one mark per cell.
 - Every product is drawn.
 - There is no horizontal scroll.
 
 The front door's footer puts the partner strip and the three columns on one row, scoped by
 `#layout:has(.fd-screen)`. The layout's footer is unchanged on every other page.
 
-### Six words, tabs, and one search over the three indexes
+### Seven words, tabs, and one search over the three indexes
 
-Since 2026-09-10 (plan `2026-09-10 Measurements catalog …` § D7, Ben's scheme) the navigation is six
-words and an outbound link — **DATA · APPS · ACCESS · BUILD · DOCS · NEWS · calcofi.org ↗**, seven
-items, all of them generated from the one `sections:` list in `_data/products.yml`. A section is a
+Since 2026-09-10 (plan `2026-09-10 Measurements catalog …` § D7, Ben's scheme) the navigation is words
+and an outbound link — since 2026-11-16 **DATA · APPS · ACCESS · BUILD · DOCS · FAQ · NEWS ·
+calcofi.org ↗**, eight items (FAQ, the docs book's FAQ chapter, joined right after DOCS at the owner's
+request), all of them generated from the one `sections:` list in `_data/products.yml`. A section is a
 `kind: section` (drawn on this page under its own anchor) or a `kind: page` (a header link to its
-`url:` and nothing else — that is what DOCS and NEWS are). The section ids `datasets`, `explore`,
+`url:` and nothing else — that is what DOCS, FAQ and NEWS are; FAQ has no product, so no card, tab
+or door draws it). The section ids `datasets`, `explore`,
 `access` and `build` did not change, so every anchor anyone has bookmarked still lands; only their
 titles did. `students` is gone as a section: the nine student projects are a tab of APPS. The
 `docs` product keeps its key, its uptime and analytics slugs and its `added:` — the ship's log and
@@ -132,16 +162,29 @@ the three-slug contract are untouched — but its card left the Build grid for t
 
 **The submenus.** DATA, APPS and ACCESS each list their tabs on hover or focus, with a count pill. A tab whose full listing lives on its own page carries `url:` (and the `site.data` key it needs, `data:`) in `products.yml`, and the header links that page instead of the homepage tab — Species → `/species/`, Measurements → `/measurements/`; Datasets stays a homepage tab because the whole grid is there.
 It is CSS, not a library: the section link is the trigger, `:hover` / `:focus-within` opens it, and
-`assets/tabs.js` blurs the focused link on Escape, which is the whole close. The brand hides
-`.cc-links` under 760 px, so on a phone a tap on the word goes to the section. The whole behaviour
+`assets/tabs.js` blurs the focused link on Escape, which is the whole close. The whole behaviour
 hangs off **one class** — `cc-submenus` on the `<nav class="cc-links">` in `_layouts/default.html`:
-remove it and the header is flat six words again, with no other edit anywhere (the plan's open
+remove it and the header is flat seven words again, with no other edit anywhere (the plan's open
 question 8).
+
+**The menu button, and a header that never wraps** (2026-11-16, with FAQ the eighth item). The row —
+lockup, tagline, the eight items, the feedback and theme buttons — fits one line from 1,089 px
+(measured on seven pages in both themes), so below **1,100 px** the nav hides and a hamburger in the
+icon cluster opens the same nav as a column, each word with its tab items inline (`style.css`
+`@media (max-width: 1099px)`; `NAV_BREAK` in `assets/tabs.js`, which closes the menu when the window
+grows past it, and in `check_layout.py` — change all three together). Before, 480–1,040 px drew the
+nav on two to five lines (a 187 px header at 640). Under 600 px the empty spacer and the brand's gap
+no longer push the theme toggle onto a second line (a 101 px header at 375 px, 109 px at 480–552),
+and from 480 px the tagline sets on two short lines in its own box; the row is one line from 360 px
+(at 320 px it still wraps). brand/v2 is untouched — every rule is this site's own `style.css`, which
+no other product (docs, the Explorer, db-query …) loads. `check_layout.py --nav` (in `pr.yml`)
+asserts one line of nav at 1,100, 1,280 and 1,470 px, the menu button at 1,024, 800, 640 and 375 px
+with all eight items when opened, no header wrap and no overlap, on four pages, both themes.
 
 **The tabs.** Every crowded section is tabbed, each tab with a count pill: DATA is *Datasets ·
 Species · Measurements*, ACCESS is *Services · Packages* and Other data visualizations is *Dataset ·
-Student* (issue #30 took APPS' Explorer and General out of tabs, into the Visualize door); BUILD keeps
-three cards. A tab is declared in `sections[].tabs[]` (`id`, `title`,
+Student* (issue #30 took APPS' Explorer and General out of tabs, into the Explore door, whose second
+group carries these two tabs); BUILD keeps three cards, the second group of Work with the data in code. A tab is declared in `sections[].tabs[]` (`id`, `title`,
 `blurb`, and an optional `count:` naming a catalog number rather than a card count) and a card joins
 one with `tab:` — tab ids are unique across sections, so a panel selects on `tab:` alone.
 `assets/tabs.js` (≤ 110 lines, no dependency) sets `aria-selected`, hides the other panels, moves on
@@ -204,7 +247,7 @@ the first screen's number, the realm door and the tab all fall back to the Explo
 somewhere true.
 
 **Also checked** by `check_layout.py`, in both themes at 1470 and 375: the header reads exactly those
-seven words; each submenu is closed until focused, opens on focus, closes on Escape, and every item
+seven words and calcofi.org ↗; each submenu is closed until focused, opens on focus, closes on Escape, and every item
 carries a count; every tabset has
 exactly one selected tab and one drawn panel, and a card tabset's pill equals the cards in its panel;
 the first screen's species and measurements numbers are links; the search returns a Species group for "sardine", a Measurements group for "nitrate" and a
@@ -224,6 +267,8 @@ release or a dataset entry — the release does.
 | dataset | `datasets[].since_version` in the record | nobody — the release that first carries the dataset | with that release | the dataset's page |
 | app | `products.yml` `added:` (back-filled from each product's first commit) | whoever adds the card | on push to `main` (`pages.yml`) | the product |
 | data · site · paper | [`_data/news.yml`](_data/news.yml) | whoever has the story: a feature, a change to the site, a paper | on push to `main` | the row's `url` |
+| story | [`_data/news.yml`](_data/news.yml) | whoever made it: something the data show — a cruise's finding, a film made from the release | on push to `main` | its page under `/stories/` |
+| tutorial | [`_data/news.yml`](_data/news.yml) | whoever gave it: a recorded walk-through, dated the day it was given, with its recording, slides, notes and scripts | on push to `main` | its page under `/tutorials/` |
 
 A `news.yml` row carrying `version:` or `dataset_key:` **replaces** the generated entry of that key —
 for a wrong `since_version`, or a notes heading that is not the story. The header's **News** link
@@ -284,12 +329,15 @@ turned into pages by a Jekyll generator.
 ```
 scripts/fetch_release.sh   latest.txt → _data/{datasets,versions}.json + _data/grid.geojson, and beside
                            the record _data/{coverage_stations,release_catalog,release_coverage}.json
-                           + _data/{release_headings,release_anchors}.json (ALL git-ignored: the site
-                           renders the release, never copies it; an optional one that is missing
-                           collapses the thing it feeds rather than being typed)
+                           + _data/{release_headings,release_anchors}.json + _data/zip_manifest.json
+                           (the Download zips; ALL git-ignored: the site renders the release, never
+                           copies it; an optional one that is missing collapses the thing it feeds
+                           rather than being typed)
 _plugins/datasets.rb       the record → /datasets/, /datasets/{key}/, {key}.json, {key}.jsonld,
                            /datasets/release/, /datasets/sitemap.xml, /datasets/search.json,
                            /data.json — and site.data.catalog for index.html
+_plugins/downloads.rb      the record's `bundle` rows, else the zip manifest → what each Download
+                           button and dialog offers (Downloads.offer; _test/downloads_test.rb)
 scripts/check_jsonld.py    every page's JSON-LD, the sitemap, and data.json against DCAT-US 1.1
 scripts/check_news.py      every RELEASES.html#fragment the ship's log links is an id on that page
 ```
@@ -323,7 +371,9 @@ Re-cut to the review's decisions (D1–D17, all as recommended); nothing was rem
   then Environment (`realm-*`), one row per dataset: category glyph · name (category · provider) ·
   years · obs · licence. A row opens to its first sentence, what is in it (`el-taxa`/`el-variables`,
   `ui-years`, `el-contributes`, `el-release`) and its ways in (`way-*`). The category's description
-  is the name's hover in the row and the ⓘ (`_includes/info.html`) in the opened row (D9 B).
+  is the name's hover in the row and the ⓘ (`_includes/info.html`) in the opened row (D9 B). A row
+  with zips has a **Download** control beside it (see *Download* below) — beside the `<details>`,
+  in a `.dl-rowwrap`, never inside its `<summary>`.
 - **The tiles are a view tab**: *List* (`view-list`, default) · *By category* (`view-grid`) is
   `_includes/catalog_grid.html` unchanged (`filters="off"`: the page draws the filter row itself);
   `?tab=grid` links to it. The holdings (`el-holding`), the reference frame and the release
@@ -332,7 +382,8 @@ Re-cut to the review's decisions (D1–D17, all as recommended); nothing was rem
   category glyph as the mark and the short name, the full name, one facts line (key, provider,
   licence chip, DOI, release, stage), ONE sentence (the record's first sentence, then what CalCOFI
   holds — `Catalog#first_sentence` / `#holds_sentence`, cut and counted, never typed), the map
-  beside it at its own aspect (`assets/coverage.js`), one line of numbers. *What this is* folds the
+  beside it at its own aspect (`assets/coverage.js`), one line of numbers, and — where the dataset
+  has zips — the yellow **Download** button under the numbers (see *Download* below). *What this is* folds the
   whole description and the people. **What is in it** stays open (`el-contents`): the years strip on
   the release's own axis under the map (D15, `Catalog#years_strip`), then one line each for the
   variables, taxa, life stages and contributes-to, each opening in place to all of them (the old
@@ -416,10 +467,13 @@ search index and `page.variables` all read one shape; a build against either ren
 3. **Access is a tabset, one tab per group (round 2 S2, WS-R4)**, inside the *Every endpoint* fold since issue #30. Each row is two lines: label ·
    chips · meta · copy, and no URL line (2026-09-06): the label is the link, the chips and
    identifier say which endpoint it is, and the copy button beside every row copies the address.
-   *Tables from the release* is a table (table · holds · rows · size · since · sha256); *Code*
+   *Download as a zip* (the Download button's zips, where the dataset has them) leads *Get the
+   data*; *Tables from the release* is a table (table · holds · rows · size · since · sha256); *Code*
    follows it, so "DuckDB, anywhere" reads one of the objects just listed and explains the
-   content-hashed path; ERDDAP is listed **once**, as a matrix of id × (CSV · JSON · page · info ·
-   graph — no netCDF, the CF file is the netCDF) with the grain glossary under it. The tab row IS
+   content-hashed path; ERDDAP is listed **once**, as a matrix of id × (subset form · info · graph —
+   no netCDF, the CF file is the netCDF) with the grain glossary under it. The matrix's whole-table
+   CSV and JSON links were dropped on 2026-11-16: ERDDAP answers a request with no constraint 403,
+   so they promised a file that never came; ERDDAP's own CSV and JSON are taken from its subset form. The tab row IS
    the group's name (`_plugins/datasets.rb Catalog#access_groups` / `#holding_access`, each group's
    `g["n"]` its pill — the same sum `page.n_endpoints` totals for the sub-nav's "Access *n*"), so a
    group's own heading is not repeated inside its panel (D3, "say it once"); the pair left/right
@@ -436,11 +490,83 @@ search index and `page.variables` all read one shape; a build against either ren
    every URL shape in the record. calcofi4db 4.5.0 derives the same ids, so the two have one list
    to agree on.
 
+### Download: one button, plain formats, the citation in the file
+
+Measured on 2026-11-16: no route gave a newcomer a file Excel opens with its citation and licence.
+The dataset page's only downloads were three folds down (Every endpoint › Get the data: Parquet, CF
+netCDF, ERDDAP "CSV" links that answered 403), and /datasets/ had none. Now:
+
+```
+_data/zip_manifest.json    scripts/fetch_release.sh, from {calcofi-db}/publish/zip/manifest.json
+                           (workflows publish_to-zip.qmd, schema 1.0): per dataset, one zip per format
+                           — csv (every dataset) · xlsx (only where every table fits an Excel sheet)
+                           · parquet — each with README.md, CITATION.md/.bib, LICENSE.txt, columns.csv;
+                           a format not written carries its reason in plain words
+_plugins/downloads.rb      Downloads.offer: the record's own `bundle` distributions first, else the
+                           manifest; nil for a holding or a dataset with nothing written. Every word
+                           about a FORMAT is written there once; every number and reason is read
+_includes/download_options.html   the options, drawn in the dialog and again in a <noscript> section
+assets/download.js         the dialog (the button, #download on the URL, Esc, Close, the backdrop),
+                           and one GA4 `dataset_download` event per zip link
+assets/download.css        the button, the dialog and the rows' control (loaded from default.html)
+```
+
+- **The dataset page**: a yellow **DOWNLOAD CSV · 425 KB** (the default zip's own size) under the head's numbers — the space the
+  map beside it leaves empty, so the head is no taller — above the 1280 × 800 fold. It opens a native
+  `<dialog>`: **CSV** first (one click downloads it, and it has the focus), **Excel**, or the
+  manifest's own reason it is not offered; each with one plain line on what the format is for, its
+  zipped size and what is inside; *Only want part of it?* → the Explorer opened on the dataset;
+  *Other formats* — the Parquet zip, ERDDAP's subset form, the CF netCDF, *Every endpoint* (which
+  opens that fold); the **licence** from the record by the licence chip's rule (unstated: "No
+  licence has been established…", never open terms; custom: a link to the provider's terms); and
+  *register your use*, encouraged, never required (`_config.yml register_use_url`). Without
+  JavaScript the button is a plain link to the CSV zip and the dialog's options are a `<noscript>`
+  section (`#download`).
+- **/datasets/** and the front door's Find panel: a compact **Download** control per dataset row
+  (an icon in Find's list of names, `_includes/dl_rowlink.html` in a third column of its subgrid,
+  and in the `catalog_grid.html` rows of the Datasets tab and *By category*), linking
+  `/datasets/{key}/#download`, which opens the dialog on arrival. A holding has none. Front door →
+  a CSV zip is three clicks (Find · the row's Download · CSV). Before, no route reached a CSV: the
+  nearest file was one table's Parquet object, three clicks in and below the fold (Find · the row ·
+  *Parquet* in Ways in), and the ERDDAP "CSV", five clicks in, answered 403.
+- **Analytics**: `dataset_download` {dataset_key, format, file_name, link_url} through the layout's
+  gtag, skipped under `navigator.webdriver` as the layout's config is. Not `file_download`: GA4's
+  enhanced measurement already sends that for a `.zip` link, and the same name twice would double
+  every count.
+- **Before the first upload** there is no manifest: `fetch_release.sh` says so in one NOTE, and no
+  button, row control or *Download as a zip* block renders anywhere. To build against zips on disk,
+  `ZIP_MANIFEST_URL` takes a URL, a `file://` URL or a plain path:
+
+  ```bash
+  ZIP_MANIFEST_URL=~/_big/calcofi/publish/zip/manifest.json scripts/build.sh
+  ```
+
+- **The zips are content-addressed (manifest schema 1.1).** A URL carries a hash directory
+  (`…/zip/swfsc_ichthyo/3872789ed24411383f47ae8a/calcofi_swfsc_ichthyo_v2026.11.14_csv.zip`); the
+  version in a file name is `since`, the release where that content first appeared; each dataset
+  carries `since`, `checked_version`, `content_hash` and `data_hash`, and the history is the chain
+  of per-release manifests. So nothing here parses or builds a file name or URL: each bundle's
+  `url` is used exactly as given, the suggested download name is its last path segment, unknown
+  fields are ignored, and any `schema_version` of 1 or higher is read. The dialog says "Verified
+  against release `checked_version`" and, only when `since` is earlier, "; the data are unchanged
+  since `since`" — true however many releases pass. `_test/fixtures/zip_manifest_1_1.json` is that
+  shape, beside the 1.0 `zip_manifest.json`.
+- **Checked** by `_test/downloads_test.rb` (all three formats; Excel not written, with its reason;
+  the licence kinds; a holding; the manifest absent; the record's bundles winning; the
+  1.1 content-addressed shape) and
+  `check_layout.py`'s `download` block: exactly one button in a dataset page's head, ending above
+  the 1280 × 800 fold at 1280 and wider and linking the CSV zip; its dialog closed on load and CSV
+  first; none on a holding or without zips; one row control per dataset with zips on /datasets/,
+  none in a `<summary>` (`download_offers`, pinned by `_test/check_layout_downloads_test.py`).
+
 **Fallbacks awaiting the record.** Each is marked `# until the record carries …` in
 `_plugins/datasets.rb` and is deleted when the release that carries the field renders (plan D-9):
 `GRAIN_FALLBACK` (an ERDDAP grain's meaning), `PORTAL_NAMES` + `PORTAL_ABOUT` (a portal's name and
 one-liner), the EML probe (`url_ok?` on the release's `eml/{key}.xml` — until the record carries a
-`format: eml` distribution), `_plugins/derive_id.rb` (a registration's
+`format: eml` distribution), the DwC-A and EDI package probes (until the record carries them as
+`bundle` distributions — v2026.11.14 carries none), the zip manifest (until the record carries the
+csv/xlsx/parquet zips as `bundle` distributions; `Downloads.offer` already prefers them),
+`_plugins/derive_id.rb` (a registration's
 identifier), and `STAGE_MEANING`, which is site-side text by nature — the stage vocabulary is
 `dataset_status.csv`'s, not any one dataset's.
 
@@ -1022,6 +1148,7 @@ scripts/check_layout.py --url http://localhost:4000/datasets/ --widths 1470 --th
 scripts/check_layout.py --base https://calcofi.io          # against the deployed site
 
 ruby _test/derive_id_test.rb                     # the portal-identifier parser
+ruby _test/downloads_test.rb                     # what the Download button and dialog offer
 ```
 
 `check_layout.py` needs `shot-scraper` (`pipx install shot-scraper && shot-scraper install`), like

@@ -8,7 +8,7 @@
 {%- assign p_explore = site.data.products.products | where: "key", "explore" | first -%}
 {%- assign explore_url = site.local_explore | default: p_explore.live_url | default: "https://calcofi.io/explore/" -%}
 {%- capture arr -%}<svg class="dp-arr" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M5 11h11.2l-4.6-4.6L13 5l7 7-7 7-1.4-1.4 4.6-4.6H5z"/></svg>{%- endcapture -%}
-<link rel="stylesheet" href="{{ '/assets/download.css' | relative_url }}">
+<link rel="stylesheet" href="{{ '/assets/download-form.css' | relative_url }}">
 <link rel="stylesheet" href="{{ '/assets/dataset-page.css' | relative_url }}">
 
 <header class="dp-band">
@@ -165,6 +165,6 @@
 <p class="dp-foot">Everything here is open; nothing asks you to register. If you use this dataset, <a href="{{ site.register_use_url }}">tell us</a> so it can be credited, or <a href="{{ site.stay_informed_url }}">hear when a release changes it</a>. Questions: <a href="mailto:{{ site.contact_email | escape }}">{{ site.contact_email | escape }}</a>.</p>
 </main>
 <script type="application/json" id="dp-dl">{{ dp.dl }}</script>
-<script src="{{ '/assets/download.js' | relative_url }}" defer></script>
+<script src="{{ '/assets/download-form.js' | relative_url }}" defer></script>
 <script src="{{ '/assets/dataset-page.js' | relative_url }}" defer></script>
 <script src="{{ '/assets/stick.js' | relative_url }}" defer></script>

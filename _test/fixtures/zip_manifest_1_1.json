@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.1",
+  "generated_by": "publish_to-zip.qmd",
+  "release": "v9.9.12",
+  "base_url": "https://storage.googleapis.com/calcofi-db/publish/zip",
+  "a_future_top_level_field": {"ignored": true},
+  "datasets": [
+    {
+      "dataset_key": "x_hash",
+      "dataset_name": "Unchanged since an earlier release",
+      "since": "v9.9.9", "version": "v9.9.12", "release_date": "2026-11-14", "checked_version": "v9.9.12",
+      "content_hash": "3872789ed24411383f47ae8a75180d9e", "data_hash": "69cf90242a53caf542e55d17c1b2c060",
+      "license": "CC0-1.0", "license_kind": "public-domain", "has_provider_citation": true,
+      "tables": [{"table": "obs", "rows": 10, "role": "observations"}],
+      "excluded": [],
+      "bundles": [
+        {"format": "csv", "written": true,
+         "file": "x_hash_v9.9.9_csv.zip",
+         "path": "publish/zip/x_hash/3872789ed24411383f47ae8a/x_hash_v9.9.9_csv.zip",
+         "url": "https://storage.googleapis.com/calcofi-db/publish/zip/x_hash/3872789ed24411383f47ae8a/x_hash_v9.9.9_csv.zip",
+         "bytes": 2048, "sha256": "94a8792e33c2d5b01fdc4786757119c39f82fa1f0548e0aad3b38708e2729b04",
+         "media_type": "application/zip", "excel_openable": true, "rows": {"obs": 10},
+         "a_field_nobody_knows": 42},
+        {"format": "xlsx", "written": true,
+         "file": "x_hash_v9.9.9_xlsx.zip",
+         "path": "publish/zip/x_hash/3872789ed24411383f47ae8a/x_hash_v9.9.9_xlsx.zip",
+         "url": "https://storage.googleapis.com/calcofi-db/publish/zip/x_hash/3872789ed24411383f47ae8a/x_hash_v9.9.9_xlsx.zip?generation=1",
+         "bytes": 4096, "sha256": "b45cce5c", "media_type": "application/zip", "excel_openable": true, "rows": {"obs": 10}},
+        {"format": "parquet", "written": false, "reason": "Not built in this release."},
+        {"format": "geojson", "written": true, "url": "https://example.org/a_format_nobody_knows.zip"}
+      ]
+    },
+    {
+      "dataset_key": "x_new",
+      "dataset_name": "New in this release",
+      "since": "v9.9.12", "version": "v9.9.12", "checked_version": "v9.9.12",
+      "content_hash": "aaaa", "data_hash": "bbbb", "license": null, "license_kind": "unstated",
+      "tables": [{"table": "obs", "rows": 1, "role": "observations"}],
+      "bundles": [
+        {"format": "csv", "written": true, "file": "x_new_v9.9.12_csv.zip",
+         "path": "publish/zip/x_new/aaaa/x_new_v9.9.12_csv.zip",
+         "url": "https://storage.googleapis.com/calcofi-db/publish/zip/x_new/aaaa/x_new_v9.9.12_csv.zip",
+         "bytes": 100, "sha256": "cccc", "rows": {"obs": 1}}
+      ]
+    }
+  ]
+}

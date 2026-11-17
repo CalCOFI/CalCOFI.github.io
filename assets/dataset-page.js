@@ -1,6 +1,6 @@
 /* The dataset page (_includes/dataset_page.html; Betty 2026-11-15): the rest of the description,
    finding a species in the list, showing all of it, the CSV buttons and the whole-dataset download
-   (both through assets/download.js), and copying the citation. */
+   (both through assets/download-form.js), and copying the citation. */
 (function () {
   "use strict";
   var root = document.getElementById("dp");

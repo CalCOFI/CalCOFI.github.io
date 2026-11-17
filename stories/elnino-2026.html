@@ -1,0 +1,57 @@
+---
+layout: default
+title: "The warmest fall ocean in CalCOFI's record"
+description: "In early November 2026, CalCOFI's fall cruise found the upper ocean off Southern California further above normal than on any cruise in a record that goes back to 1949. Preliminary data."
+permalink: /stories/elnino-2026/
+---
+{%- comment -%}
+  A story (the ship's log type `story`, _data/news.yml): something the data show, told for anyone. Its numbers are
+  hand-written from the analysis of release v2026.11.12 against the 1993–2013 FALL normal (CalCOFI/workflows,
+  2026-11_temperature-anomaly.qmd) and must agree with it; a change of release or normal is a change to this page.
+  The film is served by the workflows site, where it is rendered from CalCOFI/explore story/elnino-2026.
+{%- endcomment -%}
+{%- assign film = "https://calcofi.io/workflows/figures/2026-11_temperature-anomaly/calcofi_elnino_2026_square" -%}
+<section class="cc-band story-page">
+  <div class="cc-container">
+    <div class="cc-eyebrow">Story · fall 2026 cruise · preliminary data</div>
+    <h1 class="cc-h1">The warmest fall ocean in CalCOFI's record</h1>
+    <p class="cc-lede">In early November 2026, CalCOFI's fall cruise found the upper ocean off Southern California
+      further above normal than on any cruise in a record that goes back to 1949.</p>
+
+    <figure class="story-film">
+      <video controls playsinline preload="metadata" poster="{{ film }}_CF_poster.png">
+        <source src="{{ film }}_CF.mp4" type="video/mp4">
+      </video>
+      <figcaption>One minute, 34 falls, no sound: a cruise sailed station by station, the 1993–2013 fall average of
+        the upper 50 m, each fall since 2014 against it, and a slice of the sea off San Diego. Download it with its
+        numbers in <a href="{{ film }}_CF.mp4">°C and °F</a>, <a href="{{ film }}_F.mp4">°F</a> or
+        <a href="{{ film }}.mp4">°C</a> (1080 × 1080).</figcaption>
+    </figure>
+
+    <div class="cc-prose story-text">
+      <p>Every season since 1949, CalCOFI ships have returned to the same grid of stations off California and lowered
+        instruments from the surface into the deep. Between 31 October and 7 November 2026, R/V <i>Sally Ride</i>
+        worked 36 of them off Southern California.</p>
+      <p><b>Averaged over the upper 50 m (164 ft), the ocean was 4.5 °C (8.0 °F) warmer than the 1993–2013 fall
+        average</b> at the stations sampled. The previous high over the same stations, in fall 2015, was
+        2.7 °C (4.8 °F).</p>
+      <p>The warmth reached unusually deep. About 12 km (7 miles) off northern San Diego County, water of 25 °C
+        (77 °F) extended down to 55 m (180 ft), where the fall average is about 13 °C (55 °F). At 50 to 60 m that is
+        <b>11.9 °C (21.3 °F) above normal, the largest departure CalCOFI has measured</b> at any station and depth.</p>
+      <p>The warm water is also unusually salty, the mark of water carried in from the subtropics rather than warmed
+        where it lies. NOAA reports a strong El Niño under way on top of a marine heatwave that has sat off California
+        since 2025, and says the two cannot yet be told apart.</p>
+      <p>These are preliminary data, processed at sea. They have been checked against the instrument's second
+        temperature sensor, water samples analysed on board, nearby buoys, the Scripps Pier shore station and
+        satellite measurements.</p>
+    </div>
+
+    <ul class="story-links">
+      <li><a class="cc-text-link" href="https://calcofi.io/explore/?lens=section&amp;var=temperature&amp;line=93.3&amp;cruise=2026-11-33P4&amp;view=3d">The section off San Diego in 3-D, in the Explorer</a></li>
+      <li><a class="cc-text-link" href="{{ '/news/' | relative_url }}">The ship's log</a></li>
+    </ul>
+    <p class="story-cite">Data: CalCOFI Integrated Database, release v2026.11.12
+      (<a href="https://doi.org/10.5281/zenodo.24187468">doi:10.5281/zenodo.24187468</a>). Normal: the 1993–2013
+      average for September to November at the same station and depth. Preliminary data.</p>
+  </div>
+</section>

@@ -48,7 +48,9 @@ jobs:
           ruby _test/licence_pending_test.rb
           ruby _test/source_way_test.rb
           ruby _test/release_doi_test.rb
+          ruby _test/downloads_test.rb
           python3 _test/check_layout_exemplars_test.py
+          python3 _test/check_layout_downloads_test.py
           python3 _test/media_due_test.py
 
       # a products.yml `datasets:` key that is in neither datasets[] nor holdings[] of the record
@@ -82,6 +84,11 @@ jobs:
       # both themes (the front door's assertions: plan 2026-09-07 § D-8)
       - name: Check the layout
         run: python3 scripts/check_layout.py --base http://localhost:4000
+
+      # the header's breakpoint (2026-11-16): one line of nav from NAV_BREAK up, the menu button below,
+      # never a wrap — at the widths either side of it, which the full run above does not visit
+      - name: Check the header breakpoint
+        run: python3 scripts/check_layout.py --base http://localhost:4000 --nav
 
       - name: Check the brand contract on the built pages
         run: |

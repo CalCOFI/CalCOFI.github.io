@@ -1,0 +1,126 @@
+---
+layout: default
+title: "A tour of the CalCOFI.io database"
+description: "The recorded tour of CalCOFI's integrated database of 12 November 2026: calcofi.io, the Explorer and CTD transects, how the tables fit together, and the data in R and Python. With the slides, notes and scripts, and what attendees asked for."
+permalink: /tutorials/db-tour-2026-11/
+---
+{%- comment -%}
+  A tutorial (the ship's log type `tutorial`, _data/news.yml): a recorded walk-through with its materials. The
+  summary is distilled from the meeting transcript; it names no attendee, and says what was heard, not who said it.
+  Chapter times are in the recording's own clock: the transcript's times less about 7:00, when the recording
+  started (the recording runs 70:30 and ended with the transcript at 1:17:48), so they are good to about a minute.
+  The four files are shared "anyone with the link can view"; the recording plays from Google Drive's embed.
+{%- endcomment -%}
+{%- assign rec_id = "1KYbrsO7j08eSlUOuj-YwsyYH1f7n-DGw" -%}
+{%- assign rec    = "https://drive.google.com/file/d/" | append: rec_id | append: "/view" -%}
+{%- assign slides = "https://docs.google.com/presentation/d/1mA7WazBq34U-Dna-YxmYsAi5kiosFRw7/edit?usp=sharing" -%}
+{%- assign notes  = "https://docs.google.com/document/d/1NZun7GyLPXx5w5dRhKgBqX2HK1DQ0s84TOMRLyYr7Go/edit?usp=sharing" -%}
+{%- assign repo   = "https://github.com/CalCOFI/db-tour_2026-11" -%}
+<section class="cc-band story-page tutorial-page">
+  <div class="cc-container">
+    <div class="cc-eyebrow">Tutorial · recorded 12 November 2026 · 70 minutes</div>
+    <h1 class="cc-h1">A tour of the CalCOFI.io database</h1>
+    <p class="cc-lede">The first recorded tour of CalCOFI's integrated database: where to start on calcofi.io, the
+      Explorer and CTD transects apps, how the tables fit together, and pulling the data in R and Python. The people
+      who collect the data were on the call, and said what is missing.</p>
+
+    <figure class="tutorial-video">
+      <div class="tutorial-frame">
+        <iframe src="https://drive.google.com/file/d/{{ rec_id }}/preview" title="Recording: a tour of the CalCOFI.io database, 12 November 2026"
+          allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>
+      </div>
+      <figcaption>Recorded on Google Meet. It shows release v2026.11.09. If the player does not load,
+        <a href="{{ rec }}">open the recording on Google Drive</a>.</figcaption>
+    </figure>
+
+    <ul class="tutorial-materials">
+      <li><a href="{{ rec }}"><b>Recording</b></a><span>70 minutes, on Google Drive</span></li>
+      <li><a href="{{ slides }}"><b>Slides</b></a><span>25 slides, with a link to every page shown</span></li>
+      <li><a href="{{ notes }}"><b>Notes</b></a><span>the agenda, the four polls and the wish list</span></li>
+      <li><a href="{{ repo }}"><b>Scripts</b></a><span>the R and Python walk-throughs, with a guide to the tables</span></li>
+    </ul>
+
+    <div class="cc-prose story-text">
+      <h2 class="cc-h2">In the recording</h2>
+      <p class="tutorial-note">Times are approximate, to about a minute.</p>
+      <ol class="tutorial-chapters">
+        <li><time>0:00</time> Welcome, and where the slides, notes and scripts are</li>
+        <li><time>2:00</time> The plan for the hour</li>
+        <li><time>6:30</time> Why one database; every release frozen, with a DOI</li>
+        <li><time>10:30</time> calcofi.io: datasets, species and measurements</li>
+        <li><time>14:00</time> Poll: on a dataset page, what would you click first to get the data?</li>
+        <li><time>21:30</time> A simpler Explorer, as a mock-up</li>
+        <li><time>27:00</time> The Explorer: six views, a title that states the query, sharing and downloads</li>
+        <li><time>34:00</time> CTD transects</li>
+        <li><time>35:30</time> How the tables fit together</li>
+        <li><time>40:00</time> Five tables to know, and the divisions in the data</li>
+        <li><time>44:00</time> Derived products</li>
+        <li><time>45:00</time> The data in R and Python, in Positron</li>
+        <li><time>55:00</time> Discussion</li>
+      </ol>
+
+      <h2 class="cc-h2">What the tour showed</h2>
+      <p><b>One database.</b> Each dataset used to have tables of its own. To set a net tow beside the CTD cast of the
+        same station visit, the datasets need one schema. CalCOFI's follows the Darwin Core extension for measurements
+        that OBIS uses, so any kind of measurement fits. Twenty datasets go through one pipeline. Each release is
+        frozen in the cloud with the code and source files that built it, and gets a DOI from Zenodo, so a result can
+        be rerun against the release it used.</p>
+      <p><b>calcofi.io.</b> Every dataset, species and measurement has its own page, saying who collected it, over
+        which years and area, how to cite it, and where to get it.</p>
+      <p><b>The apps.</b> The Explorer maps one organism or one ocean variable at a time, six ways: stations, hexagons,
+        contours, cruises, regions and sections. Its title is a sentence that states the query, and its web address
+        reproduces the view. CTD transects draws a section along any line for any cruise since 1993, as measured
+        values or as departures from the 1993–2013 average.</p>
+      <p><b>The tables.</b> Five are worth knowing. <code>sample</code> says where and when something was sampled.
+        <code>obs_env</code> and <code>obs_bio</code> hold one value at one depth, with species keyed to WoRMS (and
+        birds to ITIS). <code>sample_measurement</code> holds one value for a whole cast or tow, and
+        <code>climatology</code> is the baseline every anomaly subtracts. Datasets join on the station visit. Derived
+        values, such as density, spiciness and mixed-layer depth, are computed once, in the pipeline.</p>
+      <p><b>Code.</b> The calcofi4r and calcofi4py packages connect to a release, list its tables and run SQL on them.
+        A script that names its release returns the same rows next year. The tour's scripts run in Positron or VS Code
+        with no login.</p>
+
+      <h2 class="cc-h2">What we heard</h2>
+      <ul>
+        <li><b>Where is the download button?</b> Asked what they would click first on a dataset page, attendees found
+          no download button, too many ways in, and words like Parquet, STAC and JSON. They wanted a button, and a
+          CSV.</li>
+        <li><b>One dataset or several?</b> Someone after a single dataset can already get it from ERDDAP. The
+          integrated database is for several kinds of data together, such as fish larvae beside temperature. The
+          Explorer lost its second variable when an early side-by-side view was dropped, and it is coming back.</li>
+        <li><b>Show the big divisions.</b> Environment or biology, observed or derived, bottle or CTD cast (the bottle
+          database ends in 2021; the casts go on), and the steps within a sample: cruise, station visit, cast, then
+          bottles or net tows. A simple picture of these would help more than the full diagram.</li>
+        <li><b>Two modes.</b> A simple path to the data in about four clicks, and the full technical depth for those
+          who want it. One attendee would put little effort into the layers in between, such as helpers for writing
+          SQL, now that an AI assistant can fix a query.</li>
+        <li><b>One front door.</b> The new calcofi.org, now being built, should lead into calcofi.io's data with no
+          boundary a visitor notices. calcofi.io was built apart because the WordPress site could not host the apps;
+          the two are meant to join.</li>
+        <li><b>Short videos.</b> A recorded walk of about ten minutes from download to plot, with CTD data as the
+          example, to follow at your own pace, with the clicks made visible.</li>
+      </ul>
+
+      <h2 class="cc-h2">Since the tour</h2>
+      <ul>
+        <li>Every dataset page has one Download button: CSV first, Excel where it fits, and the citation and licence in
+          the zip.</li>
+        <li>The Explorer opens on a simpler <i>Find data</i> panel, the mock-up shown in the tour. Add
+          <code>?ui=classic</code> to its address for the old one.</li>
+        <li>The front door asks “What do you want to do?” and offers seven tasks in plain words.</li>
+        <li>Short tutorials are planned for January and February 2027.</li>
+      </ul>
+      <p>Requests and questions are welcome as an <a href="{{ repo }}/issues">issue on the tour's repository</a>, or
+        through the feedback button in the Explorer.</p>
+    </div>
+
+    <ul class="story-links">
+      <li><a class="cc-text-link" href="https://calcofi.io/docs/">The documentation</a></li>
+      <li><a class="cc-text-link" href="https://calcofi.io/docs/data-access.html">Access the data</a></li>
+      <li><a class="cc-text-link" href="{{ '/news/' | relative_url }}">The ship's log</a></li>
+    </ul>
+    <p class="story-cite">Data shown: CalCOFI Integrated Database, release v2026.11.09
+      (<a href="https://doi.org/10.5281/zenodo.24083894">doi:10.5281/zenodo.24083894</a>). The scripts are under the
+      MIT licence; the data keep their own licences and citations.</p>
+  </div>
+</section>

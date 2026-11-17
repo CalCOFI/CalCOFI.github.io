@@ -9,15 +9,13 @@
 {%- assign nums = site.data.catalog.numbers -%}
 {%- assign data = site.data.products -%}
 {%- assign p_explore = data.products | where: "key", "explore" | first -%}
-{%- assign p_finder = data.products | where: "key", "db-viz-station" | first -%}
-{%- assign p_query = data.products | where: "key", "db-query" | first -%}
-{%- assign p_flows = data.products | where: "key", "workflows" | first -%}
 {%- comment -%} a local preview (scripts/dev_all.sh, _config.local.yml) points the Explorer buttons at the Explorer on this machine {%- endcomment -%}
 {%- assign explore_url = site.local_explore | default: p_explore.live_url | default: "https://calcofi.io/explore/" -%}
-{%- assign finder_url = p_finder.live_url | default: "https://app.calcofi.io/station/" -%}
-{%- assign query_url = p_query.live_url | default: "https://calcofi.io/db-query/" -%}
-{%- assign flows_url = p_flows.live_url | default: "https://calcofi.io/workflows/" -%}
 {%- assign builder_url = explore_url | append: "builder.html" -%}
+{%- comment -%} the two tasks that are links, as the seven-task front door named them (main c064e7d): the docs
+  book's own chapters. index.html passes them; the defaults keep the include usable alone. {%- endcomment -%}
+{%- assign cite_url = include.cite_url | default: "https://calcofi.io/docs/cite.html" -%}
+{%- assign provide_url = include.provide_url | default: "https://calcofi.io/docs/provide.html" -%}
 <link rel="stylesheet" href="{{ '/assets/hero.css' | relative_url }}">
 <section class="hero" aria-label="CalCOFI ocean data">
   <svg class="hero-sea" id="hero-sea" viewBox="0 0 1280 720" preserveAspectRatio="xMidYMax slice" aria-hidden="true"></svg>
@@ -37,14 +35,16 @@
     </dl>
 
     <div class="hero-start">
-      <h2 class="hero-h2">Where do you want to start?</h2>
+      <h2 class="hero-h2" id="start-h" tabindex="-1">Where do you want to start?</h2>
       <div class="hero-goals">
         <div class="hero-goal">
           <div class="hero-who"><i class="cc-i cc-i-door-explore" aria-hidden="true"></i>I'm curious</div>
           <h3>Visualize on a map</h3><p>Species and ocean conditions</p>
-          <div class="hero-dest two">
-            <a class="hero-opt" href="{{ explore_url }}"><span class="hero-btn main">Explorer</span><small>Trends over time</small></a>
-            <a class="hero-opt" href="{{ finder_url }}"><span class="hero-btn">Data Finder</span><small>Data by station</small></a>
+          {%- comment -%} one app on the first screen (reconciled 2026-11-17): the reply to Ed Weber (2026-11-10) committed to
+            one explorer, and main stopped calling to the station app from the front door on 2026-11-16 ("the Explorer
+            replaces it", Ben). The Dataset Finder keeps its card in Maps and apps (#explore) and its line in Map ▾. {%- endcomment -%}
+          <div class="hero-dest">
+            <a class="hero-opt" href="{{ explore_url }}"><span class="hero-btn main">Explorer</span><small>Maps and trends over time</small></a>
           </div>
         </div>
         <a class="hero-goal" href="{{ '/datasets/' | relative_url }}">
@@ -57,7 +57,9 @@
           <h3>Pull exact data</h3><p>Combined across datasets, by station or area</p>
           <div class="hero-dest two">
             <a class="hero-opt" href="{{ builder_url }}"><span class="hero-btn">Query Builder</span><small>No code needed</small></a>
-            <a class="hero-opt" href="{{ query_url }}"><span class="hero-btn">Code</span><small>R, Python, SQL</small></a>
+            {%- comment -%} #program: R, Python, SQL and ERDDAP side by side (main's "Work with the data in code"), where the
+              SQL shell is one of four; the button said R, Python, SQL and opened only the SQL shell {%- endcomment -%}
+            <a class="hero-opt" href="#program"><span class="hero-btn">Code</span><small>R, Python, SQL</small></a>
           </div>
         </div>
       </div>
@@ -65,9 +67,9 @@
   </div>
   <div class="hero-foot"><div class="hero-in-row">
     <nav aria-label="More">
-      <a class="hero-share" href="{{ flows_url }}"><i class="cc-i cc-i-ui-share" aria-hidden="true"></i>Share your data</a>
-      <a href="https://calcofi.io/docs/cite.html">Cite the data</a>
-      <a href="#learn">Sampling methods</a>
+      <a class="hero-share" href="{{ provide_url }}"><i class="cc-i cc-i-ui-share" aria-hidden="true"></i>Share your data</a>
+      <a href="{{ cite_url }}">Cite the data</a>
+      <a href="#learn">What CalCOFI collects</a>
       <a href="#monitor">Statewide monitoring</a>
       <a href="#explore">More visualizations</a>
     </nav>

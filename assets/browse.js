@@ -87,7 +87,7 @@
   }
   var BSPAN = (function () { var a = ROWS.map(function (r) { return r.y0; }).filter(Boolean); return [Math.min.apply(null, a.concat([1949])), new Date().getFullYear()]; })();
 
-  // Download: one button; the form (assets/download.js) says what you get and lets you choose the file
+  // Download: one button; the form (assets/download-form.js) says what you get and lets you choose the file
   function dlMenu(r) {
     var x = r.file || {};
     if (!x.erddap && !x.pq && !x.nc) return "";

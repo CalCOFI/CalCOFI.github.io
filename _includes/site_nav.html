@@ -2,8 +2,10 @@
   The site header's nav (Betty, 2026-11-16; header-and-catalogs-6 mockup):
     Data ▾ · Map ▾ · Query Builder · Cite the data · Learn ▾ · calcofi.org ↗
   Sentence case. A menu opens on hover or keyboard focus and stays open a moment after the pointer
-  leaves (CSS only, style.css § the site nav). Under 480 px the phone menu (assets/tabs.js toggles
-  `cc-nav-open`) shows every item in one column. Counts are the catalog's own (as tab_count.html).
+  leaves (CSS only, style.css § the site nav). Under 1100 px (NAV_BREAK: style.css, assets/tabs.js,
+  scripts/check_layout.py) the menu button takes over, so the header never wraps (main 618d959); the
+  open menu (assets/tabs.js toggles `cc-nav-open`) shows every item in one column, the menus inline.
+  Learn carries FAQ (main dfdbdc2). Counts are the catalog's own (as tab_count.html).
   App links come from products.yml; the homepage items are anchors the front door resolves.
 {%- endcomment -%}
 {%- assign prods = site.data.products.products -%}
@@ -11,6 +13,7 @@
 {%- assign p_finder = prods | where: "key", "db-viz-station" | first -%}
 {%- assign p_monitor = prods | where: "key", "ucla-monitoring-map" | first -%}
 {%- assign s_docs = site.data.products.sections | where: "id", "docs" | first -%}
+{%- assign s_faq = site.data.products.sections | where: "id", "faq" | first -%}
 {%- assign explore_url = site.local_explore | default: p_explore.live_url | default: "https://calcofi.io/explore/" -%}
 {%- assign nums = site.data.catalog.numbers -%}
 {%- assign here = page.url | split: "/" | slice: 1 | first -%}
@@ -48,6 +51,9 @@
     <div class="cc-dd cc-dd-r">
       <a href="{{ '/' | relative_url }}#learn"><i class="cc-i cc-i-ui-about" aria-hidden="true"></i><span><b>How CalCOFI samples</b><small>Ships, nets, bottles, stations</small></span></a>
       <a href="{{ s_docs.url | default: 'https://calcofi.io/docs/' }}"><i class="cc-i cc-i-ui-help" aria-hidden="true"></i><span><b>Docs</b><small>Guides and how-tos</small></span></a>
+      {%- comment -%} FAQ (main dfdbdc2, 2026-11-16: its own header word after Docs; here a line of Learn, from the same
+        products.yml section, so removing the section removes the line) {%- endcomment -%}
+      {%- if s_faq %}<a href="{{ s_faq.url }}"><i class="cc-i cc-i-el-questions" aria-hidden="true"></i><span><b>FAQ</b><small>Common questions, answered</small></span></a>{% endif -%}
       <a href="{{ '/news/' | relative_url }}"><i class="cc-i cc-i-el-release" aria-hidden="true"></i><span><b>News and releases</b><small>What changed, and when</small></span></a>
     </div>
   </div>
