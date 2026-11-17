@@ -1206,103 +1206,14 @@ a.cc-chip:hover { color: var(--accent); border-color: var(--accent); text-decora
   .sp-dots { display: none; }
 }
 
-/* ═══ the front door's six words, tabs and one search (plan 2026-09-10 § D7) ═══════════════════
-   Additive: nothing above this block changed. The header is brand territory (brand/v2/theme.css),
-   so the submenu is written HERE, scoped to .cc-links.cc-submenus — remove that ONE class from
-   the <nav class="cc-links"> in _layouts/default.html and the header is flat six words again
-   (open question 8), with no other edit anywhere. */
-
-.cc-header .cc-links .cc-m { position: relative; display: inline-flex; align-items: center; }
-.cc-header .cc-links .cc-m > ul { display: none; }
-.cc-header .cc-links.cc-submenus .cc-m > a::after { content: " ▾"; font-size: 0.72em; opacity: 0.7; }
-.cc-header .cc-links.cc-submenus .cc-m > ul {
-  position: absolute; top: calc(100% + 10px); left: -10px; z-index: 1030;
-  margin: 0; padding: 6px 0; list-style: none; min-width: 232px;
-  background: var(--panel, var(--bg)); border: 1px solid var(--border); border-radius: var(--radius-card, 8px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
-}
-.cc-header .cc-links.cc-submenus .cc-m:hover > ul,
-.cc-header .cc-links.cc-submenus .cc-m:focus-within > ul { display: block; }
-/* the trigger keeps the header's uppercase nav type; the items are ordinary sentence-case links */
-.cc-header .cc-links.cc-submenus .cc-m ul a {
-  display: flex; justify-content: space-between; align-items: baseline; gap: 14px;
-  padding: 6px 12px; font-weight: 600; font-size: 13.5px; letter-spacing: 0; text-transform: none;
-  white-space: nowrap;
-}
-.cc-header .cc-links.cc-submenus .cc-m ul a:hover,
-.cc-header .cc-links.cc-submenus .cc-m ul a:focus-visible { background: var(--accent-bg); color: var(--accent); text-decoration: none; }
-/* the hover bridge: the submenu floats 10 px under its trigger, and without this the pointer left
-   the group's hover area on its way down, so the menu closed before a click could land (Ben,
-   2026-09-10, live). A transparent strip belonging to the list itself spans the gap: the pointer is
-   always over the group or the list, never over nothing. */
-.cc-header .cc-links.cc-submenus .cc-m > ul::before {
-  content: ""; position: absolute; left: 0; right: 0; bottom: 100%; height: 14px;
-}
-/* on a touch-width screen the submenus stay closed and a tap on the word goes to the section;
-   the phone menu below shows the same items inline instead */
-@media (max-width: 760px) { .cc-header .cc-links.cc-submenus .cc-m > ul { display: none !important; } }
-
-/* ── the menu button (Ben, 2026-09-10: "there is NO menu in the mobile version") ───────────────
-   The brand hides .cc-links under 480 px (brand/v2/theme.css) and left nothing in its place. A
-   hamburger joins the icon cluster at the right — the lockup stays far left, as the brand contract
-   says — and opens the SAME nav as a column under the header row, each section word with its tab
-   items inline. One class on the header (`cc-nav-open`, assets/tabs.js) is the whole state; no
-   second nav, no framework.
-
-   THE BREAKPOINT IS 1100 px (2026-11-16, with FAQ the eighth item): the header row holds the
-   lockup, the tagline, the eight items and two icon buttons on ONE line from 1,089 px (measured on
-   every page, both themes), so the menu button takes over below 1,100 and the nav never wraps —
-   before this, 480–1,040 px drew it on two to five lines, a 187 px header at 640. The same number
-   is in assets/tabs.js (NAV_BREAK) and scripts/check_layout.py (NAV_BREAK); change all three
-   together. brand/v2 stays as it is (frozen): its own rule under 480 px still hides the tagline
-   there; this block only adds, from this site's stylesheet. No other product loads it. */
-@media (max-width: 1099px) {
-  .cc-header:not(.cc-nav-open) .cc-links { display: none; }
-}
-.cc-header .cc-menu-button { display: none; }
-.cc-header .cc-menu-button svg { width: 1.25rem; height: 1.25rem; fill: currentColor; }
-.cc-header .cc-menu-button .cc-menu-icon-close { display: none; }
-.cc-header.cc-nav-open .cc-menu-button .cc-menu-icon-close { display: block; }
-.cc-header.cc-nav-open .cc-menu-button .cc-menu-icon-open { display: none; }
-@media (max-width: 479px) {
-  /* the row must hold the lockup and three icon buttons at 375 px; the "CalCOFI.io" title goes on
-     this site alone — its root IS the lockup's, and the brand already hides its subtitle here */
-  .cc-header .cc-title { display: none; }
-}
-/* the header row is ONE line at every width (2026-11-16). Under 600 px the brand's gap also fell
-   either side of the empty spacer, so the theme toggle wrapped to a second line: a 101 px header
-   at 375 px, 109 px at 480–552 px where the tagline returns. The spacer goes (the first icon
-   button's auto margin does its job), the gap is 8 px, and from 480 px the tagline — kept, as the
-   brand shows it there — sets on two short lines in its own box. One line from 360 px. */
-@media (max-width: 599px) {
-  .cc-header { gap: 8px; }
-  .cc-header .cc-spacer { display: none; }
-  .cc-header .cc-menu-button { margin-left: auto; }
-  .cc-header .cc-tagline { white-space: normal; max-width: 6.5em; line-height: 1.15; }
-}
-@media (max-width: 1099px) {
-  .cc-header { flex-wrap: wrap; }
-  .cc-header .cc-menu-button { display: inline-flex; }
-  .cc-header.cc-nav-open .cc-links {
-    display: flex; flex-direction: column; align-items: stretch; gap: 0;
-    flex-basis: 100%; order: 10; margin: var(--space) 0 0; padding: var(--space) 0 2px;
-    border-top: 1px solid var(--border);
-  }
-  .cc-header.cc-nav-open .cc-links > a,
-  .cc-header.cc-nav-open .cc-links .cc-m > a { display: block; padding: 10px 4px; }
-  .cc-header.cc-nav-open .cc-links .cc-m { display: block; position: static; }
-  .cc-header.cc-nav-open .cc-links.cc-submenus .cc-m > a::after { content: none; }
-  .cc-header.cc-nav-open .cc-links .cc-m > ul,
-  .cc-header.cc-nav-open .cc-links.cc-submenus .cc-m > ul {
-    display: block !important; position: static; margin: -4px 0 6px; padding: 0 0 0 calc(var(--space) * 2);
-    min-width: 0; background: transparent; border: 0; box-shadow: none;
-  }
-  .cc-header.cc-nav-open .cc-links .cc-m > ul::before { content: none; }
-  .cc-header.cc-nav-open .cc-links .cc-m ul a {
-    display: flex; justify-content: space-between; align-items: baseline; gap: 14px;
-    padding: 6px 8px; font-weight: 600; font-size: 14px; letter-spacing: 0; text-transform: none;
-  }
-}
+/* ═══ the front door's tabs and one search (plan 2026-09-10 § D7) ════════════════════════════════
+   The header — its words, their menus, the menu button and its column — is the brand's since v3
+   (brand/v3/header.css, 2026-11-17); the rules that lived here for it (main's submenus of 2026-09-10
+   and its menu button of 2026-11-16) moved there, so every product wears the same header.
+   What stays here is this site's own: on a phone its bar has no title of its own, and under 600 px
+   the tagline sets on two short lines. */
+@media (max-width: 479px) { .cc-header .cc-title { display: none; } }
+@media (max-width: 599px) { .cc-header .cc-tagline { white-space: normal; max-width: 6.5em; line-height: 1.15; } }
 
 /* the count pill: a number beside a tab or a submenu item, never the only cue */
 .pill {
@@ -2168,73 +2079,12 @@ a.cc-chip-lic:hover { color: var(--accent); border-color: var(--accent); text-de
   .calm-strip.mm-strip text { font-size: 18px; }
 }
 
-/* the header's edge on every page (Betty 2026-11-14; was front-door only, in assets/hero.css): a line and a soft
-   shadow in light mode, so the header reads as its own layer over white pages and navy bands alike */
-[data-theme="light"] .cc-header { border-bottom-color: #c9d4e2; box-shadow: 0 1px 0 rgba(24, 43, 73, .05), 0 6px 16px -6px rgba(24, 43, 73, .18); }
-/* over a navy band the soft shadow would vanish (navy on navy), so it is deeper there */
-[data-theme="light"] body:has(.bd-head) .cc-header { box-shadow: 0 1px 0 rgba(24, 43, 73, .05), 0 8px 18px -4px rgba(0, 0, 0, .45); }
+/* (the header's edge and the site nav — Data ▾ · Map ▾ · Query · Cite · Learn ▾ · FAQ · News · calcofi.org ↗, Betty's
+   design of 2026-11-16 — are the brand's since v3: brand/v3/header.css) */
 
-/* ═══ the site nav (Betty, 2026-11-16; _includes/site_nav.html) ══════════════════════════════════
-   Data ▾ · Map ▾ · Query · Cite · Learn ▾ · calcofi.org ↗ in sentence case. A menu
-   opens on hover or focus, under its own word, with a clear edge (outline + deep shadow + a notch),
-   and closes a moment after the pointer leaves (the visibility delay), so crossing the gap is easy. */
-.cc-header .cc-links.cc-nav2 { gap: 22px; flex-wrap: nowrap; }
-.cc-header .cc-links.cc-nav2 a { text-transform: none; letter-spacing: 0; }
-.cc-header .cc-nav2 > a, .cc-header .cc-nav2 > .cc-m2 > .cc-m2-t { font-weight: 600; font-size: 15.5px; display: inline-flex; align-items: center; gap: 4px; padding: 6px 0; }
-/* Data, Map and Learn are buttons (they open a menu; they do not go anywhere): drawn as the nav's words */
-.cc-header .cc-m2-t { font-family: inherit; line-height: inherit; color: var(--fg); background: none; border: 0; margin: 0; cursor: pointer; white-space: nowrap; }
-.cc-header .cc-m2-t[aria-current], .cc-header .cc-m2-t[aria-expanded="true"] { color: var(--accent); }
-.cc-header .cc-m2-t:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
-.cc-header .cc-nav2 > a.cc-ext { font-weight: 500; color: var(--muted); }
-.cc-header .cc-nav2 .cc-car { width: 10px; height: 10px; fill: currentColor; opacity: .7; }
-.cc-header .cc-m2 { position: relative; }
-.cc-header .cc-dd {
-  --edge: color-mix(in srgb, var(--fg) 22%, var(--bg));
-  position: absolute; top: calc(100% + 12px); left: -16px; z-index: 1030; min-width: 270px; padding: 10px 8px;
-  background: var(--bg); border: 1px solid var(--edge); border-radius: 10px;
-  box-shadow: 0 2px 6px rgba(0,0,0,.08), 0 18px 44px rgba(10,20,36,.28);
-  visibility: hidden; opacity: 0; transition: visibility 0s linear .18s, opacity .12s ease .06s;
-}
-:root[data-theme="dark"] .cc-header .cc-dd { box-shadow: 0 18px 44px rgba(0,0,0,.6); }
-.cc-header .cc-dd::before { content: ""; position: absolute; left: 0; right: 0; bottom: 100%; height: 16px; } /* the hover bridge */
-.cc-header .cc-dd::after { content: ""; position: absolute; top: -7px; left: 26px; width: 12px; height: 12px; background: var(--bg);
-  border-left: 1px solid var(--edge); border-top: 1px solid var(--edge); transform: rotate(45deg); }
-.cc-header .cc-dd-r { left: auto; right: -16px; } .cc-header .cc-dd-r::after { left: auto; right: 30px; }
-/* open: the pointer is over the group, or the button was pressed (.open, assets/tabs.js: click, tap, Enter, Space).
-   .shut is Escape while the pointer is still over it (WCAG 1.4.13: dismissable without moving the pointer). */
-.cc-header .cc-m2:hover > .cc-dd, .cc-header .cc-m2.open > .cc-dd { visibility: visible; opacity: 1; transition-delay: 0s; }
-.cc-header .cc-m2.shut > .cc-dd { visibility: hidden; opacity: 0; transition: none; }
-.cc-header .cc-m2:hover > .cc-m2-t, .cc-header .cc-m2.open > .cc-m2-t { color: var(--accent); }
-.cc-header .cc-dd-2 { display: grid; grid-template-columns: repeat(2, 230px); gap: 2px 16px; padding: 12px 10px; }
-.cc-header .cc-dd h5 { margin: 0 10px 4px; font: 700 12.5px var(--sans); letter-spacing: 0; text-transform: none; color: var(--muted); }
-.cc-header .cc-dd a { display: grid; grid-template-columns: 22px 1fr; gap: 10px; align-items: start; padding: 7px 10px; border-radius: 8px;
-  color: var(--fg); font-weight: 400; font-size: 14px; white-space: normal; }
-.cc-header .cc-dd a:hover, .cc-header .cc-dd a:focus-visible { background: var(--accent-bg); color: var(--fg); }
-.cc-header .cc-dd a .cc-i { font-size: 17px; color: var(--accent); margin-top: 2px; }
-.cc-header .cc-dd b { display: block; font-size: 14.5px; font-weight: 700; }
-.cc-header .cc-dd small { display: block; margin-top: 1px; font-size: 12.5px; color: var(--muted); }
-.cc-header .cc-dd hr { border: 0; border-top: 1px solid var(--border); margin: 4px 8px; }
-@media (max-width: 1100px) { .cc-header .cc-tagline { display: none; } }
-@media (max-width: 900px) { .cc-header .cc-links.cc-nav2 { gap: 16px; } .cc-header .cc-nav2 > a.cc-ext { display: none; } }
-/* the menu button's menu: every item in one column, the menus inline. From NAV_BREAK down (1100 px:
-   the block above, assets/tabs.js and scripts/check_layout.py), where the menu button takes over and
-   the header never wraps (main 618d959) — was under 480 px, which left 480–1,099 px with the open
-   menu's dropdowns still absolutely placed and reachable only by hover. */
-@media (max-width: 1099px) {
-  /* the open menu scrolls inside itself: the header is sticky, so what ran below the window (Docs, News,
-     calcofi.org on a 667 px phone) could never be scrolled into view */
-  .cc-header.cc-nav-open .cc-links.cc-nav2 { flex-wrap: nowrap; max-height: calc(100vh - var(--header-h, 72px) - 12px); max-height: calc(100dvh - var(--header-h, 72px) - 12px); overflow-y: auto; overscroll-behavior: contain; }
-  .cc-header.cc-nav-open .cc-nav2 > a, .cc-header.cc-nav-open .cc-nav2 > .cc-m2 > .cc-m2-t { display: flex; padding: 10px 4px; }
-  /* its three words are headings there, not controls: every item under them is already shown */
-  .cc-header.cc-nav-open .cc-nav2 > .cc-m2 > .cc-m2-t { cursor: default; color: var(--fg); }
-  .cc-header.cc-nav-open .cc-nav2 > a.cc-ext { display: flex; }
-  .cc-header.cc-nav-open .cc-nav2 .cc-car { display: none; }
-  .cc-header.cc-nav-open .cc-dd, .cc-header.cc-nav-open .cc-dd-2, .cc-header.cc-nav-open .cc-m2.shut > .cc-dd { position: static; display: block; visibility: visible; opacity: 1; min-width: 0;
-    margin: -4px 0 6px; padding: 0 0 0 12px; border: 0; box-shadow: none; background: transparent; }
-  .cc-header.cc-nav-open .cc-dd::after, .cc-header.cc-nav-open .cc-dd::before, .cc-header.cc-nav-open .cc-dd hr,
-  .cc-header.cc-nav-open .cc-dd small, .cc-header.cc-nav-open .cc-dd h5 { display: none; }
-  .cc-header.cc-nav-open .cc-dd a { padding: 6px 8px; }
-}
+/* the wave under the bar (brand v3 § 4): the layout draws a slim one on every page, and a page whose own head IS a
+   wave band (the catalogs' search, a dataset's title and numbers) marks it .cc-wave-own and the slim one steps aside */
+body:has(.cc-wave-own) .cc-wave-auto { display: none; }
 
 /* ═══ Maps and apps (#explore; Betty, 2026-11-16) ══════════════════════════════════════════════════
    On the panel's sand: white cards, sentence case, the Explorer large, the Dataset Finder beside the

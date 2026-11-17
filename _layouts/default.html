@@ -6,8 +6,8 @@
   <title>{{ page.title | default: site.title }}</title>
   <meta name="description" content="{{ page.description | default: site.description }}">
 
-  <!-- calcofi.io brand contract v2 (brand/v2/head.html, with same-origin paths so local preview works).
-       In force since the flip on 2026-09-04 (v1 is superseded, still served). The inline script sets the theme (light by default) before first
+  <!-- calcofi.io brand contract v3 (brand/v3/head.html, with same-origin paths so local preview works): v2,
+       in force since the flip on 2026-09-04 (v1 is superseded, still served), with v3's header on top. The inline script sets the theme (light by default) before first
        paint; the page scale needs no meta. -->
   <link rel="icon" type="image/x-icon" href="{{ '/brand/v2/favicon.ico' | relative_url }}">
   <link rel="icon" type="image/png" sizes="32x32" href="{{ '/brand/v2/favicon-32x32.png' | relative_url }}">
@@ -18,10 +18,14 @@
   <script>(function(){var d=document.documentElement,m=/[?&]theme=(dark|light)\b/.exec(location.search),k=/(?:^|;\s*)cc_theme_src=user\b/.test(document.cookie),c=k&&/(?:^|;\s*)cc_theme=(dark|light)\b/.exec(document.cookie),s=null;try{if(localStorage.getItem("cc_theme_src")==="user")s=localStorage.getItem("cc_theme")}catch(e){}var t=(m&&m[1])||(c&&c[1])||(s==="dark"||s==="light"?s:null)||"light";d.dataset.theme=t;d.setAttribute("data-bs-theme",t);d.setAttribute("data-md-color-scheme",t==="dark"?"slate":"default");d.style.colorScheme=t;var sc=document.querySelector('meta[name="cc-scale"]');if(sc&&sc.content)d.setAttribute("data-cc-scale",sc.content)})();</script>
   <link rel="stylesheet" href="{{ '/brand/v2/fonts.css' | relative_url }}">
   <link rel="stylesheet" href="{{ '/brand/v2/theme.css' | relative_url }}">
+  <!-- brand v3 (2026-11-17): v2's tokens, type, icons and logos, with v3's header — the same words on every product
+       (brand/v3/nav.json, from _data/nav.yml), sentence case, the menus, the menu button, and the wave under the bar -->
+  <link rel="stylesheet" href="{{ '/brand/v3/header.css' | relative_url }}">
   <!-- the 49-glyph sprite as CSS masks: the dataset catalog draws the cat-* category icons with
        <i class="cc-i cc-i-cat-*"> (brand/v2/icons.css, generated from CalCOFI/explore) -->
   <link rel="stylesheet" href="{{ '/brand/v2/icons.css' | relative_url }}">
-  <script defer src="{{ '/brand/v2/theme.js' | relative_url }}"></script>
+  <script defer src="{{ '/brand/v3/theme.js' | relative_url }}"></script>
+  <script defer src="{{ '/brand/v3/header.js' | relative_url }}"></script>
   {%- comment -%}
     The tab switcher and the header submenus' Escape (plan 2026-09-10 § D7). It is in the HEAD, not
     at the end of the body, because deferred scripts run in DOCUMENT order and assets/catalog.js —
@@ -69,10 +73,10 @@
 <div id="layout">
 
   {%- comment -%}
-    The v2 header: the "CalCOFI.io" lockup far left → calcofi.io (absolute, so the brand check's
-    back-link test passes on a local build too) with the tagline beside it — no second title: this
-    site IS CalCOFI.io (Ben, 2026-09-11) — then the nav (_includes/site_nav.html: Data, Map,
-    Query, Cite, Learn, calcofi.org ↗; Betty 2026-11-16), feedback and the toggle.
+    The v3 header (brand/v3/README.md § 4): the "CalCOFI.io" lockup far left with the tagline beside it — no
+    second title: this site IS CalCOFI.io (Ben, 2026-09-11) — then the brand's words
+    (_includes/site_nav.html, from _data/nav.yml: Data ▾ · Map ▾ · Query · Cite · Learn ▾ · FAQ · News ·
+    calcofi.org ↗), the menu button, feedback and the toggle; and under the bar, the wave.
   {%- endcomment -%}
   <header class="cc-header">
     {%- comment -%} site.url: https://calcofi.io on the live build (the brand check's back-link), the
@@ -93,8 +97,8 @@
       An icon button beside the toggle; the footer spells it out.
     {%- endcomment -%}
     {%- comment -%}
-      The phone menu (Ben, 2026-09-10): the brand hides .cc-links under 480 px, so a hamburger in the
-      icon cluster opens the same nav as a column (style.css § the phone menu; assets/tabs.js toggles
+      The menu button (Ben, 2026-09-10; brand v3 § 4.3 since 2026-11-17): under 1100 px a hamburger in the
+      icon cluster opens the same nav as a column (brand/v3/header.css; brand/v3/header.js toggles
       `cc-nav-open` on the header). Hidden at every wider width.
     {%- endcomment -%}
     <button class="cc-icon-button cc-menu-button" type="button" aria-label="Open the menu" aria-controls="cc-nav" aria-expanded="false">
@@ -108,6 +112,10 @@
     {%- endif %}
     <button class="cc-theme-toggle" type="button" aria-label="Toggle dark / light theme">🌓</button>
   </header>
+
+  {%- comment -%} the wave (brand v3 § 4): a slim navy band under the bar on every page. A page whose own head is a
+    wave band (.cc-wave-own: the catalogs, a dataset) hides this one (style.css). {%- endcomment -%}
+  <div class="cc-wave cc-wave-slim cc-wave-auto" aria-hidden="true"></div>
 
   <main id="panel">
     {{ content }}
