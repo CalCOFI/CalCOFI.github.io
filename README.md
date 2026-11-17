@@ -85,6 +85,17 @@ where v2 changed how they are reached, this subsection is the current state.
 - **Phone.** Stacked, the hero is scaled by its height, so under 900 px the start heading takes the
   hero's ink (it was white on the sky), the label by the ship is not drawn and the strip sits under the
   cards; under 480 px the four numbers close up to fit 375 px.
+- **The layout contract was re-anchored, not loosened** (`scripts/check_layout.py`, 2f7c4dc). The PR's markup had
+  moved out from under its selectors, so the front-door block, the header menus and the redesigned dataset page
+  were passing without being measured. It now reads `section.hero`, the six header words and their three menus,
+  the finders and `main.dp-page`, at the old thresholds: every task link on the first screen of a 1280 × 645
+  window and 32 px tall, nothing open on load, every old anchor opened from a shut page, one Download button per
+  dataset page, a dataset page under 2,200 px. Three rules follow the new design and say so in the script's
+  docstring: one yellow button on the first screen (the Explorer's; D6 A had none), four numbers (five before), and
+  the first screen one window tall. As of 2026-11-17 it fails on three things, all on the catalog pages and all
+  waiting for a decision, not a fix: `/datasets/` is 2,575 px with nothing open (ceiling 2,300), `/measurements/`
+  is 8,643 px with all 104 rows open (ceiling 1,625; issue #30 D8 had collapsed the categories), and
+  `/species/?q=sardin` lists one row where the one search listed the genus too.
 - **Preview.** `scripts/build_netlify.sh` builds this site and the Explorer into one folder (`OUT`,
   default `_site`) and points every link to the live Explorer at the copy, so the Query Builder links
   stay inside the preview. `EXPLORE_DIST=` reuses a built Explorer. `scripts/dev_all.sh` runs both on one
