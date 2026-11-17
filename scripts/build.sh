@@ -36,6 +36,8 @@ if [ -z "${CC_SKIP_TESTS:-}" ]; then
   ruby _test/dataset_page_test.rb >/dev/null || { echo "FAIL: _test/dataset_page_test.rb" >&2; exit 1; }
   # Browse datasets' rules: the order, what is in a dataset and how many, asserted years, no typed axis
   ruby _test/browse_test.rb >/dev/null || { echo "FAIL: _test/browse_test.rb" >&2; exit 1; }
+  # the Species and Measurements finders: which rows, the groups (every species in one), the hidden datasets
+  ruby _test/finder_test.rb >/dev/null || { echo "FAIL: _test/finder_test.rb" >&2; exit 1; }
 fi
 
 scripts/fetch_release.sh

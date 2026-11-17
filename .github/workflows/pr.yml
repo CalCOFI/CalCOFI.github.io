@@ -51,6 +51,7 @@ jobs:
           ruby _test/downloads_test.rb
           ruby _test/dataset_page_test.rb
           ruby _test/browse_test.rb
+          ruby _test/finder_test.rb
           python3 _test/check_layout_exemplars_test.py
           python3 _test/check_layout_downloads_test.py
           python3 _test/media_due_test.py
