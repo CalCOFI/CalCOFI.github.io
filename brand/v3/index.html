@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>calcofi.io brand v3 — the header, specimen</title>
+<meta name="robots" content="noindex">
+<!-- the v3 head block (brand/v3/head.html) with same-origin paths, so the specimen shows the files beside it -->
+<link rel="icon" type="image/x-icon" href="../v2/favicon.ico">
+<script>(function(){var d=document.documentElement,m=/[?&]theme=(dark|light)\b/.exec(location.search),k=/(?:^|;\s*)cc_theme_src=user\b/.test(document.cookie),c=k&&/(?:^|;\s*)cc_theme=(dark|light)\b/.exec(document.cookie),s=null;try{if(localStorage.getItem("cc_theme_src")==="user")s=localStorage.getItem("cc_theme")}catch(e){}var t=(m&&m[1])||(c&&c[1])||(s==="dark"||s==="light"?s:null)||"light";d.dataset.theme=t;d.style.colorScheme=t})();</script>
+<link rel="stylesheet" href="../v2/fonts.css">
+<link rel="stylesheet" href="../v2/theme.css">
+<link rel="stylesheet" href="../v2/icons.css">
+<link rel="stylesheet" href="header.css">
+<script defer src="theme.js"></script>
+<script defer src="header.js"></script>
+<style>
+  body { margin: 0; font: var(--fs)/var(--lh) var(--sans); color: var(--fg); background: var(--bg); }
+  main { max-width: var(--container); margin: 0 auto; padding: 24px calc(var(--space) * 3) 80px; }
+  h2 { font: 700 20px/1.3 var(--sans); margin: 40px 0 8px; }
+  p, li { max-width: 46em; }
+  .frame { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 12px 0 0; }
+  .frame .cc-header { position: static; }
+  .frame-body { padding: 18px 24px 28px; color: var(--muted); font-size: 15px; }
+  .cc-wave h1 { margin: 0; font: 600 26px/1.2 var(--sans); color: #fff; }
+  .cc-wave p { margin: 4px 0 0; font-size: 14px; color: #c9d4e3; }
+  .app { font-size: 13px; }
+  code { font-family: var(--mono); font-size: .92em; }
+</style>
+</head>
+<body>
+<header class="cc-header">
+  <a class="cc-home" href="https://calcofi.io" aria-label="CalCOFI.io home">
+    <img class="cc-logo-dark" src="../v2/logo_calcofi_h.svg" alt="CalCOFI.io">
+    <img class="cc-logo-light" src="../v2/logo_calcofi_h_light.svg" alt="CalCOFI.io">
+  </a>
+  <a class="cc-title" href="./">Brand v3 <small>the header</small></a>
+  <span class="cc-spacer"></span>
+  <nav class="cc-links cc-nav" id="cc-nav" data-cc-nav aria-label="Sections"></nav>
+  <button class="cc-icon-button cc-menu-button" type="button" aria-label="Open the menu" aria-controls="cc-nav" aria-expanded="false">
+    <svg class="cc-menu-icon-open" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    <svg class="cc-menu-icon-close" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+  </button>
+  <button class="cc-theme-toggle" type="button" aria-label="Toggle dark / light theme">🌓</button>
+</header>
+<div class="cc-wave"><div class="cc-wave-in"><h1>The header, and the wave under it</h1><p>This page wears what it shows. The words above were drawn by <code>header.js</code> from <code>nav.json</code>.</p></div></div>
+
+<main>
+  <p>v3 is v2 with one header for every product: the same words in sentence case, a word that may open a menu, a menu button under 1100 px, and a navy band under the bar that ends in a wave. The contract is <a href="README.md">README.md</a>. Narrow this window below 1100 px to see the menu button; press Data, Map or Learn, then Escape.</p>
+
+  <h2>A page with nothing to put in the wave</h2>
+  <p><code>&lt;div class="cc-wave cc-wave-slim"&gt;&lt;/div&gt;</code>: 34 px.</p>
+  <div class="frame">
+    <header class="cc-header">
+      <a class="cc-home" href="https://calcofi.io"><img class="cc-logo-dark" src="../v2/logo_calcofi_h.svg" alt="CalCOFI.io"><img class="cc-logo-light" src="../v2/logo_calcofi_h_light.svg" alt="CalCOFI.io"></a>
+      <span class="cc-tagline">open data ecosystem</span>
+      <span class="cc-spacer"></span>
+      <nav class="cc-links cc-nav" data-cc-nav aria-label="Sections, second sample"></nav>
+    </header>
+    <div class="cc-wave cc-wave-slim"></div>
+    <div class="frame-body">The page begins here.</div>
+  </div>
+
+  <h2>An app whose bar is full: the words behind the menu button, a strip of wave</h2>
+  <p><code>class="cc-header cc-nav-menu"</code> and <code>data-cc-scale="app"</code>: a 44 px bar, a 15 px strip.</p>
+  <div class="frame app" data-cc-scale="app" style="--header-h:44px; --lockup-h:28px; --nav-fs:13px; --space:4px; --container:100%;">
+    <header class="cc-header cc-nav-menu">
+      <a class="cc-home" href="https://calcofi.io"><img class="cc-logo-dark" src="../v2/logo_calcofi_h.svg" alt="CalCOFI.io"><img class="cc-logo-light" src="../v2/logo_calcofi_h_light.svg" alt="CalCOFI.io"></a>
+      <a class="cc-title" href="./">Explorer <small>Stations</small></a>
+      <span class="cc-spacer"></span>
+      <span class="cc-release">release <b>v2026.11.14</b></span>
+      <nav class="cc-links cc-nav" id="cc-nav-app" data-cc-nav aria-label="Sections, app sample"></nav>
+      <button class="cc-icon-button cc-menu-button" type="button" aria-label="Open the menu" aria-controls="cc-nav-app" aria-expanded="false">
+        <svg class="cc-menu-icon-open" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+        <svg class="cc-menu-icon-close" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+      </button>
+    </header>
+    <div class="cc-wave cc-wave-slim"></div>
+    <div class="frame-body">The map begins here.</div>
+  </div>
+</main>
+</body>
+</html>

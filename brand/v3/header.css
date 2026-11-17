@@ -1,0 +1,138 @@
+/* calcofi.io brand v3 — header.css (2026-11-17). Loaded AFTER brand/v2/theme.css, which it builds on.
+
+   v3 changes ONE thing about the brand: the header. Tokens, type, buttons, cards, chips, icons, logos and
+   favicons are v2's own files, unchanged and still loaded from /brand/v2/ (v2 is frozen and stays served).
+   What is new here, and why it is a new version and not an edit of v2 (v2's README: "anything that changes
+   how an existing page looks or behaves is v3/"):
+
+     1  the words are sentence case, not uppercase, and they are the SAME words on every product: the list is
+        /brand/v3/nav.json, drawn by header.js into  <nav class="cc-links cc-nav" data-cc-nav>
+     2  a word may open a menu: a <button aria-expanded> and a panel, on hover and on a press
+     3  under 1100 px the menu button carries the words in one column, so the bar never wraps; an app whose
+        bar is full of its own controls asks for that at every width with  class="cc-header cc-nav-menu"
+     4  the wave: a navy band under the bar that ends in a wave,  <div class="cc-wave">…the page's head…</div>
+        or, with nothing to say,  <div class="cc-wave cc-wave-slim"></div>.  Every page has one.
+
+   The contract is brand/v3/README.md. scripts/check_brand.py asserts 1, 3 and 4 on every v3 product. */
+
+/* ── the bar's edge: over the navy wave a hairline vanishes, so light mode gets a clear line and a deep shadow ── */
+:root:not([data-theme="dark"]) .cc-header { border-bottom-color: #c9d4e2; box-shadow: 0 1px 0 rgba(24, 43, 73, .05), 0 8px 18px -4px rgba(0, 0, 0, .45); }
+
+/* ── 1 · the words, sentence case ─────────────────────────────────────────── */
+.cc-header .cc-title, .cc-header .cc-links.cc-nav a { text-transform: none; letter-spacing: 0; }
+.cc-header .cc-title { font-weight: 700; }
+.cc-header .cc-links.cc-nav { gap: calc(var(--space) * 2.75); flex-wrap: nowrap; }
+.cc-header .cc-nav > a, .cc-header .cc-nav > .cc-m2 > .cc-m2-t {
+  font-weight: 600; font-size: calc(var(--nav-fs) + 0.5px); display: inline-flex; align-items: center; gap: 4px; padding: 6px 0;
+}
+.cc-header .cc-nav > a.cc-ext { font-weight: 500; color: var(--muted); }
+.cc-header .cc-nav .cc-car { width: 10px; height: 10px; fill: currentColor; opacity: .7; }
+
+/* ── 2 · a word that opens a menu ─────────────────────────────────────────── */
+/* the word is a button (it opens a menu; it does not go anywhere), drawn as the nav's words */
+.cc-header .cc-m2 { position: relative; }
+.cc-header .cc-m2-t { font-family: inherit; line-height: inherit; color: var(--fg); background: none; border: 0; margin: 0; cursor: pointer; white-space: nowrap; }
+.cc-header .cc-m2-t[aria-current], .cc-header .cc-m2-t[aria-expanded="true"] { color: var(--accent); }
+.cc-header .cc-m2-t:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+.cc-header .cc-dd {
+  --edge: color-mix(in srgb, var(--fg) 22%, var(--bg));
+  position: absolute; top: calc(100% + 12px); left: -16px; z-index: 1030; min-width: 270px; padding: 10px 8px;
+  background: var(--bg); border: 1px solid var(--edge); border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,.08), 0 18px 44px rgba(10,20,36,.28);
+  visibility: hidden; opacity: 0; transition: visibility 0s linear .18s, opacity .12s ease .06s;
+}
+:root[data-theme="dark"] .cc-header .cc-dd { box-shadow: 0 18px 44px rgba(0,0,0,.6); }
+.cc-header .cc-dd::before { content: ""; position: absolute; left: 0; right: 0; bottom: 100%; height: 16px; } /* the hover bridge */
+.cc-header .cc-dd::after { content: ""; position: absolute; top: -7px; left: 26px; width: 12px; height: 12px; background: var(--bg);
+  border-left: 1px solid var(--edge); border-top: 1px solid var(--edge); transform: rotate(45deg); }
+.cc-header .cc-dd-r { left: auto; right: -16px; } .cc-header .cc-dd-r::after { left: auto; right: 30px; }
+/* open: the pointer is over the group, or the button was pressed (.open, header.js: click, tap, Enter, Space).
+   .shut is Escape while the pointer is still over it (WCAG 1.4.13: dismissable without moving the pointer). */
+.cc-header .cc-m2:hover > .cc-dd, .cc-header .cc-m2.open > .cc-dd { visibility: visible; opacity: 1; transition-delay: 0s; }
+.cc-header .cc-m2.shut > .cc-dd { visibility: hidden; opacity: 0; transition: none; }
+.cc-header .cc-m2:hover > .cc-m2-t, .cc-header .cc-m2.open > .cc-m2-t { color: var(--accent); }
+.cc-header .cc-dd-2 { display: grid; grid-template-columns: repeat(2, 230px); gap: 2px 16px; padding: 12px 10px; }
+.cc-header .cc-dd h5 { margin: 0 10px 4px; font: 700 12.5px var(--sans); letter-spacing: 0; text-transform: none; color: var(--muted); }
+.cc-header .cc-links.cc-nav .cc-dd a { display: grid; grid-template-columns: 22px 1fr; gap: 10px; align-items: start; padding: 7px 10px; border-radius: 8px;
+  color: var(--fg); font-weight: 400; font-size: 14px; white-space: normal; }
+.cc-header .cc-links.cc-nav .cc-dd a.cc-dd-noi { grid-template-columns: 1fr; }   /* a product that does not load the icon sheet */
+.cc-header .cc-links.cc-nav .cc-dd a:hover, .cc-header .cc-links.cc-nav .cc-dd a:focus-visible { background: var(--accent-bg); color: var(--fg); }
+.cc-header .cc-dd a .cc-i { font-size: 17px; color: var(--accent); margin-top: 2px; }
+.cc-header .cc-dd b { display: block; font-size: 14.5px; font-weight: 700; }
+.cc-header .cc-dd small { display: block; margin-top: 1px; font-size: 12.5px; color: var(--muted); }
+.cc-header .cc-dd hr { border: 0; border-top: 1px solid var(--border); margin: 4px 8px; }
+
+/* ── 3 · the menu button, and the column it opens ─────────────────────────────
+   THE BREAKPOINT IS 1100 px: the row holds the lockup, the eight words and the icon buttons on ONE line from
+   there (the tagline goes at 1100 to make sure). Below it the menu button takes over and the nav never wraps.
+   The same number is NAV_BREAK in header.js and in the site's scripts/check_layout.py; change all three
+   together. .cc-nav-menu on the header asks for the button at EVERY width (an app's bar of its own controls). */
+.cc-header .cc-menu-button { display: none; }
+.cc-header .cc-menu-button svg { width: 1.25rem; height: 1.25rem; fill: currentColor; }
+.cc-header .cc-menu-button .cc-menu-icon-close { display: none; }
+.cc-header.cc-nav-open .cc-menu-button .cc-menu-icon-close { display: block; }
+.cc-header.cc-nav-open .cc-menu-button .cc-menu-icon-open { display: none; }
+.cc-header.cc-nav-menu { flex-wrap: wrap; }
+.cc-header.cc-nav-menu:not(.cc-nav-open) .cc-links.cc-nav { display: none; }
+.cc-header.cc-nav-menu .cc-menu-button { display: inline-flex; }
+@media (max-width: 1100px) { .cc-header .cc-tagline { display: none; } }
+@media (max-width: 1099px) {
+  .cc-header { flex-wrap: wrap; }
+  .cc-header:not(.cc-nav-open) .cc-links.cc-nav { display: none; }
+  .cc-header .cc-menu-button { display: inline-flex; }
+}
+/* the row is ONE line down to 360 px: under 600 px the spacer goes (the menu button's auto margin does its job)
+   and the gap is 8 px; the site's own title goes under 480 px, where the lockup already says it */
+@media (max-width: 599px) {
+  .cc-header { gap: 8px; }
+  .cc-header .cc-spacer { display: none; }
+  .cc-header .cc-menu-button { margin-left: auto; }
+}
+/* the open column (the state is ONE class on the header, set by header.js; it is taken off again when the window
+   grows past the breakpoint): every word and every line of every menu, the menus inline. It scrolls inside
+   itself — the header is sticky, so what ran below the window could otherwise never be reached. */
+.cc-header.cc-nav-open .cc-links.cc-nav {
+  display: flex; flex-direction: column; align-items: stretch; gap: 0; flex-wrap: nowrap;
+  flex-basis: 100%; order: 10; margin: var(--space) 0 0; padding: var(--space) 0 2px; border-top: 1px solid var(--border);
+  max-height: calc(100vh - var(--header-h, 72px) - 12px); max-height: calc(100dvh - var(--header-h, 72px) - 12px);
+  overflow-y: auto; overscroll-behavior: contain;
+}
+.cc-header.cc-nav-open .cc-nav > a, .cc-header.cc-nav-open .cc-nav > .cc-m2 > .cc-m2-t { display: flex; padding: 10px 4px; }
+.cc-header.cc-nav-open .cc-nav > .cc-m2 > .cc-m2-t { cursor: default; color: var(--fg); }   /* a heading there, not a control */
+.cc-header.cc-nav-open .cc-nav .cc-car { display: none; }
+.cc-header.cc-nav-open .cc-dd, .cc-header.cc-nav-open .cc-dd-2, .cc-header.cc-nav-open .cc-m2.shut > .cc-dd {
+  position: static; display: block; visibility: visible; opacity: 1; min-width: 0;
+  margin: -4px 0 6px; padding: 0 0 0 12px; border: 0; box-shadow: none; background: transparent; }
+.cc-header.cc-nav-open .cc-dd::after, .cc-header.cc-nav-open .cc-dd::before, .cc-header.cc-nav-open .cc-dd hr,
+.cc-header.cc-nav-open .cc-dd small, .cc-header.cc-nav-open .cc-dd h5 { display: none; }
+.cc-header.cc-nav-open .cc-links.cc-nav .cc-dd a { padding: 6px 8px; }
+
+/* ── 4 · the wave ─────────────────────────────────────────────────────────────
+   A navy band directly under the bar, ending in a wave. It is navy in both themes (the bar is white in light,
+   navy in dark). A page puts its own head in it — a search, a title and its numbers — or nothing:
+
+     <div class="cc-wave"><div class="cc-wave-in"> … </div></div>
+     <div class="cc-wave cc-wave-slim"></div>
+
+   The edge is drawn here, so the markup is one element. --cc-wave-below is what the wave cuts into: the page
+   ground by default; a page whose first band is another colour sets it on the element. A band that draws its own
+   edge (an inline <svg>) says so with .cc-wave-own. */
+.cc-wave {
+  --cc-wave-h: 28px;
+  position: relative; background: linear-gradient(180deg, #14284a 0%, #1d3d66 100%); color: #fff;
+  padding-bottom: calc(var(--cc-wave-h) - 2px);
+}
+.cc-wave::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: var(--cc-wave-h); pointer-events: none;
+  background: var(--cc-wave-below, var(--bg));
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 40' preserveAspectRatio='none'%3E%3Cpath d='M0 30 C150 10 300 34 450 22 S750 6 900 20 S1100 34 1200 18 V40 H0Z'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 40' preserveAspectRatio='none'%3E%3Cpath d='M0 30 C150 10 300 34 450 22 S750 6 900 20 S1100 34 1200 18 V40 H0Z'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+}
+.cc-wave.cc-wave-own::after { content: none; }
+.cc-wave-in { max-width: var(--container); margin: 0 auto; padding: calc(var(--space) * 3) calc(var(--space) * 3) 6px; }
+.cc-wave a { color: #fff; }
+.cc-wave-slim { --cc-wave-h: 18px; height: 34px; padding-bottom: 0; box-sizing: border-box; }
+/* an app: the band is a strip under the app's bar, so the map keeps its height */
+[data-cc-scale="app"] .cc-wave-slim { --cc-wave-h: 9px; height: 15px; }
+[data-cc-scale="app"] .cc-wave { --cc-wave-h: 14px; }
+[data-cc-scale="app"] .cc-wave-in { padding: calc(var(--space) * 3) calc(var(--space) * 4) 4px; }

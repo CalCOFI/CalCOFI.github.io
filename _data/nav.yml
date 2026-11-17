@@ -1,0 +1,63 @@
+# _data/nav.yml — the header's words, ONE source for every page and every product (brand v3, 2026-11-17).
+#
+# _plugins/nav.rb resolves this list once (CalCOFI::Nav.resolve: product keys to their live_url, counts to
+# the release's own numbers, site paths to URLs). Two things are drawn from the resolved list and from
+# nothing else, so they cannot drift:
+#
+#   _includes/site_nav.html   this site's header, in the page's HTML (it works with JavaScript off)
+#   /brand/v3/nav.json        the same list for the other products: brand/v3/header.js draws it into a
+#                             product's <nav class="cc-links cc-nav" data-cc-nav>
+#
+# A word is a link (`href`, `product` or `explore`) or a menu (`menu:` — a list of items, or of columns each
+# with a `title:` and `items:`). An item:
+#   title    the words
+#   href     a path on this site (/datasets/, /#learn) or a full URL
+#   product  a key of _data/products.yml: the link is its live_url (and `title: product` takes its title);
+#            an unknown key drops the item, so removing a product removes its line
+#   section  an id of products.yml `sections:` of kind page: the link is its url; unknown drops the item
+#   explore  a path under the Explorer (builder.html)
+#   small    the grey line under the title, or
+#   count    datasets | species | measurements: the release's own number as the grey line (never typed)
+#   icon     a brand glyph (brand/v2/icons.css), drawn where that sheet is loaded
+#   go       this site only: the tab a front-door link selects (section:tab)
+#   here     this site only: the first path segments that mark the word as the current one
+#   ext      true for a link that leaves calcofi.io (drawn quieter, hidden first when room runs out)
+#
+# The eight words (Ben, 2026-11-17: FAQ and News are words again, as on main since dfdbdc2; "Query" and
+# "Cite" are the short forms of Query Builder and Cite the data). Where main's eight words went:
+#   DATA → Data ▾ · APPS → Map ▾ · ACCESS and BUILD → Data ▾ › Get it · DOCS → Learn ▾ › Docs ·
+#   FAQ → FAQ · NEWS → News · calcofi.org ↗ → calcofi.org ↗
+words:
+  - id: data
+    title: Data
+    here: [datasets, species, measurements]
+    menu:
+      - title: Find
+        items:
+          - { title: Datasets,     href: /datasets/,     count: datasets,     icon: ui-data }
+          - { title: Species,      href: /species/,      count: species,      icon: realm-bio }
+          - { title: Measurements, href: /measurements/, count: measurements, icon: el-measured }
+      - title: Get it
+        items:
+          - { title: ERDDAP and cloud files, href: "/#services", go: "access:services", small: For servers and scripts,      icon: way-erddap }
+          - { title: R and Python,           href: "/#packages", go: "access:packages", small: Packages,                     icon: ui-code }
+          - { title: Build with CalCOFI,     href: "/#build",                           small: Workflows and the database,   icon: ui-code }
+  - id: map
+    title: Map
+    menu:
+      - { title: Explorer,       product: explore,             small: Maps and trends over time,    icon: way-explorer }
+      - { title: Dataset Finder, product: db-viz-station,      small: Data by station,              icon: way-explorer }
+      - { title: product,        product: ucla-monitoring-map, small: "Who monitors what, statewide", icon: way-explorer }
+      - { rule: true }
+      - { title: All apps,       href: "/#explore",            small: "Dashboards, student projects", icon: ui-more }
+  - { id: query, title: Query, explore: builder.html }
+  - { id: cite,  title: Cite,  href: "https://calcofi.io/docs/cite.html" }
+  - id: learn
+    title: Learn
+    align: right
+    menu:
+      - { title: How CalCOFI samples, href: "/#learn", small: "Ships, nets, bottles, stations", icon: ui-about }
+      - { title: Docs,                section: docs,   small: Guides and how-tos,             icon: ui-help }
+  - { id: faq,  title: FAQ,  section: faq }
+  - { id: news, title: News, href: /news/, here: [news] }
+  - { id: org,  title: "calcofi.org ↗", href: "https://calcofi.org", ext: true }
