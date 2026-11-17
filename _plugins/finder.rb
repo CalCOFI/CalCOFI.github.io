@@ -83,16 +83,10 @@ module CalCOFI
       (h || {}).select { |_, v| v.to_i.positive? }.keys.map(&:to_i).sort
     end
 
-    # what each dataset offers for the download form: CalCOFI's ERDDAP table, the release Parquet and
-    # NetCDF (with sizes), and the provider's original; Browse datasets reads the same through browse.rb
+    # each dataset a finder row names: its short name and its page (the preview links the page, where a
+    # CSV button beside every species or measurement downloads just that one)
     def files_for(keys)
-      keys.uniq.to_h do |k|
-        d = @datasets[k] || {}
-        out = @cat ? @cat.send(:download_files, d) : {}
-        out["name"] = ds_name(k)
-        out["page"] = "/datasets/#{k}/"
-        [k, out]
-      end
+      keys.uniq.to_h { |k| [k, { "name" => ds_name(k), "page" => "/datasets/#{k}/" }] }
     end
 
     def species

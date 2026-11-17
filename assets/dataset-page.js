@@ -1,6 +1,7 @@
 /* The dataset page (_includes/dataset_page.html; Betty 2026-11-15): the rest of the description,
-   finding a species in the list, showing all of it, the CSV buttons and the whole-dataset download
-   (both through assets/download-form.js), and copying the citation. */
+   finding a species in the list, showing all of it, the CSV buttons beside each species or measurement
+   (assets/download-form.js), and copying the citation. The whole-dataset button is main's Download link
+   and dialog (assets/download.js). */
 (function () {
   "use strict";
   var root = document.getElementById("dp");
@@ -63,16 +64,12 @@
   root.addEventListener("click", function (e) {
     var b = e.target.closest && e.target.closest("button");
     if (!b) return;
-    // the whole dataset: the form offers CSV, Parquet or NetCDF
-    if (b.hasAttribute("data-all-dl") && window.CCDownload) {
-      CCDownload.open({ name: D.name, kind: "dataset", files: files(), ds: [[D.key, D.y0, D.y1, D.n]], dsKey: D.key });
-    }
     // just one species or measurement, from this dataset (the Query Builder picks it and downloads)
     if (b.hasAttribute("data-one") && window.CCDownload) {
       var bio = b.getAttribute("data-one") === "bio", k = b.getAttribute("data-k");
       var y0 = bio ? D.y0 : +b.getAttribute("data-y0") || D.y0, y1 = bio ? D.y1 : +b.getAttribute("data-y1") || D.y1;
       CCDownload.open({ name: b.getAttribute("data-name"), unit: bio ? "records" : "values", kind: bio ? "species" : "measurement",
-        files: files(), ds: [[D.key, y0, y1, +b.getAttribute("data-n")]], dsKey: D.key, start: "just",
+        files: files(), ds: [[D.key, y0, y1, +b.getAttribute("data-n")]], dsKey: D.key, start: "just", base: root.getAttribute("data-base") || "",
         pick: function () { return BUILDER ? BUILDER + "?pick=" + encodeURIComponent((bio ? "bio:" : "env:") + D.key + ":" + k) + "&download=1" : null; } });
     }
     // copy the citation or the BibTeX

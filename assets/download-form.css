@@ -26,3 +26,6 @@
 .ccd-src { margin-left: auto; color: var(--accent); font-size: 13px; font-weight: 600; }
 .ccd-msg { margin: 10px 0 0; font-size: 13.5px; color: var(--muted); }
 .ccd-msg a { color: var(--accent); }
+fieldset.ccd-row { border: 0; padding: 0; min-width: 0; margin-left: 0; margin-right: 0; }
+fieldset.ccd-row > legend { float: left; width: 70px; padding: 3px 0 0; }
+fieldset.ccd-row > .ccd-c { grid-column: 2; }

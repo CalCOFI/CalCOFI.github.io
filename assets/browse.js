@@ -87,11 +87,12 @@
   }
   var BSPAN = (function () { var a = ROWS.map(function (r) { return r.y0; }).filter(Boolean); return [Math.min.apply(null, a.concat([1949])), new Date().getFullYear()]; })();
 
-  // Download: one button; the form (assets/download-form.js) says what you get and lets you choose the file
+  // Download: the dataset page's Download dialog (#download there: CSV first, Excel where it fits, Parquet, the
+  // citation and licence in the zip — main's assets/download.js), named by what the default is ("CSV · 32.4 MB")
   function dlMenu(r) {
-    var x = r.file || {};
-    if (!x.erddap && !x.pq && !x.nc) return "";
-    return '<button type="button" class="bd-b2" data-dl="' + esc(r.key) + '"><i class="cc-i cc-i-ui-download" aria-hidden="true"></i>Download</button>';
+    var d = r.download;
+    if (!d || !d.url) return "";
+    return '<a class="bd-b2" href="' + esc(d.url) + '" aria-label="Download ' + esc(r.name) + ": " + esc(d.what) + ', or another format"><i class="cc-i cc-i-ui-download" aria-hidden="true"></i>Download<small>' + esc(d.what) + "</small></a>";
   }
 
   function select(key) {
@@ -103,13 +104,6 @@
   }
 
   document.addEventListener("click", function (e) {
-    var dl = e.target.closest && e.target.closest("[data-dl]");
-    if (dl && window.CCDownload) {
-      var r = BY[dl.getAttribute("data-dl")], files = {};
-      files[r.key] = r.file;
-      CCDownload.open({ name: r.name, kind: "dataset", files: files, ds: [[r.key, r.y0, r.y1, r.n_obs]], dsKey: r.key });
-      return;
-    }
     var a = e.target.closest && e.target.closest(".bd-r[data-k]");
     if (!a || e.metaKey || e.ctrlKey || e.shiftKey || e.button) return;
     e.preventDefault(); select(a.dataset.k);

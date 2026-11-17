@@ -17,6 +17,23 @@ require "json"
 # Everything is read from the release record. Taxa, silhouettes and measurement series are read from
 # disk (_data/*.json), as finder.rb does: species.rb and measurements.rb replace their site.data keys.
 module CalCOFI
+  # Pure rules of the redesigned dataset page, with no Jekyll dependency, so _test/dataset_page_test.rb
+  # pins them on fixtures.
+  module DatasetPage
+    module_function
+
+    # What the download form (assets/download-form.js) knows about one dataset: its name, its page,
+    # and — only where the dataset has zips (_plugins/downloads.rb `offer`) — the default zip: the
+    # URL exactly as the offer gives it, the name to save it under and the button's words
+    # ("CSV · 32.4 MB"). No offer, no "zip" key: the form then sends the reader to the page.
+    def form_file(r, offer, page_url)
+      out = { "name" => r["dataset_name_short"] || r["dataset_name"] || r["dataset_key"], "page" => page_url }
+      pr = offer.is_a?(Hash) ? offer["primary"] : nil
+      out["zip"] = { "url" => pr["url"], "file" => pr["file"], "what" => offer["what"] } if pr && pr["url"]
+      out
+    end
+  end
+
   class DatasetPageData < Jekyll::Generator
     safe false
     priority :lowest # after DatasetCatalog (:high), which builds the pages and the Catalog
@@ -115,7 +132,7 @@ module CalCOFI
         "dl" => JSON.generate({
           "key" => key, "name" => r["dataset_name_short"] || r["dataset_name"] || key,
           "y0" => cov["year_min"], "y1" => cov["year_max"], "n" => cov["n_obs"],
-          "file" => @cat.send(:download_files, r)
+          "file" => DatasetPage.form_file(r, page.data["download"], page.url)
         })
       }
     end

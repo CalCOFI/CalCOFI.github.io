@@ -129,7 +129,7 @@
 .bd-pv-map .bbox { display: none; }
 .bd-r, .bd-r:hover, .bd-r * { text-decoration: none; }
 
-/* Download: one button that opens the download form (assets/download-form.js, download-form.css) */
+/* Download: a link to the dataset page's Download dialog (main's assets/download.js), with what the default is */
 button.bd-b2 { font: inherit; font-weight: 700; font-size: 14px; background: var(--bg); cursor: pointer; }
 .bd-pv { overflow: visible; }
 .bd-pv-map { border-radius: 14px 14px 0 0; overflow: hidden; }
@@ -139,3 +139,4 @@ button.bd-b2 { font: inherit; font-weight: 700; font-size: 14px; background: var
 .bd-pv-act .bd-b1 { padding: 0 14px; white-space: nowrap; }
 .bd-pv-act .bd-b2 { padding: 0 11px; white-space: nowrap; }
 .bd-pv-act .bd-b3 { white-space: nowrap; }
+.bd-b2 small { font-weight: 500; font-size: 12px; color: var(--muted); margin-left: 2px; }

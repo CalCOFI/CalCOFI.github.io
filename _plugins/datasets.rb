@@ -914,18 +914,6 @@ module CalCOFI
       }
     end
 
-    # the whole dataset in one click: ERDDAP's CSV of the current dataset (every row, every column),
-    # else the release's Parquet, else nil (the row then offers the dataset page's "Get the data")
-    def download_of(d)
-      dist = d["distributions"] || []
-      if (e = erddap_current(dist).first)
-        return { "url" => e["url"].sub(/\.html\z/, ".csv"), "label" => "Download the whole dataset (CSV, from ERDDAP)" }
-      end
-      pq = dist.find { |x| x["status"] != "superseded" && x["format"] == "parquet" }
-      return { "url" => pq["url"], "label" => "Download the whole dataset (Parquet)" } if pq && Fmt.present(pq["url"])
-      nil
-    end
-
     # one bar per year with data on the release's axis (strip_span), so every row's bar lines up with
     # every other's and with the "Years covered" strip; a dataset whose years cannot be measured
     # (the asserted `temporal`) draws its span as a dashed outline, as the strip hatches it

@@ -124,3 +124,9 @@
   .dp-th { display: none; }
   .dp-ih { flex-wrap: wrap; } .dp-q { width: 100%; margin-left: 0; }
 }
+
+/* reconciled with main (2026-11-17): the whole-dataset button is main's Download link (#dl-btn, the zip dialog),
+   drawn as this page's big button; the folds main's page carried sit closed under About the data */
+a.dp-big { box-sizing: border-box; text-decoration: none; }
+.dp-folds { margin-top: 32px; }
+.dp-folds .calm-folds { margin: 0; }
