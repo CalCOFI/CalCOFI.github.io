@@ -2180,7 +2180,11 @@ a.cc-chip-lic:hover { color: var(--accent); border-color: var(--accent); text-de
    and closes a moment after the pointer leaves (the visibility delay), so crossing the gap is easy. */
 .cc-header .cc-links.cc-nav2 { gap: 22px; flex-wrap: nowrap; }
 .cc-header .cc-links.cc-nav2 a { text-transform: none; letter-spacing: 0; }
-.cc-header .cc-nav2 > a, .cc-header .cc-nav2 > .cc-m2 > a { font-weight: 600; font-size: 15.5px; display: inline-flex; align-items: center; gap: 4px; padding: 6px 0; }
+.cc-header .cc-nav2 > a, .cc-header .cc-nav2 > .cc-m2 > .cc-m2-t { font-weight: 600; font-size: 15.5px; display: inline-flex; align-items: center; gap: 4px; padding: 6px 0; }
+/* Data, Map and Learn are buttons (they open a menu; they do not go anywhere): drawn as the nav's words */
+.cc-header .cc-m2-t { font-family: inherit; line-height: inherit; color: var(--fg); background: none; border: 0; margin: 0; cursor: pointer; white-space: nowrap; }
+.cc-header .cc-m2-t[aria-current], .cc-header .cc-m2-t[aria-expanded="true"] { color: var(--accent); }
+.cc-header .cc-m2-t:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
 .cc-header .cc-nav2 > a.cc-ext { font-weight: 500; color: var(--muted); }
 .cc-header .cc-nav2 .cc-car { width: 10px; height: 10px; fill: currentColor; opacity: .7; }
 .cc-header .cc-m2 { position: relative; }
@@ -2196,8 +2200,11 @@ a.cc-chip-lic:hover { color: var(--accent); border-color: var(--accent); text-de
 .cc-header .cc-dd::after { content: ""; position: absolute; top: -7px; left: 26px; width: 12px; height: 12px; background: var(--bg);
   border-left: 1px solid var(--edge); border-top: 1px solid var(--edge); transform: rotate(45deg); }
 .cc-header .cc-dd-r { left: auto; right: -16px; } .cc-header .cc-dd-r::after { left: auto; right: 30px; }
-.cc-header .cc-m2:hover > .cc-dd, .cc-header .cc-m2:focus-within > .cc-dd { visibility: visible; opacity: 1; transition-delay: 0s; }
-.cc-header .cc-m2:hover > a, .cc-header .cc-m2:focus-within > a { color: var(--accent); }
+/* open: the pointer is over the group, or the button was pressed (.open, assets/tabs.js: click, tap, Enter, Space).
+   .shut is Escape while the pointer is still over it (WCAG 1.4.13: dismissable without moving the pointer). */
+.cc-header .cc-m2:hover > .cc-dd, .cc-header .cc-m2.open > .cc-dd { visibility: visible; opacity: 1; transition-delay: 0s; }
+.cc-header .cc-m2.shut > .cc-dd { visibility: hidden; opacity: 0; transition: none; }
+.cc-header .cc-m2:hover > .cc-m2-t, .cc-header .cc-m2.open > .cc-m2-t { color: var(--accent); }
 .cc-header .cc-dd-2 { display: grid; grid-template-columns: repeat(2, 230px); gap: 2px 16px; padding: 12px 10px; }
 .cc-header .cc-dd h5 { margin: 0 10px 4px; font: 700 12.5px var(--sans); letter-spacing: 0; text-transform: none; color: var(--muted); }
 .cc-header .cc-dd a { display: grid; grid-template-columns: 22px 1fr; gap: 10px; align-items: start; padding: 7px 10px; border-radius: 8px;
@@ -2214,11 +2221,15 @@ a.cc-chip-lic:hover { color: var(--accent); border-color: var(--accent); text-de
    the header never wraps (main 618d959) — was under 480 px, which left 480–1,099 px with the open
    menu's dropdowns still absolutely placed and reachable only by hover. */
 @media (max-width: 1099px) {
-  .cc-header.cc-nav-open .cc-links.cc-nav2 { flex-wrap: nowrap; }
-  .cc-header.cc-nav-open .cc-nav2 > a, .cc-header.cc-nav-open .cc-nav2 > .cc-m2 > a { display: flex; padding: 10px 4px; }
+  /* the open menu scrolls inside itself: the header is sticky, so what ran below the window (Docs, News,
+     calcofi.org on a 667 px phone) could never be scrolled into view */
+  .cc-header.cc-nav-open .cc-links.cc-nav2 { flex-wrap: nowrap; max-height: calc(100vh - var(--header-h, 72px) - 12px); max-height: calc(100dvh - var(--header-h, 72px) - 12px); overflow-y: auto; overscroll-behavior: contain; }
+  .cc-header.cc-nav-open .cc-nav2 > a, .cc-header.cc-nav-open .cc-nav2 > .cc-m2 > .cc-m2-t { display: flex; padding: 10px 4px; }
+  /* its three words are headings there, not controls: every item under them is already shown */
+  .cc-header.cc-nav-open .cc-nav2 > .cc-m2 > .cc-m2-t { cursor: default; color: var(--fg); }
   .cc-header.cc-nav-open .cc-nav2 > a.cc-ext { display: flex; }
   .cc-header.cc-nav-open .cc-nav2 .cc-car { display: none; }
-  .cc-header.cc-nav-open .cc-dd, .cc-header.cc-nav-open .cc-dd-2 { position: static; display: block; visibility: visible; opacity: 1; min-width: 0;
+  .cc-header.cc-nav-open .cc-dd, .cc-header.cc-nav-open .cc-dd-2, .cc-header.cc-nav-open .cc-m2.shut > .cc-dd { position: static; display: block; visibility: visible; opacity: 1; min-width: 0;
     margin: -4px 0 6px; padding: 0 0 0 12px; border: 0; box-shadow: none; background: transparent; }
   .cc-header.cc-nav-open .cc-dd::after, .cc-header.cc-nav-open .cc-dd::before, .cc-header.cc-nav-open .cc-dd hr,
   .cc-header.cc-nav-open .cc-dd small, .cc-header.cc-nav-open .cc-dd h5 { display: none; }

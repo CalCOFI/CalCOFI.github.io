@@ -1,8 +1,12 @@
 {%- comment -%}
   The site header's nav (Betty, 2026-11-16; header-and-catalogs-6 mockup):
     Data ▾ · Map ▾ · Query Builder · Cite the data · Learn ▾ · calcofi.org ↗
-  Sentence case. A menu opens on hover or keyboard focus and stays open a moment after the pointer
-  leaves (CSS only, style.css § the site nav). Under 1100 px (NAV_BREAK: style.css, assets/tabs.js,
+  Sentence case. Data, Map and Learn are BUTTONS (aria-expanded, aria-controls) that open their menu:
+  on hover, staying open a moment after the pointer leaves (CSS, style.css § the site nav), and on a
+  click, a tap or Enter / Space (assets/tabs.js), which is what a touch screen and a keyboard have.
+  Escape closes the menu and returns focus to its button; so does a click outside or focus leaving.
+  Each menu's first line is the page the word used to link (Datasets, the Explorer, How CalCOFI
+  samples), so nothing is one click further for a mouse and everything is reachable without one. Under 1100 px (NAV_BREAK: style.css, assets/tabs.js,
   scripts/check_layout.py) the menu button takes over, so the header never wraps (main 618d959); the
   open menu (assets/tabs.js toggles `cc-nav-open`) shows every item in one column, the menus inline.
   Learn carries FAQ (main dfdbdc2). Counts are the catalog's own (as tab_count.html).
@@ -20,8 +24,8 @@
 {%- capture car %}<svg class="cc-car" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 9l5 6 5-6z"/></svg>{% endcapture -%}
 <nav class="cc-links cc-nav2" id="cc-nav" aria-label="Sections">
   <div class="cc-m2">
-    <a href="{{ '/datasets/' | relative_url }}" aria-haspopup="true"{% if here == "datasets" or here == "species" or here == "measurements" %} aria-current="page"{% endif %}>Data{{ car }}</a>
-    <div class="cc-dd cc-dd-2">
+    <button type="button" class="cc-m2-t" aria-expanded="false" aria-controls="cc-dd-data"{% if here == "datasets" or here == "species" or here == "measurements" %} aria-current="true"{% endif %}>Data{{ car }}</button>
+    <div class="cc-dd cc-dd-2" id="cc-dd-data">
       <div><h5>Find</h5>
         <a href="{{ '/datasets/' | relative_url }}"><i class="cc-i cc-i-ui-data" aria-hidden="true"></i><span><b>Datasets</b><small>All {{ site.data.catalog.counts.datasets }}</small></span></a>
         <a href="{{ '/species/' | relative_url }}"><i class="cc-i cc-i-realm-bio" aria-hidden="true"></i><span><b>Species</b>{% if nums.species_fmt %}<small>{{ nums.species_fmt }}</small>{% endif %}</span></a>
@@ -35,8 +39,8 @@
     </div>
   </div>
   <div class="cc-m2">
-    <a href="{{ explore_url }}" aria-haspopup="true">Map{{ car }}</a>
-    <div class="cc-dd">
+    <button type="button" class="cc-m2-t" aria-expanded="false" aria-controls="cc-dd-map">Map{{ car }}</button>
+    <div class="cc-dd" id="cc-dd-map">
       <a href="{{ explore_url }}"><i class="cc-i cc-i-way-explorer" aria-hidden="true"></i><span><b>Explorer</b><small>Maps and trends over time</small></span></a>
       {%- if p_finder %}<a href="{{ p_finder.live_url }}"><i class="cc-i cc-i-way-explorer" aria-hidden="true"></i><span><b>Dataset Finder</b><small>Data by station</small></span></a>{% endif -%}
       {%- if p_monitor %}<a href="{{ p_monitor.live_url }}"><i class="cc-i cc-i-way-explorer" aria-hidden="true"></i><span><b>{{ p_monitor.title | escape }}</b><small>Who monitors what, statewide</small></span></a>{% endif -%}
@@ -47,8 +51,8 @@
   <a href="{{ explore_url }}builder.html">Query Builder</a>
   <a href="https://calcofi.io/docs/cite.html">Cite the data</a>
   <div class="cc-m2">
-    <a href="{{ '/' | relative_url }}#learn" aria-haspopup="true"{% if here == "news" %} aria-current="page"{% endif %}>Learn{{ car }}</a>
-    <div class="cc-dd cc-dd-r">
+    <button type="button" class="cc-m2-t" aria-expanded="false" aria-controls="cc-dd-learn"{% if here == "news" %} aria-current="true"{% endif %}>Learn{{ car }}</button>
+    <div class="cc-dd cc-dd-r" id="cc-dd-learn">
       <a href="{{ '/' | relative_url }}#learn"><i class="cc-i cc-i-ui-about" aria-hidden="true"></i><span><b>How CalCOFI samples</b><small>Ships, nets, bottles, stations</small></span></a>
       <a href="{{ s_docs.url | default: 'https://calcofi.io/docs/' }}"><i class="cc-i cc-i-ui-help" aria-hidden="true"></i><span><b>Docs</b><small>Guides and how-tos</small></span></a>
       {%- comment -%} FAQ (main dfdbdc2, 2026-11-16: its own header word after Docs; here a line of Learn, from the same
