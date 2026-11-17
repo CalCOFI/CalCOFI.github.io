@@ -123,3 +123,27 @@
 .hero-foot a.hero-share { color: #fff; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; }
 .hero-foot a.hero-share .cc-i { font-size: 14px; }
 .hero-foot a.hero-share:hover { color: var(--cc-yellow, #ffcd00); }
+
+/* ── phone and tablet (reconciled 2026-11-17, checked at 375 px in both themes) ───────────────────
+   Stacked, the hero is far taller than it is wide and the picture is scaled by its height, so three
+   things that hold on a desktop do not:
+   · "Where do you want to start?" is white for the water, but stacked it sits in the SKY (white on
+     #f1f6fb, 1.1:1). It takes the hero's ink, which reads on the sky and on the water alike.
+   · the four numbers ran off the right edge at 375 px ("MEASUREMENTS" cut): a tighter gap.
+   · the label by the ship is drawn in the picture, so it was cut by the screen's edge and lay under
+     the first card, still a focusable link. It goes; "What CalCOFI collects" in the strip is the
+     same link.
+   · the strip is absolutely placed for one line; wrapped to two or three it rode up over the last
+     card. It joins the flow, under the cards. */
+@media (max-width: 900px) {
+  .hero .hero-h2 { color: var(--h-ink); }
+  .hero-sea .hero-tag { display: none; }
+  .hero-start { margin-bottom: 20px; }
+  .hero-foot { position: relative; bottom: auto; padding: 0 0 20px; }
+  .hero-in-row { flex-direction: column; align-items: flex-start; gap: 8px; }
+}
+@media (max-width: 480px) {
+  .hero-nums { gap: 12px 18px; }
+  .hero-nums dd { font-size: 34px; }
+  .hero-nums dt { letter-spacing: .08em; }
+}
