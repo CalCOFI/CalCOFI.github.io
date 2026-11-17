@@ -105,6 +105,14 @@
       return;
     }
     all.forEach(function (o) { if (!o.contains(t)) setMenu(o, false); });
+    // a line of a menu was followed: its menu shuts (it stayed open over whatever the line opened on the same page),
+    // even under the pointer, and focus goes to the menu's word, not to a line that is now hidden
+    var line = t.closest(".cc-header .cc-dd a"), lm = line && line.closest(".cc-m2");
+    if (lm && !column(header(lm))) {
+      setMenu(lm, false);
+      if (lm.matches(":hover")) lm.classList.add("shut");
+      var lt = lm.querySelector(".cc-m2-t"); if (lt) lt.focus();
+    }
     var a = t.closest(".cc-header .cc-links a"), h = header(a);
     if (a && h && h.classList.contains("cc-nav-open")) setNav(h, false);
   });

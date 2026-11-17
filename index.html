@@ -665,9 +665,17 @@ SELECT * FROM read_json('{{ rel.catalog_url }}')</pre>
   // that was followed (the hero's strip, a start card, a header menu item), else the hero's heading —
   // never nowhere, so a keyboard or screen-reader user is not dropped at the top of the document
   var opener = null;
+  // can it take focus now? A line of a header menu cannot once its menu has shut: it is visibility: hidden, which
+  // offsetParent does not see, so focus() failed silently and focus fell to <body>
+  function focusable(el) {
+    return !!el && document.contains(el) && el.offsetParent !== null && getComputedStyle(el).visibility !== 'hidden';
+  }
   function close(k) {
     show(null); setUrl(null);
-    var d = door(k) || (opener && document.contains(opener) && opener.offsetParent !== null ? opener : null) || document.getElementById('start-h');
+    // the link that opened the panel; for a line of a header menu, the word that opens that menu; else the start heading
+    var word = opener && opener.closest && opener.closest('.cc-m2') ? opener.closest('.cc-m2').querySelector('.cc-m2-t') : null;
+    // (the word first: the menu shuts with this very click, and its line, focused, would be hidden a moment later)
+    var d = door(k) || (focusable(word) ? word : null) || (focusable(opener) ? opener : null) || document.getElementById('start-h');
     opener = null;
     if (d) { d.focus({ preventScroll: true }); d.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'nearest' }); }
   }
