@@ -45,7 +45,7 @@ layout: default
     </div>
 
     <div class="tabpanel" data-panel="cat" role="tabpanel">
-      <div id="cf" data-kind="measurements" data-src="{{ '/measurements/finder.json' | relative_url }}" data-tabset="ts-mm"
+      <div id="cf"{% if site.data.catalog.span %} data-span="{{ site.data.catalog.span | join: ',' }}"{% endif %} data-kind="measurements" data-src="{{ '/measurements/finder.json' | relative_url }}" data-tabset="ts-mm"
            data-explore="{{ explore_url }}" data-base="{{ site.baseurl }}">
         <div class="cf-find">
           <div class="cf-lists" id="cf-list"><noscript><p class="cf-empty">The list is drawn by JavaScript; every measurement is also in

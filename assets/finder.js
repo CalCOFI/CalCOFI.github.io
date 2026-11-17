@@ -9,7 +9,10 @@
   var root = document.getElementById("cf");
   if (!root) return;
   var KIND = root.getAttribute("data-kind"), SP = KIND === "species";
-  var Y0 = 1949, Y1 = new Date().getFullYear(), W;
+  // the previews' year axis: the release's own span (data-span, from Catalog#strip_span), else the rows' own first
+  // and last years once they load — never a typed year or the reader's clock
+  var SPAN = (root.getAttribute("data-span") || "").split(",").map(Number).filter(Boolean);
+  var Y0 = SPAN[0] || 0, Y1 = SPAN[1] || 0, W;
   var D = null, q = "", grp = "", sel = null, view = SP ? "groups" : "cat";
   /* the search box is #door-q, so species.js and measurements.js fold the tree and the timeline to it too */
   var input = document.getElementById("door-q"), count = document.getElementById("cf-n");
@@ -183,7 +186,9 @@
   [].forEach.call(document.querySelectorAll(".cf-try [data-q]"), function (b) { b.onclick = function () { input.value = b.getAttribute("data-q"); input.dispatchEvent(new Event("input")); }; });
 
   fetch(root.getAttribute("data-src")).then(function (r) { return r.json(); }).then(function (d) {
-    D = d; Y1 = Math.max(Y1, d.rows.reduce(function (a, r) { return Math.max(a, r.y1 || 0); }, 0)); W = Y1 - Y0 + 1;
+    D = d;
+    if (!Y0) Y0 = d.rows.reduce(function (a, r) { return r.y0 ? Math.min(a, r.y0) : a; }, 9999);
+    Y1 = Math.max(Y1, d.rows.reduce(function (a, r) { return Math.max(a, r.y1 || 0); }, 0)); W = Y1 - Y0 + 1;
     var p = new URLSearchParams(location.search), q0 = p.get("q"), c0 = p.get("cat"), g0 = p.get("group");
     view = "";
     if (q0 && input) { input.value = q0; q = q0.toLowerCase(); }

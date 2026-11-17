@@ -48,7 +48,7 @@ layout: default
     </div>
 
     <div class="tabpanel" data-panel="groups" role="tabpanel">
-      <div id="cf" data-kind="species" data-src="{{ '/species/finder.json' | relative_url }}" data-sils="{{ '/species/finder-sils.json' | relative_url }}" data-tabset="ts-species"
+      <div id="cf"{% if site.data.catalog.span %} data-span="{{ site.data.catalog.span | join: ',' }}"{% endif %} data-kind="species" data-src="{{ '/species/finder.json' | relative_url }}" data-sils="{{ '/species/finder-sils.json' | relative_url }}" data-tabset="ts-species"
            data-explore="{{ explore_url }}" data-base="{{ site.baseurl }}">
         <div class="cf-find">
           <div class="cf-lists" id="cf-list"><noscript><p class="cf-empty">The list is drawn by JavaScript; every species is also in

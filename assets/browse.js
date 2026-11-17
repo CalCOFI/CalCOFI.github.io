@@ -97,7 +97,14 @@
     [1970, 1990, 2010].forEach(function (y) { if (y > BSPAN[0] && y < BSPAN[1]) h += '<span style="left:' + ((y - BSPAN[0]) / w * 100).toFixed(1) + '%">' + y + "</span>"; });
     return h + '<span style="right:0">' + BSPAN[1] + "</span>";
   }
-  var BSPAN = (function () { var a = ROWS.map(function (r) { return r.y0; }).filter(Boolean); return [Math.min.apply(null, a.concat([1949])), new Date().getFullYear()]; })();
+  // the preview's year axis: the release's own span (data-span on the list, from Catalog#strip_span), else the rows'
+  // own first and last years — never a typed year or the reader's clock
+  var BSPAN = (function () {
+    var s = ((list && list.getAttribute("data-span")) || "").split(",").map(Number).filter(Boolean);
+    if (s.length === 2) return s;
+    var a = ROWS.map(function (r) { return r.y0; }).filter(Boolean), b = ROWS.map(function (r) { return r.y1; }).filter(Boolean);
+    return [Math.min.apply(null, a), Math.max.apply(null, b)];
+  })();
 
   // Download: the dataset page's Download dialog (#download there: CSV first, Excel where it fits, Parquet, the
   // citation and licence in the zip — main's assets/download.js), named by what the default is ("CSV · 32.4 MB")

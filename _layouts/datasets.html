@@ -80,7 +80,7 @@ layout: default
     <div class="bd-lists">
       <div class="tabpanel" id="ds-view-list" data-panel="list" role="tabpanel" aria-labelledby="ds-view-tab-list">
         <div class="bd-colh"><span>Dataset</span><span>What&#8217;s in it</span><span>Years with data</span></div>
-        <div class="bd-list" id="bd-list">
+        <div class="bd-list" id="bd-list"{% if cat.span %} data-span="{{ cat.span | join: ',' }}"{% endif %}>
           {%- for d in b.rows %}{% include browse_row.html d=d sub=true %}{% endfor -%}
         </div>
       </div>
