@@ -107,11 +107,13 @@
   })();
 
   // Download: the dataset page's Download dialog (#download there: CSV first, Excel where it fits, Parquet, the
-  // citation and licence in the zip — main's assets/download.js), named by what the default is ("CSV · 32.4 MB")
+  // citation and licence in the zip — main's assets/download.js). The button reads "Download", so the three
+  // actions stay on one line inside the 380 px preview (with the size written in it, "Full details" stuck 20 px
+  // outside the card); what the default is ("CSV · 32.4 MB") is in its title and its accessible name
   function dlMenu(r) {
     var d = r.download;
     if (!d || !d.url) return "";
-    return '<a class="bd-b2" href="' + esc(d.url) + '" aria-label="Download ' + esc(d.what) + ": " + esc(r.name) + ', or another format"><i class="cc-i cc-i-ui-download" aria-hidden="true"></i>Download <small>' + esc(d.what) + "</small></a>";
+    return '<a class="bd-b2" href="' + esc(d.url) + '" aria-label="Download ' + esc(r.name) + ": " + esc(d.what) + ', or another format" title="' + esc(d.what) + ' · and other formats"><i class="cc-i cc-i-ui-download" aria-hidden="true"></i>Download</a>';
   }
 
   function select(key) {
