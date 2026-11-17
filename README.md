@@ -104,14 +104,13 @@ where v2 changed how they are reached, this subsection is the current state.
   one-measurement CSV links (`…/query/?pick=…`). A preview or a local build names its own copy with
   `local_query` (`_config.netlify.yml`: `/query/`, placed there by `scripts/build_netlify.sh` from
   `QUERY_DIST` or `npm run build:query`; `_config.local.yml`: the Vite dev server's `builder.html`).
-  `/explore/builder.html` redirects to it, query string and all. **The address is not new:** since 2026-08-10
-  (20f82df) this repo's `query/index.html` has redirected `calcofi.io/query/` to `calcofi.io/db-query/`, the
-  SQL console, which had that name first. A project site at `CalCOFI/query` takes the path over from this
-  file, so a link to `/query/` written for the SQL console will open the Query Builder instead; the builder
-  links db-query for that reader. Delete `query/index.html` once the project site answers, not before.
-  **Order of going live:** `/query/` first, then this site, then the Explorer's redirect; this site deployed
-  before then would send the header's Query Builder line, the third start card and the dataset pages' CSV
-  links to the SQL console.
+  `/explore/builder.html` redirects to it, query string and all, once `VITE_QUERY_URL` is set on the
+  Explorer's build. **The address is not new:** from 2026-08-10 (20f82df) to 2026-11-17 this repo's
+  `query/index.html` redirected `calcofi.io/query/` to `calcofi.io/db-query/`, the SQL console, which had that
+  name first. The project site CalCOFI/query took the path over when it first deployed (2026-11-17), so a link
+  to `/query/` written for the SQL console now opens the Query Builder, which links db-query for that reader;
+  the file is deleted here, since it was shadowed and would have come back to life had that repository ever
+  been removed.
 - **The wave** (brand v3 § 4.5) is under the bar on every page: the catalogs' search band and a dataset
   page's title band are the wave with a head in it; every other page, the front door included, has a slim
   one (34 px), drawn by `_layouts/default.html`. On the front door it cuts into the hero's sky.
