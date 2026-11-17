@@ -188,6 +188,8 @@ module CalCOFI
           "years" => se.flat_map { |s| years_of(s["years"]) }.uniq.sort,
           "ds" => se.map { |s| [s["dataset_key"], s["year_min"], s["year_max"], s["n_values"]] },
           "defn" => Fmt.present(nerc["definition"].to_s[0, 380]), "nerc" => Fmt.present(nerc["pref"]),
+          # the NERC P01 code (TEMPPR01, NTRAZZXX …): searched, as main's one search did; never drawn here
+          "p01" => Fmt.present(m["nerc_p01"]),
           "map" => (ekeys.include?(m["key"]) ? "?var=#{CGI.escape(m['key'])}" : nil)
         }
       end

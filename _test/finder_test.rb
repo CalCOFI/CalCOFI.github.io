@@ -230,7 +230,7 @@ class FinderTest < Minitest::Test
   def measurements_rec
     { "release" => { "version" => "v9.9.9" }, "counts" => { "measurements" => 4 }, "measurements" => [
       meas("nitrate", 300, "Nutrients & Chemistry", 2, units: "umol/L", series: [ser("x_eggs", 300)]),
-      meas("temperature", 900, "Physical Oceanography", 1, units: "degC", short: "Temperature", unified: true,
+      meas("temperature", 900, "Physical Oceanography", 1, units: "degC", short: "Temperature", unified: true, "nerc_p01" => "TEMPPR01",
            series: [ser("x_birds", 100, 2010, 2011), ser("x_larvae", 700, 1949, 2021), ser("x_held", 100)]),
       meas("mystery", 5000, "Physical Oceanography", 1, series: [ser("x_held", 5000)]),
       meas("wind", 20, "Meteorology", 3, units: "m/s", series: [])
@@ -256,7 +256,7 @@ class FinderTest < Minitest::Test
                    "desc" => "About temperature.", "units" => "°C", "cat" => "Physical Oceanography", "unified" => true,
                    "n" => 900, "y0" => 1949, "y1" => 2026, "dmin" => 0, "dmax" => 5351, "years" => [1949, 2010],
                    "ds" => [["x_larvae", 1949, 2021, 700], ["x_birds", 2010, 2011, 100]],
-                   "defn" => r["defn"], "nerc" => "Temperature of the water body", "map" => "?var=temperature" }, r)
+                   "defn" => r["defn"], "nerc" => "Temperature of the water body", "p01" => "TEMPPR01", "map" => "?var=temperature" }, r)
     assert_equal 380, r["defn"].length, "the definition, cut"
   end
 
@@ -291,6 +291,15 @@ class FinderTest < Minitest::Test
 
   def test_a_measurement_with_no_series_at_all_keeps_its_row
     assert_equal [], measurements["rows"].find { |r| r["k"] == "wind" }["ds"]
+  end
+
+  # regression (2026-11-17): main's one search found a measurement by its NERC P01 code (check_layout searches
+  # "NTRAZZXX"); the finder's rows did not carry the code, so the search could not. A row carries it when the
+  # record does, and nil when it does not.
+  def test_a_measurement_row_carries_its_nerc_code_for_the_search
+    by = measurements["rows"].to_h { |r| [r["k"], r["p01"]] }
+    assert_equal "TEMPPR01", by["temperature"]
+    assert_nil by["nitrate"]
   end
 
   def test_measurements_is_nil_without_a_record

@@ -58,7 +58,9 @@
   function filtered() {
     var rows = D.rows.filter(function (r) { return !(SP && grp && r.cls !== grp); });
     if (!q) return rows;
-    if (!SP) return rows.filter(function (r) { return has([r.lab, r.full, r.desc, r.cat, r.units, r.k]); });
+    // a measurement is found by its names, its unit, its key, its NERC name and code (NTRAZZXX), and the datasets
+    // that hold it by key or name ("METS"): what main's one search over this list answered
+    if (!SP) return rows.filter(function (r) { return has([r.lab, r.full, r.desc, r.cat, r.units, r.k, r.nerc, r.p01].concat(r.ds.map(function (d) { return d[0] + " " + dsName(d[0]); }))); });
     var byName = rows.filter(function (r) { return has([r.com, r.sci]); });
     return byName.length ? byName : rows.filter(function (r) { return has([r.grp, r.cls]); });
   }
