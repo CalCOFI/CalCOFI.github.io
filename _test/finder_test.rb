@@ -11,8 +11,13 @@
 #                  their three commonest species; a species whose lineage names no class is in ONE
 #                  group "Other" that is drawn (three sea turtles were in no group)
 #   silhouettes    a row's own, else its nearest ancestor's; each outline held once
-#   measurements   every measurement, most values first; categories in category.order; units through
-#                  the site's one display map; the Explorer link only for a key the Explorer carries
+#   higher taxa    every taxon with a page that is not a row of the list (a genus, a family, a class,
+#                  a species seen only as its subspecies, a dataset-local class), most recorded
+#                  first, so the search finds "Sardinops"; one seen only in hidden datasets is not named
+#   measurements   every measurement, most values first; categories in category.order, each with its
+#                  count and the names of its four rows with the most values (a closed category's
+#                  one line); units through the site's one display map; the Explorer link only for a
+#                  key the Explorer carries
 #   visibility     a dataset the catalog does not show (visibility: internal) names no row
 #   GROUP_NAMES    every typed group name is for a class the record has (the list is editorial,
 #                  pending a decision on moving the names into the taxa record)
@@ -183,6 +188,68 @@ class FinderTest < Minitest::Test
     assert_equal 7, F.species({ "taxa" => taxa }, nil, DATASETS)["rows"].size, "no media sidecar: the rows, with no faces"
   end
 
+  # ── the taxa that are not rows (/species/finder-taxa.json) ───────────────
+  def test_higher_taxa_are_the_taxa_with_a_page_that_are_not_rows_most_recorded_first
+    hi = species["taxa"]
+    # not the seven rows; not Secretus absconditus, seen only in a dataset the catalog does not show
+    assert_equal ["Copepoda", "Teleostei", "Sebastes", "Aves", "Sardinops sagax", "Hexanauplia"], hi.map { |t| t["s"] }
+    assert_empty hi.map { |t| t["u"] } & species["rows"].map { |r| r["url"] }, "a row of the list is not also a higher taxon"
+    assert_equal species["rows"].size + hi.size + 1, taxa.size, "every taxon is a row, a higher taxon, or the hidden one"
+  end
+
+  def test_a_higher_taxon
+    genus = species["taxa"].find { |t| t["s"] == "Sebastes" }
+    assert_equal({ "u" => "/species/worms-11/", "s" => "Sebastes", "r" => "Genus", "g" => "Teleostei", "sp" => 0, "n" => 300,
+                   "y0" => 1951, "y1" => 2023, "i" => true }, genus, "no common name: no key; a genus is in italics")
+    cls = species["taxa"].find { |t| t["s"] == "Teleostei" }
+    assert_equal ["Class", "Teleostei", 3, 700, nil], cls.values_at("r", "g", "sp", "n", "i"), "a class is its own group; not in italics"
+  end
+
+  def test_a_species_seen_only_as_its_subspecies_is_a_higher_taxon_not_a_row
+    refute_includes species["rows"].map { |r| r["sci"] }, "Sardinops sagax"
+    assert_equal ["Species", 30], species["taxa"].find { |t| t["s"] == "Sardinops sagax" }.values_at("r", "n")
+  end
+
+  def test_a_higher_taxon_seen_only_in_hidden_datasets_is_not_named_and_one_with_a_shown_descendant_is
+    tx = [
+      taxon("worms:1", "Clupeidae", "Family", rollup: 50, n_sp: 2, com: " herrings "),
+      taxon("worms:2", "Sardinops", "Genus", parent: "worms:1", direct: 2, rollup: 32, n_sp: 1, ds: [seen("x_held", 2)]),
+      taxon("worms:3", "Sardinops sagax", "Species", parent: "worms:2", direct: 30, ds: [seen("x_larvae", 30)]),
+      taxon("worms:4", "Occultus", "Genus", parent: "worms:1", direct: 3, rollup: 18, n_sp: 1, ds: [seen("x_held", 3)]),
+      taxon("worms:5", "Occultus latens", "Species", parent: "worms:4", direct: 15, ds: [seen("x_held", 15)]),
+      taxon("worms:6", "Ignotidae", "Family", rollup: 0)
+    ]
+    hi = F.higher_taxa(tx, DATASETS, ["worms:3"])
+    assert_equal %w[Clupeidae Sardinops Ignotidae], hi.map { |t| t["s"] },
+                 "Sardinops is itself seen only in a hidden dataset but its species is in a shown one; Occultus and its " \
+                 "species are only in the hidden one; a taxon under which no dataset is named at all stays"
+    assert_equal "herrings", hi.first["c"], "the common name, trimmed"
+  end
+
+  def test_a_dataset_local_class_is_named_as_its_page_is
+    loc = taxon("x_larvae:218", nil, nil, direct: 7, ds: [seen("x_larvae", 7)]).merge("local" => { "name" => nil, "code" => "218", "common_name" => "other" })
+    assert_equal [{ "u" => "/species/x_larvae-218/", "s" => "218", "c" => "other", "sp" => 0, "n" => 7, "y0" => 1951, "y1" => 2023 }],
+                 F.higher_taxa([loc], DATASETS, []), "no rank and no class: neither key is written"
+    assert_equal "Clio", F.taxon_name("scientific_name" => "Clio", "local" => { "name" => "x" })
+    assert_equal "x", F.taxon_name("scientific_name" => "", "local" => { "name" => "x", "code" => "9" })
+    assert_equal "77", F.taxon_name("taxon_key" => "x_larvae:77")
+  end
+
+  def test_higher_taxa_of_no_record_and_a_parent_loop
+    assert_empty F.higher_taxa(nil, DATASETS, [])
+    loop_ = [taxon("a:1", "A", "Genus", parent: "a:2", ds: [seen("x_larvae", 1)]), taxon("a:2", "B", "Family", parent: "a:1")]
+    assert_equal %w[A B], F.higher_taxa(loop_, DATASETS, []).map { |t| t["s"] }.sort, "a loop in the lineage ends"
+  end
+
+  def test_every_page_of_the_fetched_record_is_a_row_or_a_higher_taxon
+    f = File.expand_path("../_data/taxa.json", __dir__)
+    skip "no _data/taxa.json (run scripts/fetch_release.sh)" unless File.exist?(f)
+    rec = JSON.parse(File.read(f))
+    all = rec["taxa"].flat_map { |t| (t["datasets"] || []).map { |d| d["dataset_key"] } }.uniq.to_h { |k| [k, { "dataset_key" => k }] }
+    sp = F.species(rec, nil, all)
+    assert_equal rec["taxa"].size, sp["rows"].size + sp["taxa"].size, "with every dataset shown, no page is left unfindable"
+  end
+
   # ── the typed group names ────────────────────────────────────────────────
   def test_group_name_is_the_typed_one_else_the_class
     assert_equal "Bony fishes", F.group_name("Teleostei")
@@ -248,6 +315,18 @@ class FinderTest < Minitest::Test
     assert_equal %w[temperature nitrate wind], m["rows"].map { |r| r["k"] }
     assert_equal [["Physical Oceanography", 1], ["Nutrients & Chemistry", 2], ["Meteorology", 3]], m["cats"].map { |c| [c["name"], c["order"]] }
     assert_equal "v9.9.9", m["release"]
+  end
+
+  # a closed category says how many measurements it holds and names the ones with the most values
+  def test_a_category_counts_its_rows_and_names_the_ones_with_the_most_values
+    m = measurements
+    assert_equal [1, 1, 1], m["cats"].map { |c| c["n"] }, "the hidden dataset's row (mystery) is not counted"
+    assert_equal [["Temperature"], ["nitrate (long)"], ["wind (long)"]].map(&:size), m["cats"].map { |c| c["top"].size }
+    assert_equal ["Temperature"], m["cats"].first["top"], "the short label, as the row is headed"
+    many = { "measurements" => (1..6).map { |i| meas("m#{i}", i * 10, "Physical Oceanography", 1, short: "M#{i}", series: [ser("x_eggs", i * 10)]) } }
+    c = F.measurements(many, SOURCES, COVERAGE, DATASETS)["cats"].first
+    assert_equal 6, c["n"]
+    assert_equal %w[M6 M5 M4 M3], c["top"], "the #{F::CAT_TOP} with the most values, most first"
   end
 
   def test_a_measurement_row

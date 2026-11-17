@@ -6,8 +6,11 @@ require "json"
 # The Species and Measurements finders (/species/, /measurements/; Betty 2026-11-15): the same shape as
 # Browse datasets — a search band, a list, a preview beside it — and one download flow for all three.
 #
-# Writes two JSON files the pages read (assets/finder.js):
-#   /species/finder.json       groups (the 22 classes), rows (every species), silhouettes, datasets
+# Writes the JSON files the pages read (assets/finder.js):
+#   /species/finder.json       groups (the 22 classes), rows (every species), datasets
+#   /species/finder-sils.json  the silhouettes (most of the bytes: loaded second)
+#   /species/finder-taxa.json  the taxa with a page that are not a row of the list (a genus, a family,
+#                              an order …): what the search also answers, apart from the species
 #   /measurements/finder.json  rows (every measurement), categories, datasets
 #
 # Every value is read from the release record (taxa.json, taxa_media.json, measurements.json,
@@ -42,6 +45,8 @@ module CalCOFI
     # the group of a species whose lineage names no class (three sea turtles in v2026.11.14)
     OTHER = "Other"
     MEDIA_BASE = "https://storage.googleapis.com/calcofi-files-public/"
+    # how many of a measurement category's rows its closed heading names
+    CAT_TOP = 4
 
     def group_name(cls) = GROUP_NAMES[cls] || cls
 
@@ -78,6 +83,60 @@ module CalCOFI
       key.to_s.start_with?("worms:", "itis:") ? "?taxon=#{key}" : nil
     end
 
+    # the ranks a name is written in italics at (species.rb ITALIC_RANKS, the same list)
+    ITALIC_RANKS = %w[Genus Species Subspecies Variety Forma].freeze
+
+    # a taxon's name as its page is headed (species.rb Taxa#name_of, the same order): the accepted
+    # name, else the name or the code its dataset gives a dataset-local class, else the key's tail
+    def taxon_name(t)
+      Fmt.present(t["scientific_name"]) || Fmt.present(t.dig("local", "name")) ||
+        Fmt.present(t.dig("local", "code")) || t["taxon_key"].to_s.sub(/\A[^:]+:/, "")
+    end
+
+    # /species/finder-taxa.json: the taxa that have a page and are NOT a row of the species list, so
+    # the search can answer "Sardinops" or "Clupeidae" with a link to that page (main's one search
+    # listed them; the finder's list is species only, and stays so).
+    #   which   every taxon of the record (species.rb writes a page for each) whose key is not in
+    #           `row_keys`: the genera, families, orders, classes …, and the few that are not above a
+    #           species at all (a subspecies, a species seen only as its subspecies, a dataset-local
+    #           class). One seen, itself and everything under it, ONLY in datasets the catalog does
+    #           not show is left out, as a species row is; one with no dataset named anywhere under
+    #           it stays.
+    #   each    u its page · s its name · c its common name · r its rank (nil: dataset-local) ·
+    #           g its class (the group a species row carries; a class is its own) · sp the species
+    #           at or under it · n the records at or under it · y0, y1 their years · i true where
+    #           the name is written in italics. A nil or false value is not written.
+    #   order   most recorded first
+    def higher_taxa(taxa, datasets, row_keys)
+      taxa ||= []
+      by = taxa.to_h { |t| [t["taxon_key"], t] }
+      shown = {}  # a dataset of the catalog is named at or under it
+      named = {}  # any dataset is named at or under it
+      taxa.each do |t|
+        ds = t["datasets"] || []
+        next if ds.empty?
+        vis = ds.any? { |d| datasets.key?(d["dataset_key"]) }
+        k = t["taxon_key"]
+        seen = {}
+        while k && by[k] && !seen[k]
+          seen[k] = true
+          named[k] = true
+          shown[k] = true if vis
+          k = by[k]["parent_taxon_key"]
+        end
+      end
+      rows = taxa.reject { |t| row_keys.include?(t["taxon_key"]) || (named[t["taxon_key"]] && !shown[t["taxon_key"]]) }.map do |t|
+        ro = t["rollup"] || {}
+        cls = t["rank"] == "Class" ? t["scientific_name"] : t.dig("lineage", "class")
+        { "u" => "/species/#{t['slug']}/", "s" => taxon_name(t),
+          "c" => Fmt.present(t["common_name"].to_s.strip) || Fmt.present(t.dig("local", "common_name").to_s.strip),
+          "r" => t["rank"], "g" => cls, "sp" => ro["n_species"].to_i, "n" => ro["n_obs"].to_i,
+          "y0" => ro["year_min"], "y1" => ro["year_max"],
+          "i" => ITALIC_RANKS.include?(t["rank"]) }.reject { |_, v| v.nil? || v == false }
+      end
+      rows.sort_by.with_index { |r, i| [-r["n"], i] }
+    end
+
     # /species/finder.json, from taxa.json (`rec`), taxa_media.json (`media`) and the catalog's
     # datasets ({dataset_key => record}, the visible ones).
     #   rows    the species the record counts: rank Species AND observed as the species itself
@@ -88,6 +147,7 @@ module CalCOFI
     #           counts and its three commonest species; then ONE group "Other" for the species whose
     #           lineage names no class, so every row is in a group that is drawn (it was in none).
     #   sils    the silhouettes, each outline once: a row's own, else its nearest ancestor's.
+    #   taxa    `higher_taxa`: the taxa with a page that are not one of the rows
     def species(rec, media, datasets)
       return nil unless rec && rec["taxa"]
       media ||= {}
@@ -153,7 +213,8 @@ module CalCOFI
                     "sil" => rest.first["sil"] }
       end
       { "release" => rec.dig("release", "version"), "counts" => rec["counts"], "groups" => groups, "rows" => rows,
-        "sils" => sils, "files" => files_for(rows.flat_map { |r| r["ds"].map(&:first) }, datasets) }
+        "sils" => sils, "taxa" => higher_taxa(tx, datasets, rows.map { |r| r["k"] }),
+        "files" => files_for(rows.flat_map { |r| r["ds"].map(&:first) }, datasets) }
     end
 
     # /measurements/finder.json, from measurements.json (`rec`), measurements_media.json's `sources`
@@ -161,7 +222,9 @@ module CalCOFI
     #   rows   every measurement, most values first; its series are the catalog's datasets only (one in
     #          a dataset the catalog does not show is not named, and a measurement carried ONLY there
     #          has no row). Units through the site's ONE display map (Fmt.units).
-    #   cats   the record's categories, in category.order
+    #   cats   the record's categories, in category.order, each with the number of its rows (`n`) and
+    #          the names of its CAT_TOP rows with the most values (`top`): the one line a closed
+    #          category says of what is inside (issue #30 D8: the categories open on a press)
     #   map    "?var=<key>" only for a key the Explorer's picker carries: coverage.json's env
     #          variables (measurements.rb `explorer_keys`, the same rule)
     def measurements(rec, med, coverage, datasets)
@@ -194,6 +257,11 @@ module CalCOFI
         }
       end
       rows.sort_by!.with_index { |r, i| [-r["n"].to_i, i] }
+      cats.each do |c|
+        mine = rows.select { |r| r["cat"] == c["name"] }
+        c["n"] = mine.size
+        c["top"] = mine.first(CAT_TOP).map { |r| r["lab"] }
+      end
       { "release" => rec.dig("release", "version"), "counts" => rec["counts"], "rows" => rows,
         "cats" => cats.sort_by { |c| c["order"].to_i }, "files" => files_for(rows.flat_map { |r| r["ds"].map(&:first) }, datasets) }
     end
@@ -220,8 +288,10 @@ module CalCOFI
           Jekyll.logger.warn "finder:", "GROUP_NAMES names #{stale.size} class(es) the record does not have: #{stale.join(', ')}"
         end
         # the silhouettes are most of the bytes (potrace paths), so they load second and fill in
-        write(site, "species", JSON.generate(sp.except("sils")))
+        write(site, "species", JSON.generate(sp.except("sils", "taxa")))
         write(site, "species", JSON.generate(sp["sils"]), "finder-sils.json")
+        # the taxa that are not rows are read only by a search, so they load second too
+        write(site, "species", JSON.generate(sp["taxa"]), "finder-taxa.json")
       end
       write(site, "measurements", JSON.generate(ms)) if ms
       site.data["finder"] = { "species_groups" => sp && sp["groups"].size, "measurement_cats" => ms && ms["cats"].size,
