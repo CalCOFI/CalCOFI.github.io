@@ -46,7 +46,7 @@ layout: default
       <label class="bd-q"><i class="cc-i cc-i-ui-search" aria-hidden="true"></i>
         <span class="sr-only">Search datasets, species or measurements</span>
         <input id="bd-q" type="search" autocomplete="off" spellcheck="false" placeholder="Search datasets, species or measurements">
-        <span class="bd-qn" id="bd-qn" aria-live="polite">{{ b.rows.size }}</span></label>
+        <span class="bd-qn" id="bd-qn" aria-hidden="true">{{ b.rows.size }}</span></label>
       <label class="bd-sel"><span class="sr-only">Type</span><select id="bd-type">
         <option value="">All types</option>
         {%- for r in b.realms %}<option value="{{ r.id | escape }}">{{ r.title | escape }}</option>{% endfor -%}
@@ -102,7 +102,8 @@ layout: default
       </div>
       <p class="bd-empty" id="bd-empty" hidden>Nothing matches. Try a species (<i>anchovy</i>), a measurement (<i>oxygen</i>) or a group (<i>krill</i>). <button type="button" id="bd-clear">Clear</button></p>
     </div>
-    <aside class="bd-pv" id="bd-pv" aria-live="polite" data-stick hidden></aside>
+    <aside class="bd-pv" id="bd-pv" role="region" aria-label="Preview of the chosen row" data-stick hidden></aside>
+    <p class="sr-only" id="bd-pv-say" role="status"></p>
   </div>
 </div>
 <script type="application/json" id="bd-rows">{{ b.rows | jsonify }}</script>

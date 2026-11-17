@@ -44,6 +44,18 @@
     if (qn) qn.textContent = n;
     if (empty) empty.hidden = n > 0;
     if (n && (!sel || !seen[sel])) select(firstVisible());
+    say(n);
+  }
+  // what a screen reader hears after a search: one short line, once the typing pauses. The preview pane itself
+  // is not a live region (it was: every keystroke queued the whole pane, thousands of characters)
+  var sayEl = document.getElementById("bd-pv-say"), sayT = null;
+  function say(n) {
+    if (!sayEl) return;
+    clearTimeout(sayT);
+    sayT = setTimeout(function () {
+      var r = sel && BY[sel], shown = pv && !pv.hidden && getComputedStyle(pv).display !== "none";
+      sayEl.textContent = n + (n === 1 ? " dataset" : " datasets") + (n && r && shown ? ". Showing " + r.name + "." : ".");
+    }, 500);
   }
 
   function firstVisible() { var a = list && list.querySelector(".bd-r:not([hidden])"); return a ? a.dataset.k : null; }

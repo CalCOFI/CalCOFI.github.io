@@ -144,6 +144,19 @@
     [].forEach.call(host.querySelectorAll("[data-tab-go]"), function (b) { b.onclick = function () { go(b.getAttribute("data-tab-go")); }; });
     var first = shown.length ? shown[0].k : (SP ? D.rows[0] && D.rows[0].k : null);
     pick(sel && host.querySelector('.cf-r[data-k="' + CSS.escape(sel) + '"]') ? sel : first);
+    say(rows.length);
+  }
+  // what a screen reader hears after a search: one short line, once the typing pauses. The preview pane itself
+  // is not a live region (it was: typing "sardine" queued the whole pane seven times, 5,264 characters)
+  var sayEl = document.getElementById("cf-pv-say"), sayT = null;
+  function say(count) {
+    if (!sayEl) return;
+    clearTimeout(sayT);
+    sayT = setTimeout(function () {
+      var pv = document.getElementById("cf-pv"), shown = pv && !pv.hidden && getComputedStyle(pv).display !== "none";
+      var r = sel && D.rows.filter(function (x) { return x.k === sel; })[0], name = r && (SP ? r.com || r.sci : r.lab);
+      sayEl.textContent = n(count) + " " + (SP ? "species" : (count === 1 ? "measurement" : "measurements")) + (count && name && shown ? ". Showing " + name + "." : ".");
+    }, 500);
   }
   /* the finder's two views are two tabs of the page's tabset (assets/tabs.js owns the switching and
      ?tab=); the finder moves into whichever of its two panels is showing */
