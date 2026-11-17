@@ -7,15 +7,17 @@ layout: default
   The front door (issue #30, "calcofi.io, calmer"; re-cut to seven TASKS after the users' and Erin's
   feedback, 2026-11-16; the first screen redrawn as front door v2 by Betty, 2026-11-13 to 11-16, and
   the two reconciled 2026-11-17). ONE screen: _includes/front_door_hero.html — what CalCOFI is, four
-  numbers, "Where do you want to start?" with three start cards, and a strip of quiet links, over
-  Line 90's sea floor. Every one of the seven tasks is one click from that screen:
+  numbers, "Where do you want to start?" with three start cards, and a strip of two quiet links, over
+  Line 90's sea floor, under the brand's header. Every one of the seven tasks is one visible link, or one
+  word of the header and one line of its menu, from that screen (the strip had five links until 2026-11-17;
+  the three the header's Cite, Learn and Map already said left it):
 
-    1 See what CalCOFI collects       #learn    strip "What CalCOFI collects" · header Learn ▾
-    2 Explore and download on a map   the Explorer (card 1) · #explore "More visualizations"
-    3 Find and download a dataset     /datasets/ (card 2) · #find, the front door's own Find list
-    4 Work with the data in code      #program  (card 3 "Code") · the pipeline is its #build
-    5 Cite the data                   a link    calcofi.io/docs/cite.html (strip, header)
-    6 Contribute data                 a link    calcofi.io/docs/provide.html (strip "Share your data")
+    1 See what CalCOFI collects       #learn    header Learn ▾ › How CalCOFI samples · the label by the ship
+    2 Explore and download on a map   the Explorer (card 1) · header Map ▾
+    3 Find and download a dataset     /datasets/ (card 2) · header Data ▾ · #find, the front door's own Find list
+    4 Work with the data in code      #program  (card 3 "Code") · header Data ▾ › Get it; the pipeline is its #build
+    5 Cite the data                   a link    calcofi.io/docs/cite.html (header "Cite")
+    6 Contribute data                 a link    calcofi.io/docs/provide.html (strip "Contribute")
     7 Inform ocean and fisheries management     #monitor  (strip "Statewide monitoring")
   and an eighth, new with the Query Builder (explore/builder.html): one table across datasets (card 3).
 
@@ -67,7 +69,7 @@ layout: default
 
 {%- comment -%} the front door, v2 (Betty, 2026-11-13): the first screen. The seven tasks' doors (c064e7d) became
   its start cards and its strip of links; the panels below stay, opened by those links and by the header {%- endcomment -%}
-{% include front_door_hero.html cite_url=cite_url provide_url=provide_url %}
+{% include front_door_hero.html provide_url=provide_url %}
 
 {%- comment -%}
   ── 1 · See what CalCOFI collects (was "Learn how CalCOFI sampling and data work": the hero's pins,

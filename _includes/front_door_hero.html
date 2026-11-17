@@ -12,9 +12,8 @@
 {%- comment -%} a local preview (scripts/dev_all.sh, _config.local.yml) points the Explorer buttons at the Explorer on this machine {%- endcomment -%}
 {%- assign explore_url = site.local_explore | default: p_explore.live_url | default: "https://calcofi.io/explore/" -%}
 {%- assign builder_url = explore_url | append: "builder.html" -%}
-{%- comment -%} the two tasks that are links, as the seven-task front door named them (main c064e7d): the docs
-  book's own chapters. index.html passes them; the defaults keep the include usable alone. {%- endcomment -%}
-{%- assign cite_url = include.cite_url | default: "https://calcofi.io/docs/cite.html" -%}
+{%- comment -%} "Contribute" is the docs book's chapter on providing data, as the seven-task front door linked it (main
+  c064e7d). index.html passes it; the default keeps the include usable alone. {%- endcomment -%}
 {%- assign provide_url = include.provide_url | default: "https://calcofi.io/docs/provide.html" -%}
 <link rel="stylesheet" href="{{ '/assets/hero.css' | relative_url }}">
 <section class="hero" aria-label="CalCOFI ocean data">
@@ -67,12 +66,11 @@
     </div>
   </div>
   <div class="hero-foot"><div class="hero-in-row">
+    {%- comment -%} the strip (Ben, 2026-11-17): the two links nothing else on the first screen says. It had five; "Cite the
+      data", "What CalCOFI collects" and "More visualizations" repeated the header's Cite, Learn and Map, and left. {%- endcomment -%}
     <nav aria-label="More">
-      <a class="hero-share" href="{{ provide_url }}"><i class="cc-i cc-i-ui-share" aria-hidden="true"></i>Share your data</a>
-      <a href="{{ cite_url }}">Cite the data</a>
-      <a href="#learn">What CalCOFI collects</a>
+      <a class="hero-share" href="{{ provide_url }}"><i class="cc-i cc-i-ui-share" aria-hidden="true"></i>Contribute</a>
       <a href="#monitor">Statewide monitoring</a>
-      <a href="#explore">More visualizations</a>
     </nav>
     <span>Line 90 sea floor, GEBCO 2025</span>
   </div></div>

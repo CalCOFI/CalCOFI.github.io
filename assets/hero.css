@@ -5,7 +5,7 @@
   --hl:#00629b; --h-ink:#182b49; --h-body:#3d5172; --h-mute:#5b6e8c; --h-eyebrow:#00629b; --h-ship:#182b49;
   --c-bg:rgba(255,255,255,.94); --c-b:rgba(255,255,255,.6); --c-ink:#182b49; --c-mute:#5b6e8c; --c-who:#00629b; --c-link:#00629b; --c-line:#e3eaf2;
   --foot:#b9cde3;
-  position: relative; overflow: hidden; min-height: max(640px, calc(100vh - var(--header-h, 72px))); display: flex; flex-direction: column; background: var(--w4);
+  position: relative; overflow: hidden; min-height: max(606px, calc(100vh - var(--header-h, 72px) - 34px)); display: flex; flex-direction: column; background: var(--w4);
 }
 [data-theme="dark"] .hero {
   --sky1:#0a1426; --sky2:#14284a; --sky3:#22436f; --w1:#1b5d8f; --w2:#103d66; --w3:#0a2443; --w4:#06162b; --f1:#0b1a30; --f2:#040b16;
@@ -162,13 +162,20 @@
 .hero-nums dd a { color: inherit; text-decoration: none; }
 .hero-nums dd a:hover, .hero-nums dd a:focus-visible { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px; }
 @media (max-height: 720px) and (min-width: 901px) {
-  .hero { min-height: calc(100vh - var(--header-h, 72px)); }
-  .hero-intro { margin-top: 18px; }
-  .hero .hero-h1 { font-size: clamp(44px, 4.6vw, 60px); margin: 6px 0 8px; }
-  .hero-lede { font-size: 17px; }
-  .hero-nums { top: 22px; }
-  .hero-start { padding-top: 14px; margin-bottom: 52px; }
-  .hero .hero-h2 { font-size: 30px; margin-bottom: 10px; }
-  .hero-goal { padding: 12px 16px; }
+  /* the window less the header (72 px) and the brand's slim wave above the hero (34 px, brand v3 § 4) */
+  .hero { min-height: calc(100vh - var(--header-h, 72px) - 34px); }
+  .hero-intro { margin-top: 6px; }
+  .hero .hero-h1 { font-size: clamp(42px, 4.3vw, 56px); margin: 4px 0 6px; }
+  .hero-lede { font-size: 17px; line-height: 1.35; }
+  .hero-nums { top: 12px; gap: 10px 34px; }
+  .hero-start { padding-top: 8px; margin-bottom: 46px; }
+  .hero .hero-h2 { font-size: 28px; margin-bottom: 8px; }
+  .hero-goal { padding: 10px 16px; }
+  .hero-goal h3 { margin-top: 6px; }
   .hero-goal p { margin-bottom: 8px; }
+  .hero-foot { bottom: 6px; }
 }
+
+/* the brand's wave (v3 § 4) cuts into the hero's sky here, not the page ground */
+body:has(.hero) .cc-wave-auto { --cc-wave-below: #f3f7fb; }
+[data-theme="dark"] body:has(.hero) .cc-wave-auto { --cc-wave-below: #0a1426; }
