@@ -18,10 +18,11 @@ can only pass by the layout actually being fixed:
              the 17 things NOT in the database read louder than the 16 that are.
   scroll     no horizontal scroll at either width, either theme.
   calm       (the dataset catalog and a dataset page, issue #30) the page is at most MAX_DS_H tall
-             at 1470 with nothing open; every fold, catalog row, "what is in it" line and "What
-             this is" is CLOSED on load; the catalog's list has exactly the record's datasets; and
-             no block under a dataset page's head is a grid of more than one column (the CTD page's
-             main column was once 418 px beside a 1,346 px sidebar — 928 px of blank page).
+             at 1470 with nothing open; every fold, "Years covered", catalog row, "what is in it"
+             line and "What this is" is CLOSED on load; the catalog's list has exactly the record's
+             datasets; and on the page kept for a holding no block under the head is a grid of more
+             than one column (the CTD page's main column was once 418 px beside a 1,346 px sidebar —
+             928 px of blank page; the redesigned page's two columns are judged under `dataset`).
   filter     (the catalog) choosing a category actually hides the other tiles and rows. `el.hidden`
              is a UA rule, so `.cc-card { display: flex }` beat it and the filter hid nothing —
              invisible until the grid packed, then the "hidden" tiles overlapped everything.
@@ -50,13 +51,27 @@ can only pass by the layout actually being fixed:
              sample_measurement. It listed 2 of 9: the per-cast types live in sample_measurement.
   erddap     (dataset pages) each ERDDAP dataset id's tabledap page appears exactly once. It was
              listed twice: once under Download for its formats, once under Services for its page.
-  download   (2026-11-16) a dataset with zips (the record's `bundle` rows, else _data/zip_manifest.json)
-             has exactly ONE Download button, in its head, ending above the 1280 x 800 fold at 1280
-             and wider, linking the CSV zip (no-JS: the button IS that link); its dialog is closed on
-             load and lists CSV first, linking the manifest's URL, and never offers an Excel the
-             manifest did not write. A holding, or any dataset without zips (no manifest at all
-             before the first upload), draws none. /datasets/ has one row control per dataset with
-             zips in the list and in "By category", none for a holding, none inside a <summary>.
+  download   (2026-11-16; re-anchored on front door v2, 2026-11-17) a dataset with zips (the record's
+             `bundle` rows, else _data/zip_manifest.json) has exactly ONE Download button — in the
+             redesigned page's side column, "Get the data" (a holding's layout: its head) — ending
+             above the 1280 x 800 fold at 1280 and wider, linking the CSV zip (no-JS: the button IS that
+             link); its dialog is closed on load and lists CSV first, linking the manifest's URL, never
+             offers an Excel the manifest did not write, and its "Every endpoint" link has an #access
+             fold to open. A holding, or any dataset without zips, draws none. /datasets/ is the
+             finder: every row is CLICKED and the preview beside the list read — it carries the
+             Download control (a link to that dataset page's #download) for each dataset with zips
+             and for no other; none is inside a <summary>, none in the holdings.
+  finder     (/datasets/, front door v2) the List and By category each hold the record's datasets
+             once; a row's click is handled while the preview is drawn and left to follow its link
+             where it is not (a phone); with the LAST row chosen and on screen at least 200 px of its
+             preview are on screen too, and at >= 1400 the preview is beside the list; choosing a
+             type hides rows for real ([hidden] not beaten by an author `display`); its search finds a
+             dataset by a species ("sardine"), a measurement ("nitrate") and its own name ("CUFES").
+  dataset    (the redesigned dataset page, main.dp-page) one column at 375 and the content column the
+             wide one at >= 1000; the side cards (map, Get the data, Cite) overlap neither each other
+             nor what follows; the page SAYS its licence, an unstated one too; it lists every
+             measurement the record's measurements.json carries for the dataset (#26: the per-cast
+             ones too), each once, and the numbers in its band are the counts drawn.
   species    (/species/ and one taxon page, plan 2026-09-09 § S3; round 2 § I1, I2, P1–P3, WS-R5;
              issue #30 D7, D10–D12, D14, D17) the index's five counts equal the inline record's and
              its h1 carries no digit (the quiet line is the numbers' only home); the class list is
@@ -96,26 +111,80 @@ can only pass by the layout actually being fixed:
              every end label inside its column, the month strip is 12 cells per series, and each
              `.mm-url` is one line elided from the middle.
 
-  front door (/, issue #30: one screen, seven doors; the seven tasks of 2026-11-16) the seven doors,
-             in order (See what CalCOFI collects · Explore · Find · Code · Cite · Contribute ·
-             Management), each >= 32 px tall: a panel door controls its own panel, Cite and
-             Contribute are links to their docs chapters; all end above the 1280 x 645 fold at
-             >= 1280; on a phone the
-             head, the quiet drawing and the doors stack in that order (the ship stays at the top); no door is open on load unless
-             the URL names one (#door, ?door=, ?q=, ?tab=), and then exactly one is, the one that
-             ?door= names; every old anchor (#datasets #access #build #viz #general #student …, and
-             the retired words) opens the door it now lives behind; the page is
-             <= 950 px at 1470 with none open; opening Find then Explore leaves only Explore open
-             and a second click closes it; nothing on the first screen is --warn or yellow, and each
-             panel carries exactly one yellow button, except #program, which carries none (Get the
-             data is its destination); the quiet drawing has no pins and the See-what-CalCOFI-
-             collects panel's has them, each answering 200/206 to a ranged GET (checked once, not per theme);
-             the five numbers equal the inline #reach record's; Find's list of datasets has
-             datasets.length rows, each name an <a> to /datasets/{key}/ with its years drawn, at
-             >= 16 px in --accent and underlined, and at >= 1280 the search and the first eight
-             names fit an 800 px window with Find open, beside a map card no taller than the head;
-             Find links the Data Finder nowhere; the map has stations.length marks; every product key in
-             _data/products.yml is drawn as a card behind some door; no horizontal scroll.
+  front door (/, issue #30; the seven tasks of 2026-11-16; front door v2's first screen, 2026-11-17)
+             the first screen is section.hero: each of the seven tasks (See what CalCOFI collects ·
+             Explore · Find · Code · Cite · Contribute · Management) and the Query Builder is ONE
+             visible link on it, each >= 32 px tall, Cite and Contribute straight to their docs
+             chapters; in a 1280 x 645 window (its own probe: the first screen is as tall as the
+             window) the three start cards and every task's link end above the fold; "Where do you
+             want to start?" is >= 3:1 against what is PAINTED behind it at every sampled point (the
+             drawing's own gradient stops, the floor's path); the numbers stay inside the window; the
+             strip of links starts under the last card; under 900 px the ship's label is not drawn;
+             no panel is open on load unless the URL names one (#panel, ?door=, ?q=, ?tab=), and then
+             exactly one is, the one ?door= names; with none open at >= 1400 the first screen ends at
+             the window's bottom and the footer follows it directly; the panels are DRIVEN by the
+             first screen's own links — #learn opens one, #explore closes it and opens another, Close
+             shuts it and focus is back on the link that opened it; Maps and apps' line to Find opens
+             Find, and closing that lands focus on something drawn on the first screen; every old
+             anchor (#datasets #access #build #viz #general #student …, and the retired words) opens
+             the panel it now lives in, #viz and #students keeping the hash of where they landed;
+             nothing on the first screen is --warn and exactly ONE thing is yellow, the Explorer's
+             button (D6 A reversed by front door v2: see PANEL_YELLOW); each panel carries the yellow
+             buttons PANEL_YELLOW says, by what is painted; the annotated drawing behind What CalCOFI
+             collects has its pins, each answering 200/206 to a ranged GET (checked once, not per
+             theme); the four numbers equal the inline #reach record's and the two counted ones link
+             their catalogs; Find's list of datasets has datasets.length rows, each name an <a> to
+             /datasets/{key}/ with its years drawn, at >= 16 px in --accent and underlined, and at
+             >= 1280 the search and the first eight names fit an 800 px window with Find open, beside
+             a map card no taller than the head; Find links the Data Finder nowhere; the map has
+             stations.length marks; every product of _data/products.yml is a card in some panel
+             except a `superseded` one, which is in none; no horizontal scroll.
+  header     (every page) Data · Map · Query Builder · Cite the data · Learn · calcofi.org ↗ on one
+             line from NAV_BREAK (1100) up, clear of the icon buttons; below it the menu button and
+             never a wrap (`--nav`: the widths either side). A menu's word is a button naming its
+             panel (aria-controls) and saying its state (aria-expanded): shut at rest with none of
+             its lines a tab stop, NOT opened by focus alone, opened by a press, still open with
+             focus on one of its lines, shut by Escape with focus back on the button, shut when focus
+             leaves; the panel inside the window; the hover bridge spans the gap under the word;
+             every line links a page or a place a panel of the front door answers; the three catalogs
+             carry their counts; and the header still links somewhere everything main's eight words
+             reached (NAV_REACH: the catalogs, the Explorer, the Query Builder, cite, docs, FAQ, News,
+             code access, the pipeline, the apps, what CalCOFI collects, calcofi.org). Under
+             NAV_BREAK the button opens ONE column: six items, three menus inline, every line drawn
+             and none beside another, the menus' words saying expanded, every line scrollable into
+             the window (`--nav` adds a 375 x 667 window for this), no horizontal scroll, Escape
+             closes it.
+
+  REMOVED on 2026-11-17, each because the page it measured is gone (front door v2), with what took
+  its place:
+    the seven .fd-door buttons, in order, each controlling its panel → the eight task links;
+    the phone's "head, drawing, doors stack in that order"     → the drawing is the first screen's
+                                                                  ground now; the phone rules above;
+    FRONT_MAX_H, 950 px at 1470 with no door open               → one window tall, footer directly after;
+    "no yellow on the first screen", "one yellow per panel"     → exactly one, the Explorer's; PANEL_YELLOW;
+    "the five numbers", stations among them                     → the four the first screen states;
+    a header menu "opens on focus"                              → opens on a press, not on focus;
+    "each submenu item names a tab (data-go) or a page, and carries a count pill"
+                                                                → links a page or an answered anchor;
+                                                                  the three catalogs carry their counts;
+    ts-viz's pill = its cards                                   → every product a card (product_keys);
+    /datasets/: a Download control per row, and again in By category
+                                                                → the one preview, driven row by row;
+    a dataset page: "no two-column region under the head"       → `dataset` above (a holding's page
+                                                                  keeps the old rule);
+    a dataset page: the variables by grain (#coverage .ds-vargroup) → every measurement of the record listed;
+    /species/: the five counts, the class list in record order, the ?q= Matches list, the icicle
+                                                                → the finder's counts against the
+                                                                  record, its groups against
+                                                                  finder.json, ?q= in its list; the
+                                                                  icicle is not a view of this page
+                                                                  (?tab=hierarchy must still land);
+    /measurements/: unified keys on top, categories collapsed   → the finder's By category sections,
+                                                                  every key once (the height ceiling
+                                                                  that collapsing served is kept);
+    the one search (#door-q → #door-res) on the catalog pages   → it is on the front door's Find panel
+                                                                  only; each finder's own search is
+                                                                  driven instead.
 
 Lighthouse is NOT run here (it needs its own Chrome and ~30 s a page); README says how, and
 .github/workflows/check-brand.yml runs this script weekly and on a pull request.
@@ -125,8 +194,8 @@ Needs shot-scraper (`pipx install shot-scraper && shot-scraper install`).
 import argparse, json, os, re, subprocess, sys
 
 DEFAULT_PATHS = [
-    "/",                             # the front door: one screen, seven doors, none open (issue #30)
-    "/?door=viz",                    # an old door's name lands in the door that now holds it (Explore)
+    "/",                             # the front door: one screen, the eight task links, no panel open
+    "/?door=viz",                    # an old door's name lands in the panel that now holds it (Maps and apps)
     "/?q=sardine&tab=species",       # D9 (round 2, WS-R4): a shared link lands on the Species tab
                                      #   with the box filled and >= 1 .cc-result already rendered
     "/?q=krill",                     # …and on the Datasets tab, the same box still filters the grid
@@ -140,10 +209,10 @@ DEFAULT_PATHS = [
     "/datasets/calcofi_ctd-derived/",   # #26: 9 variables in two groups — obs_env (profile) and
                                      #   sample_measurement (per cast), counts from the release
     "/datasets/cce-lter_euphausiids/",  # D3: the bio row's own taxa expander (37 taxa, custom licence)
-    "/species/",                     # the species catalog: the 22 classes, the views behind tabs (#30 D7 A)
+    "/species/",                     # the species catalog: the finder's groups, the tree and the matrix behind tabs
     "/species/?tab=matrix",          # the matrix view, unchanged, one click away
-    "/species/?tab=hierarchy",       # the icicle, drawn the first time its view is chosen
-    "/species/?q=sardin",            # I2: the flat Matches list above the views (WS-R5, umbrella D9)
+    "/species/?tab=hierarchy",       # an old link (the icicle was a view until front door v2): lands on one panel
+    "/species/?q=sardin",            # I2: a shared search link lands on the list of matches (umbrella D9)
     "/species/worms-217452/",        # the sardine: two datasets, twelve lineage ranks, five ways in
                                      # — and the full face: silhouette, photo, glance, five ladder
                                      #   marks and a NOAA plate (plan 2026-09-11 § Verification F3)
@@ -221,17 +290,26 @@ def resolve_face_exemplars(paths, record, media, notes=None):
     return out
 
 
-def _product_keys():
-    """Every current product key in _data/products.yml (the front door must draw each one behind a door)."""
+def product_keys(text):
+    """(the keys the front door must draw, the superseded keys it must not), from a products.yml text,
+    in file order. An app the Explorer replaced (`status: superseded`) is no longer drawn (Maps and
+    apps, front door v2, Betty 2026-11-16). Every other product is a card in some panel — an
+    `archived` one too: the archived student projects are still drawn, with their status."""
+    drawn, superseded = [], []
+    for b in re.split(r"^(?=  - key:)", text or "", flags=re.M):
+        m = re.match(r"  - key: *([\w.-]+)", b)
+        if not m:
+            continue
+        (superseded if re.search(r"^    status: *superseded\b", b, re.M) else drawn).append(m.group(1))
+    return drawn, superseded
+
+
+def _products_text():
     try:
         with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "_data", "products.yml")) as f:
-            text = f.read()
-        # a superseded or archived app is no longer drawn (Maps and apps, Betty 2026-11-16)
-        blocks = re.split(r"^(?=  - key:)", text, flags=re.M)
-        return [m.group(1) for b in blocks for m in [re.match(r"  - key: *([\w.-]+)", b)]
-                if m and not re.search(r"^    status: *(superseded|archived)\b", b, re.M)]
+            return f.read()
     except OSError:
-        return []
+        return ""
 
 
 def _data_dir():
@@ -289,6 +367,78 @@ def page_status(url):
         return None
 
 
+# ── the front door's first screen (front door v2, _includes/front_door_hero.html) ─────────────
+# One function, pasted into PROBE (the page at `width` x PROBE_H) and FOLD_PROBE (FOLD_W x FOLD_H):
+# every link on the first screen with its box, the three start cards, the strip, the numbers, the
+# label drawn by the ship, and what is PAINTED behind "Where do you want to start?" — the heading
+# lies on a picture, so its background is not a CSS colour: each sample point of its box is mapped
+# into the drawing (getScreenCTM), found in the floor's path, the sky or the water, and returned as
+# (gradient, position); Python interpolates the gradient's own stops and computes the contrast.
+HERO_JS = r"""
+  const heroMeasure = () => {
+    const hero = d.querySelector("section.hero");
+    if (!hero) return null;
+    const top = el => el.getBoundingClientRect().top + w.scrollY;
+    const bot = el => el.getBoundingClientRect().bottom + w.scrollY;
+    const vis = el => { const b = el.getBoundingClientRect(), s = w.getComputedStyle(el);
+      return b.width > 0 && b.height > 0 && s.display !== "none" && s.visibility !== "hidden"; };
+    const box = el => { const b = el.getBoundingClientRect(); return { top: Math.round(b.top + w.scrollY), bottom: Math.round(b.bottom + w.scrollY),
+      left: Math.round(b.left), right: Math.round(b.right), h: Math.round(b.height), w: Math.round(b.width) }; };
+    const links = [...hero.querySelectorAll("a[href]")].map(a => Object.assign(box(a), {
+      href: a.getAttribute("href"),
+      text: (a.getAttribute("aria-label") || a.textContent || "").replace(/\s+/g, " ").trim().slice(0, 60),
+      where: a.closest("svg") ? "drawing" : a.closest(".hero-foot") ? "strip" : a.closest(".hero-goal") ? "card" : "other",
+      visible: vis(a) }));
+    const cards = [...hero.querySelectorAll(".hero-goal")].map(c => Object.assign(box(c), {
+      title: ((c.querySelector("h3") || {}).textContent || "").trim() }));
+    const strip = hero.querySelector(".hero-foot nav"), h2 = d.getElementById("start-h");
+    const sea = d.getElementById("hero-sea"), tag = hero.querySelector(".hero-tag");
+    const nums = [...hero.querySelectorAll(".hero-nums > div")];
+    let behind = null;
+    if (sea && h2 && sea.getScreenCTM && sea.getScreenCTM()) {
+      const inv = sea.getScreenCTM().inverse(), r = h2.getBoundingClientRect();
+      const stops = id => [...d.querySelectorAll("#" + id + " stop")].map(st => [parseFloat(st.getAttribute("offset")),
+        w.getComputedStyle(st).stopColor.replace(/\s/g, "")]);
+      const sky = sea.querySelector('rect[fill="url(#hero-sky)"]'), wat = sea.querySelector('rect[fill="url(#hero-water)"]');
+      const flr = sea.querySelector('path[fill="url(#hero-flr)"]');
+      const sb = sky && sky.getBBox(), wb = wat && wat.getBBox(), fb = flr && flr.getBBox();
+      const pts = [];
+      for (const fx of [0.02, 0.25, 0.5, 0.75, 0.98]) for (const fy of [0.08, 0.5, 0.92]) {
+        const p = sea.createSVGPoint(); p.x = r.left + r.width * fx; p.y = r.top + r.height * fy;
+        const u = p.matrixTransform(inv);
+        let layer = null, t = 0;
+        if (flr && flr.isPointInFill && flr.isPointInFill(u)) { layer = "hero-flr"; t = (u.y - fb.y) / fb.height; }
+        else if (wb && u.y >= wb.y) { layer = "hero-water"; t = (u.y - wb.y) / wb.height; }
+        else if (sb) { layer = "hero-sky"; t = (u.y - sb.y) / sb.height; }
+        pts.push({ layer, t: Math.max(0, Math.min(1, t)) });
+      }
+      behind = { pts, stops: { "hero-sky": stops("hero-sky"), "hero-water": stops("hero-water"), "hero-flr": stops("hero-flr") } };
+    }
+    let floorData = false;
+    try { floorData = ((JSON.parse(d.getElementById("hero-floor").textContent) || {}).profile || []).length > 0; } catch (e) {}
+    return {
+      top: Math.round(top(hero)), bottom: Math.round(bot(hero)), innerH: w.innerHeight, innerW: w.innerWidth,
+      links, cards,
+      strip: strip ? box(strip) : null,
+      start: h2 ? Object.assign(box(h2), { color: w.getComputedStyle(h2).color.replace(/\s/g, ""), behind }) : null,
+      tag: tag ? { visible: vis(tag), display: w.getComputedStyle(tag).display, w: Math.round(tag.getBoundingClientRect().width) } : null,
+      nums: nums.map(n => Object.assign(box(n), { label: ((n.querySelector("dt") || {}).textContent || "").trim() })),
+      drawn: sea ? sea.children.length : 0, ridge: !!(sea && sea.querySelector(".ridge")), floorData,
+      svgPins: sea ? sea.querySelectorAll("a.pin").length : 0
+    };
+  };
+"""
+
+# the fold: the first screen alone, in a FOLD_W x FOLD_H window, scrolled to the top
+FOLD_PROBE = r"""
+(w, d) => {
+  __HERO__
+  w.scrollTo(0, 0);
+  return { fold: heroMeasure(), scrollWidth: d.documentElement.scrollWidth, width: w.innerWidth,
+           open: [...d.querySelectorAll(".fd-panel")].filter(p => !p.hidden).map(p => p.id) };
+}
+"""
+
 # ── the probe ─────────────────────────────────────────────────────────────────
 # `shot-scraper javascript` has no --width (only `shot` does), so the page is loaded in a
 # same-origin iframe of exactly the width under test and measured inside it: media queries,
@@ -297,9 +447,11 @@ def page_status(url):
 # Everything below returns plain data; every judgement is made in Python, so a failure can print
 # what it actually measured.
 PROBE = r"""
-(w, d) => {
+async (w, d) => {
   const px = v => Math.round(v);
   const cs = el => w.getComputedStyle(el);
+  const sleep = ms => new Promise(res => setTimeout(res, ms));
+  __HERO__
   const rgb = el => cs(el).color.replace(/\s/g, "");
   const tok = n => {
     const v = cs(d.documentElement).getPropertyValue(n).trim();
@@ -320,30 +472,37 @@ PROBE = r"""
   // ── the dataset catalog and a dataset page, calmer (issue #30) ─────────────
   // measured FIRST, before any probe below opens or filters anything: the page's height with
   // nothing open, and every fold, catalog row and "what is in it" line closed on load
-  const calmDs = d.querySelector("main.ds-page, main.ds-cat");
+  // (front door v2: a dataset's page is main.dp-page, the redesigned one; a holding keeps
+  // main.ds-page; /datasets/ is the finder, main.ds-cat.ds-browse, its rows a.bd-r[data-k])
+  const calmDs = d.querySelector("main.ds-page, main.ds-cat, main.dp-page");
   if (calmDs) {
     out.calmDs = {
       kind: calmDs.classList.contains("ds-cat") ? "catalog" : "dataset",
+      redesigned: calmDs.classList.contains("dp-page"),
       holding: !!d.getElementById("lives"),
       height: d.documentElement.scrollHeight,
       folds: calmDs.querySelectorAll(".calm-fold").length,
-      open: [...calmDs.querySelectorAll(".calm-fold[open], .calm-item[open], .ds-line[open], .ds-more[open]")]
+      open: [...calmDs.querySelectorAll(".calm-fold[open], .calm-item[open], .ds-line[open], .ds-more[open], .bd-when[open]")]
               .map(el => el.id || String(el.className).slice(0, 30)),
-      // the list's rows are the record's datasets, once each
-      rows: [...calmDs.querySelectorAll("#ds-list .ds-item[data-key]")].map(el => el.dataset.key)
+      // the list's rows are the record's datasets, once each — in the List and in By category
+      rows: [...calmDs.querySelectorAll("#bd-list .bd-r[data-k]")].map(el => el.dataset.k),
+      gridRows: [...calmDs.querySelectorAll("#ds-view-grid .bd-r[data-k]")].map(el => el.dataset.k)
     };
   }
 
-  // ── the Download button (2026-11-16): one in a dataset page's head, its dialog CSV first; one
-  // control beside each catalog row that has zips, never inside a <summary> — read before anything
-  // below opens or filters, so the button's position is the page as it loads
+  // ── the Download button (2026-11-16): one on a dataset page, on its first screen, its dialog CSV
+  // first; on /datasets/ the preview beside the list carries the control for the row it shows, never
+  // inside a <summary> — read before anything below opens or filters, so the button's position is
+  // the page as it loads
   if (calmDs) {
     const btns = [...calmDs.querySelectorAll(".dl-btn")];
     const dlg = d.getElementById("dl-dialog");
     const b0 = btns[0] && btns[0].getBoundingClientRect();
     out.download = {
       n: btns.length,
-      inHead: btns.filter(b => b.closest(".calm-head")).length,
+      // where the one button sits: the head of the page kept for a holding's layout, the "Get the
+      // data" card of the redesigned page's side column
+      inHead: btns.filter(b => b.closest(".calm-head, .dp-side")).length,
       bottom: b0 ? px(b0.bottom + w.scrollY) : null,
       href: btns[0] ? btns[0].getAttribute("href") : null,
       dialog: !!dlg, dialogOpen: !!(dlg && dlg.open),
@@ -353,10 +512,109 @@ PROBE = r"""
         return a ? a.dataset.dlFormat : "off:" + ((li.querySelector(".dl-off-t") || {}).textContent || "").trim();
       }) : [],
       firstHref: dlg && dlg.querySelector(".dl-opts a[data-dl-format]") ? dlg.querySelector(".dl-opts a[data-dl-format]").getAttribute("href") : null,
-      rows: [...calmDs.querySelectorAll("#ds-list .dl-rowlink")].map(a => (/\/datasets\/([^/]+)\/#download$/.exec(a.getAttribute("href") || "") || [])[1] || a.getAttribute("href")),
-      gridRows: [...calmDs.querySelectorAll("#ds-grid .ds-row-dataset .dl-rowlink")].length,
-      inSummary: calmDs.querySelectorAll("summary .dl-rowlink, summary .dl-btn").length,
-      inHoldings: calmDs.querySelectorAll("#ds-holdings .dl-rowlink, .ds-row-holding .dl-rowlink").length
+      // the dialog's "Every endpoint" link must have its fold to land on
+      endpointsLink: !!(dlg && dlg.querySelector("[data-dl-endpoints]")), accessFold: !!d.getElementById("access"),
+      inSummary: calmDs.querySelectorAll("summary .dl-rowlink, summary .dl-btn, summary a[href$='#download']").length,
+      inHoldings: calmDs.querySelectorAll("#ds-holdings .dl-rowlink, .ds-row-holding .dl-rowlink, #ds-holdings a[href$='#download']").length
+    };
+  }
+
+  // ── Browse datasets, the finder (front door v2): a row shows its dataset in the preview beside
+  // the list. DRIVEN: every row of the List is clicked and the preview read — its Download control
+  // (a link to that dataset page's #download), and whether the click was handled at all. A click the
+  // page does not handle would follow the link and take the probe with it, so a last listener on
+  // the window records what the page did and then holds the navigation.
+  const bdList = d.getElementById("bd-list"), bdPv = d.getElementById("bd-pv");
+  if (bdList && bdPv) {
+    const rowsEl = [...bdList.querySelectorAll(".bd-r[data-k]")];
+    const pvShown = () => !bdPv.hidden && cs(bdPv).display !== "none" && bdPv.getBoundingClientRect().height > 0;
+    let handled = null;
+    const hold = e => { handled = e.defaultPrevented; e.preventDefault(); };
+    w.addEventListener("click", hold);
+    const sel0 = (bdList.querySelector(".bd-r.on") || rowsEl[0] || { dataset: {} }).dataset.k;
+    const pvDl = {}, unhandled = [];
+    for (const row of rowsEl) {
+      handled = null; row.click();
+      if (!handled) unhandled.push(row.dataset.k);
+      const a = bdPv.querySelector('a[href*="#download"]');
+      const h2 = bdPv.querySelector("h2, h3");
+      pvDl[row.dataset.k] = { href: a ? a.getAttribute("href") : null, tag: a ? a.tagName : null,
+        title: h2 ? h2.textContent.trim() : null, name: (row.querySelector("b") || {}).textContent || null };
+    }
+    // the preview stays reachable: with the LAST row of the list chosen and on screen, the preview
+    // that answers it is on screen too (it is sticky beside the list), not a scroll away
+    let reach = null;
+    const last = rowsEl[rowsEl.length - 1];
+    if (last) {
+      last.scrollIntoView({ block: "center" });
+      await sleep(250);
+      handled = null; last.click();
+      await sleep(120);
+      const pr = bdPv.getBoundingClientRect(), lr = last.getBoundingClientRect(), hh = parseFloat(cs(d.documentElement).getPropertyValue("--header-h")) || 72;
+      reach = { shown: pvShown(), handled, position: cs(bdPv).position, pvTop: px(pr.top), pvBottom: px(pr.bottom), rowTop: px(lr.top), rowBottom: px(lr.bottom),
+        innerH: w.innerHeight, headerH: hh,
+        // how much of the preview is inside the window, under the sticky header
+        inView: px(Math.max(0, Math.min(pr.bottom, w.innerHeight) - Math.max(pr.top, hh))),
+        sideBySide: pr.left >= lr.right - 2 || pr.right <= lr.left + 2 };
+    }
+    w.removeEventListener("click", hold);
+    const first = rowsEl.find(x => x.dataset.k === sel0);
+    if (first && pvShown()) { w.addEventListener("click", hold); first.click(); w.removeEventListener("click", hold); }
+    // the type filter actually hides: `el.hidden` is a UA rule that any author `display` beats (see
+    // "the filter actually hides" below, which read the old page's #ds-cat)
+    const typ = d.getElementById("bd-type");
+    let bdFilter = null;
+    if (typ) {
+      const opt = [...typ.options].map(o => o.value).filter(Boolean)[0];
+      if (opt) {
+        typ.value = opt; typ.dispatchEvent(new w.Event("change", { bubbles: true }));
+        void d.body.offsetHeight;
+        bdFilter = { type: opt, shown: rowsEl.filter(x => x.getBoundingClientRect().height > 0).length, total: rowsEl.length,
+          painted: [...calmDs.querySelectorAll("[hidden]")].filter(el => cs(el).display !== "none").map(el => el.tagName + "." + String(el.className).slice(0, 40)) };
+        typ.value = ""; typ.dispatchEvent(new w.Event("change", { bubbles: true }));
+      }
+    }
+    // its search finds a dataset by a species and by a measurement inside it, and by its own name
+    const bq = d.getElementById("bd-q");
+    let bdSearch = null;
+    if (bq) {
+      bdSearch = {};
+      for (const t of ["sardine", "nitrate", "CUFES"]) {
+        bq.value = t; bq.dispatchEvent(new w.Event("input", { bubbles: true }));
+        await sleep(60);
+        bdSearch[t] = rowsEl.filter(x => x.getBoundingClientRect().height > 0).map(x => x.dataset.k);
+      }
+      bq.value = ""; bq.dispatchEvent(new w.Event("input", { bubbles: true }));
+    }
+    w.scrollTo(0, 0);
+    out.browse = { pvDl, unhandled, reach, filter: bdFilter, search: bdSearch, pvDisplay: cs(bdPv).display };
+  }
+
+  // ── the redesigned dataset page (front door v2, _includes/dataset_page.html) ───────────────
+  // Two columns by design at desktop width — what is in the dataset, beside a narrower column of
+  // cards (the map, Get the data, Cite) — and one column on a phone. Read: the columns, each side
+  // card's box, the licence line, the measurements and taxa it lists, the numbers in its band.
+  const dpMain = d.querySelector("main.dp-page");
+  if (dpMain) {
+    const row = dpMain.querySelector(".dp-row"), mainCol = dpMain.querySelector(".dp-main"), side = dpMain.querySelector(".dp-side");
+    const rect = el => { const b = el.getBoundingClientRect(); return { top: px(b.top + w.scrollY), bottom: px(b.bottom + w.scrollY), left: px(b.left), right: px(b.right), w: px(b.width) }; };
+    const lic = dpMain.querySelector(".dp-lic, .cc-chip-lic");
+    out.dp = {
+      cols: row ? cs(row).gridTemplateColumns.split(" ").filter(Boolean).length : null,
+      mainW: mainCol ? px(mainCol.getBoundingClientRect().width) : null, sideW: side ? px(side.getBoundingClientRect().width) : null,
+      cards: side ? [...side.querySelectorAll(":scope > .dp-card")].map(c => Object.assign(rect(c), { title: ((c.querySelector("h3") || {}).textContent || "map").trim() })) : [],
+      side: side ? rect(side) : null, main: mainCol ? rect(mainCol) : null,
+      below: [...dpMain.querySelectorAll(":scope > .dp-about, :scope > .dp-folds")].map(el => Object.assign(rect(el), { cls: el.className })),
+      licence: lic ? lic.textContent.replace(/\s+/g, " ").trim() : null,
+      citeCard: !!dpMain.querySelector(".dp-cite"),
+      // each measurement row links its page: /measurements/{slug}/ (a per-cast row has no CSV button, so
+      // the button's data-k is not every row's)
+      measKeys: [...dpMain.querySelectorAll(".dp-m .dp-tr:not(.dp-th) .dp-nm a[href]")].map(a => (/\/measurements\/([^\/]+)\/?$/.exec(a.getAttribute("href")) || [])[1] || a.getAttribute("href")),
+      measCsv: dpMain.querySelectorAll('.dp-csv[data-one="env"]').length, measNoCsv: dpMain.querySelectorAll(".dp-m .dp-nocsv").length,
+      taxaDrawn: dpMain.querySelectorAll('.dp-csv[data-one="bio"]').length,
+      taxaMore: (() => { try { return JSON.parse(dpMain.querySelector("[data-more-rows]").textContent).length; } catch (e) { return 0; } })(),
+      facts: [...d.querySelectorAll(".dp-nums > div")].map(el => ({ label: el.querySelector("dt").textContent.trim(), value: el.querySelector("dd").textContent.trim() })),
+      csvUnnamed: [...dpMain.querySelectorAll(".dp-csv")].filter(b => !(b.getAttribute("title") || b.getAttribute("aria-label") || "").trim()).length
     };
   }
 
@@ -502,44 +760,43 @@ PROBE = r"""
     };
   });
 
-  // ── the front door (issue #30: one screen, seven doors; D2 A · D5 A · D6 A) ──
-  // The first screen (.fd-screen) and its seven doors, measured at load with the page scrolled to
-  // the top; then the doors are DRIVEN — open one, open another, close it — and the page is put back
-  // the way it loaded, so everything measured after this (the tabsets, the search) sees the URL's own
-  // state. Document coordinates, so "inside 645 px" means the first screen of a 645 px window.
-  const fds = d.querySelector(".fd-screen");
-  if (fds) {
+  // ── the front door (issue #30; the seven tasks of 2026-11-16; front door v2's first screen) ──
+  // The first screen is section.hero: three start cards, a strip of links, the numbers, over Line
+  // 90's sea floor. There are no door buttons: LINKS open the panels (index.html's script), so the
+  // panels are DRIVEN through the hero's own links — open one, open another, Close — and through a
+  // link to every old anchor; then the page is put back the way it loaded, so everything measured
+  // after this (the tabsets, the search) sees the URL's own state. Document coordinates.
+  const hero = d.querySelector("section.hero");
+  if (hero) {
     w.scrollTo(0, 0);
-    const top = el => el.getBoundingClientRect().top + w.scrollY;
-    const bot = el => el.getBoundingClientRect().bottom + w.scrollY;
-    const doorEls = [...d.querySelectorAll(".fd-door")];
     const panels = [...d.querySelectorAll(".fd-panel")];
     const openNow = () => panels.filter(p => !p.hidden).map(p => p.id);
     let reach = null; try { reach = JSON.parse(d.getElementById("reach").textContent); } catch (e) {}
-    const band = [...d.querySelectorAll(".fd-nums > div")].map(el => ({ label: el.querySelector("dt").textContent.trim(), value: el.querySelector("dd").textContent.trim(),
+    const band = [...hero.querySelectorAll(".hero-nums > div")].map(el => ({ label: el.querySelector("dt").textContent.trim(), value: el.querySelector("dd").textContent.trim(),
       href: el.querySelector("dd a") ? el.querySelector("dd a").getAttribute("href") : null }));
-    // the first screen: no --warn and no yellow at all (D6 A: each panel carries its own)
-    const first = [...fds.querySelectorAll("*")];
-    const warnEls = first.filter(el => { const s = cs(el), wv = out.warn;
-      return s.color.replace(/\s/g, "") === wv || s.backgroundColor.replace(/\s/g, "") === wv || s.borderTopColor.replace(/\s/g, "") === wv; })
+    // the first screen: nothing in --warn; yellow (--cta-bg, the brand's yellow) is counted, with what wears it
+    const first = [...hero.querySelectorAll("*")];
+    const colOf = el => { const s = cs(el); return [s.color, s.backgroundColor, s.borderTopColor].map(x => x.replace(/\s/g, "")); };
+    const yellows = [tok("--cta-bg"), tok("--cc-yellow"), "rgb(255,205,0)"].filter(Boolean);
+    const isYellow = el => yellows.indexOf(cs(el).backgroundColor.replace(/\s/g, "")) >= 0;
+    const drawnEl = el => { const b = el.getBoundingClientRect(); return b.width > 0 && b.height > 0; };
+    const ctaEls = first.filter(el => drawnEl(el) && isYellow(el)).map(el => ({ cls: String(el.className || el.tagName),
+      text: (el.textContent || "").replace(/\s+/g, " ").trim().slice(0, 40), href: (el.closest("a") || { getAttribute: () => null }).getAttribute("href") }));
+    // a yellow button is not a warning: in the dark theme --warn and --cta-bg are one colour, so what
+    // IS a yellow button (or sits inside one) is counted as yellow above and not again as --warn
+    const inYellow = el => { for (let n = el; n && n !== hero; n = n.parentElement) if (isYellow(n)) return true; return false; };
+    const warnEls = first.filter(el => drawnEl(el) && !inYellow(el) && colOf(el).indexOf(out.warn) >= 0)
       .map(el => String(el.className || el.tagName));
-    const cta = tok("--cta-bg");
-    const ctaEls = first.filter(el => cs(el).backgroundColor.replace(/\s/g, "") === cta).map(el => String(el.className || el.tagName));
-    const who = d.querySelector(".fd-who"), ask = d.querySelector(".fd-ask"), fig = d.querySelector(".fd-fig");
     const full = d.querySelector("#sec-full svg.sec");
+    const H = heroMeasure();
     out.front = {
-      // a door is a button that opens a panel (data-door) or a link straight to its page (data-link)
-      doors: doorEls.map(b => ({ id: b.dataset.door || b.dataset.link, tag: b.tagName, href: b.getAttribute("href"),
-        title: (b.querySelector(".fd-door-t") || b).textContent.replace(/\s+/g, " ").trim(),
-        top: px(top(b)), bottom: px(bot(b)), h: px(b.getBoundingClientRect().height), w: px(b.getBoundingClientRect().width),
-        controls: b.getAttribute("aria-controls"), expanded: b.getAttribute("aria-expanded") })),
-      screenBottom: px(bot(fds)),
-      order: who && ask && fig ? { whoBottom: px(bot(who)), askTop: px(top(ask)), askBottom: px(bot(ask)), figTop: px(top(fig)), figBottom: px(bot(fig)) } : null,
+      hero: H,
       openOnLoad: openNow(),
       heightOnLoad: d.documentElement.scrollHeight,
-      panelCtas: panels.map(p => ({ id: p.id, n: p.querySelectorAll(".cc-btn-cta").length })),
-      quietPins: d.querySelectorAll("#sec-quiet a.pin").length,
-      quietDrawn: !!d.querySelector("#sec-quiet svg.sec"),
+      footerTop: d.querySelector("footer") ? px(d.querySelector("footer").getBoundingClientRect().top + w.scrollY) : null,
+      // every yellow button a panel carries, by what is painted (a class is not a colour)
+      panelCtas: panels.map(p => ({ id: p.id, yellow: [...p.querySelectorAll("a, button")].filter(isYellow)
+        .map(el => (el.textContent || "").replace(/\s+/g, " ").trim().slice(0, 40)) })),
       pins: full ? [...full.querySelectorAll("a.pin")].map(a => a.getAttribute("href")) : [],
       band, reachNumbers: reach && reach.numbers,
       // Find's list of datasets (Ben, 2026-11-16): one HTML row per dataset, the name an <a> to its page
@@ -555,18 +812,33 @@ PROBE = r"""
       cardKeys: [...new Set([...d.querySelectorAll(".prod-card[data-key]")].map(c => c.dataset.key))],
       warnEls, ctaEls
     };
-    // drive the doors: one opens, a second closes the first, a click on the open one closes it
-    const door = k => d.getElementById("door-" + k);
-    if (door("find") && door("explore")) {
+    // drive the panels through the hero's own links: one opens, a second closes the first, Close
+    // closes it and gives focus back to the link that opened it
+    const hl = h => hero.querySelector('.hero-foot a[href="' + h + '"], .hero-goal a[href="' + h + '"]');
+    const closeBtn = k => d.querySelector("#" + k + " [data-close]");
+    const lA = hl("#learn"), lB = hl("#explore");
+    if (lA && lB) {
       const was = openNow();
-      was.forEach(k => door(k) && door(k).click());              // start from every door closed
-      door("find").click();
+      was.forEach(k => closeBtn(k) && closeBtn(k).click());     // start from every panel closed
+      lA.focus(); lA.click();
       const a = openNow();
-      // Find, open: the list's names read as links (body-text size, the link colour, underlined), and
-      // with the panel scrolled to its top the search and the first eight names sit inside an 800 px
-      // window under the sticky header — finding a dataset is the obvious thing (Ben, 2026-11-16)
+      lB.focus(); lB.click();
+      const b = openNow();
+      if (closeBtn("explore")) closeBtn("explore").click();
+      const c = openNow();
+      const act = d.activeElement;
+      const focusBack = { same: act === lB, tag: act ? act.tagName : null, href: act && act.getAttribute ? act.getAttribute("href") : null,
+        inHero: !!(act && hero.contains(act)) };
+      // Find is reached from Maps and apps (its line to Find) and from every old link; opened, its
+      // list's names read as links (body-text size, the link colour, underlined), and with the panel
+      // scrolled to its top the search and the first eight names sit inside an 800 px window under
+      // the sticky header — finding a dataset is the obvious thing (Ben, 2026-11-16)
+      lB.click();
+      const xref = d.querySelector('#explore a[href="#find"]');
+      if (xref) xref.click();
+      const f = openNow();
       const fp = d.getElementById("find"), names = [...d.querySelectorAll("#find .fd-yname")];
-      if (fp && names.length) {
+      if (fp && names.length && f.indexOf("find") >= 0) {
         const ft = fp.getBoundingClientRect().top, q = d.getElementById("door-q");
         const n8 = names[Math.min(7, names.length - 1)], s0 = cs(names[0]);
         out.front.findList = {
@@ -579,112 +851,177 @@ PROBE = r"""
           headH: px((d.querySelector("#find .fd-phead") || { getBoundingClientRect: () => ({ height: 0 }) }).getBoundingClientRect().height)
         };
       }
-      door("explore").click();
-      const b = openNow(), findExp = door("find").getAttribute("aria-expanded"), expExp = door("explore").getAttribute("aria-expanded");
-      door("explore").click();
-      const c = openNow();
-      // the old anchors: a click on a link to each (the header's words do exactly this) opens the
-      // door it now lives behind. A tab anchor selects its tab, so every tabset's selection and the
+      // a panel opened by a link INSIDE a panel (which hides with it): Close still lands focus on
+      // something drawn on the first screen, never on <body>
+      if (closeBtn("find")) closeBtn("find").click();
+      const act2 = d.activeElement;
+      const focusBack2 = { tag: act2 ? act2.tagName : null, id: act2 ? act2.id : null, inHero: !!(act2 && hero.contains(act2)),
+        drawn: !!(act2 && act2.getBoundingClientRect && act2.getBoundingClientRect().width > 0) };
+      // the old anchors: a click on a link to each (the header's menus do exactly this) opens the
+      // panel it now lives in. A tab anchor selects its tab, so every tabset's selection and the
       // URL are put back afterwards — what is measured next sees the page the URL loaded.
       const href0 = w.location.href;
       const sel0 = [...d.querySelectorAll(".fd-panel .tabset")].map(ts => ts.querySelector('.tabrow [aria-selected="true"]')).filter(Boolean);
       const anchors = {};
       for (const h of __FD_ANCHORS__) {
+        // every panel shut first, so an anchor that opens nothing cannot pass on the panel the
+        // anchor before it left open (#explorer, #general, #viz, #dataset, #student share one)
+        openNow().forEach(k => closeBtn(k) && closeBtn(k).click());
         const lk = d.createElement("a"); lk.href = "#" + h; d.body.appendChild(lk);
         lk.click(); lk.remove();
-        anchors[h] = openNow();
+        anchors[h] = { open: openNow(), hash: w.location.hash.replace(/^#/, "") };
       }
       sel0.forEach(b => b.click());
-      openNow().forEach(k => door(k) && door(k).click());
-      if (was.length && door(was[0])) door(was[0]).click();      // put back what the URL opened
+      openNow().forEach(k => closeBtn(k) && closeBtn(k).click());
+      if (was.length) { const lk = d.createElement("a"); lk.href = "#" + was[0]; d.body.appendChild(lk); lk.click(); lk.remove(); }   // put back what the URL opened
+      sel0.forEach(b => b.click());
       try { w.history.replaceState(null, "", href0); } catch (e) {}
-      out.front.drive = { afterFind: a, afterExplore: b, findExpanded: findExp, exploreExpanded: expExp, afterClose: c, anchors, restored: openNow() };
+      out.front.drive = { afterA: a, afterB: b, afterClose: c, focusBack, afterFind: f, hasXref: !!xref, focusBack2, anchors, restored: openNow() };
+      if (d.activeElement && d.activeElement.blur) d.activeElement.blur();
       w.scrollTo(0, 0);
     }
   }
 
-  // ── the front door's navigation (plan 2026-09-10 § D7, WS-M0) ──────────────
-  // The header's seven words plus calcofi.org, the submenus, the sticky section bar, the tabsets and
-  // the one search over the three indexes. Everything here is measured on the real page: the
-  // submenu is opened by FOCUSING its trigger (that is the whole mechanism — :focus-within), and
-  // the search is driven by typing into the box and reading what came back.
+  // ── the header (front door v2, _includes/site_nav.html: Data ▾ · Map ▾ · Query Builder · Cite the
+  // data · Learn ▾ · calcofi.org ↗) ──
+  // The words, the menus and what they link. A menu's word is a BUTTON (aria-expanded, aria-controls)
+  // over its panel: the CSS opens it on hover, assets/tabs.js on a press — never on focus alone, so
+  // tabbing along the header does not throw three panels open. Everything is measured on the real
+  // page: the button is focused (the menu must stay shut), pressed (it must open and say so), focus
+  // is moved onto a line inside it, Escape is pressed (it must shut and focus must be back on the
+  // button), then it is pressed open again and focus is sent away (it must shut). A menu closes on a
+  // short delay (the visibility transition that lets a pointer cross the gap), so each state is read
+  // after waiting it out.
   const nav = d.querySelector(".cc-header .cc-links");
+  const navItems = () => nav ? [...nav.children].filter(el => el.matches("a, .cc-m, .cc-m2")) : [];
+  const trigOf = el => el.matches(".cc-m, .cc-m2") ? el.querySelector(":scope > .cc-m2-t, :scope > a") : el;
+  const listOf = m => m.querySelector(":scope > ul, :scope > .cc-dd");
+  const shownEl = el => !!el && cs(el).display !== "none" && cs(el).visibility !== "hidden" && el.getBoundingClientRect().height > 0;
   if (nav) {
-    const items = [...nav.children].filter(el => el.matches("a, .cc-m"));
-    const menus = [...nav.querySelectorAll(".cc-m")].map(m => {
-      const trig = m.querySelector("a[aria-haspopup]"), ul = m.querySelector("ul");
-      const shown = () => ul && cs(ul).display !== "none";
-      const before = shown();
-      if (trig) trig.focus();
-      const onFocus = shown();
-      // the hover bridge (Ben, 2026-09-10): the list floats below its trigger, so the gap between the
-      // trigger's bottom and the list's top must be spanned by the list's own ::before strip, or the
-      // pointer leaves the group on its way down and the menu closes before a click lands
-      let gap = null, bridge = null;
-      if (trig && ul && onFocus) {
-        const tr = trig.getBoundingClientRect(), ur = ul.getBoundingClientRect();
-        gap = ur.top - tr.bottom;
-        const b = w.getComputedStyle(ul, "::before");
-        bridge = b && b.content !== "none" ? parseFloat(b.height) || 0 : 0;
-      }
-      // Escape closes: assets/tabs.js blurs the focused link, so the :focus-within rule lapses
-      d.activeElement && d.activeElement.dispatchEvent(new w.KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
-      const afterEsc = shown();
-      if (trig) trig.blur();
-      return {
-        word: trig ? trig.textContent.trim() : null,
-        tabs: [...m.querySelectorAll("ul a")].map(a => ({
-          title: a.textContent.replace(/\s+/g, " ").trim(),
-          pill: (a.querySelector(".pill") || {}).textContent || null,
+    const menus = [], navVisible = cs(nav).display !== "none";
+    const away = d.querySelector(".cc-header .cc-home") || d.body;
+    for (const m of nav.querySelectorAll(".cc-m, .cc-m2")) {
+      const trig = trigOf(m), list = listOf(m);
+      const rec = {
+        word: trig ? trig.textContent.replace(/\s+/g, " ").trim() : null,
+        tag: trig ? trig.tagName : null,
+        controls: trig ? trig.getAttribute("aria-controls") : null, listId: list ? list.id : null,
+        tabs: [...(list ? list.querySelectorAll("a") : [])].map(a => ({
+          title: ((a.querySelector("b") || a).textContent || "").replace(/\s+/g, " ").trim(),
+          pill: ((a.querySelector(".pill, small") || {}).textContent || "").trim() || null,
           go: a.getAttribute("data-go"),
           href: a.getAttribute("href")
         })),
-        closed: !before, opensOnFocus: !!onFocus, closesOnEscape: !afterEsc, gap, bridge,
-        haspopup: trig && trig.getAttribute("aria-haspopup") === "true",
-        expanded: trig && trig.getAttribute("aria-expanded")
+        expandedAtRest: trig ? trig.getAttribute("aria-expanded") : null
       };
-    });
+      if (navVisible && trig && list) {
+        rec.closed = !shownEl(list);
+        // a closed menu's lines are not tab stops (visibility: hidden takes them out of the order)
+        rec.closedTabStops = [...list.querySelectorAll("a[href]")].filter(a => cs(a).visibility !== "hidden" && cs(a).display !== "none").length;
+        trig.focus(); await sleep(80);
+        rec.openOnFocus = shownEl(list);
+        trig.click(); await sleep(80);
+        rec.opensOnPress = shownEl(list);
+        rec.expandedOpen = trig.getAttribute("aria-expanded");
+        // the hover bridge (Ben, 2026-09-10): the panel floats below its word, so the gap between the
+        // word's bottom and the panel's top must be spanned by the panel's own ::before strip, or the
+        // pointer leaves the group on its way down and the menu closes before a click lands
+        if (rec.opensOnPress) {
+          const tr = trig.getBoundingClientRect(), ur = list.getBoundingClientRect();
+          rec.gap = ur.top - tr.bottom;
+          const bb = w.getComputedStyle(list, "::before");
+          rec.bridge = bb && bb.content !== "none" ? parseFloat(bb.height) || 0 : 0;
+          rec.offRight = px(ur.right - w.innerWidth); rec.offLeft = px(-ur.left);
+        }
+        // Escape, with focus on a line INSIDE the open menu: it shuts and focus is back on its button
+        const firstLine = list.querySelector("a[href]");
+        if (firstLine) firstLine.focus();
+        await sleep(40);
+        rec.staysOpenInside = shownEl(list);
+        (d.activeElement || d.body).dispatchEvent(new w.KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+        await sleep(320);
+        rec.closesOnEscape = !shownEl(list);
+        rec.expandedAfterEscape = trig.getAttribute("aria-expanded");
+        rec.focusBackOnEscape = d.activeElement === trig;
+        // pressed open again, then focus leaves the menu: it shuts
+        trig.click(); await sleep(80);
+        const reopened = shownEl(list);
+        away.focus && away.focus(); await sleep(320);
+        rec.closesOnBlur = reopened && !shownEl(list);
+        if (shownEl(list)) { trig.click(); await sleep(320); }
+        rec.expandedClosed = trig.getAttribute("aria-expanded");
+      }
+      menus.push(rec);
+    }
+    if (d.activeElement && d.activeElement.blur) d.activeElement.blur();
     out.nav = {
-      words: items.map(el => (el.matches(".cc-m") ? el.querySelector("a") : el).textContent.replace(/\s+/g, " ").trim()),
-      hrefs: items.map(el => (el.matches(".cc-m") ? el.querySelector("a") : el).getAttribute("href")),
-      visible: cs(nav).display !== "none",
+      words: navItems().map(el => trigOf(el).textContent.replace(/\s+/g, " ").trim()),
+      // every link the header carries, a word or a line of a menu: what must stay reachable from it
+      allHrefs: [...nav.querySelectorAll("a[href]")].map(a => a.getAttribute("href")),
+      visible: navVisible,
+      // the header's tab stops with every menu shut (a count, reported): the lockup, the words, the buttons
+      tabStops: [...d.querySelectorAll(".cc-header a[href], .cc-header button")].filter(el => !el.disabled && el.tabIndex >= 0 &&
+        cs(el).visibility !== "hidden" && cs(el).display !== "none" && el.getBoundingClientRect().width > 0).length,
       menus
     };
   }
 
   // the menu button (Ben, 2026-09-10; under NAV_BREAK px since 2026-11-16): the hamburger in the
-  // icon cluster must open the same nav as a column — every word, every submenu inline, no
-  // horizontal scroll while open — and Escape must close it. Measured by clicking the button.
+  // icon cluster must open the same nav as ONE column — every word, every menu inline, every line of
+  // every menu drawn (FAQ and News are lines of Learn), no horizontal scroll while open — and Escape
+  // must close it. Measured by clicking the button.
   const header = d.querySelector(".cc-header"), burger = header && header.querySelector(".cc-menu-button");
   if (header && burger) {
     const buttonShown = cs(burger).display !== "none" && burger.getBoundingClientRect().width > 0;
-    let opened = null, expanded = null, wordsOpen = null, subsOpen = null, scrollW = null, closedOnEsc = null;
+    let opened = null, expanded = null, wordsOpen = null, subsOpen = null, scrollW = null, closedOnEsc = null, lines = null, menuH = null;
     if (buttonShown) {
       burger.click();
+      await sleep(60);
       opened = header.classList.contains("cc-nav-open") && !!nav && cs(nav).display !== "none";
       expanded = burger.getAttribute("aria-expanded");
-      wordsOpen = nav ? [...nav.children].filter(el => el.matches("a, .cc-m") && el.getBoundingClientRect().height > 0).length : 0;
-      subsOpen = nav ? [...nav.querySelectorAll(".cc-m > ul")].filter(ul => cs(ul).display !== "none" && ul.getBoundingClientRect().height > 0).length : 0;
+      wordsOpen = navItems().filter(el => el.getBoundingClientRect().height > 0).length;
+      subsOpen = nav ? [...nav.querySelectorAll(".cc-m > ul, .cc-m2 > .cc-dd")].filter(shownEl).length : 0;
+      lines = nav ? [...nav.querySelectorAll("a[href]")].map(a => { const b = a.getBoundingClientRect(); return {
+        text: ((a.querySelector("b") || a).textContent || "").replace(/\s+/g, " ").trim(), href: a.getAttribute("href"),
+        top: px(b.top), bottom: px(b.bottom), left: px(b.left), right: px(b.right), drawn: b.width > 0 && b.height > 0 && cs(a).visibility !== "hidden" }; }) : [];
+      menuH = px(header.getBoundingClientRect().height);
       scrollW = d.documentElement.scrollWidth;
+      // under NAV_BREAK a menu's word is a heading over lines that are all drawn: it says expanded
+      var headsSay = nav ? [...nav.querySelectorAll(".cc-m2 > .cc-m2-t")].map(t => t.getAttribute("aria-expanded")) : [];
+      // every line can be brought into the window: the column scrolls inside the header when it is
+      // taller than what is left under it (a sticky header cannot be scrolled by the page)
+      var reachable = [];
+      for (const a of (nav ? [...nav.querySelectorAll("a[href]")] : [])) {
+        a.scrollIntoView({ block: "nearest" });
+        const b = a.getBoundingClientRect();
+        if (!(b.height > 0 && b.top >= -1 && b.bottom <= w.innerHeight + 1)) reachable.push(((a.querySelector("b") || a).textContent || "").replace(/\s+/g, " ").trim());
+      }
+      var unreachable = reachable;
+      if (nav) nav.scrollTop = 0;
+      w.scrollTo(0, 0);
       d.dispatchEvent(new w.KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
       closedOnEsc = !header.classList.contains("cc-nav-open");
+      if (!closedOnEsc) burger.click();
     }
-    out.phoneMenu = { buttonShown, opened, expanded, wordsOpen, subsOpen, scrollW, closedOnEsc };
+    out.phoneMenu = { buttonShown, opened, expanded, wordsOpen, subsOpen, scrollW, closedOnEsc, lines, menuH, innerH: w.innerHeight,
+      headsSay: typeof headsSay === "undefined" ? null : headsSay, unreachable: typeof unreachable === "undefined" ? null : unreachable,
+      navOverflowY: nav ? cs(nav).overflowY : null };
   }
   // the header never wraps (2026-11-16): its row is one line at every width — the nav's items share
   // one top when the nav shows, and the row's own children (lockup, tagline, nav or menu button,
   // the icon buttons) share one line, measured with the menu closed
   if (header) {
     const row = [...header.children].filter(el => el.getBoundingClientRect().width > 0 && cs(el).position !== "absolute");
-    const items = nav && cs(nav).display !== "none" ? [...nav.children].filter(el => el.matches("a, .cc-m")) : [];
+    const items = nav && cs(nav).display !== "none" ? navItems() : [];
     const mid = el => { const b = el.getBoundingClientRect(); return (b.top + b.bottom) / 2; };
     out.headerRow = {
       navShown: items.length > 0,
-      navTops: [...new Set(items.map(el => Math.round(el.getBoundingClientRect().top)))].length,
+      navSpread: items.length ? Math.round(Math.max(...items.map(el => mid(trigOf(el)))) - Math.min(...items.map(el => mid(trigOf(el))))) : 0,
       rowLines: row.length ? Math.round(Math.max(...row.map(mid)) - Math.min(...row.map(mid))) : 0,
       height: Math.round(header.getBoundingClientRect().height),
       overlap: items.length && burger ? (() => { const last = items[items.length - 1].getBoundingClientRect().right;
-        const btns = [...header.querySelectorAll("button")].filter(b => b.getBoundingClientRect().width > 0);
+        // the icon buttons beside the nav (the menus' own words are buttons too, inside it)
+        const btns = [...header.querySelectorAll("button")].filter(b => !nav.contains(b) && b.getBoundingClientRect().width > 0);
         return btns.length ? Math.round(last - Math.min(...btns.map(b => b.getBoundingClientRect().left))) : null; })() : null
     };
   }
@@ -767,56 +1104,46 @@ PROBE = r"""
   const spData = d.getElementById("sp-data");
   if (spData) {
     let rec = null; try { rec = JSON.parse(spData.textContent); } catch (e) {}
-    const num = s2 => +String(s2 || "").replace(/[^0-9]/g, "");
-    // the five counts: one quiet line, each <span data-count="label"><b>value</b> label</span>
-    const counts = [...d.querySelectorAll(".sp-counts [data-count]")].map(el => ({
-      label: el.getAttribute("data-count"), value: num((el.querySelector("b") || {}).textContent)
-    }));
-    const tree = d.getElementById("sp-tree");
     const page = d.querySelector(".calm-page");
-    // the Class nodes the record holds with an observation at or below — the list's own rule
-    const recClasses = rec ? (() => {
-      const kids = {}, own = {};
-      rec.nodes.forEach(n => { own[n.k] = n.o || 0; if (n.p) (kids[n.p] = kids[n.p] || []).push(n.k); });
-      const roll = k => own[k] + (kids[k] || []).reduce((a, c) => a + roll(c), 0);
-      return rec.nodes.filter(n => n.r === "Class" && roll(n.k) > 0).length;
-    })() : null;
     const view = d.querySelector('#ts-species .tabrow > button[aria-selected="true"]');
     out.species = {
-      counts,
-      h1: (d.querySelector(".calm-cathead h1") || {}).textContent || null,
-      matchesHidden: (d.getElementById("sp-matches") || {}).hidden,
-      matchesRows: [...d.querySelectorAll("#sp-matches .cc-result")].map(a => ({
-        n: (a.querySelector(".cc-result-n") || {}).textContent || "",
-        m: (a.querySelector(".cc-result-m") || {}).textContent || ""
-      })),
+      h1: (d.querySelector(".calm-cathead h1, .bd-head h1") || {}).textContent || null,
+      // the finder (front door v2, assets/finder.js): Groups and All species, with a preview beside
+      // the list. Its record is /species/finder.json, read here so the drawing is compared with it.
+      finder: (() => {
+        const cf = d.getElementById("cf"); if (!cf) return null;
+        let F = null; try { const x = new w.XMLHttpRequest(); x.open("GET", cf.getAttribute("data-src"), false); x.send(); F = JSON.parse(x.responseText); } catch (e) {}
+        const pv = d.getElementById("cf-pv"), isY = el => [tok("--cta-bg"), "rgb(255,205,0)"].indexOf(cs(el).backgroundColor.replace(/\s/g, "")) >= 0;
+        return {
+          n: ((d.getElementById("cf-n") || {}).textContent || "").trim(), count: ((d.querySelector(".bd-count") || {}).textContent || "").trim(),
+          treeHead: ((d.querySelector(".sp-pane-tree h2") || {}).textContent || "").trim(),
+          groups: d.querySelectorAll("#cf-list .cf-gc").length,
+          rows: [...d.querySelectorAll("#cf-list .cf-r")].map(a => a.textContent.replace(/\s+/g, " ").trim().slice(0, 90)),
+          recGroups: F && F.groups ? F.groups.length : null, recRows: F && F.rows ? F.rows.length : null,
+          recSpecies: F && F.counts ? F.counts.species_observed : null,
+          pvShown: !!pv && !pv.hidden && cs(pv).display !== "none", pvTitle: pv && pv.querySelector("h2") ? pv.querySelector("h2").textContent.trim() : null,
+          yellow: [...d.querySelectorAll(".sp-cat a, .sp-cat button")].filter(el => isY(el) && el.getBoundingClientRect().width > 0).map(el => el.textContent.trim()),
+          q: (d.getElementById("door-q") || {}).value || ""
+        };
+      })(),
       rec: rec && rec.counts,
       rows: rec && rec.mx ? rec.mx.rows.length : null,
       cols: rec && rec.mx ? rec.mx.cols.length : null,
       cells: d.querySelectorAll(".sp-mx .sp-c").length,
-      recClasses,
-      classes: d.querySelectorAll("#sp-classes > .sp-class").length,
-      classesShown: [...d.querySelectorAll("#sp-classes > .sp-class")].filter(el => !el.hidden).length,
-      classSils: d.querySelectorAll("#sp-classes > .sp-class svg.sp-csil").length,
-      classOrder: rec ? (() => {
-        const kids = {}, own = {};
-        rec.nodes.forEach(n => { own[n.k] = n.o || 0; if (n.p) (kids[n.p] = kids[n.p] || []).push(n.k); });
-        const roll = k => own[k] + (kids[k] || []).reduce((a, c) => a + roll(c), 0);
-        return [...d.querySelectorAll("#sp-classes > .sp-class")].map(el => roll(el.dataset.k));
-      })() : [],
       view: view ? view.getAttribute("data-tab") : null,
       views: [...d.querySelectorAll("#ts-species .tabrow > button")].map(b => b.getAttribute("data-tab")),
-      // nothing open on load: no class row, and only the chosen view's panel showing
-      openItems: d.querySelectorAll("#sp-classes > .sp-class[open]").length,
+      // only the chosen view's panel showing
       panelsShown: [...d.querySelectorAll("#ts-species > .tabpanel")].filter(p => !p.hidden).length,
       // the page's own content (header to its last row, the site footer excluded), at this width
       contentH: page ? px(page.getBoundingClientRect().bottom + w.scrollY) : 0,
-      iceRects: d.querySelectorAll("#sp-ice rect").length,
       treeRoots: d.querySelectorAll('#sp-tree > ul > li[role="treeitem"]').length,
       hits: d.querySelectorAll("#sp-tree .sp-hit").length,
+      // nothing in --warn. A yellow BUTTON is not a warning: in the dark theme --warn and --cta-bg are
+      // one colour, so the preview's one yellow button is counted as yellow (finder.yellow), not here
       warnEls: [...d.querySelectorAll(".sp-cat *")].filter(el => {
-        const st = cs(el), w2 = out.warn;
-        return st.color.replace(/\s/g, "") === w2 || st.backgroundColor.replace(/\s/g, "") === w2;
+        const st = cs(el), w2 = out.warn, bg = st.backgroundColor.replace(/\s/g, "");
+        if (el.matches("a, button") && bg === tok("--cta-bg")) return false;
+        return st.color.replace(/\s/g, "") === w2 || bg === w2;
       }).map(el => String(el.className || el.tagName)).slice(0, 6)
     };
 
@@ -945,7 +1272,9 @@ PROBE = r"""
   // PURPOSE (issue #30 D12/D16: a shortlist of the ways in), so it is not the listing counted here.
   // The catalog (/datasets/) has no listing: each row's ways line names its dataset's first id.
   const tabledap = {};
-  if (!d.querySelector("main.ds-cat")) [...(d.querySelector("main.ds-page #access") || d).querySelectorAll('a[href*="tabledap/"]')].forEach(a => {
+  // (the redesigned page's "Get the data" card names the dataset's ERDDAP tables once more, as its
+  // shortlist; the listing is still the fold, so the count is scoped to #access on both pages)
+  if (!d.querySelector("main.ds-cat")) [...(d.querySelector("main.ds-page #access, main.dp-page #access") || d).querySelectorAll('a[href*="tabledap/"]')].forEach(a => {
     const m = /tabledap\/([^.?#\/]+)\.html(?:$|[?#])/.exec(a.getAttribute("href") || "");
     if (m) tabledap[m[1]] = (tabledap[m[1]] || 0) + 1;
   });
@@ -1050,22 +1379,31 @@ PROBE = r"""
     const cells = mx ? [...mx.querySelectorAll(".mm-cell")] : [];
     // issue #30 D8 A / D10 B: the list is the default view and the ONE search (#door-q) filters it
     // and the timeline alike; a search reads both
+    // (front door v2: the list is the finder's — #cf-list's rows, By category or A–Z — and #door-q is
+    // its search box; main's own list is kept in the page unseen so measurements.js runs unchanged)
     const read = () => ({
       rows: tl.querySelectorAll(".mm-nm").length,
-      list: d.querySelectorAll("#ts-mm .mm-row[data-q]:not([hidden])").length,
-      n: ((d.querySelector("#door-search .dsearch-k") || {}).textContent || "").trim()
+      list: d.querySelectorAll("#cf-list .cf-r").length,
+      n: ((d.getElementById("cf-n") || {}).textContent || "").trim()
     });
-    const catItems = [...d.querySelectorAll("#mm-cats > details.mm-cat-item")];
     out.mm = {
-      h1: (d.querySelector(".calm-cathead h1") || {}).textContent || null,
-      listCats: catItems.map(g => ({ cat: g.getAttribute("data-cat"), open: g.open,
-        rows: g.querySelectorAll(".mm-row[data-q]").length,
-        n: +((g.querySelector(".mm-cat-n") || {}).textContent || "").replace(/[^0-9]/g, "") })),
-      listUnified: d.querySelectorAll("#mm-unified > .mm-row[data-q]").length,
-      listRowsNoName: [...d.querySelectorAll("#ts-mm .mm-row[data-q]")].filter(li =>
-        [...li.querySelectorAll(".mm-row-ds .mm-dot")].some(dot => !(dot.parentElement.textContent || "").trim())).length,
+      h1: (d.querySelector(".calm-cathead h1, .bd-head h1") || {}).textContent || null,
+      // the finder's By category list: one section per category, its count and its rows
+      listCats: [...d.querySelectorAll("#cf-list .cf-grp[data-cat]")].map(g => ({ cat: g.getAttribute("data-cat"),
+        rows: g.querySelectorAll(".cf-r").length,
+        n: +((g.querySelector(".cf-gn") || {}).textContent || "").replace(/[^0-9]/g, "") })),
+      listRows: d.querySelectorAll("#cf-list .cf-r").length,
+      listKeys: [...d.querySelectorAll("#cf-list .cf-r[data-k]")].map(a => a.getAttribute("data-k")),
+      // every row names the datasets that measure it (identity is never a dot alone)
+      listRowsNoName: [...d.querySelectorAll("#cf-list .cf-r")].filter(a => {
+        const c = (a.querySelector(".cf-ds") || { cloneNode: () => ({ querySelectorAll: () => [], textContent: "" }) }).cloneNode(true);
+        [...c.querySelectorAll("small")].forEach(x => x.remove());
+        return !(c.textContent || "").trim(); }).length,
+      countSaid: ((d.getElementById("cf-n") || {}).textContent || "").trim(),
+      pvShown: (() => { const pv = d.getElementById("cf-pv"); return !!pv && !pv.hidden && cs(pv).display !== "none"; })(),
       viewTabs: [...d.querySelectorAll("#ts-mm > .tabrow > button")].map(b => b.getAttribute("data-tab")),
-      listShown: !((d.querySelector('#ts-mm > .tabpanel[data-panel="list"]') || {}).hidden),
+      view: ((d.querySelector('#ts-mm > .tabrow > button[aria-selected="true"]') || { getAttribute: () => null }).getAttribute("data-tab")),
+      listShown: !((d.querySelector('#ts-mm > .tabpanel[data-panel="cat"]') || { hidden: true }).hidden),
       rec: rec && rec.counts,
       cats: rec ? rec.cats.length : 0,
       ds: rec ? rec.ds.length : 0,
@@ -1190,8 +1528,11 @@ PROBE = r"""
   // assets/door-search.js fetches the three records on the FIRST focus, so the box has to be
   // driven, not read: focus it, type each term, and count what came back per group. The promise
   // is what the probe returns — the host resolves whatever `done()` is handed.
+  // (front door v2 gave the finders' own search box the id #door-q on /species/ and /measurements/,
+  // so species.js and measurements.js fold to it; the one search over the three indexes is where
+  // its results box #door-res is — the front door's Find panel)
   const dq = d.getElementById("door-q");
-  if (!dq) return out;
+  if (!dq || !d.getElementById("door-res")) return out;
   const TERMS = ["sardine", "nitrate", "CUFES", "TEMPPR01"];
   const type = t => new Promise(res => {
     dq.value = t;
@@ -1239,23 +1580,31 @@ PROBE = r"""
 HOST = """
 new Promise(done => {
   const f = document.createElement("iframe");
-  f.style.cssText = "position:fixed;left:0;top:0;border:0;width:__W__px;height:900px";
+  f.style.cssText = "position:fixed;left:0;top:0;border:0;width:__W__px;height:__H__px";
   f.src = "__URL__";
   f.onload = () => {
     const w = f.contentWindow, d = f.contentDocument;
-    const go = () => setTimeout(() => { try { done((__PROBE__)(w, d)); } catch (e) { done({error: String(e)}); } }, __WAIT__);
+    // the probe is async (it waits out the header menus' close delay and the finder's sticky preview);
+    // a throw or a rejection comes back as {error}, never as a hung page
+    const go = () => setTimeout(() => { Promise.resolve().then(() => (__PROBE__)(w, d)).then(done, e => done({error: String(e)})); }, __WAIT__);
     if (d.fonts && d.fonts.ready) d.fonts.ready.then(go); else go();
   };
   document.body.appendChild(f);
 });
 """
 
+# the window the pages are measured in: `width` x PROBE_H. The front door's first screen is as tall as
+# the window (front door v2: min-height 100vh less the header), so its fold is measured in its own
+# window, FOLD_W x FOLD_H, by FOLD_PROBE.
+PROBE_H = 900
 
-def probe(url, width, theme, browser, wait):
+
+def probe(url, width, theme, browser, wait, height=PROBE_H, js=None):
     sep = "&" if "?" in url else "?"
     target = f"{url}{sep}theme={theme}&tour=off"
-    js = (HOST.replace("__W__", str(width)).replace("__URL__", target)
-              .replace("__PROBE__", PROBE.replace("__FD_ANCHORS__", json.dumps(list(FRONT_ANCHORS))))
+    body = (js or PROBE).replace("__HERO__", HERO_JS).replace("__FD_ANCHORS__", json.dumps(list(FRONT_ANCHORS)))
+    js = (HOST.replace("__W__", str(width)).replace("__H__", str(height)).replace("__URL__", target)
+              .replace("__PROBE__", body)
               .replace("__WAIT__", str(wait)))
     # the host page must be same-origin with the target, so load the target itself and let the
     # iframe inside it be the one that is measured at the width under test
@@ -1280,19 +1629,46 @@ MAX_STRETCH = 1.25    # a tile drawn more than a quarter taller than its content
 # 4,200–5,100 px; anything past these means something that should be a fold has come back open.
 # the Download button (2026-11-16): above the fold of a 1280 x 800 screen, at 1280 and wider
 DL_FOLD_W, DL_FOLD_H = 1280, 800
+PV_MIN_VIEW = 200     # px of the finder's preview on screen once a row is chosen (its name and its buttons)
 MAX_DS_H = {"catalog": 2300, "dataset": 2200}   # catalog: 19 rows + the 347 px site footer the mockup lacked
 MAX_GRID_H = 4400     # px at 1470 with the staging record (was 4,910)
+SPECIES_VIEWS = ["groups", "list", "tree", "matrix"]   # front door v2's finder: Groups · All species · The tree · the matrix
 MAX_SPECIES_INDEX_H = 2220   # issue #30: /species/ at 1470, nothing open — the mockup's 1,775 + 25 %
 MAX_SPECIES_PAGE_H = 1500    # issue #30: a taxon page at 1470, nothing open — ~1,200 + 25 %
-# the front door (issue #30): Dan's screen, the seven doors in order, and the page with none open
+# the front door (issue #30; the seven tasks of 2026-11-16; front door v2's first screen, 2026-11-17)
 FOLD_W, FOLD_H = 1280, 645
-# The seven tasks (2026-11-16, the users' and Erin's feedback): five open a panel, Cite and Contribute
-# are links straight to their chapter of the docs book.
-FRONT_DOORS = ["learn", "explore", "find", "program", "cite", "contribute", "monitor"]
+# The seven tasks (2026-11-16, the users' and Erin's feedback) and an eighth, the Query Builder: each is
+# ONE visible link on the first screen. (id, the words a failure prints, the href that answers it.)
+# A hash is this page's panel; the Explorer and the Query Builder are matched by their path, since a
+# preview build serves them from its own folder; Cite and Contribute are their docs chapters, exactly.
 FRONT_LINKS = {"cite": "https://calcofi.io/docs/cite.html", "contribute": "https://calcofi.io/docs/provide.html"}
-# every anchor anyone may have bookmarked, and the door it must open now: the doors themselves, the
-# ids inside a panel (#build and #viz were doors until 2026-11-16 and are now groups inside Code and
-# Explore), the tabs inside a panel, and the retired words of the old sections
+FRONT_TASKS = [
+    ("learn",      "See what CalCOFI collects",             r"^#learn$"),
+    ("explore",    "Explore and download on a map",         r"(^|/)explore/?(\?[^#]*)?$"),
+    ("find",       "Find and download a dataset",           r"(^|/)datasets/$"),
+    ("program",    "Work with the data in code",            r"^#program$"),
+    ("cite",       "Cite the data",                         "^" + re.escape(FRONT_LINKS["cite"]) + "$"),
+    ("contribute", "Contribute data",                       "^" + re.escape(FRONT_LINKS["contribute"]) + "$"),
+    ("monitor",    "Inform ocean and fisheries management", r"^#monitor$"),
+    ("builder",    "the Query Builder",                     r"(^|/)explore/builder\.html(\?[^#]*)?$"),
+]
+# the numbers the first screen states (front door v2 draws four; stations are on Find's map), each
+# equal to the page's own #reach record; the two COUNTED things link their catalogs, as they always did
+FRONT_NUMBERS = ("years", "cruises", "species", "measurements")
+# Yellow (issue #30 D6). D6 A was "no yellow on the first screen, one in each panel". Front door v2
+# (Betty, e6ad285: "Explorer is the yellow button") puts ONE on the first screen, the Explorer's: the
+# rule checked now is exactly one, and that one. A decision the reconciliation records for Ben; the
+# check follows the page that was built and fails on a second yellow or on any other first.
+# Per panel, the yellow buttons painted (a class is not a colour): Learn none (its bar's "Sampling
+# methods" is a quiet link by design: the drawing is the point, Betty 2026-11-14), Code none (Get the
+# data is its destination, Erin 2026-10-19), the others one each.
+PANEL_YELLOW = {"learn": 0, "explore": 1, "find": 1, "program": 0, "monitor": 1}
+# "Where do you want to start?" is large text on a picture: WCAG 1.4.3's 3:1 at every sampled point
+START_MIN_CONTRAST = 3.0
+PHONE_W = 900         # under this the hero stacks (assets/hero.css @media (max-width: 900px))
+# every anchor anyone may have bookmarked, and the panel it must open now: the panels themselves, the
+# ids inside a panel (#build and #viz were doors until 2026-11-16; #viz is Maps and apps' apps for one
+# dataset since front door v2), the tabs inside a panel, and the retired words of the old sections
 FRONT_ANCHORS = {
     "learn": "learn", "explore": "explore", "find": "find", "program": "program", "monitor": "monitor",
     "datasets": "find", "species": "find", "measurements": "find",
@@ -1301,6 +1677,8 @@ FRONT_ANCHORS = {
     "kinds": "learn",
     "data": "find", "apps": "explore", "docs": "learn", "monitoring": "monitor", "students": "explore",
 }
+# where a retired word lands INSIDE its panel: the URL keeps that hash, so a reload scrolls to it
+FRONT_LANDS = {"viz": "dataset", "students": "student"}
 # Find (Ben, 2026-11-16: "the find is still not obvious enough"): at 1280 x 800 with the panel open at
 # its top, the one search and the first eight dataset names are on screen; each name is a link at
 # body-text size (>= 16 px) in --accent, underlined, at least 28 px tall (MIN_TAP on a phone)
@@ -1308,7 +1686,10 @@ FIND_FOLD_H = 800
 HEADER_H = 72         # the sticky header, when the page does not say (--header-h)
 FIND_NAME_MIN_PX = 16
 FIND_ROW_MIN_PX = 28
-FRONT_MAX_H = 950     # px at 1470 with no door open (the mockup's ~750 + 25 %, with the site's footer)
+# FRONT_MAX_H (950 px at 1470 with no door open) is gone: front door v2's first screen is as tall as
+# the window by design (min-height: 100vh less the header), so a number of pixels says nothing in a
+# 900 px probe window. What it guarded is asserted directly: with no panel open the first screen ends
+# at the window's bottom at >= 1400 px, and nothing but the footer follows it.
 MIN_TAP = 32
 # issue #30 (calm re-cut): full-page heights at 1470 px with nothing open, header and footer included.
 # The mockups measured /measurements/ at 1,300 px and their heaviest measurement page (temperature,
@@ -1316,21 +1697,42 @@ MIN_TAP = 32
 MAX_MM_INDEX_H = 1625
 MAX_MM_PAGE_H = 1850
 
-# ── the front door's navigation (plan 2026-09-10 § D7, WS-M0) ─────────────────
-# The seven words plus calcofi.org ↗ — eight items (FAQ joined after DOCS on 2026-11-16, the owner's
-# request). DOCS, FAQ and NEWS are pages, so the section bar draws four; the header draws all seven
-# and the outbound link.
-NAV_WORDS = ["Data", "Apps", "Access", "Build", "Docs", "FAQ", "News", "calcofi.org ↗"]
+# ── the header (front door v2, _includes/site_nav.html; was plan 2026-09-10 § D7's seven words) ──
+# Six items in sentence case: three are menus. main's DATA · APPS · ACCESS · BUILD · DOCS · FAQ · NEWS
+# (FAQ joined on 2026-11-16, the owner's request) became lines of those menus; NAV_REACH is what the
+# header must still link somewhere, a word or a line, so none of them can drop out unseen.
+NAV_WORDS = ["Data", "Map", "Query Builder", "Cite the data", "Learn", "calcofi.org ↗"]
+NAV_MENUS = ["Data", "Map", "Learn"]
+NAV_REACH = [
+    ("the datasets catalog (/datasets/)",       r"(^|/)datasets/$"),
+    ("the species catalog (/species/)",         r"(^|/)species/$"),
+    ("the measurements catalog (/measurements/)", r"(^|/)measurements/$"),
+    ("the Explorer",                            r"(^|/)explore/?$"),
+    ("the Query Builder",                       r"(^|/)explore/builder\.html$"),
+    ("how to cite",                             r"/docs/cite\.html$"),
+    ("the docs",                                r"/docs/?$"),
+    ("the FAQ",                                 r"/docs/faq\.html$"),
+    ("News",                                    r"(^|/)news/$"),
+    ("code access (#services or #packages)",    r"#(services|packages|access|program)$"),
+    ("the pipeline (#build)",                   r"#build$"),
+    ("the apps (#explore)",                     r"#explore$"),
+    ("what CalCOFI collects (#learn)",          r"#learn$"),
+    ("calcofi.org",                             r"^https://calcofi\.org/?$"),
+]
 # below this width the menu button carries the nav (= style.css @media (max-width: 1099px) and
-# assets/tabs.js NAV_BREAK): the eight items fit one line from 1,089 px, so the header never wraps
+# assets/tabs.js NAV_BREAK): main's eight items fit one line from 1,089 px; front door v2's six are
+# narrower and keep the same breakpoint, so the header never wraps
 NAV_BREAK = 1100
 # the widths the header's own assertions are run at by --nav (one line from NAV_BREAK, the menu below)
 NAV_WIDTHS = [1100, 1280, 1470, 1024, 800, 640, 375]
 NAV_PATHS = ["/", "/datasets/swfsc_ichthyo/", "/species/", "/measurements/"]
+PHONE = (375, 667)    # a small phone's window, for the open menu's column (--nav)
 # the sections whose tabs are CARDS, so a pill must equal the number of cards in its panel. DATA's
 # three pills count datasets, species and measurements — the release's numbers, checked against the
 # page's own inline record instead (the band assertions above already do it).
-CARD_TABSETS = ("ts-access", "ts-viz")
+# (ts-viz, "Other data visualizations", is gone with front door v2: Maps and apps draws those cards
+# without tabs, and every product's card is asserted by product_keys instead.)
+CARD_TABSETS = ("ts-access",)
 # The Data section at 1470 px, measured on main's own build before D7 (2026-09-10, the v2026.09.06
 # record, light): 2,974 px. D7 adds one search box (48), one tab row (43) and one door line in each
 # realm head (35) and must not add a screen — plan § Risks, WS-M0's gate. Measured after: 3,078 px,
@@ -1367,6 +1769,142 @@ def url_ok(url):
         code = getattr(e, "code", None)
         _PROBED[url] = code in (200, 206) if code else None   # None: unreachable, a warning not a failure
     return _PROBED[url]
+
+
+def _rgb(text):
+    """(r, g, b) of a computed colour — "rgb(24,43,73)" or "rgba(…)" — else None"""
+    m = re.findall(r"[\d.]+", text or "")
+    return tuple(float(x) for x in m[:3]) if len(m) >= 3 else None
+
+
+def grad_at(stops, t):
+    """the colour of a linear gradient at position t (0..1): `stops` is [[offset, "rgb(…)"], …] as
+    the drawing declares them, interpolated in sRGB (SVG's default); clamped outside the end stops"""
+    pts = sorted((float(o), _rgb(c)) for o, c in stops if _rgb(c))
+    if not pts:
+        return None
+    if t <= pts[0][0]:
+        return pts[0][1]
+    for (o0, c0), (o1, c1) in zip(pts, pts[1:]):
+        if t <= o1:
+            f = 0.0 if o1 == o0 else (t - o0) / (o1 - o0)
+            return tuple(a + (b - a) * f for a, b in zip(c0, c1))
+    return pts[-1][1]
+
+
+def contrast(a, b):
+    """WCAG 2 contrast ratio of two (r, g, b) colours, 1..21"""
+    def lum(c):
+        ch = [(v / 255.0) for v in c]
+        ch = [v / 12.92 if v <= 0.03928 else ((v + 0.055) / 1.055) ** 2.4 for v in ch]
+        return 0.2126 * ch[0] + 0.7152 * ch[1] + 0.0722 * ch[2]
+    la, lb = sorted((lum(a), lum(b)), reverse=True)
+    return (la + 0.05) / (lb + 0.05)
+
+
+def start_contrast(start):
+    """(the lowest contrast of the start heading against what is painted behind it, the layer it was
+    lowest on), from heroMeasure()'s sample points; (None, None) when the drawing gave nothing to read"""
+    behind = (start or {}).get("behind") or {}
+    ink = _rgb((start or {}).get("color"))
+    worst = (None, None)
+    for pt in behind.get("pts") or []:
+        bg = grad_at((behind.get("stops") or {}).get(pt.get("layer")) or [], pt.get("t", 0))
+        if ink is None or bg is None:
+            continue
+        c = contrast(ink, bg)
+        if worst[0] is None or c < worst[0]:
+            worst = (c, pt["layer"])
+    return worst
+
+
+def task_links(links, pattern):
+    """the visible first-screen links whose href answers a task's pattern"""
+    return [x for x in links if x.get("visible") and re.search(pattern, x.get("href") or "")]
+
+
+def check_first_screen(where, H, width, fails, notes, fold=False):
+    """the assertions about the hero that hold in any window: the tasks, the tap targets, the heading's
+    contrast, the numbers, the strip. `fold` adds the FOLD_W x FOLD_H rule (every task above the fold)."""
+    links = H.get("links") or []
+    missing, small, late = [], [], []
+    for tid, words, pat in FRONT_TASKS:
+        hits = task_links(links, pat)
+        if not hits:
+            missing.append(f"{tid} ({words})")
+            continue
+        best = max(hits, key=lambda x: x["h"])
+        if best["h"] < MIN_TAP:
+            small.append(f"{tid} {best['h']}px ({best['where']}: {best['text']!r})")
+        if fold and min(x["bottom"] for x in hits) > FOLD_H:
+            late.append(f"{tid} {min(x['bottom'] for x in hits)}px ({hits[0]['where']})")
+    if missing:
+        fails.append(f"{where}: no visible link on the first screen for: {', '.join(missing)}")
+    if small:
+        fails.append(f"{where}: first-screen link(s) under the {MIN_TAP}px tap target: {'; '.join(small)}")
+    if late:
+        fails.append(f"{where}: task link(s) end below the {FOLD_H}px fold of a {FOLD_W} x {FOLD_H} window: "
+                     f"{'; '.join(late)} (the first screen ends at {H.get('bottom')}px)")
+    cards, strip, start = H.get("cards") or [], H.get("strip"), H.get("start")
+    if len(cards) != 3:
+        fails.append(f"{where}: the first screen draws {len(cards)} start cards, expected 3")
+    if fold:
+        lc = [c["title"] for c in cards if c["bottom"] > FOLD_H]
+        if lc:
+            fails.append(f"{where}: start card(s) {lc} end below the {FOLD_H}px fold (at {max(c['bottom'] for c in cards)}px)")
+    for a, b in zip(cards, cards[1:]):
+        if b["top"] < a["bottom"] - 1 and b["left"] < a["right"] - 1 and a["left"] < b["right"] - 1:
+            fails.append(f"{where}: start cards {a['title']!r} and {b['title']!r} overlap")
+    # the strip of links sits under the cards, never over the last one (it is absolutely placed for one
+    # line at desktop width; wrapped on a phone it rode up over the third card until c38911f)
+    if strip and cards and strip["top"] < max(c["bottom"] for c in cards) - 1:
+        fails.append(f"{where}: the strip of links starts at {strip['top']}px, over the start cards "
+                     f"(the last ends at {max(c['bottom'] for c in cards)}px)")
+    if not strip:
+        fails.append(f"{where}: the first screen has no strip of links (.hero-foot nav)")
+    # the start heading against what is painted behind it (white on the sky was 1.1:1 at 375 px)
+    c, layer = start_contrast(start)
+    if start is None:
+        fails.append(f"{where}: the first screen has no start heading (#start-h)")
+    elif c is None:
+        fails.append(f"{where}: could not read what is painted behind the start heading (the drawing #hero-sea)")
+    elif c < START_MIN_CONTRAST:
+        fails.append(f"{where}: the start heading {start['color']} is {c:.2f}:1 against the {layer.replace('hero-', '')} "
+                     f"behind it, under {START_MIN_CONTRAST:g}:1")
+    # the numbers stay inside the window ("MEASUREMENTS" ran off the right edge at 375 px)
+    out_r = [n["label"] for n in H.get("nums") or [] if n["right"] > H["innerW"] + 1 or n["left"] < -1]
+    if out_r:
+        fails.append(f"{where}: number(s) {out_r} run outside the {H['innerW']}px window")
+    # the label drawn by the ship is part of the picture: under PHONE_W the picture is cut by the
+    # window's edge, so the label is neither shown nor a link there (the strip carries the same link)
+    tag = H.get("tag")
+    if tag and width < PHONE_W and tag["visible"]:
+        fails.append(f"{where}: the ship's label is still a drawn link under {PHONE_W}px ({tag['w']}px wide), where the picture is cut")
+    if tag and width >= PHONE_W and not tag["visible"]:
+        fails.append(f"{where}: the ship's label is not drawn at {width}px")
+    # the picture: drawn, with Line 90's floor wherever the page carries its profile, and no pins
+    if H.get("drawn", 0) < 3:
+        fails.append(f"{where}: the first screen's drawing (#hero-sea) was not drawn")
+    if H.get("floorData") and not H.get("ridge"):
+        fails.append(f"{where}: the page carries Line 90's sea floor but the drawing has no floor")
+    if H.get("svgPins"):
+        fails.append(f"{where}: the first screen's drawing carries {H['svgPins']} pins; it is drawn quiet")
+    notes.append(f"{where}: first screen {H.get('top')}–{H.get('bottom')}px in a {H.get('innerW')} x {H.get('innerH')} window; cards end "
+                 f"{max((c['bottom'] for c in cards), default=0)}px, strip {strip['top'] if strip else None}–{strip['bottom'] if strip else None}px; "
+                 f"start heading {'%.2f' % c if c else '?'}:1 on the {str(layer).replace('hero-', '')}")
+
+
+def check_fold(where, r, fails, notes):
+    """the first screen alone, in a FOLD_W x FOLD_H window (FOLD_PROBE)"""
+    H = r.get("fold")
+    if not H:
+        fails.append(f"{where}: no first screen (section.hero) to measure")
+        return
+    if r.get("open"):
+        fails.append(f"{where}: {r['open']} open on load")
+    if r.get("scrollWidth", 0) > r.get("width", 0) + 1:
+        fails.append(f"{where}: horizontal scroll — scrollWidth {r['scrollWidth']} > {r['width']}")
+    check_first_screen(where, H, FOLD_W, fails, notes, fold=True)
 
 
 def bands_r2(P):
@@ -1430,6 +1968,8 @@ def check(path, r, width, theme, fails, notes):
             want = sorted(x["dataset_key"] for x in rec.get("datasets", []) if x.get("visibility") != "internal")
             if want and sorted(cd["rows"]) != want:
                 fails.append(f"{where}: the list has {len(cd['rows'])} rows for {len(want)} datasets in the record")
+            if want and sorted(cd["gridRows"]) != want:
+                fails.append(f"{where}: By category has {len(cd['gridRows'])} rows for {len(want)} datasets in the record")
     if r.get("twoCol"):
         fails.append(f"{where}: two-column region(s) under the head: {r['twoCol']}")
 
@@ -1448,8 +1988,8 @@ def check(path, r, width, theme, fails, notes):
                     fails.append(f"{where}: {key} has no zips (or is a holding) but draws {dlw['n']} Download button(s)")
             else:
                 if dlw["n"] != 1 or dlw["inHead"] != 1:
-                    fails.append(f"{where}: expected exactly one Download button, in the head; found {dlw['n']} "
-                                 f"({dlw['inHead']} in the head)")
+                    fails.append(f"{where}: expected exactly one Download button, in the head (the redesigned page: its "
+                                 f"side column); found {dlw['n']} ({dlw['inHead']} there)")
                 if width >= 1280 and (dlw["bottom"] or 10**6) > DL_FOLD_H:
                     fails.append(f"{where}: the Download button ends at {dlw['bottom']}px, below the "
                                  f"{DL_FOLD_W} x {DL_FOLD_H} fold")
@@ -1464,20 +2004,133 @@ def check(path, r, width, theme, fails, notes):
                     fails.append(f"{where}: the dialog's CSV links {dlw['firstHref']}, expected {want['urls']['csv']}")
                 if "xlsx" not in want["formats"] and "xlsx" in dlw["options"]:
                     fails.append(f"{where}: the dialog offers Excel, which the manifest did not write")
+                # the dialog's "Every endpoint" closes it and opens the #access fold: the fold must be there
+                if dlw["endpointsLink"] and not dlw["accessFold"]:
+                    fails.append(f"{where}: the Download dialog links \"Every endpoint\" but the page has no #access fold to open")
         else:
+            # /datasets/ is the finder: ONE preview beside the list carries the Download control of the row
+            # it shows (a link to that dataset page's #download), so every row is driven and its preview
+            # read. (main drew a control per row in the List and again in By category: the two views
+            # share the one preview now, so "By category draws N controls" has nothing left to count;
+            # By category's rows are asserted above instead.)
             rec = _read_json(os.path.join(_data_dir(), "datasets.json")) or {}
             keys = [x["dataset_key"] for x in rec.get("datasets", []) if x.get("visibility") != "internal"]
             want_rows = sorted(k for k in keys if k in offers)
-            if sorted(dlw["rows"]) != want_rows:
-                fails.append(f"{where}: {len(dlw['rows'])} row Download control(s) for {len(want_rows)} datasets with "
-                             f"zips: missing {sorted(set(want_rows) - set(dlw['rows']))[:4]}, extra "
-                             f"{sorted(set(dlw['rows']) - set(want_rows))[:4]}")
-            if dlw["gridRows"] != len(want_rows):
-                fails.append(f"{where}: the By-category view draws {dlw['gridRows']} Download controls, expected {len(want_rows)}")
+            br = r.get("browse")
+            if br is None:
+                fails.append(f"{where}: no finder (#bd-list beside #bd-pv) to read the Download controls from")
+            else:
+                got = {}
+                for k, v in br["pvDl"].items():
+                    m = re.search(r"/datasets/([^/]+)/#download$", v.get("href") or "")
+                    if v.get("href"):
+                        got[k] = m.group(1) if m else v["href"]
+                wrong = sorted(k for k, v in got.items() if v != k)
+                have = sorted(k for k, v in got.items() if v == k)
+                # (where the preview is not drawn — a phone — a row opens its dataset page, which has the button)
+                if br["pvDisplay"] != "none" and (have != want_rows or wrong):
+                    fails.append(f"{where}: the preview draws a Download control for {len(have)} of the {len(want_rows)} datasets with "
+                                 f"zips: missing {sorted(set(want_rows) - set(have))[:4]}, extra {sorted(set(have) - set(want_rows))[:4]}, "
+                                 f"linking another page {wrong[:4]}")
+                # a row's click is the page's to handle while the preview is drawn; where it is not drawn
+                # (a phone, if the page stacks it away) the click must be left to follow the link
+                if br["pvDisplay"] != "none" and br["unhandled"]:
+                    fails.append(f"{where}: {len(br['unhandled'])} row click(s) are not handled though the preview is drawn: {br['unhandled'][:3]}")
+                if br["pvDisplay"] == "none" and len(br["unhandled"]) != len(br["pvDl"]):
+                    fails.append(f"{where}: the preview is not drawn at {width}px but a row's click is still swallowed: "
+                                 f"the row goes nowhere")
+                rc = br.get("reach")
+                if rc:
+                    notes.append(f"{where}: finder preview {rc['position']}, {rc['inView']}px in view with the last row chosen "
+                                 f"(row {rc['rowTop']}–{rc['rowBottom']}px, preview {rc['pvTop']}–{rc['pvBottom']}px of {rc['innerH']}px)")
+                    # reachable: with the last row chosen and on screen, at least PV_MIN_VIEW px of its
+                    # preview are on screen too. Beside the list (>= 1000 px) that is the sticky pane; where
+                    # the page stacks the preview under the list, a chosen row must still bring it into view
+                    if rc["shown"] and rc["handled"] and rc["inView"] < PV_MIN_VIEW:
+                        fails.append(f"{where}: with the last row chosen and on screen, {rc['inView']}px of its preview are in the "
+                                     f"window (preview {rc['pvTop']}–{rc['pvBottom']}px, window {rc['innerH']}px): choosing a row "
+                                     f"shows nothing")
+                    if width >= 1400 and not rc["sideBySide"]:
+                        fails.append(f"{where}: the preview is not beside the list at {width}px")
+                f2 = br.get("filter")
+                if f2:
+                    notes.append(f"{where}: finder type {f2['type']!r} -> {f2['shown']} of {f2['total']} rows")
+                    if f2["painted"]:
+                        fails.append(f"{where}: choosing type {f2['type']!r} left {len(f2['painted'])} hidden element(s) still displayed "
+                                     f"(an author `display` rule beats [hidden]): {', '.join(sorted(set(f2['painted']))[:4])}")
+                    if not (0 < f2["shown"] < f2["total"]):
+                        fails.append(f"{where}: choosing type {f2['type']!r} shows {f2['shown']} of {f2['total']} rows")
+                else:
+                    fails.append(f"{where}: the finder has no type filter (#bd-type) to check that it hides")
+                # the one search (main: one box over the three indexes on every catalog page): from
+                # /datasets/ a species, a measurement and a dataset's own name each find a dataset
+                se2 = br.get("search") or {}
+                notes.append(f"{where}: finder search " + " · ".join(f"{t}: {len(v)}" for t, v in se2.items()))
+                for term in ("sardine", "nitrate", "CUFES"):
+                    if not se2.get(term):
+                        fails.append(f"{where}: the finder's search finds no dataset for {term!r}")
+                    elif len(se2[term]) >= len(br["pvDl"]):
+                        fails.append(f"{where}: the finder's search for {term!r} hides nothing ({len(se2[term])} rows)")
         if dlw["inSummary"]:
             fails.append(f"{where}: {dlw['inSummary']} Download control(s) inside a <summary> (nested interactive)")
         if dlw["inHoldings"]:
             fails.append(f"{where}: a holding row carries a Download control")
+
+    # ── the redesigned dataset page (front door v2) ───────────────────────────────────────────────
+    dp = r.get("dp")
+    if dp:
+        key = path.rstrip("/").split("/")[-1].split("?")[0]
+        notes.append(f"{where}: redesigned page {dp['cols']} column(s), main {dp['mainW']}px beside {dp['sideW']}px; "
+                     f"{len(dp['cards'])} side cards; {len(dp['measKeys'])} measurements, {dp['taxaDrawn'] + dp['taxaMore']} taxa; "
+                     f"licence {dp['licence']!r}")
+        # the columns (was "no two-column region under the head", which the CTD page's 418 px main column
+        # beside a 1,346 px sidebar earned): two columns are this page's design at desktop width, so what
+        # is asserted is that the content column is the wide one, and that a phone gets one column
+        if width <= 400 and dp["cols"] != 1:
+            fails.append(f"{where}: the page is {dp['cols']} columns at {width}px, expected 1")
+        if width >= 1000 and dp["cols"] and dp["cols"] > 1 and (dp["mainW"] or 0) < 1.4 * (dp["sideW"] or 0):
+            fails.append(f"{where}: the content column is {dp['mainW']}px beside a {dp['sideW']}px side column: the wide column "
+                         f"must be the content's")
+        # the side cards do not overlap each other, and the side column does not run over what follows
+        cards = dp["cards"]
+        for a_, b_ in zip(cards, cards[1:]):
+            if b_["top"] < a_["bottom"] - 1:
+                fails.append(f"{where}: side cards {a_['title']!r} and {b_['title']!r} overlap "
+                             f"({a_['bottom']}px over {b_['top']}px)")
+        for bl in dp["below"]:
+            for col in (dp["side"], dp["main"]):
+                if col and bl["top"] < col["bottom"] - 1:
+                    fails.append(f"{where}: {bl['cls']!r} starts at {bl['top']}px, under a column that ends at {col['bottom']}px")
+        for c in cards:
+            if c["right"] > width + 1 or c["left"] < -1:
+                fails.append(f"{where}: the side card {c['title']!r} runs outside the {width}px window")
+        # D2 (round 2): a dataset page SAYS its licence, and an unstated one is said to be unstated — never
+        # silence, which reads as "no conditions" (licence_chip.html's rule; _plugins/downloads.rb `licence`)
+        if not dp["licence"]:
+            fails.append(f"{where}: the page states no licence (an unstated or pending one must be said, never left out)")
+        elif dp["licence"].strip().lower().endswith("custom"):
+            fails.append(f"{where}: the page shows the raw 'custom' licence id (D5)")
+        # CalCOFI.github.io#26: the page lists EVERY measurement the dataset ships, the per-cast ones
+        # too (they live in sample_measurement; the page once listed 2 of calcofi_ctd-derived's 9).
+        # The record is the same _data/measurements.json the build read.
+        mrec = _read_json(os.path.join(_data_dir(), "measurements.json")) or {}
+        items = mrec.get("measurements") or []
+        items = items if isinstance(items, list) else list(items.values())
+        want_m = sorted({m.get("slug") or m["key"] for m in items if any(sr.get("dataset_key") == key for sr in m.get("series") or [])})
+        if want_m and sorted(set(dp["measKeys"])) != want_m:
+            fails.append(f"{where}: the page lists {len(set(dp['measKeys']))} measurements, the record carries {len(want_m)} for "
+                         f"{key}: missing {sorted(set(want_m) - set(dp['measKeys']))[:5]}, extra "
+                         f"{sorted(set(dp['measKeys']) - set(want_m))[:5]}")
+        if len(dp["measKeys"]) != len(set(dp["measKeys"])):
+            fails.append(f"{where}: a measurement is listed twice")
+        for fct in dp["facts"]:
+            n_ = int(re.sub(r"[^0-9]", "", fct["value"]) or 0)
+            if fct["label"].startswith("Measurement") and n_ != len(dp["measKeys"]):
+                fails.append(f"{where}: the band says {fct['value']} {fct['label']} but the page lists {len(dp['measKeys'])}")
+            if fct["label"] in ("Taxon", "Taxa") and n_ != dp["taxaDrawn"] + dp["taxaMore"]:
+                fails.append(f"{where}: the band says {fct['value']} {fct['label']} but the page holds {dp['taxaDrawn'] + dp['taxaMore']}")
+        if dp["csvUnnamed"]:
+            fails.append(f"{where}: {dp['csvUnnamed']} CSV button(s) do not say what they download")
 
     # D2 S1 S2 (round 2, WS-R4): the dataset page's own licence chip, keyword leaves, Access tabset
     hl = r.get("headLicence")
@@ -1539,49 +2192,60 @@ def check(path, r, width, theme, fails, notes):
         if n != 1:
             fails.append(f"{where}: ERDDAP id {ds_id} listed {n} times, expected once")
 
-    # ── the species catalog's index (plan 2026-09-09 § S3; issue #30 D7 A, D10 B, D17) ─────
+    # ── the species catalog's index (plan 2026-09-09 § S3; issue #30; the finder of front door v2) ─
     sp = r.get("species")
     if sp:
         rec = sp.get("rec") or {}
-        # the five counts on the page are the record's, read back from the page's own inline JSON
-        want = {"species": rec.get("species_observed"), "taxa observed": rec.get("taxa_observed"),
-                "datasets": rec.get("datasets"), "observations": rec.get("obs_bio_rows"),
-                "pages": rec.get("pages")}
-        seen = {c["label"]: c["value"] for c in sp["counts"]}
-        for k, v in want.items():
-            if v is None:
-                continue
-            if k not in seen:
-                fails.append(f"{where}: the species index has no {k!r} count though the record carries {v}")
-            elif seen[k] != v:
-                fails.append(f"{where}: the index says {k} = {seen[k]}, the record says {v}")
-        # I1: the h1 is a name, not a sentence of numbers — the numbers live in the one quiet line
-        if sp.get("h1") and any(ch.isdigit() for ch in sp["h1"]):
+        fi = sp.get("finder")
+        has_q = "q=" in path
+        num = lambda t: int(re.sub(r"[^0-9]", "", (re.search(r"[\d,]+", t or "") or [""])[0]) or 0) if re.search(r"\d", t or "") else None  # noqa: E731
+        if not fi:
+            fails.append(f"{where}: the species index has no finder (#cf)")
+        else:
+            # the counts the page states are the record's (main's quiet line of five counts is gone with
+            # the finder, which states the species beside the search and in the tab row, and the pages
+            # over the tree: each one stated is checked, none is typed here)
+            said = {"the search's count": (None if has_q else num(fi["n"]), rec.get("species_observed")),
+                    "the tab row's species": (num(fi["count"]), rec.get("species_observed")),
+                    "the tree's taxa": (num(fi["treeHead"]), rec.get("pages"))}
+            for what, (got, want) in said.items():
+                if want is not None and got is not None and got != want:
+                    fails.append(f"{where}: {what} says {got}, the record says {want}")
+            if not has_q and num(fi["n"]) is None:
+                fails.append(f"{where}: the species index states no species count beside its search")
+            if fi["recSpecies"] is not None and rec.get("species_observed") is not None and fi["recSpecies"] != rec["species_observed"]:
+                fails.append(f"{where}: finder.json counts {fi['recSpecies']} species, the page's record {rec['species_observed']}")
+            # Groups: one card per group of the finder's record (was D7 A's class list — the record's
+            # classes, most observed first — which the finder regroups under plain names)
+            if sp.get("view") == "groups" and not has_q:
+                if not fi["recGroups"] or fi["groups"] != fi["recGroups"]:
+                    fails.append(f"{where}: Groups draws {fi['groups']} cards, finder.json has {fi['recGroups']} groups")
+            # the preview beside the list is drawn wherever there is room for it
+            if width >= 1000 and sp.get("view") in ("groups", "list") and not (fi["pvShown"] and fi["pvTitle"]):
+                fails.append(f"{where}: the finder's preview is not drawn beside the list at {width}px")
+            if len(fi["yellow"]) > 1:
+                fails.append(f"{where}: {len(fi['yellow'])} yellow buttons on the species index: {fi['yellow']}")
+        # I1: the h1 is a name, not a sentence of numbers
+        if not sp.get("h1"):
+            fails.append(f"{where}: the species index has no h1")
+        elif any(ch.isdigit() for ch in sp["h1"]):
             fails.append(f"{where}: the species index h1 carries a digit: {sp['h1']!r}")
-        # D7 A: the ONE list is the record's classes, most observed first, each with its silhouette
-        if sp.get("recClasses") is not None and sp["classes"] != sp["recClasses"]:
-            fails.append(f"{where}: the class list draws {sp['classes']} rows, the record has "
-                         f"{sp['recClasses']} classes with an observation")
-        order = sp.get("classOrder") or []
-        if any(a < b for a, b in zip(order, order[1:])):
-            fails.append(f"{where}: the class list is not ordered by observations: {order[:6]}…")
-        # the dense views stay, one click away: the tabs, unchanged panels behind them
-        if sp.get("views") != ["classes", "tree", "matrix", "hierarchy"]:
-            fails.append(f"{where}: the view tabs read {sp.get('views')}, expected classes · tree · matrix · hierarchy")
-        # nothing open on load: no class row, and exactly the chosen view's panel
-        if sp.get("openItems"):
-            fails.append(f"{where}: {sp['openItems']} class row(s) open on load")
+        # the dense views stay, one click away: the tabs, unchanged panels behind them. (The icicle,
+        # main's "hierarchy" view, is not a view of the finder's page: an old ?tab=hierarchy link lands
+        # on the default view, which is asserted — exactly one panel showing — rather than a blank page.)
+        if sp.get("views") != SPECIES_VIEWS:
+            fails.append(f"{where}: the view tabs read {sp.get('views')}, expected {' · '.join(SPECIES_VIEWS)}")
         if sp.get("panelsShown") != 1:
             fails.append(f"{where}: {sp.get('panelsShown')} view panels showing, expected exactly one")
+        mtab = re.search(r"[?&]tab=([\w-]+)", path)
+        if mtab and mtab.group(1) in SPECIES_VIEWS and sp.get("view") != mtab.group(1):
+            fails.append(f"{where}: ?tab={mtab.group(1)} on the URL but the {sp.get('view')!r} view is selected")
         # the matrix is exactly (classes + the two rows the record makes necessary) x datasets
         if sp["rows"] and sp["cols"]:
             wantc = sp["rows"] * sp["cols"]
             if sp["cells"] != wantc:
                 fails.append(f"{where}: the matrix has {sp['cells']} cells for "
                              f"{sp['rows']} rows x {sp['cols']} datasets ({wantc})")
-        # the icicle is drawn the first time its view is chosen, and only then
-        if sp.get("view") == "hierarchy" and sp["iceRects"] < 10:
-            fails.append(f"{where}: the hierarchy view is showing but the icicle drew {sp['iceRects']} bands")
         if sp["treeRoots"] < 2:
             fails.append(f"{where}: the tree drew {sp['treeRoots']} roots")
         if sp["warnEls"]:
@@ -1590,30 +2254,30 @@ def check(path, r, width, theme, fails, notes):
         if sp.get("treeRowH") is not None and sp["treeRowH"] != sp["treeRowHNoSil"]:
             fails.append(f"{where}: a tree row with its silhouette is {sp['treeRowH']}px, "
                          f"{sp['treeRowHNoSil']}px without it — the glyph grew the row")
-        has_q = "q=" in path
-        notes.append(f"{where}: {sp['classes']} classes ({sp['classSils']} silhouettes), view {sp.get('view')}, "
-                     f"matrix {sp['cells']} cells, icicle {sp['iceRects']} bands, content {sp['contentH']}px")
+        notes.append(f"{where}: view {sp.get('view')}, {fi['groups'] if fi else '?'} groups / {len(fi['rows']) if fi else '?'} rows drawn, "
+                     f"matrix {sp['cells']} cells, content {sp['contentH']}px")
         # issue #30: a height ceiling with nothing open — the mockup's 1,775 px + 25 %
-        if width >= 1400 and not has_q and sp.get("view") == "classes" and sp["contentH"] > MAX_SPECIES_INDEX_H:
+        if width >= 1400 and not has_q and sp.get("view") == SPECIES_VIEWS[0] and sp["contentH"] > MAX_SPECIES_INDEX_H:
             fails.append(f"{where}: the species index is {sp['contentH']}px with nothing open, "
                          f"ceiling {MAX_SPECIES_INDEX_H}px")
-        # I2 (umbrella D9): a search fills the flat Matches list above the views, never hidden while
-        # there is at least one hit, and the class list keeps only the classes holding one
-        if has_q:
-            mrows = sp.get("matchesRows") or []
-            if sp["hits"] and (sp.get("matchesHidden", True) or not mrows):
-                fails.append(f"{where}: the search found {sp['hits']} hit(s) but #sp-matches is hidden or empty")
-            elif mrows:
-                notes.append(f"{where}: #sp-matches {len(mrows)} row(s), first {mrows[0]['n']!r} {mrows[0]['m']!r}; "
-                             f"{sp['classesShown']} of {sp['classes']} classes kept")
+        # I2 (umbrella D9): a shared ?q= link lands with the search applied — the finder's list holds the
+        # matches (was the flat #sp-matches list above the views), most recorded first
+        if has_q and fi:
+            rows = fi["rows"]
+            if sp.get("view") != "list":
+                fails.append(f"{where}: ?q= on the URL but the {sp.get('view')!r} view shows, not the list of matches")
             if re.search(r"[?&]q=sardin\b", path):
-                if len(mrows) < 2:
-                    fails.append(f"{where}: #sp-matches has {len(mrows)} row(s) for 'sardin', expected >= 2")
-                elif not mrows[0]["n"].strip().startswith("Sardinops"):
-                    fails.append(f"{where}: #sp-matches' first row is {mrows[0]['n']!r}, "
+                if len(rows) < 2:
+                    fails.append(f"{where}: the list has {len(rows)} row(s) for 'sardin', expected >= 2")
+                elif "Sardinops" not in rows[0]:
+                    fails.append(f"{where}: the list's first row for 'sardin' is {rows[0]!r}, "
                                  f"expected a Sardinops by observations")
-                if not (0 < sp["classesShown"] < sp["classes"]):
-                    fails.append(f"{where}: 'sardin' keeps {sp['classesShown']} of {sp['classes']} classes")
+                if fi["recRows"] and not (0 < len(rows) < fi["recRows"]):
+                    fails.append(f"{where}: 'sardin' keeps {len(rows)} of {fi['recRows']} rows")
+                if num(fi["n"]) != len(rows):
+                    fails.append(f"{where}: the search's count says {fi['n']!r} for {len(rows)} rows drawn")
+            if rows:
+                notes.append(f"{where}: {len(rows)} match(es), first {rows[0][:50]!r}")
 
     # ── one taxon page (issue #30: D11 A, D12 A, D14 A, D17 A) ──────────────────────
     spp = r.get("speciesPage")
@@ -1793,7 +2457,7 @@ def check(path, r, width, theme, fails, notes):
             fails.append(f"{where}: the measurements index h1 carries a digit: {mm['h1']!r}")
         notes.append(f"{where}: timeline {mm['tlRows']} rows / {mm['tlBars']} bars in {mm['tlCats']} categories, "
                      f"matrix {mm['mxRows']}x{mm['ds']} = {mm['mxCells']} cells ({mm['mxFilled']} with a series, "
-                     f"summing {mm['mxSum']}), {mm['dsRows']} datasets, list {mm['listUnified']} unified + "
+                     f"summing {mm['mxSum']}), {mm['dsRows']} datasets, list {mm['listRows']} rows in "
                      f"{len(mm['listCats'])} categories, {r.get('docHeight')}px")
         if mm["tlRows"] != rec.get("measurements"):
             fails.append(f"{where}: the timeline draws {mm['tlRows']} rows, the record has "
@@ -1827,28 +2491,32 @@ def check(path, r, width, theme, fails, notes):
             fails.append(f"{where}: the timeline's role is {mm['tlRole']!r}, expected 'table'")
         if mm["tipRole"] != "tooltip":
             fails.append(f"{where}: the tooltip's role is {mm['tipRole']!r}, expected 'tooltip'")
-        # issue #30 D8 A: the default view is the LIST — the unified keys on top, then one row per
-        # category, collapsed on load, each opening to its keys; every key once, counts the record's
+        # issue #30 D8 A: the default view is the LIST — since front door v2 the finder's By category
+        # (then A–Z), each category a section saying its count over its rows; every key once, the
+        # counts the record's. (D8 A's "unified keys on top" and "categories collapsed on load" have no
+        # counterpart: the finder marks a unified key in its own row and lists every category open —
+        # what the collapsing bought, a short page, is still asserted by MAX_MM_INDEX_H below.)
         lc = mm["listCats"]
-        if not mm["listShown"] or mm["viewTabs"][:1] != ["list"]:
-            fails.append(f"{where}: the list is not the default view (tabs {mm['viewTabs']!r})")
+        if not mm["listShown"] or mm["viewTabs"][:2] != ["cat", "az"] or mm.get("view") not in ("cat", "az"):
+            fails.append(f"{where}: the list is not the default view (tabs {mm['viewTabs']!r}, selected {mm.get('view')!r})")
         if "timeline" not in mm["viewTabs"] or "matrix" not in mm["viewTabs"]:
             fails.append(f"{where}: the timeline and the matrix are not view tabs ({mm['viewTabs']!r})")
-        if len(lc) != mm["cats"]:
-            fails.append(f"{where}: the list has {len(lc)} category rows for {mm['cats']} categories")
-        if mm["listUnified"] != rec.get("n_unified"):
-            fails.append(f"{where}: {mm['listUnified']} unified keys on top, the record has {rec.get('n_unified')}")
-        if mm["listUnified"] + sum(c["rows"] for c in lc) != rec.get("measurements"):
-            fails.append(f"{where}: the list holds {mm['listUnified'] + sum(c['rows'] for c in lc)} keys, the "
+        if mm.get("view") == "cat":
+            if len(lc) != mm["cats"]:
+                fails.append(f"{where}: the list has {len(lc)} category sections for {mm['cats']} categories")
+            for c in lc:
+                if c["n"] != c["rows"]:
+                    fails.append(f"{where}: category {c['cat']!r} says {c['n']} but lists {c['rows']}")
+        if mm["listRows"] != rec.get("measurements") or len(set(mm["listKeys"])) != mm["listRows"]:
+            fails.append(f"{where}: the list holds {mm['listRows']} rows ({len(set(mm['listKeys']))} distinct keys), the "
                          f"record has {rec.get('measurements')} measurements")
-        for c in lc:
-            if c["n"] != c["rows"]:
-                fails.append(f"{where}: category {c['cat']!r} says {c['n']} but lists {c['rows']}")
-        opened = [c["cat"] for c in lc if c["open"]]
-        if opened:
-            fails.append(f"{where}: categories open on load: {opened!r} (D8 A: collapsed)")
+        said_n = int(re.sub(r"[^0-9]", "", mm.get("countSaid") or "") or 0)
+        if said_n != rec.get("measurements"):
+            fails.append(f"{where}: the search's count says {mm.get('countSaid')!r}, the record has {rec.get('measurements')} measurements")
         if mm["listRowsNoName"]:
-            fails.append(f"{where}: {mm['listRowsNoName']} list row(s) with a dataset dot and no name")
+            fails.append(f"{where}: {mm['listRowsNoName']} list row(s) name no dataset")
+        if width >= 1000 and not mm.get("pvShown"):
+            fails.append(f"{where}: the finder's preview is not drawn beside the list at {width}px")
         if width >= 1400 and (r.get("docHeight") or 0) > MAX_MM_INDEX_H:
             fails.append(f"{where}: the catalog is {r.get('docHeight')}px with nothing open, max {MAX_MM_INDEX_H}")
         s = mm.get("search") or {}
@@ -2104,81 +2772,81 @@ def check(path, r, width, theme, fails, notes):
         for wtxt in mfa["wide"]:
             fails.append(f"{where}: a face block overflows its column: {wtxt}")
 
-    # ── the front door (issue #30: one screen, seven doors; D2 A · D5 A · D6 A) ─────────────────
+    # ── the front door (issue #30; the seven tasks; front door v2's first screen) ────────────────
     fr = r.get("front")
     if fr:
-        doors = fr["doors"]
-        notes.append(f"{where}: {len(doors)} doors, the last ending at {max((x['bottom'] for x in doors), default=0)}px; "
-                     f"page {fr['heightOnLoad']}px with {fr['openOnLoad'] or 'no'} door open; strip {fr['stripRows']} rows, "
-                     f"map {fr['mapMarks']} marks, {len(fr['pins'])} pins behind See what CalCOFI collects; "
+        H = fr["hero"]
+        notes.append(f"{where}: page {fr['heightOnLoad']}px with {fr['openOnLoad'] or 'no'} panel open; strip {fr['stripRows']} rows, "
+                     f"map {fr['mapMarks']} marks, {len(fr['pins'])} pins behind What CalCOFI collects; "
                      f"{len((fr.get('drive') or {}).get('anchors') or {})} old anchors driven")
-        if [x["id"] for x in doors] != FRONT_DOORS:
-            fails.append(f"{where}: the doors are {[x['id'] for x in doors]}, expected {FRONT_DOORS}")
-        for x in doors:
-            if x["id"] in FRONT_LINKS:
-                # Cite and Contribute: one click to the page, no panel between
-                if x["tag"] != "A" or x["href"] != FRONT_LINKS[x["id"]] or x["controls"]:
-                    fails.append(f"{where}: the {x['id']!r} door is a {x['tag']} to {x['href']!r} "
-                                 f"(controls {x['controls']!r}), expected a link to {FRONT_LINKS[x['id']]}")
-            elif x["controls"] != x["id"]:
-                fails.append(f"{where}: the {x['id']!r} door controls {x['controls']!r}, not its own panel")
-            if x["h"] < MIN_TAP:
-                fails.append(f"{where}: the {x['id']!r} door is {x['h']}px tall, under the {MIN_TAP}px tap target")
-        # the first screen fits 1280 x 645 with all seven doors visible (the container stops growing
-        # at 1170 px, so 1470 draws the same column as 1280)
-        if width >= FOLD_W:
-            late = [x["id"] for x in doors if x["bottom"] > FOLD_H]
-            if late:
-                fails.append(f"{where}: door(s) {late} end below the {FOLD_H}px fold (first screen ends at {fr['screenBottom']}px)")
-        # on a phone the drawing stays at the top, under the head, and the doors stack below it
-        o = fr.get("order")
-        if o and width < 900 and not (o["figTop"] >= o["whoBottom"] - 1 and o["askTop"] >= o["figBottom"] - 1):
-            fails.append(f"{where}: on a phone the head, the drawing and the doors do not stack in that order ({o})")
-        # no door open on load unless the URL names one (a hash, ?door=, ?q= or ?tab=)
+        # the first screen itself: the seven tasks and the Query Builder each one visible link, the tap
+        # targets, the start heading's contrast, the numbers inside the window, the strip under the cards
+        check_first_screen(where, H, width, fails, notes)
+        # no panel open on load unless the URL names one (a hash, ?door=, ?q= or ?tab=)
         names_one = bool(re.search(r"#.|[?&](door|q|tab)=", path))
         if not names_one and fr["openOnLoad"]:
-            fails.append(f"{where}: {fr['openOnLoad']} open on load; the front door opens with every door closed")
+            fails.append(f"{where}: {fr['openOnLoad']} open on load; the front door opens with every panel closed")
         if names_one and len(fr["openOnLoad"]) != 1:
-            fails.append(f"{where}: the URL names a door but {fr['openOnLoad'] or 'none'} opened")
+            fails.append(f"{where}: the URL names a panel but {fr['openOnLoad'] or 'none'} opened")
         mdoor = re.search(r"[?&]door=([\w-]+)", path)
         if mdoor and mdoor.group(1) in FRONT_ANCHORS and fr["openOnLoad"] != [FRONT_ANCHORS[mdoor.group(1)]]:
             fails.append(f"{where}: ?door={mdoor.group(1)} opened {fr['openOnLoad']}, expected "
                          f"[{FRONT_ANCHORS[mdoor.group(1)]!r}]")
-        if not names_one and width >= 1400 and fr["heightOnLoad"] > FRONT_MAX_H:
-            fails.append(f"{where}: the front door is {fr['heightOnLoad']}px tall with no door open, max {FRONT_MAX_H}")
+        # one screen (was FRONT_MAX_H): with nothing open the first screen ends at the window's bottom
+        # and only the footer follows it
+        if not names_one and width >= 1400:
+            if H["bottom"] > H["innerH"] + 1:
+                fails.append(f"{where}: the first screen ends at {H['bottom']}px, below the {H['innerH']}px window: it is more than one screen")
+            gap = None if fr.get("footerTop") is None else fr["footerTop"] - H["bottom"]
+            if gap is None or gap > 2:
+                fails.append(f"{where}: {gap}px lie between the first screen and the footer with no panel open; nothing should")
         dv = fr.get("drive")
-        if dv:
-            if dv["afterFind"] != ["find"]:
-                fails.append(f"{where}: opening Find left {dv['afterFind']} open")
-            if dv["afterExplore"] != ["explore"] or dv["findExpanded"] != "false" or dv["exploreExpanded"] != "true":
-                fails.append(f"{where}: opening Explore did not close Find ({dv['afterExplore']}, "
-                             f"find aria-expanded={dv['findExpanded']}, explore={dv['exploreExpanded']})")
+        if not dv:
+            fails.append(f"{where}: the first screen has no link to #learn and #explore to open the panels with")
+        else:
+            if dv["afterA"] != ["learn"]:
+                fails.append(f"{where}: the first screen's link to #learn left {dv['afterA']} open")
+            if dv["afterB"] != ["explore"]:
+                fails.append(f"{where}: opening Maps and apps did not close What CalCOFI collects ({dv['afterB']} open)")
             if dv["afterClose"]:
-                fails.append(f"{where}: a second click on the open door left {dv['afterClose']} open")
+                fails.append(f"{where}: Close left {dv['afterClose']} open")
+            # Close gives focus back to the link that opened the panel (there are no door buttons)
+            fb = dv["focusBack"]
+            if not fb["same"]:
+                fails.append(f"{where}: after Close, focus is on {fb['tag']} {fb['href']!r}, not on the link that opened the panel")
+            if not dv["hasXref"]:
+                fails.append(f"{where}: Maps and apps has no link to Find (#find): the Find panel is reachable from no visible link")
+            elif dv["afterFind"] != ["find"]:
+                fails.append(f"{where}: Maps and apps' link to Find left {dv['afterFind']} open")
+            fb2 = dv["focusBack2"]
+            if not (fb2["drawn"] and fb2["inHero"]):
+                fails.append(f"{where}: after closing a panel opened from inside another, focus is on {fb2['tag']}#{fb2['id']}, "
+                             f"not on anything drawn on the first screen")
             for h, want_k in FRONT_ANCHORS.items():
-                got = (dv.get("anchors") or {}).get(h)
-                if got != [want_k]:
-                    fails.append(f"{where}: a link to #{h} opened {got}, expected [{want_k!r}]")
+                got = (dv.get("anchors") or {}).get(h) or {}
+                if got.get("open") != [want_k]:
+                    fails.append(f"{where}: a link to #{h} opened {got.get('open')}, expected [{want_k!r}]")
+                elif h in FRONT_LANDS and got.get("hash") != FRONT_LANDS[h]:
+                    fails.append(f"{where}: a link to #{h} left the URL at #{got.get('hash')}, expected #{FRONT_LANDS[h]} "
+                                 f"(where it now lives inside {want_k!r})")
             if dv["restored"] != fr["openOnLoad"]:
-                fails.append(f"{where}: the probe could not put the doors back ({dv['restored']} vs {fr['openOnLoad']})")
-        # D6 A: no yellow and no --warn on the first screen; each panel carries exactly one yellow,
-        # but Work with the data in code none: its destination is the Get the data box (Erin, 2026-10-19)
+                fails.append(f"{where}: the probe could not put the panels back ({dv['restored']} vs {fr['openOnLoad']})")
+        # yellow (see PANEL_YELLOW): nothing --warn on the first screen; exactly one yellow, the Explorer's
         if fr["warnEls"]:
             fails.append(f"{where}: --warn on the first screen: {', '.join(sorted(set(fr['warnEls']))[:4])}")
-        if fr["ctaEls"]:
-            fails.append(f"{where}: {len(fr['ctaEls'])} yellow (--cta-bg) element(s) on the first screen, expected none (D6)")
+        ex_pat = next(p for t, _, p in FRONT_TASKS if t == "explore")
+        ye = fr["ctaEls"]
+        if len(ye) != 1 or not re.search(ex_pat, ye[0].get("href") or ""):
+            fails.append(f"{where}: the first screen's yellow is {[(y['text'], y['href']) for y in ye]}, expected exactly one, "
+                         f"the Explorer's button")
         for p in fr["panelCtas"]:
-            want = 0 if p["id"] == "program" else 1
-            if p["n"] != want:
-                fails.append(f"{where}: the {p['id']!r} panel carries {p['n']} yellow buttons, expected {want}")
-        # the drawing: quiet on the first screen, annotated behind Learn
-        if not fr["quietDrawn"]:
-            fails.append(f"{where}: the quiet section drawing (#sec-quiet) was not drawn")
-        if fr["quietPins"]:
-            fails.append(f"{where}: the first screen's drawing carries {fr['quietPins']} pins; it is drawn quiet")
+            want = PANEL_YELLOW.get(p["id"], 1)
+            if len(p["yellow"]) != want:
+                fails.append(f"{where}: the {p['id']!r} panel carries {len(p['yellow'])} yellow button(s) {p['yellow']}, expected {want}")
+        # the annotated drawing behind What CalCOFI collects carries the pins
         if not fr["pins"]:
-            fails.append(f"{where}: the See-what-CalCOFI-collects panel's annotated drawing carries no pins")
-        # the five numbers equal the record's (organism obs. moved to the species number's title)
+            fails.append(f"{where}: the What-CalCOFI-collects panel's annotated drawing carries no pins")
+        # the numbers the first screen states equal the record's (see FRONT_NUMBERS)
         n = fr.get("reachNumbers") or {}
         want = {"years": n.get("years"), "cruises": n.get("cruises"), "stations": n.get("stations"),
                 "species": n.get("species"), "measurements": n.get("measurements_m")}
@@ -2187,19 +2855,22 @@ def check(path, r, width, theme, fails, notes):
             key = next((k for k in want if b["label"].startswith(k)), None)
             if key:
                 seen[key] = float(b["value"].replace(",", "").replace(" M", ""))
-        for k, v in want.items():
+            else:
+                fails.append(f"{where}: the first screen states {b['label']!r} = {b['value']!r}, which the record's numbers do not carry")
+        for k in FRONT_NUMBERS:
+            v = want.get(k)
             if v is None:
                 continue          # the record cannot supply it: the number must be absent, and is
             if k not in seen:
                 fails.append(f"{where}: the first screen has no {k!r} number though the record carries {v}")
-            elif seen[k] != v:
-                fails.append(f"{where}: the first screen says {k} = {seen[k]:g}, the record says {v}")
         for k in seen:
             if want.get(k) is None:
                 fails.append(f"{where}: the first screen shows {k!r} = {seen[k]:g} but the record carries no value")
+            elif seen[k] != want[k]:
+                fails.append(f"{where}: the first screen says {k} = {seen[k]:g}, the record says {want[k]}")
         for b in fr["band"]:
             if b["label"].split()[0] in ("species", "measurements") and not b["href"]:
-                fails.append(f"{where}: the {b['label']!r} number is not a link")
+                fails.append(f"{where}: the {b['label']!r} number is not a link to its catalog")
         mm, om, rm = n.get("measurements_m"), n.get("organism_obs_m"), n.get("rows_m")
         if None not in (mm, om, rm) and mm + om > rm:
             fails.append(f"{where}: measurements {mm} M + organism observations {om} M "
@@ -2223,6 +2894,8 @@ def check(path, r, width, theme, fails, notes):
         if fr.get("finderLinks"):
             fails.append(f"{where}: Find still links the Data Finder: {fr['finderLinks']}")
         fl = fr.get("findList")
+        if dv and dv.get("afterFind") == ["find"] and not fl:
+            fails.append(f"{where}: Find opened but its list of datasets (.fd-yname) could not be measured")
         if fl:
             notes.append(f"{where}: Find's names {fl['fontPx']}px {fl['color']} {fl['underline']}, rows >= {fl['minH']}px; "
                          f"search ends {fl['qBottom']}px and name 8 {fl['n8Bottom']}px below the panel's top; "
@@ -2246,12 +2919,20 @@ def check(path, r, width, theme, fails, notes):
                     fails.append(f"{where}: Find's map card is {fl['mapH']}px beside a {fl['headH']}px head: it sets the block's height again")
         if fr["stations"] is not None and fr["mapMarks"] != fr["stations"]:
             fails.append(f"{where}: the map has {fr['mapMarks']} marks for {fr['stations']} grid cells")
-        # nothing removed: every product in products.yml is drawn behind some door
-        keys = _product_keys()
-        if keys:
-            missing = [k for k in keys if k not in set(fr["cardKeys"])]
+        # nothing removed but what the Explorer replaced: every product in products.yml is a card in
+        # some panel (an archived student project too), and a superseded app is in none (front door v2)
+        cur, retired = product_keys(_products_text())
+        if cur:
+            drawn = set(fr["cardKeys"])
+            missing = [k for k in cur if k not in drawn]
             if missing:
-                fails.append(f"{where}: product(s) {missing} are drawn behind no door")
+                fails.append(f"{where}: product(s) {missing} are drawn in no panel")
+            ghosts = [k for k in retired if k in drawn]
+            if ghosts:
+                fails.append(f"{where}: superseded product(s) {ghosts} are still drawn as cards")
+            if width >= 1400 and theme == "light":
+                notes.append(f"{where}: {len(cur)} products drawn as cards; the {len(retired)} superseded "
+                             f"({', '.join(retired) or 'none'}) are not drawn (front door v2: Maps and apps)")
         if r.get("scrollWidth") and r["scrollWidth"] > width:
             fails.append(f"{where}: the front door scrolls horizontally — scrollWidth {r['scrollWidth']} > {width}")
 
@@ -2271,41 +2952,77 @@ def check(path, r, width, theme, fails, notes):
                 elif not ok:
                     fails.append(f"{where}: pin {href} does not answer 200/206")
 
-    # ── the header: seven words, calcofi.org, and the submenus (plan 2026-09-10 § D7) ────────────
+    # ── the header: six words and their menus (front door v2, _includes/site_nav.html) ───────────
     nav = r.get("nav")
     if nav and nav["visible"]:
         notes.append(f"{where}: header {' · '.join(nav['words'])}; "
-                     f"{len(nav['menus'])} submenus ({', '.join(m['word'] + ' ' + str(len(m['tabs'])) for m in nav['menus'])})")
+                     f"{len(nav['menus'])} menus ({', '.join(str(m['word']) + ' ' + str(len(m['tabs'])) for m in nav['menus'])}); "
+                     f"{nav.get('tabStops')} tab stops with the menus shut")
         if nav["words"] != NAV_WORDS:
             fails.append(f"{where}: the header reads {nav['words']}, expected {NAV_WORDS}")
+        if [m["word"] for m in nav["menus"]] != NAV_MENUS:
+            fails.append(f"{where}: the header's menus are {[m['word'] for m in nav['menus']]}, expected {NAV_MENUS}")
         for m in nav["menus"]:
-            if not m["haspopup"]:
-                fails.append(f"{where}: the {m['word']!r} submenu's trigger has no aria-haspopup")
-            if not m["closed"]:
-                fails.append(f"{where}: the {m['word']!r} submenu is open before anything is focused")
-            if not m["opensOnFocus"]:
-                fails.append(f"{where}: the {m['word']!r} submenu does not open on focus — it is not keyboard-reachable")
-            if not m["closesOnEscape"]:
-                fails.append(f"{where}: the {m['word']!r} submenu does not close on Escape")
+            wd = m["word"]
+            # the word is a button that says its state and names its panel
+            if m["tag"] != "BUTTON":
+                fails.append(f"{where}: the {wd!r} menu's word is a {m['tag']}, expected a button (it opens a panel, it does not go anywhere)")
+            if not m["controls"] or m["controls"] != m["listId"]:
+                fails.append(f"{where}: the {wd!r} menu's button controls {m['controls']!r}, its panel's id is {m['listId']!r}")
+            if not m.get("closed", True) or m["expandedAtRest"] != "false":
+                fails.append(f"{where}: the {wd!r} menu is open before anything is pressed (aria-expanded={m['expandedAtRest']!r})")
+            if m.get("closedTabStops"):
+                fails.append(f"{where}: {m['closedTabStops']} line(s) of the closed {wd!r} menu are still tab stops")
+            # it opens on a press — a click, a tap, Enter or Space on the button — and not by focus alone
+            if m.get("openOnFocus"):
+                fails.append(f"{where}: the {wd!r} menu opens on focus alone: tabbing along the header throws it open")
+            if not m.get("opensOnPress"):
+                fails.append(f"{where}: the {wd!r} menu does not open on a press — a keyboard and a touch screen cannot reach it")
+                continue
+            if m["expandedOpen"] != "true":
+                fails.append(f"{where}: the {wd!r} menu is open but its button says aria-expanded={m['expandedOpen']!r}")
+            if not m.get("staysOpenInside"):
+                fails.append(f"{where}: the {wd!r} menu shuts when focus moves onto one of its own lines")
+            if not m.get("closesOnEscape"):
+                fails.append(f"{where}: the {wd!r} menu does not close on Escape")
+            elif not m.get("focusBackOnEscape"):
+                fails.append(f"{where}: Escape closes the {wd!r} menu but focus is not back on its button")
+            if m.get("closesOnEscape") and m["expandedAfterEscape"] != "false":
+                fails.append(f"{where}: the {wd!r} menu is shut but its button says aria-expanded={m['expandedAfterEscape']!r}")
+            if not m.get("closesOnBlur"):
+                fails.append(f"{where}: the {wd!r} menu stays open after focus leaves it")
+            if (m.get("offRight") or 0) > 0 or (m.get("offLeft") or 0) > 0:
+                fails.append(f"{where}: the open {wd!r} menu runs {max(m.get('offRight') or 0, m.get('offLeft') or 0)}px outside the window")
             for t in m["tabs"]:
-                # an item either names a homepage tab (data-go) or links the catalog's own page — Species and
-                # Measurements go to /species/ and /measurements/ because the homepage only carries their heads
-                # (Ben, 2026-09-10); a hash href with no data-go would land on the section and select nothing
-                if not t["go"] and (not t.get("href") or "#" in t["href"]):
-                    fails.append(f"{where}: the {m['word']!r} submenu's {t['title']!r} neither names a tab (data-go) nor links a page")
-                if not t["pill"]:
-                    fails.append(f"{where}: the {m['word']!r} submenu's {t['title']!r} carries no count")
-            # the hover bridge: the list's ::before must span the gap below the trigger (Ben, 2026-09-10 —
+                # a line of a menu links a page, or a place on the landing page that a panel answers: a
+                # hash no panel knows would land on the first screen and open nothing
+                frag = (t.get("href") or "").partition("#")[2]
+                if not t.get("href"):
+                    fails.append(f"{where}: the {wd!r} menu's {t['title']!r} links nothing")
+                elif frag and frag not in FRONT_ANCHORS:
+                    fails.append(f"{where}: the {wd!r} menu's {t['title']!r} links #{frag}, which no panel of the front door answers")
+            # the hover bridge: the panel's ::before must span the gap below the word (Ben, 2026-09-10 —
             # the live menu closed as soon as the pointer moved down to pick an item)
             if m.get("gap") is not None and (m.get("bridge") or 0) < m["gap"]:
-                fails.append(f"{where}: the {m['word']!r} submenu floats {m['gap']:.0f}px below its trigger but its hover "
+                fails.append(f"{where}: the {wd!r} menu floats {m['gap']:.0f}px below its word but its hover "
                              f"bridge is {(m.get('bridge') or 0):.0f}px — the pointer leaves the menu on its way down")
         for m in nav["menus"]:
-            if m["word"].lower() == "data":
+            if (m["word"] or "").lower() == "data":
                 for t in m["tabs"]:
-                    want = {"species": "/species/", "measurements": "/measurements/"}.get(t["title"].split()[0].lower())
-                    if want and r.get("pageExists", {}).get(want) and (t.get("href") or "").rstrip("/") + "/" != want:
-                        fails.append(f"{where}: the DATA submenu's {t['title']!r} links {t.get('href')!r}, not {want} (the page exists)")
+                    name = t["title"].split()[0].lower()
+                    want = {"datasets": "/datasets/", "species": "/species/", "measurements": "/measurements/"}.get(name)
+                    exists = name == "datasets" or r.get("pageExists", {}).get(want)
+                    if want and exists and (t.get("href") or "").rstrip("/") + "/" != want:
+                        fails.append(f"{where}: the Data menu's {t['title']!r} links {t.get('href')!r}, not {want} (the page exists)")
+                    # the three catalogs carry their count, the catalog's own
+                    if want and exists and not re.search(r"\d", t.get("pill") or ""):
+                        fails.append(f"{where}: the Data menu's {t['title']!r} carries no count")
+        # what main's header reached in one word stays reachable from this one (DOCS · FAQ · NEWS were
+        # words until front door v2; they are lines of Learn now), and so do the three catalogs, the
+        # Explorer, the Query Builder and how to cite
+        for label, pat in NAV_REACH:
+            if not any(re.search(pat, h or "") for h in nav.get("allHrefs") or []):
+                fails.append(f"{where}: the header links {label} nowhere")
     elif nav and width < NAV_BREAK:
         notes.append(f"{where}: the header nav is hidden under {NAV_BREAK}px; the menu button carries it")
 
@@ -2314,8 +3031,10 @@ def check(path, r, width, theme, fails, notes):
     if hrow:
         if width >= NAV_BREAK and not hrow["navShown"]:
             fails.append(f"{where}: the header nav is hidden at {width}px; it shows from {NAV_BREAK}px")
-        if hrow["navShown"] and hrow["navTops"] > 1:
-            fails.append(f"{where}: the header nav wraps onto {hrow['navTops']} lines at {width}px")
+        if width < NAV_BREAK and hrow["navShown"]:
+            fails.append(f"{where}: the header nav is drawn at {width}px with the menu shut; under {NAV_BREAK}px the menu button carries it")
+        if hrow["navShown"] and hrow["navSpread"] > 8:
+            fails.append(f"{where}: the header nav wraps at {width}px ({hrow['navSpread']}px between its words' middles)")
         if hrow["rowLines"] > 8:
             fails.append(f"{where}: the header row is not one line ({hrow['rowLines']}px between its items' middles, "
                          f"{hrow['height']}px tall)")
@@ -2335,13 +3054,37 @@ def check(path, r, width, theme, fails, notes):
             if pm["wordsOpen"] != len(NAV_WORDS):
                 fails.append(f"{where}: the phone menu shows {pm['wordsOpen']} items, expected {len(NAV_WORDS)}")
             if nav and pm["subsOpen"] != len(nav["menus"]):
-                fails.append(f"{where}: the phone menu shows {pm['subsOpen']} of {len(nav['menus'])} submenus inline")
+                fails.append(f"{where}: the phone menu shows {pm['subsOpen']} of {len(nav['menus'])} menus inline")
+            # every line of every menu is drawn, in ONE column: no line hidden, none beside another
+            lines = pm.get("lines") or []
+            hidden = [x["text"] for x in lines if not x["drawn"]]
+            if hidden:
+                fails.append(f"{where}: the open phone menu does not draw {len(hidden)} of its {len(lines)} lines: {hidden[:5]}")
+            drawn = sorted((x for x in lines if x["drawn"]), key=lambda x: (x["top"], x["left"]))
+            # (a menu's lines tuck 4 px under their word — the same -4 px margin main's had — so "beside"
+            # is sharing more than half a line's height, not touching)
+            beside = [(a_["text"], b_["text"]) for a_, b_ in zip(drawn, drawn[1:])
+                      if a_["bottom"] - b_["top"] > 0.5 * min(a_["bottom"] - a_["top"], b_["bottom"] - b_["top"])]
+            if beside:
+                fails.append(f"{where}: the open phone menu is not one column: {beside[:3]} share a row")
+            for label, pat in NAV_REACH:
+                if not any(x["drawn"] and re.search(pat, x.get("href") or "") for x in lines):
+                    fails.append(f"{where}: the open phone menu shows no line for {label}")
+            # in the column a menu's word is a heading over lines that are all drawn: it says expanded
+            if any(x != "true" for x in pm.get("headsSay") or []):
+                fails.append(f"{where}: in the open column the menus' words say aria-expanded={pm['headsSay']}, but every line is drawn")
+            # every line can be scrolled into the window (the header is sticky: the page cannot scroll it)
+            if pm.get("unreachable"):
+                fails.append(f"{where}: {len(pm['unreachable'])} line(s) of the open menu cannot be brought into the "
+                             f"{width} x {pm.get('innerH')} window (the column is {pm.get('menuH')}px, overflow-y {pm.get('navOverflowY')}): "
+                             f"{pm['unreachable'][:5]}")
             if pm["scrollW"] and pm["scrollW"] > width:
                 fails.append(f"{where}: the open phone menu scrolls horizontally — scrollWidth {pm['scrollW']} > {width}")
             if not pm["closedOnEsc"]:
                 fails.append(f"{where}: the phone menu does not close on Escape")
             if not fails or not any(where in f and "phone menu" in f for f in fails):
-                notes.append(f"{where}: the phone menu opens with {pm['wordsOpen']} items and {pm['subsOpen']} submenus inline, no horizontal scroll, closes on Escape")
+                notes.append(f"{where}: the phone menu opens with {pm['wordsOpen']} items, {pm['subsOpen']} menus inline and "
+                             f"{len(drawn)} lines in one column ({pm.get('menuH')}px tall), no horizontal scroll, closes on Escape")
     elif pm and pm["buttonShown"]:
         fails.append(f"{where}: the menu button is visible at {width}px; it belongs under {NAV_BREAK}px only")
 
@@ -2474,6 +3217,31 @@ def main():
         urls = a.url or [a.base.rstrip("/") + p for p in NAV_PATHS]
         widths = NAV_WIDTHS
     for url in urls:
+        # --nav: the open menu on a small phone (PHONE x PHONE_H): every line of the column must be
+        # reachable there, which a 900 px window cannot show
+        if a.nav:
+            for theme in a.themes:
+                where = f"{url} @{PHONE[0]}x{PHONE[1]} {theme}"
+                r = probe(url, PHONE[0], theme, a.browser, a.wait, height=PHONE[1])
+                before = len(fails)
+                if "error" in r:
+                    fails.append(f"{where}: {r['error']}")
+                else:
+                    check(url, r, PHONE[0], f"{theme} ({PHONE[0]}x{PHONE[1]})", fails, notes)
+                print(f"{'FAIL' if len(fails) > before else 'ok  '} {where}")
+        # the front door's first screen in a FOLD_W x FOLD_H window, once per theme (the bare front door
+        # only: a URL that names a panel opens it, and the fold is then the panel's business)
+        bare = re.sub(r"^https?://[^/]+", "", url)
+        if bare in ("/", "") and not a.nav:
+            for theme in a.themes:
+                where = f"{url} @{FOLD_W}x{FOLD_H} {theme}"
+                r = probe(url, FOLD_W, theme, a.browser, a.wait, height=FOLD_H, js=FOLD_PROBE)
+                before = len(fails)
+                if "error" in r:
+                    fails.append(f"{where}: {r['error']}")
+                else:
+                    check_fold(where, r, fails, notes)
+                print(f"{'FAIL' if len(fails) > before else 'ok  '} {where}")
         for width in widths:
             for theme in a.themes:
                 r = probe(url, width, theme, a.browser, a.wait)
