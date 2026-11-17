@@ -63,7 +63,7 @@
 .cc-header .cc-dd hr { border: 0; border-top: 1px solid var(--border); margin: 4px 8px; }
 
 /* ── 3 · the menu button, and the column it opens ─────────────────────────────
-   THE BREAKPOINT IS 1100 px: the row holds the lockup, the nine words and the icon buttons on ONE line from
+   THE BREAKPOINT IS 1100 px: the row holds the lockup, the words and the icon buttons on ONE line from
    there (the tagline goes at 1100 to make sure). Below it the menu button takes over and the nav never wraps.
    The same number is NAV_BREAK in header.js and in the site's scripts/check_layout.py; change all three
    together. .cc-nav-menu on the header asks for the button at EVERY width (an app's bar of its own controls). */

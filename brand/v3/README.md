@@ -35,7 +35,7 @@ v2's contract (`../v2/README.md` § The contract) stands, point for point, excep
    product has one. Then the words, the product's own icon buttons, and the toggle at the right.
 2. **The words are the brand's, the same on every product, in sentence case:**
 
-   **Data ▾ · Map ▾ · Query · Cite · Learn · Docs · FAQ · News · calcofi.org ↗**
+   **Data ▾ · Map ▾ · Query · Learn ▾ · calcofi.org ↗**
 
    A product does not type them. It writes an empty
    `<nav class="cc-links cc-nav" id="cc-nav" data-cc-nav aria-label="Sections"></nav>` and `header.js` draws them
@@ -47,9 +47,10 @@ v2's contract (`../v2/README.md` § The contract) stands, point for point, excep
    hover and stays a moment after the pointer leaves; it also opens on a press (click, tap, Enter, Space), which
    is what a touch screen and a keyboard have. Escape closes it, even under the pointer, and returns focus to its
    button; so do a press outside and focus leaving. Focus alone does not open a menu, so tabbing through the bar
-   is nine stops, not every line of every menu. The first line of a menu is the page the word would otherwise
-   have linked (Data → Datasets, Map → the Explorer). A word is said once: Docs, FAQ and News are words, so no
-   menu lists them, and Learn, whose menu that left with one line, is a plain word to that line.
+   is five stops, not every line of every menu. The first line of a menu is the page the word would otherwise
+   have linked (Data → Datasets, Map → the Explorer, Learn → How CalCOFI samples). A destination is said once:
+   Learn holds the guides (How CalCOFI samples, Frequently asked questions, Cite the data, Documentation) and the
+   news (Tutorials, Stories, All news), and none of them is also a word of the bar.
 4. **The bar never wraps.** From 1100 px the words are inline. Below that the menu button
    (`<button class="cc-icon-button cc-menu-button" aria-controls="cc-nav" aria-expanded="false">`) carries them
    in one column, every line of every menu shown, scrolling inside itself. The number 1100 is `NAV_BREAK` in
@@ -144,8 +145,8 @@ first, with no visible change anywhere; then the Explorer and the Query Builder;
 
 `scripts/check_brand.py`, for a product reporting version 3: the nav's words equal `nav.json`'s, in order; the
 words and the title compute to `text-transform: none`; a `.cc-wave` directly follows the bar; at 1099 px the menu
-button is shown and the nav is not. `_test/nav_test.rb` pins the list: the nine words, Docs, FAQ and News as words and
-not also lines of a menu, Learn as a plain word, and every destination `main`'s eight uppercase words reached still linked.
+button is shown and the nav is not. `_test/nav_test.rb` pins the list: the five words, what Learn holds, no
+destination linked twice, and every destination `main`'s eight uppercase words reached still linked.
 `scripts/check_layout.py` holds this site's header to one line from 1100 px, the menus to their behaviour and the
 open column to reaching every line on a 375 × 667 phone.
 

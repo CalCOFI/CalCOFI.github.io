@@ -47,13 +47,13 @@ where v2 changed how they are reached, this subsection is the current state.
 
   ```
   task (main, 2026-11-16)             on the first screen                          goes to
-  1 See what CalCOFI collects         header "Learn" ·                             #learn
+  1 See what CalCOFI collects         header Learn ▾ › How CalCOFI samples ·       #learn
                                       the label by the ship (hidden under 900 px)
   2 Explore and download on a map     card 1 "Explorer" (the one yellow button)    the Explorer
                                       header Map ▾ › All apps                      #explore (Maps and apps)
   3 Find and download a dataset       card 2 "Browse datasets" · header Data ▾     /datasets/
   4 Work with the data in code        card 3 "Code" · header Data ▾ › Get it       #program
-  5 Cite the data                     header "Cite"                                docs/cite.html
+  5 Cite the data                     header Learn ▾ › Cite the data               docs/cite.html
   6 Contribute data                   strip "Contribute"                           docs/provide.html
   7 Inform ocean and fisheries        strip "Statewide monitoring"                 #monitor
     management
@@ -84,14 +84,15 @@ where v2 changed how they are reached, this subsection is the current state.
   lands on Maps and apps at the apps for one dataset (`#dataset`); `#students` on the student projects
   (`#student`). Close puts focus back on the link that opened the panel, or on the start heading.
 - **The header is the brand's** since 2026-11-17 (brand v3, [`brand/v3/README.md`](brand/v3/README.md) § 4):
-  **Data ▾ · Map ▾ · Query · Cite · Learn · Docs · FAQ · News · calcofi.org ↗**, sentence case, from the one list
+  **Data ▾ · Map ▾ · Query · Learn ▾ · calcofi.org ↗**, sentence case, from the one list
   `_data/nav.yml`, which `_plugins/nav.rb` resolves for this site's `_includes/site_nav.html` and for
   `/brand/v3/nav.json`, drawn by `brand/v3/header.js` into the Explorer and the Query Builder. A word with a
-  menu is a button: it opens on hover and on a press, and Escape closes it. Docs, FAQ and News were lines of
-  the Learn menu in the PR as reconciled; the owner asked for them back as words ("we lost items like News
-  and FAQ", then "Yes, Docs too"), and each is said once: no menu also lists them. That left Learn's menu
-  with one line, so Learn is a plain word that opens the front door's `#learn` panel. Where `main`'s eight uppercase words went: DATA is Data ▾; APPS is
-  Map ▾; ACCESS and BUILD are Data ▾ › Get it; DOCS, FAQ and NEWS are Docs, FAQ and News;
+  menu is a button: it opens on hover and on a press, and Escape closes it. The owner settled the words in
+  three steps on 2026-11-17: Docs, FAQ and News back as words of the bar, as on `main` (nine words with Query
+  and Cite); then, to simplify, all of them folded under **Learn**, which holds Guides (How CalCOFI samples,
+  Frequently asked questions, Cite the data, Documentation) and News (Tutorials, Stories, All news: the
+  ship's log filtered by type). Each destination is linked once. Where `main`'s eight uppercase words went:
+  DATA is Data ▾; APPS is Map ▾; ACCESS and BUILD are Data ▾ › Get it; DOCS, FAQ and NEWS are lines of Learn ▾;
   calcofi.org ↗ is itself. `main`'s rule that the header never wraps holds: the menu button takes over under
   1100 px (`NAV_BREAK` in `brand/v3/header.css`, `brand/v3/header.js` and `scripts/check_layout.py`), and
   the open column lists every line and scrolls inside itself.
