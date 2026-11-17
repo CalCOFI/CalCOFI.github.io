@@ -73,7 +73,9 @@ v2's contract (`../v2/README.md` § The contract) stands, point for point, excep
    same destinations in its own navbar config, in sentence case, and puts a `.cc-wave.cc-wave-slim` under its
    navbar. `scripts/check_brand.py` holds a framework-owned bar to the wave and the case, not to the markup.
 
-And **10 (Version)** becomes: `window.ccTheme.version === "3"`, `window.ccHeader.version === "3"`.
+And **10 (Version)** becomes: `window.ccTheme.version === "3"`, `window.ccHeader.version === "3"`. `window.ccHeader.words()`
+(a promise of `nav.json`'s words) is part of the contract too: a framework-owned bar draws its own items from it (the
+docs book does), so it must keep its shape within v3.
 
 ## Using it
 
@@ -125,7 +127,8 @@ not re-checked on the live products for this change):
 | calcofi.io (this site: front door, catalogs, dataset, species and measurement pages, news, stories, tutorials) | v2, uppercase words typed in the layout | **v3** | — |
 | Explorer (`/explore/`) | v2, its own bar, no site words | **v3**: the words behind the menu button, a slim wave | — |
 | Query Builder (`/query/`; `/explore/builder.html` until it moves) | new | **v3**: the words inline, its title in the wave | — |
-| docs, workflows (Quarto) | v2 through `libs/brand/quarto_head.html` | v2, unchanged | the head include and the navbar's words; § 4.6 |
+| docs (Quarto book) | v2 through its own `brand-head.html`, no navbar | v2, unchanged; **v3 on the local branch `brand-v3` of CalCOFI/docs (2026-11-17, not pushed)**: a Quarto navbar whose words are drawn from `nav.json` through `ccHeader.words()`, a slim wave under it | — |
+| workflows (Quarto) | v2 through `libs/brand/quarto_head.html` | v2, unchanged | the head include and the navbar's words; § 4.6 |
 | db-schema, db-query, ctd-transects (plain pages) | v2 | v2, unchanged | the head block and the empty nav, as above |
 | calcofi4r, calcofi4db (pkgdown), calcofi4py (mkdocs) | v2 | v2, unchanged | `_pkgdown.yml` / `mkdocs.yml` includes; § 4.6 |
 | Shiny apps on app.calcofi.io (station, ctd, pollutants, and the archived ones) | v2 through `calcofi4r::cc_brand_head()` | v2, unchanged | a `brand = "v3"` in calcofi4r, then each app's next deploy |
