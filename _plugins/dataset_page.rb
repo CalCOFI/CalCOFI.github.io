@@ -129,7 +129,6 @@ module CalCOFI
         "map_cap" => [cov["n_stations"].to_i.positive? ? "#{num(cov['n_stations'])} stations sampled" : nil, Fmt.present(cov["spatial"])].compact.join(" · "),
         "erddap_obs" => erd.find { |x| x["url"].end_with?("/#{key}.html") }&.dig("url"),
         "erddap_sample" => erd.find { |x| x["url"].end_with?("/#{key}_sample.html") }&.dig("url"),
-        "event_word" => event_word(r),
         "src" => src && src["url"], "src_portal" => src && src["portal"] != "other" ? (PORTAL[src["portal"]] || src["portal"]) : nil,
         "archived" => (r["registrations"] || []).select { |x| x["status"] == "published" && x["portal"] != "erddap" && Fmt.present(x["url"]) }
                         .map { |x| { "name" => PORTAL[x["portal"]] || x["portal"], "url" => x["url"] } },
@@ -166,14 +165,6 @@ module CalCOFI
       end
       out << [page.data["depth"].to_s.sub(/\Asurface\z/, "Surface"), "Depth"] if page.data["depth"]
       out
-    end
-
-    # the word for one sampling event, from the record's own words where it is plain; else the generic
-    def event_word(r)
-      cat = r.dig("category", "name").to_s
-      return "casts" if r["dataset_key"].to_s.match?(/bottle|ctd/)
-      return "net tows" if cat.match?(/Krill|Zooplankton|Phyllosoma|Eggs/i) && r["dataset_name"].to_s !~ /CUFES|eDNA/i
-      "sampling events"
     end
 
     def creators(a)

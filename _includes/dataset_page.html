@@ -138,7 +138,7 @@
       <ul class="dp-gl">
         {%- if dp.erddap_obs -%}
         <li class="dp-erd"><i class="cc-i cc-i-way-erddap" aria-hidden="true"></i><span><b>Filter on ERDDAP</b><small>Pick years and columns, then download</small>
-          <span class="dp-erl"><a href="{{ dp.erddap_obs | escape }}">The records ↗</a>{% if dp.erddap_sample %}<a href="{{ dp.erddap_sample | escape }}">The {{ dp.event_word }} ↗</a>{% endif %}</span></span></li>
+          <span class="dp-erl"><a href="{{ dp.erddap_obs | escape }}">The records ↗</a>{% if dp.erddap_sample %}<a href="{{ dp.erddap_sample | escape }}">The sampling events ↗</a>{% endif %}</span></span></li>
         {%- endif -%}
         {%- if dp.src -%}
         <li><a href="{{ dp.src | escape }}"><i class="cc-i cc-i-ui-external" aria-hidden="true"></i><span><b>Original files from the provider</b>{% if dp.src_portal %}<small>{{ dp.src_portal | escape }}</small>{% endif %}</span><em>↗</em></a></li>
