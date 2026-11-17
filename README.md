@@ -42,22 +42,29 @@ where v2 changed how they are reached, this subsection is the current state.
 - **The first screen** is `_includes/front_door_hero.html` (`assets/hero.css`, `assets/hero.js`): the
   eyebrow, "California's ocean, measured since {since}", two sentences, four numbers, and "Where do you
   want to start?" with three start cards over Line 90's sea floor (`_data/line90_floor.json`), then a
-  strip of quiet links. There are no door buttons. Every one of the seven tasks is one click away:
+  strip of two quiet links. There are no door buttons. Every one of the seven tasks is one visible link, or
+  one word of the header, away:
 
   ```
   task (main, 2026-11-16)             on the first screen                          goes to
-  1 See what CalCOFI collects         strip "What CalCOFI collects" · the label    #learn
-                                      by the ship (hidden under 900 px)
+  1 See what CalCOFI collects         header Learn ▾ › How CalCOFI samples ·       #learn
+                                      the label by the ship (hidden under 900 px)
   2 Explore and download on a map     card 1 "Explorer" (the one yellow button)    the Explorer
-                                      strip "More visualizations"                  #explore (Maps and apps)
-  3 Find and download a dataset       card 2 "Browse datasets"                     /datasets/
-  4 Work with the data in code        card 3 "Code"                                #program
-  5 Cite the data                     strip "Cite the data"                        docs/cite.html
-  6 Contribute data                   strip "Share your data"                      docs/provide.html
+                                      header Map ▾ › All apps                      #explore (Maps and apps)
+  3 Find and download a dataset       card 2 "Browse datasets" · header Data ▾     /datasets/
+  4 Work with the data in code        card 3 "Code" · header Data ▾ › Get it       #program
+  5 Cite the data                     header "Cite"                                docs/cite.html
+  6 Contribute data                   strip "Contribute"                           docs/provide.html
   7 Inform ocean and fisheries        strip "Statewide monitoring"                 #monitor
     management
-  new: one table across datasets      card 3 "Query Builder"                       explore/builder.html
+  new: one table across datasets      card 3 "Query Builder" · header "Query"      explore/builder.html
   ```
+
+  **The strip had five links until 2026-11-17** (Share your data · Cite the data · What CalCOFI collects ·
+  Statewide monitoring · More visualizations). The owner cut it to the two nothing else on the screen says:
+  "Cite the data" repeated the header's Cite, "What CalCOFI collects" its Learn, "More visualizations" its
+  Map menu, and "Share your data" became "Contribute". It stays a row under the cards, where it was: two
+  links are too few for a card of their own, and beside "Line 90 sea floor, GEBCO 2025" they close the screen.
 
   Three things differ from the PR as opened, each because `main` had decided it: card 1 has one button,
   not Explorer beside Data Finder (one app on the first screen: the reply to Ed Weber of 2026-11-10, and
@@ -76,18 +83,26 @@ where v2 changed how they are reached, this subsection is the current state.
 - **Anchors.** The routing script is `main`'s. `#viz` (a door until 2026-11-16, then a group of Explore)
   lands on Maps and apps at the apps for one dataset (`#dataset`); `#students` on the student projects
   (`#student`). Close puts focus back on the link that opened the panel, or on the start heading.
-- **The header** is `_includes/site_nav.html`: **Data ▾ · Map ▾ · Query · Cite ·
-  Learn ▾ · calcofi.org ↗**, sentence case, the menus opening on hover or keyboard focus. FAQ and News
-  are lines of Learn (FAQ from the same `sections:` entry as before). `main`'s rule that the header never
-  wraps holds: the menu button takes over under 1100 px (`NAV_BREAK` in `style.css`, `assets/tabs.js` and
-  `scripts/check_layout.py`), and the open menu lists every item in one column with the menus inline.
-  `brand/v2/` is untouched, so no other product's header changes.
+- **The header is the brand's** since 2026-11-17 (brand v3, [`brand/v3/README.md`](brand/v3/README.md) § 4):
+  **Data ▾ · Map ▾ · Query · Cite · Learn ▾ · FAQ · News · calcofi.org ↗**, sentence case, from the one list
+  `_data/nav.yml`, which `_plugins/nav.rb` resolves for this site's `_includes/site_nav.html` and for
+  `/brand/v3/nav.json`, drawn by `brand/v3/header.js` into the Explorer and the Query Builder. A word with a
+  menu is a button: it opens on hover and on a press, and Escape closes it. FAQ and News were lines of the
+  Learn menu in the PR as reconciled; the owner asked for them back as words ("we lost items like News and
+  FAQ"), and they are not also in Learn. Where `main`'s eight uppercase words went: DATA is Data ▾; APPS is
+  Map ▾; ACCESS and BUILD are Data ▾ › Get it; DOCS is Learn ▾ › Docs; FAQ and NEWS are FAQ and News;
+  calcofi.org ↗ is itself. `main`'s rule that the header never wraps holds: the menu button takes over under
+  1100 px (`NAV_BREAK` in `brand/v3/header.css`, `brand/v3/header.js` and `scripts/check_layout.py`), and
+  the open column lists every line and scrolls inside itself.
+- **The wave** (brand v3 § 4.5) is under the bar on every page: the catalogs' search band and a dataset
+  page's title band are the wave with a head in it; every other page, the front door included, has a slim
+  one (34 px), drawn by `_layouts/default.html`. On the front door it cuts into the hero's sky.
 - **Phone.** Stacked, the hero is scaled by its height, so under 900 px the start heading takes the
   hero's ink (it was white on the sky), the label by the ship is not drawn and the strip sits under the
   cards; under 480 px the four numbers close up to fit 375 px.
 - **The layout contract was re-anchored, not loosened** (`scripts/check_layout.py`, 2f7c4dc). The PR's markup had
   moved out from under its selectors, so the front-door block, the header menus and the redesigned dataset page
-  were passing without being measured. It now reads `section.hero`, the six header words and their three menus,
+  were passing without being measured. It now reads `section.hero`, the header's words and their three menus,
   the finders and `main.dp-page`, at the old thresholds: every task link on the first screen of a 1280 × 645
   window and 32 px tall, nothing open on load, every old anchor opened from a shut page, one Download button per
   dataset page, a dataset page under 2,200 px. Three rules follow the new design and say so in the script's
@@ -1300,7 +1315,7 @@ for u in / /datasets/ /datasets/calcofi_ctd-cast/ /species/ /measurements/ /meas
 done
 ```
 
-## Brand: theme, header, favicon (`brand/v2/`)
+## Brand: theme, header, favicon (`brand/v2/`, `brand/v3/`)
 
 [`brand/v2/`](brand/v2/) is the contract every CalCOFI product wears — the SIO look (UCSD palette,
 **light by default**, Source Sans 3 + Teko, the horizontal lockup, two scales via `data-cc-scale`),
@@ -1308,7 +1323,16 @@ the `.cc-header` chrome (lockup far-left linking to calcofi.io, sun/moon toggle)
 (`?theme=dark|light` → `cc_theme` cookie on `.calcofi.io`, persisted only on an explicit choice →
 light) and the favicon set — served at `https://calcofi.io/brand/v2/`. In force since the flip on
 2026-09-04 (`_layouts/default.html`, `index.html`, `style.css`, `_includes/product_card.html`). Read
-[`brand/v2/README.md`](brand/v2/README.md) before touching a product's chrome.
+[`brand/v2/README.md`](brand/v2/README.md) before touching a product's chrome. It is frozen.
+
+[`brand/v3/`](brand/v3/) (2026-11-17) is v2 with **one header for every product**: the same words in
+sentence case from `_data/nav.yml`, a word that may open a menu, the menu button under 1100 px, and the
+wave under the bar. It adds `header.css`, `header.js`, `nav.json` and a `theme.js` that reports version 3;
+the tokens, fonts, icons and logos are still v2's files. This site, the Explorer and the Query Builder
+wear it; every other product keeps v2 until it changes its head block.
+[`brand/v3/README.md`](brand/v3/README.md) has the contract, who wears what, the order of deployment
+(`brand/v3/` has to be live before a product that loads it) and the alternative that was not built.
+**To change a word of the header, edit `_data/nav.yml`**, nowhere else; `_test/nav_test.rb` pins the list.
 
 [`brand/v1/`](brand/v1/) (dark default, system font) is superseded but stays served and frozen for
 any product that has not migrated.
