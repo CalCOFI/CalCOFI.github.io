@@ -30,6 +30,26 @@ cl = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(cl)
 
 
+# ── the catalogs' crumb row ───────────────────────────────────────────────────
+class CrumbCanWrap(unittest.TestCase):
+    """found by the PR workflow on Linux, 2026-11-17: all three catalog pages scrolled sideways 2 to 4 px at 375 px"""
+
+    def test_a_row_that_wraps_stays_in_its_box(self):
+        self.assertEqual([], cl.crumb_faults({"squeezed": 300, "box": 300, "links": 3}))
+
+    def test_a_row_that_cannot_wrap_runs_past_it(self):
+        faults = cl.crumb_faults({"squeezed": 368, "box": 300, "links": 3})
+        self.assertEqual(1, len(faults))
+        self.assertIn("cannot wrap", faults[0])
+        self.assertIn("368", faults[0])
+
+    def test_a_pixel_of_rounding_is_not_a_fault(self):
+        self.assertEqual([], cl.crumb_faults({"squeezed": 301, "box": 300, "links": 3}))
+
+    def test_a_page_without_the_row_is_not_judged(self):
+        self.assertEqual([], cl.crumb_faults(None))
+
+
 # ── /measurements/, By category ───────────────────────────────────────────────
 def cat(name, rows, says="false", shown=0, **over):
     c = {"cat": name, "rows": rows, "shown": shown, "n": rows, "button": True, "says": says, "controls": True,

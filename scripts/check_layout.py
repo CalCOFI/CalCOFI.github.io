@@ -513,6 +513,18 @@ async (w, d) => {
     docHeight: d.documentElement.scrollHeight
   };
 
+  // ── the catalogs' crumb (Datasets · Species · Measurements, each with its count): it must be able to wrap.
+  // Its three words are about 368 px at their narrowest, so at 375 px it fitted by a few px on a Mac and ran 2 to
+  // 4 px over on Linux, where the counts' mono face is wider: a sideways scroll of all three catalog pages that
+  // only the PR workflow saw (2026-11-17). Squeezed to 300 px, a row that can wrap stays inside its box on any
+  // platform; one that cannot runs past it.
+  const crumbNav = d.querySelector(".cf-crumb");
+  if (crumbNav) {
+    const keep = crumbNav.style.width; crumbNav.style.width = "300px";
+    out.crumb = { squeezed: crumbNav.scrollWidth, box: crumbNav.clientWidth, links: crumbNav.querySelectorAll("a").length };
+    crumbNav.style.width = keep;
+  }
+
   // ── the wave (brand v3 § 4, 2026-11-17): a navy band directly under the bar, on every page ──
   // Read first, with the page as it loaded and scrolled to the top. Every .cc-wave that is DRAWN, its
   // box against the header's, what it is painted with (the gradient's colours, or a flat colour),
@@ -2492,11 +2504,28 @@ def bands_r2(P):
     return (P.get("anomaly") or {}).get("bands") or []
 
 
+def crumb_faults(cr):
+    """the catalogs' crumb row (Datasets · Species · Measurements with their counts) must be able to wrap.
+
+    `cr` is the row measured while squeezed to 300 px: {squeezed: its scrollWidth, box: its clientWidth, links}.
+    A row that wraps stays inside its box; one that cannot runs past it, and on a phone that is a sideways scroll
+    of the whole page wherever the fonts are a little wider than on the machine that wrote the CSS (Linux, in the
+    PR workflow, 2026-11-17: scrollWidth 377 and 379 at 375 px, with nothing wrong on a Mac). A page with no
+    crumb (cr is None) has nothing to judge."""
+    if not cr:
+        return []
+    if cr.get("squeezed", 0) > cr.get("box", 0) + 1:
+        return [f"the catalogs' crumb cannot wrap — squeezed to {cr.get('box')} px it is {cr.get('squeezed')} px wide, "
+                "so it scrolls the page sideways on a phone whose fonts are a little wider"]
+    return []
+
+
 def check(path, r, width, theme, fails, notes):
     where = f"{path} @{width}px {theme}"
 
     if r.get("scrollWidth", 0) > r.get("width", 0) + 1:
         fails.append(f"{where}: horizontal scroll — scrollWidth {r['scrollWidth']} > {r['width']}")
+    fails.extend(f"{where}: {f}" for f in crumb_faults(r.get("crumb")))
 
     # the wave (brand v3 § 4): on every page, one navy band directly under the bar
     check_wave(where, r.get("wave"), width, fails, notes)
