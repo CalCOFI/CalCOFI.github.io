@@ -2040,7 +2040,9 @@ def check(path, r, width, theme, fails, notes):
                     fails.append(f"{where}: the preview is not drawn at {width}px but a row's click is still swallowed: "
                                  f"the row goes nowhere")
                 rc = br.get("reach")
-                if rc:
+                if rc and not rc["shown"]:
+                    notes.append(f"{where}: the finder's preview is not drawn at {width}px; a row opens its dataset page")
+                elif rc:
                     notes.append(f"{where}: finder preview {rc['position']}, {rc['inView']}px in view with the last row chosen "
                                  f"(row {rc['rowTop']}–{rc['rowBottom']}px, preview {rc['pvTop']}–{rc['pvBottom']}px of {rc['innerH']}px)")
                     # reachable: with the last row chosen and on screen, at least PV_MIN_VIEW px of its
