@@ -178,6 +178,8 @@
   .cf-gb { padding: 10px 12px; gap: 10px; }
   .cf-gn { font-size: 12.5px; }
   .cf-r .cf-ds { display: none; }
+  /* a taxon that is not a species still says what it holds: that is what tells a genus from a family */
+  .cf-r.cf-h .cf-ds { display: block; }
   .cf-r .cf-yr { grid-column: 1 / -1; }
   .cf-gg { grid-template-columns: 1fr; }
 }
