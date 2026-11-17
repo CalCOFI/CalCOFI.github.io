@@ -64,7 +64,8 @@ can only pass by the layout actually being fixed:
   finder     (/datasets/, front door v2) the List and By category each hold the record's datasets
              once; a row's click is handled while the preview is drawn and left to follow its link
              where it is not (a phone); with the LAST row chosen and on screen at least 200 px of its
-             preview are on screen too, and at >= 1400 the preview is beside the list; choosing a
+             preview are on screen too, and at >= 1400 the preview is beside the list; the preview's
+             actions sit inside its card for every row; choosing a
              type hides rows for real ([hidden] not beaten by an author `display`); its search finds a
              dataset by a species ("sardine"), a measurement ("nitrate") and its own name ("CUFES").
   dataset    (the redesigned dataset page, main.dp-page) one column at 375 and the content column the
@@ -112,20 +113,29 @@ can only pass by the layout actually being fixed:
              `.mm-url` is one line elided from the middle.
 
   front door (/, issue #30; the seven tasks of 2026-11-16; front door v2's first screen, 2026-11-17)
-             the first screen is section.hero: each of the seven tasks (See what CalCOFI collects ·
-             Explore · Find · Code · Cite · Contribute · Management) and the Query Builder is ONE
-             visible link on it, each >= 32 px tall, Cite and Contribute straight to their docs
-             chapters; in a 1280 x 645 window (its own probe: the first screen is as tall as the
-             window) the three start cards and every task's link end above the fold; "Where do you
-             want to start?" is >= 3:1 against what is PAINTED behind it at every sampled point (the
-             drawing's own gradient stops, the floor's path); the numbers stay inside the window; the
+             the first screen is the bar, the wave and section.hero: each of the seven tasks (See
+             what CalCOFI collects · Explore · Find · Code · Cite · Contribute · Management) and the
+             Query Builder is reached from it in ONE step — a visible link under the bar (a start
+             card's button or a link of the strip), each >= 32 px tall, Contribute straight to its
+             docs chapter; or, for See what CalCOFI collects and Cite, which the strip gave to the
+             header on 2026-11-17, and for those two only, a word of the bar (Cite; Learn) — behind
+             the menu button under NAV_BREAK; in a 1280 x 645 window
+             (its own probe: the first screen is as tall as the window) the three start cards and
+             every task's link end above the fold and every word of the bar is drawn; "Where do you
+             want to start?" is >= 3:1 against every PIXEL behind a letter of it — photographed with
+             and without its text in six windows (1470 x 900, 1280 x 645, 1100 x 800, 901 x 700,
+             820 x 900, 375 x 667), both themes: it lies on a picture, under a scrim at desktop
+             widths, so no CSS colour is its ground; the numbers stay inside the window; the
              strip of links starts under the last card; under 900 px the ship's label is not drawn;
              no panel is open on load unless the URL names one (#panel, ?door=, ?q=, ?tab=), and then
              exactly one is, the one ?door= names; with none open at >= 1400 the first screen ends at
              the window's bottom and the footer follows it directly; the panels are DRIVEN by the
-             first screen's own links — #learn opens one, #explore closes it and opens another, Close
-             shuts it and focus is back on the link that opened it; Maps and apps' line to Find opens
-             Find, and closing that lands focus on something drawn on the first screen; every old
+             first screen's own links — #monitor opens one, #program closes it and opens another,
+             Close shuts it and focus is back on the link that opened it; from the header, as a
+             keyboard does it — Map ▾ pressed, its line to Maps and apps followed, focus moved on
+             into the panel so the menu shuts — Close still lands focus on something DRAWN, never on
+             the hidden line; Maps and apps' line to Find opens Find, and closing that lands focus on
+             something drawn; every old
              anchor (#datasets #access #build #viz #general #student …, and the retired words) opens
              the panel it now lives in, #viz and #students keeping the hash of where they landed;
              nothing on the first screen is --warn and exactly ONE thing is yellow, the Explorer's
@@ -139,25 +149,43 @@ can only pass by the layout actually being fixed:
              a map card no taller than the head; Find links the Data Finder nowhere; the map has
              stations.length marks; every product of _data/products.yml is a card in some panel
              except a `superseded` one, which is in none; no horizontal scroll.
-  header     (every page) Data · Map · Query · Cite · Learn · calcofi.org ↗ on one
-             line from NAV_BREAK (1100) up, clear of the icon buttons; below it the menu button and
-             never a wrap (`--nav`: the widths either side). A menu's word is a button naming its
-             panel (aria-controls) and saying its state (aria-expanded): shut at rest with none of
-             its lines a tab stop, NOT opened by focus alone, opened by a press, still open with
-             focus on one of its lines, shut by Escape with focus back on the button, shut when focus
-             leaves; the panel inside the window; the hover bridge spans the gap under the word;
-             every line links a page or a place a panel of the front door answers; the three catalogs
-             carry their counts; and the header still links somewhere everything main's eight words
-             reached (NAV_REACH: the catalogs, the Explorer, the Query Builder, cite, docs, FAQ, News,
-             code access, the pipeline, the apps, what CalCOFI collects, calcofi.org). Under
-             NAV_BREAK the button opens ONE column: six items, three menus inline, every line drawn
-             and none beside another, the menus' words saying expanded, every line scrollable into
-             the window (`--nav` adds a 375 x 667 window for this), no horizontal scroll, Escape
-             closes it.
+  header     (every page; brand v3, 2026-11-17) the bar reads exactly the ONE list of words,
+             _data/nav.yml, in order — Data · Map · Query · Cite · Learn · Docs · FAQ · News ·
+             calcofi.org ↗, pinned by this script's unit test — each word marked data-word with its id, in the
+             brand's .cc-nav, in sentence case (text-transform none), and the built
+             /brand/v3/nav.json (what every other product's header is drawn from) carries the same
+             titles; no destination is linked twice (a word of the bar is not also a line of a
+             menu); on one line from NAV_BREAK (1100) up, clear of the icon buttons; below it the
+             menu button, the nav not drawn, and never a wrap (`--nav`: the widths either side). A
+             menu's word is a button naming its panel (aria-controls) and saying its state
+             (aria-expanded): shut at rest with none of its lines a tab stop, NOT opened by focus
+             alone, opened by a press, still open with focus on one of its lines, shut by Escape
+             with focus back on the button, shut when focus leaves; the panel inside the window; the
+             hover bridge spans the gap under the word; every line links a page or a place a panel
+             of the front door answers; the three catalogs carry their counts; and the header still
+             links somewhere everything main's eight words reached (NAV_REACH: the catalogs, the
+             Explorer, the Query Builder, cite, docs, FAQ, News, code access, the pipeline, the apps,
+             what CalCOFI collects, calcofi.org). Under NAV_BREAK the button opens ONE column: the
+             words, the menus inline, every line drawn and none beside another, the menus'
+             words saying expanded, every line scrollable into the window (`--nav` adds a 375 x 667
+             window for this), no horizontal scroll, Escape closes it.
+  wave       (every page, both themes, both widths; brand v3 § 4) exactly ONE .cc-wave band is
+             drawn: it starts where the bar ends (no gap, not under the bar, its top line covered by
+             nothing), runs edge to edge, is painted the brand's navy and never the page ground (the
+             dark theme's ground is itself dark), and its edge is drawn — the brand's ::after mask,
+             or for a band that says .cc-wave-own the page's own <svg> along its bottom — filled with
+             a colour that is a visible step from the band's own.
 
   REMOVED on 2026-11-17, each because the page it measured is gone (front door v2), with what took
   its place:
-    the seven .fd-door buttons, in order, each controlling its panel → the eight task links;
+    the seven .fd-door buttons, in order, each controlling its panel → the eight tasks, each one
+                                                                  step from the first screen;
+    (2026-11-17, Ben) "each task ONE visible link under the bar"   → still so for six tasks; Cite and
+                                                                  What CalCOFI collects are the
+                                                                  header's (the strip is Contribute
+                                                                  and Statewide monitoring);
+    NAV_WORDS typed in this file                                → read from _data/nav.yml, the list
+                                                                  pinned by the unit test;
     the phone's "head, drawing, doors stack in that order"     → the drawing is the first screen's
                                                                   ground now; the phone rules above;
     FRONT_MAX_H, 950 px at 1470 with no door open               → one window tall, footer directly after;
@@ -355,6 +383,16 @@ def _read_json(path):
         return None
 
 
+def fetch_json(url):
+    """the parsed JSON a GET answers, None when it is unreachable, not 200 or not JSON"""
+    import urllib.request
+    try:
+        with urllib.request.urlopen(url, timeout=20) as r:
+            return json.loads(r.read().decode("utf-8")) if r.status == 200 else None
+    except Exception:  # noqa: BLE001
+        return None
+
+
 def page_status(url):
     """the HTTP status of a GET, None when unreachable — a missing page must fail as missing"""
     import urllib.request, urllib.error
@@ -369,11 +407,10 @@ def page_status(url):
 
 # ── the front door's first screen (front door v2, _includes/front_door_hero.html) ─────────────
 # One function, pasted into PROBE (the page at `width` x PROBE_H) and FOLD_PROBE (FOLD_W x FOLD_H):
-# every link on the first screen with its box, the three start cards, the strip, the numbers, the
-# label drawn by the ship, and what is PAINTED behind "Where do you want to start?" — the heading
-# lies on a picture, so its background is not a CSS colour: each sample point of its box is mapped
-# into the drawing (getScreenCTM), found in the floor's path, the sky or the water, and returned as
-# (gradient, position); Python interpolates the gradient's own stops and computes the contrast.
+# the header's words, every link on the first screen with its box, the three start cards, the strip,
+# the numbers and the label drawn by the ship. (What is painted behind "Where do you want to start?"
+# is NOT read here: the heading lies on a picture under a scrim, so it is read from PIXELS —
+# heading_contrast below.)
 HERO_JS = r"""
   const heroMeasure = () => {
     const hero = d.querySelector("section.hero");
@@ -394,33 +431,24 @@ HERO_JS = r"""
     const strip = hero.querySelector(".hero-foot nav"), h2 = d.getElementById("start-h");
     const sea = d.getElementById("hero-sea"), tag = hero.querySelector(".hero-tag");
     const nums = [...hero.querySelectorAll(".hero-nums > div")];
-    let behind = null;
-    if (sea && h2 && sea.getScreenCTM && sea.getScreenCTM()) {
-      const inv = sea.getScreenCTM().inverse(), r = h2.getBoundingClientRect();
-      const stops = id => [...d.querySelectorAll("#" + id + " stop")].map(st => [parseFloat(st.getAttribute("offset")),
-        w.getComputedStyle(st).stopColor.replace(/\s/g, "")]);
-      const sky = sea.querySelector('rect[fill="url(#hero-sky)"]'), wat = sea.querySelector('rect[fill="url(#hero-water)"]');
-      const flr = sea.querySelector('path[fill="url(#hero-flr)"]');
-      const sb = sky && sky.getBBox(), wb = wat && wat.getBBox(), fb = flr && flr.getBBox();
-      const pts = [];
-      for (const fx of [0.02, 0.25, 0.5, 0.75, 0.98]) for (const fy of [0.08, 0.5, 0.92]) {
-        const p = sea.createSVGPoint(); p.x = r.left + r.width * fx; p.y = r.top + r.height * fy;
-        const u = p.matrixTransform(inv);
-        let layer = null, t = 0;
-        if (flr && flr.isPointInFill && flr.isPointInFill(u)) { layer = "hero-flr"; t = (u.y - fb.y) / fb.height; }
-        else if (wb && u.y >= wb.y) { layer = "hero-water"; t = (u.y - wb.y) / wb.height; }
-        else if (sb) { layer = "hero-sky"; t = (u.y - sb.y) / sb.height; }
-        pts.push({ layer, t: Math.max(0, Math.min(1, t)) });
-      }
-      behind = { pts, stops: { "hero-sky": stops("hero-sky"), "hero-water": stops("hero-water"), "hero-flr": stops("hero-flr") } };
-    }
     let floorData = false;
     try { floorData = ((JSON.parse(d.getElementById("hero-floor").textContent) || {}).profile || []).length > 0; } catch (e) {}
+    // the header is part of the first screen (brand v3): each word, whether it is drawn, the link it
+    // is or the lines its menu holds — a task may be answered by a word instead of a link below it
+    const navEl = d.querySelector(".cc-header .cc-links"), burger = d.querySelector(".cc-header .cc-menu-button");
+    const navShown = !!navEl && w.getComputedStyle(navEl).display !== "none";
+    const header = navEl ? [...navEl.children].filter(el => el.matches("a, .cc-m2, .cc-m")).map(el => {
+      const t = el.matches("a") ? el : el.querySelector(":scope > .cc-m2-t, :scope > a");
+      return Object.assign(box(t), { id: el.getAttribute("data-word"), title: (t.textContent || "").replace(/\s+/g, " ").trim(),
+        href: el.matches("a") ? el.getAttribute("href") : null,
+        lines: el.matches("a") ? [] : [...el.querySelectorAll("a[href]")].map(a => a.getAttribute("href")),
+        visible: navShown && vis(t) }); }) : [];
     return {
+      header, menuButton: !!burger && vis(burger),
       top: Math.round(top(hero)), bottom: Math.round(bot(hero)), innerH: w.innerHeight, innerW: w.innerWidth,
       links, cards,
       strip: strip ? box(strip) : null,
-      start: h2 ? Object.assign(box(h2), { color: w.getComputedStyle(h2).color.replace(/\s/g, ""), behind }) : null,
+      start: h2 ? Object.assign(box(h2), { color: w.getComputedStyle(h2).color.replace(/\s/g, "") }) : null,
       tag: tag ? { visible: vis(tag), display: w.getComputedStyle(tag).display, w: Math.round(tag.getBoundingClientRect().width) } : null,
       nums: nums.map(n => Object.assign(box(n), { label: ((n.querySelector("dt") || {}).textContent || "").trim() })),
       drawn: sea ? sea.children.length : 0, ridge: !!(sea && sea.querySelector(".ridge")), floorData,
@@ -468,6 +496,40 @@ async (w, d) => {
     muted: tok("--muted"), warn: tok("--warn"),
     docHeight: d.documentElement.scrollHeight
   };
+
+  // ── the wave (brand v3 § 4, 2026-11-17): a navy band directly under the bar, on every page ──
+  // Read first, with the page as it loaded and scrolled to the top. Every .cc-wave that is DRAWN, its
+  // box against the header's, what it is painted with (the gradient's colours, or a flat colour),
+  // and its edge: the ::after mask the brand draws, or — for a band that says .cc-wave-own — the
+  // page's own <svg> along its bottom.
+  {
+    w.scrollTo(0, 0);
+    const hdr = d.querySelector(".cc-header");
+    const cols = v => (String(v || "").match(/rgba?\([^)]*\)/g) || []).map(x => x.replace(/\s/g, ""));
+    out.wave = {
+      headerBottom: hdr ? px(hdr.getBoundingClientRect().bottom) : null,
+      ground: tok("--bg"),
+      all: d.querySelectorAll(".cc-wave").length,
+      drawn: [...d.querySelectorAll(".cc-wave")].filter(el => cs(el).display !== "none" && cs(el).visibility !== "hidden" && el.getBoundingClientRect().height > 0).map(el => {
+        const b = el.getBoundingClientRect(), st = cs(el), af = w.getComputedStyle(el, "::after");
+        const own = el.classList.contains("cc-wave-own");
+        const svg = own ? [...el.querySelectorAll("svg")].filter(x => x.querySelector("path") && x.getBoundingClientRect().width >= b.width - 2).pop() : null;
+        const sb = svg && svg.getBoundingClientRect();
+        const mask = af ? (af.maskImage || af.webkitMaskImage || "none") : "none";
+        return {
+          cls: String(el.className), own, top: px(b.top), bottom: px(b.bottom), left: px(b.left), right: px(b.right), h: px(b.height),
+          paint: cols(st.backgroundImage).concat(st.backgroundImage === "none" ? cols(st.backgroundColor) : []),
+          // the brand's edge: a ::after along the bottom, masked to the wave, filled with what lies below
+          after: af && af.content !== "none" ? { h: px(parseFloat(af.height) || 0), mask: mask !== "none", fill: cols(af.backgroundColor)[0] || null } : null,
+          // a page's own edge: an <svg> with a path, as wide as the band, ending at its bottom
+          svg: svg ? { h: px(sb.height), bottomGap: px(Math.abs(sb.bottom - b.bottom)), fill: cols(cs(svg.querySelector("path")).fill)[0] || null } : null,
+          // what covers the band's top line, sampled at its middle: nothing but the band itself or something inside it
+          hidden: (() => { const e = d.elementFromPoint(Math.min(w.innerWidth - 2, Math.max(2, b.left + b.width / 2)), b.top + 2);
+            return !!e && e !== el && !el.contains(e) && !(hdr && hdr.contains(e)) ? String(e.className || e.tagName).slice(0, 40) : null; })()
+        };
+      })
+    };
+  }
 
   // ── the dataset catalog and a dataset page, calmer (issue #30) ─────────────
   // measured FIRST, before any probe below opens or filters anything: the page's height with
@@ -533,11 +595,23 @@ async (w, d) => {
     w.addEventListener("click", hold);
     const sel0 = (bdList.querySelector(".bd-r.on") || rowsEl[0] || { dataset: {} }).dataset.k;
     const pvDl = {}, unhandled = [];
+    let actOver = { px: 0, key: null, what: null }, actN = 0;
     for (const row of rowsEl) {
       handled = null; row.click();
       if (!handled) unhandled.push(row.dataset.k);
       const a = bdPv.querySelector('a[href*="#download"]');
       const h2 = bdPv.querySelector("h2, h3");
+      // the preview's actions (View on map · Download · Full details) sit inside the card: the widest
+      // overhang of any of them past the card's own edges, over every row ("Full details" stuck out
+      // 20 px and the page scrolled sideways at 1100 px until 6292d3d)
+      if (pvShown()) {
+        const pr0 = bdPv.getBoundingClientRect();
+        for (const el of bdPv.querySelectorAll(".bd-pv-act a, .bd-pv-act button")) {
+          const eb = el.getBoundingClientRect(), over = Math.max(eb.right - pr0.right, pr0.left - eb.left, eb.bottom - pr0.bottom);
+          if (eb.width > 0 && over > actOver.px) actOver = { px: Math.round(over), key: row.dataset.k, what: (el.textContent || "").replace(/\s+/g, " ").trim().slice(0, 30) };
+        }
+        actN = Math.max(actN, [...bdPv.querySelectorAll(".bd-pv-act a, .bd-pv-act button")].filter(el => el.getBoundingClientRect().width > 0).length);
+      }
       pvDl[row.dataset.k] = { href: a ? a.getAttribute("href") : null, tag: a ? a.tagName : null,
         title: h2 ? h2.textContent.trim() : null, name: (row.querySelector("b") || {}).textContent || null };
     }
@@ -587,7 +661,7 @@ async (w, d) => {
       bq.value = ""; bq.dispatchEvent(new w.Event("input", { bubbles: true }));
     }
     w.scrollTo(0, 0);
-    out.browse = { pvDl, unhandled, reach, filter: bdFilter, search: bdSearch, pvDisplay: cs(bdPv).display };
+    out.browse = { pvDl, unhandled, reach, filter: bdFilter, search: bdSearch, pvDisplay: cs(bdPv).display, actOver, actN };
   }
 
   // ── the redesigned dataset page (front door v2, _includes/dataset_page.html) ───────────────
@@ -812,11 +886,15 @@ async (w, d) => {
       cardKeys: [...new Set([...d.querySelectorAll(".prod-card[data-key]")].map(c => c.dataset.key))],
       warnEls, ctaEls
     };
-    // drive the panels through the hero's own links: one opens, a second closes the first, Close
-    // closes it and gives focus back to the link that opened it
+    // drive the panels through the first screen's own links: one opens, a second closes the first,
+    // Close closes it and gives focus back to the link that opened it. Since 2026-11-17 the links to
+    // a panel under the bar are the strip's "Statewide monitoring" (#monitor) and the Code card
+    // (#program); What CalCOFI collects and Maps and apps are opened from the header (Learn ▾, Map ▾).
     const hl = h => hero.querySelector('.hero-foot a[href="' + h + '"], .hero-goal a[href="' + h + '"]');
     const closeBtn = k => d.querySelector("#" + k + " [data-close]");
-    const lA = hl("#learn"), lB = hl("#explore");
+    const seen = el => !!el && el !== d.body && el.getBoundingClientRect && el.getBoundingClientRect().width > 0 &&
+      cs(el).visibility !== "hidden" && cs(el).display !== "none";
+    const lA = hl("#monitor"), lB = hl("#program");
     if (lA && lB) {
       const was = openNow();
       was.forEach(k => closeBtn(k) && closeBtn(k).click());     // start from every panel closed
@@ -824,16 +902,40 @@ async (w, d) => {
       const a = openNow();
       lB.focus(); lB.click();
       const b = openNow();
-      if (closeBtn("explore")) closeBtn("explore").click();
+      if (closeBtn("program")) closeBtn("program").click();
       const c = openNow();
       const act = d.activeElement;
       const focusBack = { same: act === lB, tag: act ? act.tagName : null, href: act && act.getAttribute ? act.getAttribute("href") : null,
         inHero: !!(act && hero.contains(act)) };
+      // from the header, as a keyboard does it: Map ▾ is pressed, its line "All apps" (/#explore) is
+      // followed, focus moves on into the panel (the menu shuts behind it) and Close is pressed. The
+      // line that opened the panel is hidden by then, so focus must land on something that IS drawn
+      // — never on a hidden link, which leaves it on <body>. Under NAV_BREAK the same line is in the
+      // menu button's column; it is followed the same way.
+      const line = d.querySelector('.cc-header .cc-links a[href$="#explore"]');
+      const lineMenu = line && line.closest(".cc-m2"), lineBtn = lineMenu && lineMenu.querySelector(".cc-m2-t");
+      const navDrawn = !!line && cs(d.querySelector(".cc-header .cc-links")).display !== "none";
+      let viaHeader = null;
+      if (line) {
+        if (navDrawn && lineBtn) { lineBtn.focus(); lineBtn.click(); await sleep(80); line.focus(); }
+        line.click();
+        await sleep(60);
+        const opened = openNow();
+        const inPanel = d.querySelector("#explore a[href], #explore button");
+        if (inPanel) inPanel.focus();
+        await sleep(360);                                         // the menu's close delay
+        const lineHidden = !seen(line);
+        if (closeBtn("explore")) closeBtn("explore").click();
+        await sleep(40);
+        const ah = d.activeElement;
+        viaHeader = { opened, navDrawn, lineHidden, afterClose: openNow(), seen: seen(ah), tag: ah ? ah.tagName : null,
+          what: ah ? (ah.id || ah.getAttribute("href") || (ah.textContent || "").trim().slice(0, 30)) : null };
+      }
       // Find is reached from Maps and apps (its line to Find) and from every old link; opened, its
       // list's names read as links (body-text size, the link colour, underlined), and with the panel
       // scrolled to its top the search and the first eight names sit inside an 800 px window under
       // the sticky header — finding a dataset is the obvious thing (Ben, 2026-11-16)
-      lB.click();
+      { const lk = d.createElement("a"); lk.href = "#explore"; d.body.appendChild(lk); lk.click(); lk.remove(); }
       const xref = d.querySelector('#explore a[href="#find"]');
       if (xref) xref.click();
       const f = openNow();
@@ -852,11 +954,10 @@ async (w, d) => {
         };
       }
       // a panel opened by a link INSIDE a panel (which hides with it): Close still lands focus on
-      // something drawn on the first screen, never on <body>
+      // something drawn, never on <body>
       if (closeBtn("find")) closeBtn("find").click();
       const act2 = d.activeElement;
-      const focusBack2 = { tag: act2 ? act2.tagName : null, id: act2 ? act2.id : null, inHero: !!(act2 && hero.contains(act2)),
-        drawn: !!(act2 && act2.getBoundingClientRect && act2.getBoundingClientRect().width > 0) };
+      const focusBack2 = { tag: act2 ? act2.tagName : null, id: act2 ? act2.id : null, drawn: seen(act2) };
       // the old anchors: a click on a link to each (the header's menus do exactly this) opens the
       // panel it now lives in. A tab anchor selects its tab, so every tabset's selection and the
       // URL are put back afterwards — what is measured next sees the page the URL loaded.
@@ -876,16 +977,16 @@ async (w, d) => {
       if (was.length) { const lk = d.createElement("a"); lk.href = "#" + was[0]; d.body.appendChild(lk); lk.click(); lk.remove(); }   // put back what the URL opened
       sel0.forEach(b => b.click());
       try { w.history.replaceState(null, "", href0); } catch (e) {}
-      out.front.drive = { afterA: a, afterB: b, afterClose: c, focusBack, afterFind: f, hasXref: !!xref, focusBack2, anchors, restored: openNow() };
+      out.front.drive = { afterA: a, afterB: b, afterClose: c, focusBack, viaHeader, afterFind: f, hasXref: !!xref, focusBack2, anchors, restored: openNow() };
       if (d.activeElement && d.activeElement.blur) d.activeElement.blur();
       w.scrollTo(0, 0);
     }
   }
 
-  // ── the header (front door v2, _includes/site_nav.html: Data ▾ · Map ▾ · Query · Cite ·
-  // Learn ▾ · calcofi.org ↗) ──
+  // ── the header (brand v3, _includes/site_nav.html from _data/nav.yml: Data ▾ · Map ▾ · Query ·
+  // Cite · Learn · Docs · FAQ · News · calcofi.org ↗; the behaviour is brand/v3/header.js) ──
   // The words, the menus and what they link. A menu's word is a BUTTON (aria-expanded, aria-controls)
-  // over its panel: the CSS opens it on hover, assets/tabs.js on a press — never on focus alone, so
+  // over its panel: the CSS opens it on hover, brand/v3/header.js on a press — never on focus alone, so
   // tabbing along the header does not throw three panels open. Everything is measured on the real
   // page: the button is focused (the menu must stay shut), pressed (it must open and say so), focus
   // is moved onto a line inside it, Escape is pressed (it must shut and focus must be back on the
@@ -956,6 +1057,8 @@ async (w, d) => {
     if (d.activeElement && d.activeElement.blur) d.activeElement.blur();
     out.nav = {
       words: navItems().map(el => trigOf(el).textContent.replace(/\s+/g, " ").trim()),
+      ids: navItems().map(el => el.getAttribute("data-word")),
+      navClass: String(nav.className), cased: navItems().map(el => cs(trigOf(el)).textTransform),
       // every link the header carries, a word or a line of a menu: what must stay reachable from it
       allHrefs: [...nav.querySelectorAll("a[href]")].map(a => a.getAttribute("href")),
       visible: navVisible,
@@ -1637,20 +1740,27 @@ MAX_SPECIES_INDEX_H = 2220   # issue #30: /species/ at 1470, nothing open — th
 MAX_SPECIES_PAGE_H = 1500    # issue #30: a taxon page at 1470, nothing open — ~1,200 + 25 %
 # the front door (issue #30; the seven tasks of 2026-11-16; front door v2's first screen, 2026-11-17)
 FOLD_W, FOLD_H = 1280, 645
-# The seven tasks (2026-11-16, the users' and Erin's feedback) and an eighth, the Query Builder: each is
-# ONE visible link on the first screen. (id, the words a failure prints, the href that answers it.)
-# A hash is this page's panel; the Explorer and the Query Builder are matched by their path, since a
-# preview build serves them from its own folder; Cite and Contribute are their docs chapters, exactly.
+# The seven tasks (2026-11-16, the users' and Erin's feedback) and an eighth, the Query Builder. Each is
+# reached from the first screen in ONE step: (id, the words a failure prints, the href that answers it,
+# where it may be answered). "hero" is a visible link under the bar — a start card's button or a link
+# of the strip — and is what every task was until 2026-11-17. That day the strip lost "Cite the data",
+# "What CalCOFI collects" and "More visualizations" because the header says them (Ben), so for those
+# two tasks, and only those, "header" also answers: a word of the bar that IS the link, or a word
+# whose menu holds it. The other six must still be links on the first screen itself: a card that went
+# missing is not excused by a line of a menu.
+# A hash is this page's panel (the header writes it /#learn); the Explorer and the Query Builder are
+# matched by their path, since a preview build serves them from its own folder; Cite and Contribute
+# are their docs chapters, exactly.
 FRONT_LINKS = {"cite": "https://calcofi.io/docs/cite.html", "contribute": "https://calcofi.io/docs/provide.html"}
 FRONT_TASKS = [
-    ("learn",      "See what CalCOFI collects",             r"^#learn$"),
-    ("explore",    "Explore and download on a map",         r"(^|/)explore/?(\?[^#]*)?$"),
-    ("find",       "Find and download a dataset",           r"(^|/)datasets/$"),
-    ("program",    "Work with the data in code",            r"^#program$"),
-    ("cite",       "Cite the data",                         "^" + re.escape(FRONT_LINKS["cite"]) + "$"),
-    ("contribute", "Contribute data",                       "^" + re.escape(FRONT_LINKS["contribute"]) + "$"),
-    ("monitor",    "Inform ocean and fisheries management", r"^#monitor$"),
-    ("builder",    "the Query Builder",                     r"(^|/)explore/builder\.html(\?[^#]*)?$"),
+    ("learn",      "See what CalCOFI collects",             r"(^|^/)#learn$",                          ("hero", "header")),
+    ("explore",    "Explore and download on a map",         r"(^|/)explore/?(\?[^#]*)?$",               ("hero",)),
+    ("find",       "Find and download a dataset",           r"(^|/)datasets/$",                        ("hero",)),
+    ("program",    "Work with the data in code",            r"^#program$",                             ("hero",)),
+    ("cite",       "Cite the data",                         "^" + re.escape(FRONT_LINKS["cite"]) + "$", ("hero", "header")),
+    ("contribute", "Contribute data",                       "^" + re.escape(FRONT_LINKS["contribute"]) + "$", ("hero",)),
+    ("monitor",    "Inform ocean and fisheries management", r"^#monitor$",                             ("hero",)),
+    ("builder",    "the Query Builder",                     r"(^|/)explore/builder\.html(\?[^#]*)?$",   ("hero",)),
 ]
 # the numbers the first screen states (front door v2 draws four; stations are on Find's map), each
 # equal to the page's own #reach record; the two COUNTED things link their catalogs, as they always did
@@ -1697,12 +1807,58 @@ MIN_TAP = 32
 MAX_MM_INDEX_H = 1625
 MAX_MM_PAGE_H = 1850
 
-# ── the header (front door v2, _includes/site_nav.html; was plan 2026-09-10 § D7's seven words) ──
-# Six items in sentence case: three are menus. main's DATA · APPS · ACCESS · BUILD · DOCS · FAQ · NEWS
-# (FAQ joined on 2026-11-16, the owner's request) became lines of those menus; NAV_REACH is what the
-# header must still link somewhere, a word or a line, so none of them can drop out unseen.
-NAV_WORDS = ["Data", "Map", "Query", "Cite", "Learn", "calcofi.org ↗"]
-NAV_MENUS = ["Data", "Map", "Learn"]
+# ── the header (brand v3, 2026-11-17: brand/v3/README.md § 4; was plan 2026-09-10 § D7's seven words) ──
+# The words are ONE list, _data/nav.yml: _includes/site_nav.html draws this site's header from it and
+# _plugins/nav.rb writes it to /brand/v3/nav.json for every other product (brand/v3/header.js). The
+# check reads the same file rather than typing the words a third time: the bar must read exactly that
+# list, in order, with each word's data-word its id — and _test/check_layout_front_test.py pins the
+# list itself (Data · Map · Query · Cite · Learn · Docs · FAQ · News · calcofi.org ↗), so a word cannot
+# leave the bar by leaving the list unseen. main's DATA · APPS · ACCESS · BUILD · DOCS · FAQ · NEWS: Docs,
+# FAQ and News are words again (Ben, 2026-11-17), the others are lines of Data and Map; NAV_REACH is what
+# the header must still link somewhere, a word or a line, so none of them can drop out unseen.
+def nav_words(text):
+    """[{id, title, menu}] of a _data/nav.yml text: the entries of its top-level `words:` list, in
+    order. An entry is a block (`  - id: data` then `    title: Data`, `    menu:`) or one line
+    (`  - { id: cite, title: Cite, href: … }`). No YAML library: this runs as a bare python3."""
+    out, m = [], re.search(r"^words:\s*$", text or "", re.M)
+    if not m:
+        return out
+    for blk in re.split(r"^(?=  - )", (text or "")[m.end():], flags=re.M):
+        if not blk.startswith("  - "):
+            continue
+        first = blk.splitlines()[0]
+        if "{" in first:
+            wid = re.search(r"\bid:\s*([\w-]+)", first)
+            tt = re.search(r"\btitle:\s*(\"[^\"]*\"|'[^']*'|[^,}]+)", first)
+            menu = False
+        else:
+            wid = re.search(r"^  - id:\s*([\w-]+)|^    id:\s*([\w-]+)", blk, re.M)
+            tt = re.search(r"^(?:  - |    )title:\s*(.+?)\s*$", blk, re.M)
+            menu = bool(re.search(r"^    menu:", blk, re.M))
+        if not tt:
+            continue
+        title = tt.group(1).strip().strip("\"'")
+        out.append({"id": next((g for g in (wid.groups() if wid else ()) if g), None), "title": title, "menu": menu})
+    return out
+
+
+def nav_json_titles(obj):
+    """the words' titles of a built /brand/v3/nav.json, in order"""
+    return [w.get("title") for w in (obj or {}).get("words") or []]
+
+
+def _nav_text():
+    try:
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "_data", "nav.yml"), encoding="utf-8") as f:
+            return f.read()
+    except OSError:
+        return ""
+
+
+NAV = nav_words(_nav_text())
+NAV_WORDS = [x["title"] for x in NAV]
+NAV_IDS = [x["id"] for x in NAV]
+NAV_MENUS = [x["title"] for x in NAV if x["menu"]]
 NAV_REACH = [
     ("the datasets catalog (/datasets/)",       r"(^|/)datasets/$"),
     ("the species catalog (/species/)",         r"(^|/)species/$"),
@@ -1719,13 +1875,15 @@ NAV_REACH = [
     ("what CalCOFI collects (#learn)",          r"#learn$"),
     ("calcofi.org",                             r"^https://calcofi\.org/?$"),
 ]
-# below this width the menu button carries the nav (= style.css @media (max-width: 1099px) and
-# assets/tabs.js NAV_BREAK): main's eight items fit one line from 1,089 px; front door v2's six are
-# narrower and keep the same breakpoint, so the header never wraps
+# below this width the menu button carries the nav (= brand/v3/header.css @media (max-width: 1099px)
+# and brand/v3/header.js NAV_BREAK; scripts/check_brand.py holds every v3 product to it too): the
+# words fit one line from there (nine since 5dd1253, with 179 px to spare at 1100), so the header never wraps
 NAV_BREAK = 1100
 # the widths the header's own assertions are run at by --nav (one line from NAV_BREAK, the menu below)
 NAV_WIDTHS = [1100, 1280, 1470, 1024, 800, 640, 375]
-NAV_PATHS = ["/", "/datasets/swfsc_ichthyo/", "/species/", "/measurements/"]
+# (/datasets/ joined on 2026-11-17: its preview pane made the page scroll sideways 4 px at 1100 px, a
+# width the full run does not visit)
+NAV_PATHS = ["/", "/datasets/", "/datasets/swfsc_ichthyo/", "/species/", "/measurements/"]
 PHONE = (375, 667)    # a small phone's window, for the open menu's column (--nav)
 # the sections whose tabs are CARDS, so a pill must equal the number of cards in its panel. DATA's
 # three pills count datasets, species and measurements — the release's numbers, checked against the
@@ -1777,21 +1935,6 @@ def _rgb(text):
     return tuple(float(x) for x in m[:3]) if len(m) >= 3 else None
 
 
-def grad_at(stops, t):
-    """the colour of a linear gradient at position t (0..1): `stops` is [[offset, "rgb(…)"], …] as
-    the drawing declares them, interpolated in sRGB (SVG's default); clamped outside the end stops"""
-    pts = sorted((float(o), _rgb(c)) for o, c in stops if _rgb(c))
-    if not pts:
-        return None
-    if t <= pts[0][0]:
-        return pts[0][1]
-    for (o0, c0), (o1, c1) in zip(pts, pts[1:]):
-        if t <= o1:
-            f = 0.0 if o1 == o0 else (t - o0) / (o1 - o0)
-            return tuple(a + (b - a) * f for a, b in zip(c0, c1))
-    return pts[-1][1]
-
-
 def contrast(a, b):
     """WCAG 2 contrast ratio of two (r, g, b) colours, 1..21"""
     def lum(c):
@@ -1802,20 +1945,184 @@ def contrast(a, b):
     return (la + 0.05) / (lb + 0.05)
 
 
-def start_contrast(start):
-    """(the lowest contrast of the start heading against what is painted behind it, the layer it was
-    lowest on), from heroMeasure()'s sample points; (None, None) when the drawing gave nothing to read"""
-    behind = (start or {}).get("behind") or {}
-    ink = _rgb((start or {}).get("color"))
-    worst = (None, None)
-    for pt in behind.get("pts") or []:
-        bg = grad_at((behind.get("stops") or {}).get(pt.get("layer")) or [], pt.get("t", 0))
-        if ink is None or bg is None:
+def png_pixels(data):
+    """(width, height, [(r, g, b), …] row by row) of a PNG's bytes: 8-bit RGB or RGBA, not interlaced —
+    what a browser screenshot is. No imaging library: this script's one dependency is shot-scraper."""
+    import struct, zlib
+    if data[:8] != b"\x89PNG\r\n\x1a\n":
+        raise ValueError("not a PNG")
+    pos, idat, w = 8, b"", None
+    while pos < len(data):
+        n, kind = struct.unpack(">I4s", data[pos:pos + 8])
+        body = data[pos + 8:pos + 8 + n]
+        if kind == b"IHDR":
+            w, h, depth, ctype, _, _, lace = struct.unpack(">IIBBBBB", body)
+            if depth != 8 or ctype not in (2, 6) or lace:
+                raise ValueError(f"unsupported PNG (depth {depth}, colour type {ctype}, interlace {lace})")
+            bpp = 3 if ctype == 2 else 4
+        elif kind == b"IDAT":
+            idat += body
+        pos += 12 + n
+    raw, stride, out, prev = zlib.decompress(idat), w * bpp, [], bytearray(w * bpp)
+    for y in range(h):
+        f, line = raw[y * (stride + 1)], bytearray(raw[y * (stride + 1) + 1:(y + 1) * (stride + 1)])
+        for i in range(stride):
+            a_ = line[i - bpp] if i >= bpp else 0
+            b_ = prev[i]
+            c_ = prev[i - bpp] if i >= bpp else 0
+            if f == 1:
+                line[i] = (line[i] + a_) & 255
+            elif f == 2:
+                line[i] = (line[i] + b_) & 255
+            elif f == 3:
+                line[i] = (line[i] + ((a_ + b_) >> 1)) & 255
+            elif f == 4:
+                pa, pb, pc = abs(b_ - c_), abs(a_ - c_), abs(a_ + b_ - 2 * c_)
+                line[i] = (line[i] + (a_ if pa <= pb and pa <= pc else b_ if pb <= pc else c_)) & 255
+        out.extend((line[i], line[i + 1], line[i + 2]) for i in range(0, stride, bpp))
+        prev = line
+    return w, h, out
+
+
+def heading_contrast(shown, hidden):
+    """A heading against the PIXELS behind it. `shown` and `hidden` are (w, h, pixels) of the same box
+    of the page, once with the heading drawn and once with its text transparent. Where the two differ
+    is where the letters are; the ink is the colour most of those pixels have when drawn (a letter's
+    solid inside, not its soft edge); each of those places' colour with the heading hidden is what is
+    behind the letters. Returns {ink, n, min, p05, worst}: the lowest contrast of the ink against any
+    pixel behind a letter, the 5th percentile, and that worst pixel — or None when nothing differs
+    (no heading was drawn there)."""
+    if not shown or not hidden or shown[:2] != hidden[:2]:
+        return None
+    pairs = [(a, b) for a, b in zip(shown[2], hidden[2]) if a != b]
+    if not pairs:
+        return None
+    count = {}
+    for a, _ in pairs:
+        count[a] = count.get(a, 0) + 1
+    ink = max(count, key=count.get)
+    ratios = sorted((contrast(ink, b), b) for _, b in pairs)
+    return {"ink": ink, "n": len(pairs), "min": ratios[0][0], "p05": ratios[len(ratios) // 20][0], "worst": ratios[0][1]}
+
+
+def shot(url, width, height, theme, browser, wait, selector, js=None):
+    """the PNG bytes of one element of a page in a width x height window (shot-scraper shot), or None"""
+    import tempfile
+    sep = "&" if "?" in url else "?"
+    with tempfile.TemporaryDirectory() as tmp:
+        out = os.path.join(tmp, "s.png")
+        cmd = ["shot-scraper", "shot", f"{url}{sep}theme={theme}&tour=off", "-o", out, "--selector", selector, "--width", str(width),
+               "--height", str(height), "--wait", str(wait), "--browser", browser, "--silent"] + (["--javascript", js] if js else [])
+        r = subprocess.run(cmd, capture_output=True, text=True, timeout=180)
+        if r.returncode or not os.path.exists(out):
+            return None
+        with open(out, "rb") as f:
+            return f.read()
+
+
+# "Where do you want to start?" (#start-h) lies on a picture — the sky or the water of Line 90, under a
+# scrim at desktop widths — so no CSS colour is its background. It is photographed twice in each of
+# these windows, in both themes, drawn and with its text transparent, and the ink is held to
+# START_MIN_CONTRAST against every pixel behind a letter. The windows: the two the pages are probed
+# in, the fold's, two where the white heading measured 2.6 to 2.9:1 before the scrim (901 x 700,
+# 1100 x 800), a tablet, a phone.
+HEADING_WINDOWS = [(1470, 900), (1280, 645), (1100, 800), (901, 700), (820, 900), (375, 667)]
+HIDE_HEADING = ("(() => { const h = document.getElementById('start-h'); if (h) { h.style.setProperty('transition', 'none', 'important'); "
+                "h.style.setProperty('color', 'transparent', 'important'); h.style.setProperty('text-shadow', 'none', 'important'); } })()")
+
+
+def check_heading(url, theme, browser, wait, fails, notes):
+    """the start heading's contrast against the pixels behind it, in every HEADING_WINDOWS window"""
+    ok = True
+    for w_, h_ in HEADING_WINDOWS:
+        where = f"{url} @{w_}x{h_} {theme}"
+        a_, b_ = shot(url, w_, h_, theme, browser, wait, "#start-h"), shot(url, w_, h_, theme, browser, wait, "#start-h", HIDE_HEADING)
+        try:
+            hc = heading_contrast(png_pixels(a_), png_pixels(b_)) if a_ and b_ else None
+        except ValueError as e:
+            hc = None
+            notes.append(f"{where}: {e}")
+        if hc is None:
+            fails.append(f"{where}: the start heading (#start-h) could not be photographed with and without its text")
+            ok = False
             continue
-        c = contrast(ink, bg)
-        if worst[0] is None or c < worst[0]:
-            worst = (c, pt["layer"])
-    return worst
+        rgb_ = lambda c: "rgb(%d,%d,%d)" % c   # noqa: E731
+        notes.append(f"{where}: start heading {rgb_(hc['ink'])} is {hc['min']:.2f}:1 at worst against the pixels behind it "
+                     f"({rgb_(hc['worst'])}; 5th percentile {hc['p05']:.2f}:1, {hc['n']} pixels)")
+        if hc["min"] < START_MIN_CONTRAST:
+            fails.append(f"{where}: the start heading {rgb_(hc['ink'])} is {hc['min']:.2f}:1 against the pixels behind it "
+                         f"(the palest {rgb_(hc['worst'])}), under {START_MIN_CONTRAST:g}:1")
+            ok = False
+    return ok
+
+
+WAVE_EDGE_MIN = 1.3   # the edge's fill against the band's bottom colour: a step an eye sees (dark theme: about 1.6)
+
+
+def is_navy(c):
+    """a (r, g, b) that reads as the brand's navy: dark (WCAG luminance under 0.08 — #14284a is 0.022,
+    #1d3d66 0.046) and blue the strongest channel, red the weakest"""
+    if not c:
+        return False
+    lum = (contrast(c, (0, 0, 0)) * 0.05) - 0.05
+    return lum < 0.08 and c[2] > c[1] >= c[0]
+
+
+def check_wave(where, wv, width, fails, notes):
+    """brand v3 § 4: every page has ONE navy band directly under the bar, ending in a wave"""
+    drawn = (wv or {}).get("drawn") or []
+    if len(drawn) != 1:
+        fails.append(f"{where}: {len(drawn)} wave bands (.cc-wave) are drawn under the bar, expected exactly one"
+                     + (f": {[x['cls'] for x in drawn]}" if drawn else f" ({(wv or {}).get('all', 0)} in the page, none drawn)"))
+        return
+    x, hb = drawn[0], wv.get("headerBottom")
+    edge = "its own svg" if x["own"] else "the brand's mask"
+    notes.append(f"{where}: wave {x['top']}–{x['bottom']}px under a bar ending {hb}px, painted {' → '.join(x['paint']) or 'nothing'}, edge {edge}")
+    # directly under the bar: no gap above it, and not slid under the bar or anything else
+    if hb is None:
+        fails.append(f"{where}: no header (.cc-header) for the wave to follow")
+    elif x["top"] > hb + 1:
+        fails.append(f"{where}: the wave starts at {x['top']}px, {x['top'] - hb}px below the bar's bottom ({hb}px): a gap")
+    elif x["top"] < hb - 1:
+        fails.append(f"{where}: the wave starts at {x['top']}px, under the bar (which ends at {hb}px)")
+    if x.get("hidden"):
+        fails.append(f"{where}: the wave's top is covered by {x['hidden']!r}")
+    if x["left"] > 1 or x["right"] < width - 1:
+        fails.append(f"{where}: the wave runs {x['left']}–{x['right']}px of a {width}px window, not edge to edge")
+    # navy in both themes, never the page's ground (the bar is white in light and navy in dark; the band is navy in both)
+    paint = [_rgb(c) for c in x["paint"]]
+    if not paint:
+        fails.append(f"{where}: the wave band has no background")
+    elif not all(is_navy(c) for c in paint):
+        fails.append(f"{where}: the wave band is painted {x['paint']}, not the brand's navy")
+    if wv.get("ground") in x["paint"]:
+        fails.append(f"{where}: the wave band is painted with the page ground {wv['ground']}")
+    # its edge is drawn: the brand's ::after mask, or the page's own svg along the band's bottom, filled
+    # with what lies below the band — a colour that is NOT the band's own, a visible step from the
+    # band's bottom colour (light: the white ground, about 11:1; dark: the dark ground, about 1.6:1)
+    def edge_shows(fill, what):
+        f = _rgb(fill)
+        if f is None or not paint:
+            return
+        step = contrast(f, paint[-1])
+        if fill in x["paint"] or step < WAVE_EDGE_MIN:
+            fails.append(f"{where}: {what} is filled {fill}, {step:.2f}:1 against the band's own {x['paint'][-1]}: no edge shows")
+        else:
+            notes.append(f"{where}: wave edge {fill}, {step:.2f}:1 against the band")
+    if x["own"]:
+        sv = x.get("svg")
+        if not sv or sv["h"] < 4:
+            fails.append(f"{where}: the band says it draws its own edge (.cc-wave-own) but has no svg wave as wide as itself")
+        elif sv["bottomGap"] > 2:
+            fails.append(f"{where}: the band's own wave ends {sv['bottomGap']}px from the band's bottom")
+        else:
+            edge_shows(sv.get("fill"), "the band's own wave")
+    else:
+        af = x.get("after")
+        if not af or af["h"] < 4 or not af["mask"]:
+            fails.append(f"{where}: the wave's edge is not drawn (::after {af})")
+        else:
+            edge_shows(af.get("fill"), "the wave's edge")
 
 
 def task_links(links, pattern):
@@ -1823,21 +2130,42 @@ def task_links(links, pattern):
     return [x for x in links if x.get("visible") and re.search(pattern, x.get("href") or "")]
 
 
+def task_words(header, pattern):
+    """the header's words that answer a task's pattern: a word that is the link, or a word whose menu
+    holds a line that is — drawn or not (under NAV_BREAK the bar's words are in the menu button's column)"""
+    return [x for x in header or []
+            if re.search(pattern, x.get("href") or "") or any(re.search(pattern, h or "") for h in x.get("lines") or [])]
+
+
 def check_first_screen(where, H, width, fails, notes, fold=False):
-    """the assertions about the hero that hold in any window: the tasks, the tap targets, the heading's
-    contrast, the numbers, the strip. `fold` adds the FOLD_W x FOLD_H rule (every task above the fold)."""
+    """the assertions about the first screen that hold in any window: the tasks, the tap targets, the
+    heading's contrast, the numbers, the strip. `fold` adds the FOLD_W x FOLD_H rule (every task link
+    above the fold, the header's words drawn)."""
     links = H.get("links") or []
-    missing, small, late = [], [], []
-    for tid, words, pat in FRONT_TASKS:
-        hits = task_links(links, pat)
-        if not hits:
-            missing.append(f"{tid} ({words})")
+    missing, small, late, found = [], [], [], []
+    for tid, words, pat, places in FRONT_TASKS:
+        hits = task_links(links, pat) if "hero" in places else []
+        if hits:
+            best = max(hits, key=lambda x: x["h"])
+            found.append(f"{tid}: {best['where']}")
+            if best["h"] < MIN_TAP:
+                small.append(f"{tid} {best['h']}px ({best['where']}: {best['text']!r})")
+            if fold and min(x["bottom"] for x in hits) > FOLD_H:
+                late.append(f"{tid} {min(x['bottom'] for x in hits)}px ({hits[0]['where']})")
             continue
-        best = max(hits, key=lambda x: x["h"])
-        if best["h"] < MIN_TAP:
-            small.append(f"{tid} {best['h']}px ({best['where']}: {best['text']!r})")
-        if fold and min(x["bottom"] for x in hits) > FOLD_H:
-            late.append(f"{tid} {min(x['bottom'] for x in hits)}px ({hits[0]['where']})")
+        via = task_words(H.get("header"), pat) if "header" in places else []
+        drawn = [x for x in via if x.get("visible")]
+        if drawn:
+            # a word of the bar: on the first screen by construction (the bar is its first line)
+            found.append(f"{tid}: header {drawn[0]['title']!r}")
+            if fold and drawn[0]["bottom"] > FOLD_H:
+                late.append(f"{tid} {drawn[0]['bottom']}px (header)")
+        elif via and width < NAV_BREAK and H.get("menuButton"):
+            # under NAV_BREAK the bar's words are behind the menu button, which is on the first screen;
+            # that the open column draws every line is the phone menu's own assertion
+            found.append(f"{tid}: menu button › {via[0]['title']!r}")
+        else:
+            missing.append(f"{tid} ({words})" + ("" if "header" in places else " — a link on the first screen itself, not a line of a menu"))
     if missing:
         fails.append(f"{where}: no visible link on the first screen for: {', '.join(missing)}")
     if small:
@@ -1845,6 +2173,11 @@ def check_first_screen(where, H, width, fails, notes, fold=False):
     if late:
         fails.append(f"{where}: task link(s) end below the {FOLD_H}px fold of a {FOLD_W} x {FOLD_H} window: "
                      f"{'; '.join(late)} (the first screen ends at {H.get('bottom')}px)")
+    # in the fold's window (1280 wide, over NAV_BREAK) the bar's words are all drawn
+    if fold:
+        hidden = [x["title"] for x in H.get("header") or [] if not x.get("visible")]
+        if hidden or not H.get("header"):
+            fails.append(f"{where}: the header's words {hidden or '(none found)'} are not drawn in a {FOLD_W} x {FOLD_H} window")
     cards, strip, start = H.get("cards") or [], H.get("strip"), H.get("start")
     if len(cards) != 3:
         fails.append(f"{where}: the first screen draws {len(cards)} start cards, expected 3")
@@ -1862,15 +2195,9 @@ def check_first_screen(where, H, width, fails, notes, fold=False):
                      f"(the last ends at {max(c['bottom'] for c in cards)}px)")
     if not strip:
         fails.append(f"{where}: the first screen has no strip of links (.hero-foot nav)")
-    # the start heading against what is painted behind it (white on the sky was 1.1:1 at 375 px)
-    c, layer = start_contrast(start)
+    # (the start heading's contrast is read from pixels, in its own windows: check_heading)
     if start is None:
         fails.append(f"{where}: the first screen has no start heading (#start-h)")
-    elif c is None:
-        fails.append(f"{where}: could not read what is painted behind the start heading (the drawing #hero-sea)")
-    elif c < START_MIN_CONTRAST:
-        fails.append(f"{where}: the start heading {start['color']} is {c:.2f}:1 against the {layer.replace('hero-', '')} "
-                     f"behind it, under {START_MIN_CONTRAST:g}:1")
     # the numbers stay inside the window ("MEASUREMENTS" ran off the right edge at 375 px)
     out_r = [n["label"] for n in H.get("nums") or [] if n["right"] > H["innerW"] + 1 or n["left"] < -1]
     if out_r:
@@ -1889,9 +2216,9 @@ def check_first_screen(where, H, width, fails, notes, fold=False):
         fails.append(f"{where}: the page carries Line 90's sea floor but the drawing has no floor")
     if H.get("svgPins"):
         fails.append(f"{where}: the first screen's drawing carries {H['svgPins']} pins; it is drawn quiet")
-    notes.append(f"{where}: first screen {H.get('top')}–{H.get('bottom')}px in a {H.get('innerW')} x {H.get('innerH')} window; cards end "
-                 f"{max((c['bottom'] for c in cards), default=0)}px, strip {strip['top'] if strip else None}–{strip['bottom'] if strip else None}px; "
-                 f"start heading {'%.2f' % c if c else '?'}:1 on the {str(layer).replace('hero-', '')}")
+    notes.append(f"{where}: tasks — {'; '.join(found)}")
+    notes.append(f"{where}: first screen's hero {H.get('top')}–{H.get('bottom')}px in a {H.get('innerW')} x {H.get('innerH')} window; cards end "
+                 f"{max((c['bottom'] for c in cards), default=0)}px, strip {strip['top'] if strip else None}–{strip['bottom'] if strip else None}px")
 
 
 def check_fold(where, r, fails, notes):
@@ -1917,6 +2244,9 @@ def check(path, r, width, theme, fails, notes):
 
     if r.get("scrollWidth", 0) > r.get("width", 0) + 1:
         fails.append(f"{where}: horizontal scroll — scrollWidth {r['scrollWidth']} > {r['width']}")
+
+    # the wave (brand v3 § 4): on every page, one navy band directly under the bar
+    check_wave(where, r.get("wave"), width, fails, notes)
 
     g = r.get("grid")
     if g:
@@ -2039,6 +2369,15 @@ def check(path, r, width, theme, fails, notes):
                 if br["pvDisplay"] == "none" and len(br["unhandled"]) != len(br["pvDl"]):
                     fails.append(f"{where}: the preview is not drawn at {width}px but a row's click is still swallowed: "
                                  f"the row goes nowhere")
+                # the preview's actions stay inside its card, whatever the row (a long label must wrap or
+                # shrink, not hang out of the card and widen the page)
+                ao = br.get("actOver") or {}
+                if br["pvDisplay"] != "none":
+                    if (ao.get("px") or 0) > 1:
+                        fails.append(f"{where}: the preview's action {ao.get('what')!r} runs {ao['px']}px outside the preview card "
+                                     f"(with {ao.get('key')} chosen)")
+                    if not br.get("actN"):
+                        fails.append(f"{where}: the preview draws no actions (.bd-pv-act)")
                 rc = br.get("reach")
                 if rc and not rc["shown"]:
                     notes.append(f"{where}: the finder's preview is not drawn at {width}px; a row opens its dataset page")
@@ -2804,26 +3143,39 @@ def check(path, r, width, theme, fails, notes):
                 fails.append(f"{where}: {gap}px lie between the first screen and the footer with no panel open; nothing should")
         dv = fr.get("drive")
         if not dv:
-            fails.append(f"{where}: the first screen has no link to #learn and #explore to open the panels with")
+            fails.append(f"{where}: the first screen has no link to #monitor and #program to open the panels with")
         else:
-            if dv["afterA"] != ["learn"]:
-                fails.append(f"{where}: the first screen's link to #learn left {dv['afterA']} open")
-            if dv["afterB"] != ["explore"]:
-                fails.append(f"{where}: opening Maps and apps did not close What CalCOFI collects ({dv['afterB']} open)")
+            if dv["afterA"] != ["monitor"]:
+                fails.append(f"{where}: the first screen's link to #monitor left {dv['afterA']} open")
+            if dv["afterB"] != ["program"]:
+                fails.append(f"{where}: opening Work with the data in code did not close the monitoring panel ({dv['afterB']} open)")
             if dv["afterClose"]:
                 fails.append(f"{where}: Close left {dv['afterClose']} open")
             # Close gives focus back to the link that opened the panel (there are no door buttons)
             fb = dv["focusBack"]
             if not fb["same"]:
                 fails.append(f"{where}: after Close, focus is on {fb['tag']} {fb['href']!r}, not on the link that opened the panel")
+            # the header's way in: Map ▾ › All apps opens Maps and apps; once focus has moved into the
+            # panel and the menu has shut, Close must still put focus on something drawn
+            vh = dv.get("viaHeader")
+            if not vh:
+                fails.append(f"{where}: the header has no line to Maps and apps (#explore)")
+            else:
+                if vh["opened"] != ["explore"]:
+                    fails.append(f"{where}: the header's line to #explore opened {vh['opened']}, expected ['explore']")
+                if vh["afterClose"]:
+                    fails.append(f"{where}: Close left {vh['afterClose']} open after the header's line opened it")
+                if not vh["seen"]:
+                    fails.append(f"{where}: a panel opened from the header's menu, then closed: focus is on {vh['tag']} {vh['what']!r}, "
+                                 f"which is not drawn (the line that opened it is hidden once its menu shuts) — focus is lost")
             if not dv["hasXref"]:
                 fails.append(f"{where}: Maps and apps has no link to Find (#find): the Find panel is reachable from no visible link")
             elif dv["afterFind"] != ["find"]:
                 fails.append(f"{where}: Maps and apps' link to Find left {dv['afterFind']} open")
             fb2 = dv["focusBack2"]
-            if not (fb2["drawn"] and fb2["inHero"]):
+            if not fb2["drawn"]:
                 fails.append(f"{where}: after closing a panel opened from inside another, focus is on {fb2['tag']}#{fb2['id']}, "
-                             f"not on anything drawn on the first screen")
+                             f"not on anything drawn")
             for h, want_k in FRONT_ANCHORS.items():
                 got = (dv.get("anchors") or {}).get(h) or {}
                 if got.get("open") != [want_k]:
@@ -2836,7 +3188,7 @@ def check(path, r, width, theme, fails, notes):
         # yellow (see PANEL_YELLOW): nothing --warn on the first screen; exactly one yellow, the Explorer's
         if fr["warnEls"]:
             fails.append(f"{where}: --warn on the first screen: {', '.join(sorted(set(fr['warnEls']))[:4])}")
-        ex_pat = next(p for t, _, p in FRONT_TASKS if t == "explore")
+        ex_pat = next(t[2] for t in FRONT_TASKS if t[0] == "explore")
         ye = fr["ctaEls"]
         if len(ye) != 1 or not re.search(ex_pat, ye[0].get("href") or ""):
             fails.append(f"{where}: the first screen's yellow is {[(y['text'], y['href']) for y in ye]}, expected exactly one, "
@@ -2960,8 +3312,23 @@ def check(path, r, width, theme, fails, notes):
         notes.append(f"{where}: header {' · '.join(nav['words'])}; "
                      f"{len(nav['menus'])} menus ({', '.join(str(m['word']) + ' ' + str(len(m['tabs'])) for m in nav['menus'])}); "
                      f"{nav.get('tabStops')} tab stops with the menus shut")
+        if not NAV_WORDS:
+            fails.append(f"{where}: _data/nav.yml gives no words to hold the header to")
         if nav["words"] != NAV_WORDS:
-            fails.append(f"{where}: the header reads {nav['words']}, expected {NAV_WORDS}")
+            fails.append(f"{where}: the header reads {nav['words']}, expected {NAV_WORDS} (_data/nav.yml)")
+        if nav.get("ids") != NAV_IDS:
+            fails.append(f"{where}: the header's words are marked data-word={nav.get('ids')}, expected {NAV_IDS}")
+        if "cc-nav" not in (nav.get("navClass") or "").split():
+            fails.append(f"{where}: the header's nav is class={nav.get('navClass')!r}, not the brand's .cc-nav (brand/v3/header.css styles nothing else)")
+        # sentence case (brand v3 § 4): the bar's words are not transformed
+        if any(c != "none" for c in nav.get("cased") or []):
+            fails.append(f"{where}: the header's words are text-transform {sorted(set(nav['cased']))}, expected none (sentence case)")
+        # a destination is said once: a word of the bar is not also a line of a menu (FAQ and News are
+        # words again since 2026-11-17, and no longer lines of Learn)
+        hrefs = nav.get("allHrefs") or []
+        twice = [h for i, h in enumerate(hrefs) if h in hrefs[:i]]
+        if twice:
+            fails.append(f"{where}: the header links {sorted(set(twice))} more than once")
         if [m["word"] for m in nav["menus"]] != NAV_MENUS:
             fails.append(f"{where}: the header's menus are {[m['word'] for m in nav['menus']]}, expected {NAV_MENUS}")
         for m in nav["menus"]:
@@ -3218,6 +3585,20 @@ def main():
         # the header alone, at the widths either side of NAV_BREAK: one line from it, the menu below
         urls = a.url or [a.base.rstrip("/") + p for p in NAV_PATHS]
         widths = NAV_WIDTHS
+    # the ONE list of words, as built: /brand/v3/nav.json (what every other product's header is drawn
+    # from) must carry the same titles, in order, as _data/nav.yml (what this site's header is drawn
+    # from and what the bar is held to above). Once per site.
+    for origin in sorted({re.match(r"https?://[^/]+", u).group(0) for u in urls if re.match(r"https?://[^/]+", u)}):
+        built = fetch_json(origin + "/brand/v3/nav.json")
+        got = nav_json_titles(built)
+        if built is None:
+            fails.append(f"{origin}/brand/v3/nav.json: not served — the other products' headers have no words to draw")
+        elif got != NAV_WORDS:
+            fails.append(f"{origin}/brand/v3/nav.json: its words are {got}, _data/nav.yml's are {NAV_WORDS}")
+        else:
+            notes.append(f"{origin}/brand/v3/nav.json: {' · '.join(got)} (as _data/nav.yml)")
+        print(f"{'ok  ' if built is not None and got == NAV_WORDS else 'FAIL'} {origin}/brand/v3/nav.json")
+
     for url in urls:
         # --nav: the open menu on a small phone (PHONE x PHONE_H): every line of the column must be
         # reachable there, which a 900 px window cannot show
@@ -3244,6 +3625,8 @@ def main():
                 else:
                     check_fold(where, r, fails, notes)
                 print(f"{'FAIL' if len(fails) > before else 'ok  '} {where}")
+                good = check_heading(url, theme, a.browser, a.wait, fails, notes)
+                print(f"{'ok  ' if good else 'FAIL'} {url} start heading, {len(HEADING_WINDOWS)} windows, {theme}")
         for width in widths:
             for theme in a.themes:
                 r = probe(url, width, theme, a.browser, a.wait)
