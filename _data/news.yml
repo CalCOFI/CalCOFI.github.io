@@ -4,15 +4,17 @@
 # data cannot say — a feature, a change to the site, a paper.
 #
 #   date:   YYYY-MM-DD
-#   type:   story | data | site | paper   (release · dataset · app are generated; a row with `version:` or
+#   type:   story | tutorial | data | site | paper   (release · dataset · app are generated; a row with `version:` or
 #           `dataset_key:` OVERRIDES the generated entry of that key — for a wrong since_version or a
 #           notes heading that is not the story)
 #   title:  one line, declarative
 #   body:   one or two sentences
-#   url:    where to read more (a story: its page under /stories/)
+#   url:    where to read more (a story: its page under /stories/; a tutorial: under /tutorials/)
 #
 # A STORY is something the data show (a cruise's finding, a film made from the release), where every other type
-# is about the system. It is the first chip on /news/, so it is not lost among the release notes.
+# is about the system. It is the first chip on /news/, so it is not lost among the release notes. A TUTORIAL is a
+# recorded walk-through, dated the day it was given: its page holds the recording, the slides, notes and scripts,
+# and a summary of what was shown and heard. It is the second chip.
 #
 # Types are quiet chips, none is yellow: --warn marks a state that needs attention, never a kind of
 # thing. Dates below are from RELEASES.md and the repos' merge dates.
@@ -27,6 +29,12 @@
   title: "The warmest fall ocean in CalCOFI's record"
   body: "The fall 2026 cruise found the upper 50 m off Southern California 4.5 °C (8.0 °F) above the 1993–2013 fall average, and 11.9 °C (21.3 °F) above it at 50–60 m off San Diego: the largest departures since 1949. A one-minute film, in °C, °F or both. Preliminary data."
   url: /stories/elnino-2026/
+
+- date: 2026-11-12
+  type: tutorial
+  title: "A tour of the CalCOFI.io database"
+  body: "The recorded tour of 12 November: calcofi.io, the Explorer and CTD transects, how the tables fit together, and the data in R and Python. With the slides, the notes, the scripts and what attendees asked for."
+  url: /tutorials/db-tour-2026-11/
 
 - date: 2026-09-07
   type: site

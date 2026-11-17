@@ -11,7 +11,7 @@ permalink: /news/
     <p class="blurb">Releases of the integrated database, datasets entering it, apps and features as they land. Most
       entries are generated from data the site already carries — the release history, each dataset's first
       release, the products as they were added — with a hand-written line for a feature or a change to the
-      site, and stories the data tell. Program news — people, papers, events — stays on
+      site, stories the data tell, and recorded tutorials. Program news — people, papers, events — stays on
       <a class="cc-text-link" href="https://calcofi.org/about/news-updates/">calcofi.org ↗</a>.
       <a class="cc-text-link" href="{{ '/feed.xml' | relative_url }}">Atom feed</a>
     </p>
