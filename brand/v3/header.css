@@ -63,7 +63,7 @@
 .cc-header .cc-dd hr { border: 0; border-top: 1px solid var(--border); margin: 4px 8px; }
 
 /* ── 3 · the menu button, and the column it opens ─────────────────────────────
-   THE BREAKPOINT IS 1100 px: the row holds the lockup, the nine words and the icon buttons on ONE line from
+   THE BREAKPOINT IS 1100 px: the row holds the lockup, the words and the icon buttons on ONE line from
    there (the tagline goes at 1100 to make sure). Below it the menu button takes over and the nav never wraps.
    The same number is NAV_BREAK in header.js and in the site's scripts/check_layout.py; change all three
    together. .cc-nav-menu on the header asks for the button at EVERY width (an app's bar of its own controls). */
@@ -140,8 +140,29 @@
 .cc-wave.cc-wave-own::after { content: none; }
 .cc-wave-in { box-sizing: border-box; max-width: var(--container); margin: 0 auto; padding: calc(var(--space) * 3) calc(var(--space) * 3) 6px; }
 .cc-wave a { color: #fff; }
-.cc-wave-slim { --cc-wave-h: 18px; height: 34px; padding-bottom: 0; box-sizing: border-box; }
+.cc-wave-slim { --cc-wave-h: 18px; --cc-wave-slim-h: 34px; height: var(--cc-wave-slim-h); padding-bottom: 0; box-sizing: border-box; }
 /* an app: the band is a strip under the app's bar, so the map keeps its height */
-[data-cc-scale="app"] .cc-wave-slim { --cc-wave-h: 9px; height: 15px; }
+[data-cc-scale="app"] .cc-wave-slim { --cc-wave-h: 9px; --cc-wave-slim-h: 15px; }
+/* the wave OVER what follows (an app whose first thing is a map, a page that opens on a picture): it takes no room,
+   what follows runs up under it and shows through below the edge, so there is no strip of page ground between the
+   wave and the map. The band itself is cut to the wave (a mask on the element, not a ground-coloured ::after).
+   Nothing sits in it and it takes no pointer; the app keeps its own floating controls clear of it by
+   --cc-wave-slim-h (15 px in an app, 34 px on a page). */
+.cc-wave-slim.cc-wave-over {
+  z-index: 3; margin-bottom: calc(-1 * var(--cc-wave-slim-h)); pointer-events: none;
+  -webkit-mask: linear-gradient(#000, #000) top / 100% calc(100% - var(--cc-wave-h) + 1px) no-repeat,
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 40' preserveAspectRatio='none'%3E%3Cpath d='M0 30 C150 10 300 34 450 22 S750 6 900 20 S1100 34 1200 18 V0 H0Z'/%3E%3C/svg%3E") bottom / 100% var(--cc-wave-h) no-repeat;
+          mask: linear-gradient(#000, #000) top / 100% calc(100% - var(--cc-wave-h) + 1px) no-repeat,
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 40' preserveAspectRatio='none'%3E%3Cpath d='M0 30 C150 10 300 34 450 22 S750 6 900 20 S1100 34 1200 18 V0 H0Z'/%3E%3C/svg%3E") bottom / 100% var(--cc-wave-h) no-repeat;
+}
+/* over a dark map the navy band has no edge to read (deep ocean in the light theme; everything in the dark one), so
+   the wave carries its own: a pale line along the curve. It is the same path, stroked; the band's mask above cuts
+   the stroke's outer half away, which leaves about a pixel inside the edge. */
+.cc-wave-slim.cc-wave-over::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: var(--cc-wave-h); pointer-events: none;
+  background: rgba(255, 255, 255, .55);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 40' preserveAspectRatio='none'%3E%3Cpath d='M0 30 C150 10 300 34 450 22 S750 6 900 20 S1100 34 1200 18' fill='none' stroke='%23000' stroke-width='3' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 40' preserveAspectRatio='none'%3E%3Cpath d='M0 30 C150 10 300 34 450 22 S750 6 900 20 S1100 34 1200 18' fill='none' stroke='%23000' stroke-width='3' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+}
 [data-cc-scale="app"] .cc-wave { --cc-wave-h: 14px; }
 [data-cc-scale="app"] .cc-wave-in { padding: calc(var(--space) * 3) calc(var(--space) * 4) 4px; }

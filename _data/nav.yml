@@ -15,7 +15,8 @@
 #   product  a key of _data/products.yml: the link is its live_url (and `title: product` takes its title);
 #            an unknown key drops the item, so removing a product removes its line
 #   section  an id of products.yml `sections:` of kind page: the link is its url; unknown drops the item
-#   explore  a path under the Explorer (builder.html)
+#   explore  a path under the Explorer
+#   query    a path under the Query Builder, https://calcofi.io/query/ ("" = the builder itself)
 #   small    the grey line under the title, or
 #   count    datasets | species | measurements: the release's own number as the grey line (never typed)
 #   icon     a brand glyph (brand/v2/icons.css), drawn where that sheet is loaded
@@ -23,16 +24,19 @@
 #   here     this site only: the first path segments that mark the word as the current one
 #   ext      true for a link that leaves calcofi.io (drawn quieter, hidden first when room runs out)
 #
-# The nine words (Ben, 2026-11-17: Docs, FAQ and News are words again, as on main, where DOCS · FAQ · NEWS
-# closed the bar; "Query" and "Cite" are the short forms of Query Builder and Cite the data). Each is said
-# once: Docs, FAQ and News are not also lines of a menu. That left Learn's menu with one line (How CalCOFI
-# samples), so Learn is a plain word that opens it: the front door's #learn panel, the annotated Line 90
-# drawing. Where main's eight words went:
-#   DATA → Data ▾ · APPS → Map ▾ · ACCESS and BUILD → Data ▾ › Get it · DOCS → Docs ·
-#   FAQ → FAQ · NEWS → News · calcofi.org ↗ → calcofi.org ↗
+# The four words. Query was a word of the bar until Ben moved it under Data ▾ › Get it the same evening ("We can also
+# move the Query to under Data on right submenu of Get it"); the Query Builder is its first line. Before that, five
+# words (Ben, 2026-11-17, evening: "I'm inclined to simplify the nav and fold under [Learn]: How CalCOFI
+# samples, Frequently asked questions, Cite the data, Documentation, News with subnav to Tutorials, Stories(, All)").
+# Earlier the same day Docs, FAQ and News had come back as words of the bar and Cite was one (nine words); they
+# are now lines of Learn, each said once, and News is a column of three: Tutorials, Stories, All news (the ship's
+# log filtered by type, /news/?type=…). Where main's eight words went:
+#   DATA → Data ▾ · APPS → Map ▾ · ACCESS and BUILD → Data ▾ › Get it · DOCS and FAQ → Learn ▾ › Guides ·
+#   NEWS → Learn ▾ › News · calcofi.org ↗ → calcofi.org ↗
 words:
   - id: data
     title: Data
+    align: right   # its two-column panel ran 3 px outside a 1100 to 1206 px window when it hung from the word's left
     here: [datasets, species, measurements]
     menu:
       - title: Find
@@ -42,6 +46,7 @@ words:
           - { title: Measurements, href: /measurements/, count: measurements, icon: el-measured }
       - title: Get it
         items:
+          - { title: Query Builder,          query: "",                                    small: One table across datasets,          icon: way-query }
           - { title: ERDDAP and cloud files, href: "/#services", go: "access:services", small: For servers and scripts,      icon: way-erddap }
           - { title: R and Python,           href: "/#packages", go: "access:packages", small: Packages,                     icon: ui-code }
           - { title: Build with CalCOFI,     href: "/#build",                           small: Workflows and the database,   icon: ui-code }
@@ -53,10 +58,20 @@ words:
       - { title: product,        product: ucla-monitoring-map, small: "Who monitors what, statewide", icon: way-explorer }
       - { rule: true }
       - { title: All apps,       href: "/#explore",            small: "Dashboards, student projects", icon: ui-more }
-  - { id: query, title: Query, explore: builder.html }
-  - { id: cite,  title: Cite,  href: "https://calcofi.io/docs/cite.html" }
-  - { id: learn, title: Learn, href: "/#learn" }
-  - { id: docs,  title: Docs,  section: docs }
-  - { id: faq,   title: FAQ,   section: faq }
-  - { id: news, title: News, href: /news/, here: [news] }
+  - id: learn
+    title: Learn
+    align: right
+    here: [news, stories, tutorials]
+    menu:
+      - title: Guides
+        items:
+          - { title: How CalCOFI samples,        href: "/#learn", small: "Ships, nets, bottles, stations", icon: ui-about }
+          - { title: Frequently asked questions, section: faq,    small: "Common questions, answered",     icon: el-questions }
+          - { title: Cite the data,              href: "https://calcofi.io/docs/cite.html", small: "A release, one dataset, or a download", icon: el-cite }
+          - { title: Documentation,              section: docs,   small: Guides and how-tos,               icon: ui-help }
+      - title: News
+        items:
+          - { title: Tutorials, href: "/news/?type=tutorial", small: Recorded walk-throughs,          icon: ui-student }
+          - { title: Stories,   href: "/news/?type=story",    small: What the data show,              icon: el-history }
+          - { title: All news,  href: /news/,                 small: "Releases, datasets, apps, site", icon: el-release }
   - { id: org,  title: "calcofi.org ↗", href: "https://calcofi.org", ext: true }

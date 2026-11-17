@@ -9,10 +9,11 @@
 #   dropped    an item whose product or section is not there is dropped (no dead line), a menu emptied that way
 #              is dropped, and a rule is kept only between two items
 #   counts     the grey line is the release's own number ("All 20" for datasets), absent when the build has none
-#   the words  the committed list reads Data · Map · Query · Cite · Learn · Docs · FAQ · News · calcofi.org ↗;
-#              Docs, FAQ and News are words of the bar (Ben, 2026-11-17) and not also lines of a menu; Learn is a
-#              plain word to the #learn panel; and everything main's eight words reached (the catalogs, the apps,
-#              access, build, docs, FAQ, news) is still linked
+#   the words  the committed list reads Data · Map · Learn · calcofi.org ↗ (Ben, 2026-11-17, evening); the Query
+#              Builder is the first line of Data ▾ › Get it, at its own address;
+#              Learn holds Guides (How CalCOFI samples, FAQ, Cite the data, Documentation) and News (Tutorials,
+#              Stories, All news); no destination is linked twice; and everything main's eight words reached
+#              (the catalogs, the apps, access, build, docs, FAQ, news) is still linked
 require "minitest/autorun"
 require "yaml"
 require "date"
@@ -55,15 +56,32 @@ class NavTest < Minitest::Test
   end
 
   def test_product_section_and_explore_links
-    ws = resolve([{ "id" => "q", "title" => "Query", "explore" => "builder.html" },
+    ws = resolve([{ "id" => "q", "title" => "Lens", "explore" => "?lens=hex" },
                   { "id" => "d", "title" => "Docs", "section" => "docs" },
                   { "id" => "m", "title" => "Map", "product" => "map-x" }])
-    assert_equal ["https://calcofi.io/explore/builder.html", "https://calcofi.io/docs/", "https://x.example/map/"], ws.map { |w| w["url"] }
+    assert_equal ["https://calcofi.io/explore/?lens=hex", "https://calcofi.io/docs/", "https://x.example/map/"], ws.map { |w| w["url"] }
   end
 
   def test_explore_follows_the_previews_own_explorer
-    w = resolve([{ "id" => "q", "title" => "Query", "explore" => "builder.html" }], explore_url: "/explore/").first
-    assert_equal "/explore/builder.html", w["path"]
+    w = resolve([{ "id" => "q", "title" => "Lens", "explore" => "?lens=hex" }], explore_url: "/explore/").first
+    assert_equal "/explore/?lens=hex", w["path"]
+  end
+
+  # the Query Builder has its own address, calcofi.io/query/ (Ben, 2026-11-17), not a page of the Explorer
+  def test_query_is_its_own_address
+    w = resolve([{ "id" => "query", "title" => "Query", "query" => "" }]).first
+    assert_equal ["https://calcofi.io/query/", "https://calcofi.io/query/"], w.values_at("path", "url")
+    get = committed.find { |x| x["id"] == "data" }["menu"].find { |c| c["title"] == "Get it" }["items"]
+    assert_equal ["Query Builder", "https://calcofi.io/query/"], get.first.values_at("title", "url"), "the committed line: first under Data ▾ › Get it"
+    assert_nil committed.find { |x| x["id"] == "query" }, "Query is not also a word of the bar (Ben, 2026-11-17)"
+  end
+
+  def test_query_follows_the_previews_own_copy
+    w = resolve([{ "id" => "query", "title" => "Query", "query" => "" }], query_url: "/query/").first
+    assert_equal "/query/", w["path"]
+    w = resolve([{ "id" => "query", "title" => "Query", "query" => "" }], query_url: "").first
+    assert_equal "https://calcofi.io/query/", w["path"], "an empty setting is not an address"
+    assert_equal ["https://calcofi.io/query/", "https://calcofi.io/query/", "/query/"], [nil, "", "/query/"].map { |l| N.query_address(l) }
   end
 
   def test_a_word_whose_product_or_section_is_gone_is_dropped
@@ -110,32 +128,33 @@ class NavTest < Minitest::Test
   end
 
   def test_the_committed_words
-    assert_equal ["Data", "Map", "Query", "Cite", "Learn", "Docs", "FAQ", "News", "calcofi.org ↗"], N.titles(committed)
+    assert_equal ["Data", "Map", "Learn", "calcofi.org ↗"], N.titles(committed)
   end
 
-  # regression (2026-11-17): front door v2 had Docs, FAQ and News only as lines of the Learn menu; Ben: "we lost
-  # items like News and FAQ", then "Yes, Docs too". They are words of the bar, in main's order, and each is said
-  # once: no menu also lists them.
-  def test_docs_faq_and_news_are_words_and_not_also_lines_of_a_menu
+  # Ben, 2026-11-17 (evening): the bar is simplified and Learn holds the rest. Docs, FAQ, News and Cite had been
+  # words of the bar that afternoon; each is now a line of Learn, said once, and none is also a word.
+  def test_learn_holds_the_guides_and_the_news
     ws = committed
-    assert_equal %w[docs faq news], ws.map { |w| w["id"] } & %w[docs faq news]
-    assert_equal ["https://calcofi.io/docs/", "https://calcofi.io/docs/faq.html", "https://calcofi.io/news/"],
-                 %w[docs faq news].map { |id| ws.find { |w| w["id"] == id }["url"] }
-    %w[docs faq news].each { |id| assert_nil ws.find { |w| w["id"] == id }["menu"], "#{id} is a plain word" }
-    lines = ws.select { |w| w["menu"] }.flat_map { |w| w["menu"].flat_map { |c| c["items"] } }.reject { |i| i["rule"] }
-    assert_empty lines.map { |i| i["url"] } & ["https://calcofi.io/docs/", "https://calcofi.io/docs/faq.html", "https://calcofi.io/news/"]
+    learn = ws.find { |w| w["id"] == "learn" }
+    assert_equal %w[Guides News], learn["menu"].map { |c| c["title"] }
+    assert_equal ["How CalCOFI samples", "Frequently asked questions", "Cite the data", "Documentation"], learn["menu"][0]["items"].map { |i| i["title"] }
+    assert_equal ["https://calcofi.io/#learn", "https://calcofi.io/docs/faq.html", "https://calcofi.io/docs/cite.html", "https://calcofi.io/docs/"],
+                 learn["menu"][0]["items"].map { |i| i["url"] }
+    assert_equal [["Tutorials", "https://calcofi.io/news/?type=tutorial"], ["Stories", "https://calcofi.io/news/?type=story"], ["All news", "https://calcofi.io/news/"]],
+                 learn["menu"][1]["items"].map { |i| [i["title"], i["url"]] }
+    assert_equal "right", learn["align"]
+    assert_equal %w[news stories tutorials], learn["here"]
+    assert_empty ws.map { |w| w["id"] } & %w[docs faq news cite], "none of them is also a word of the bar"
   end
 
-  # Learn's menu was left with one line once Docs, FAQ and News were words, so Learn is a plain word that opens
-  # that line: the front door's #learn panel
-  def test_learn_is_a_plain_word_to_the_learn_panel
-    learn = committed.find { |w| w["id"] == "learn" }
-    assert_nil learn["menu"]
-    assert_equal "https://calcofi.io/#learn", learn["url"]
+  # every destination is linked once in the header: no line repeats a word, no line repeats a line
+  def test_no_destination_is_linked_twice
+    urls = committed.flat_map { |w| w["menu"] ? w["menu"].flat_map { |c| c["items"] }.reject { |i| i["rule"] }.map { |i| i["url"] } : [w["url"]] }
+    assert_equal urls.uniq, urls
   end
 
-  def test_two_words_open_menus
-    assert_equal %w[data map], committed.select { |w| w["menu"] }.map { |w| w["id"] }
+  def test_three_words_open_menus
+    assert_equal %w[data map learn], committed.select { |w| w["menu"] }.map { |w| w["id"] }
   end
 
   # everything main's eight words reached is still linked from the header (a word, or a line of a menu)
@@ -144,7 +163,7 @@ class NavTest < Minitest::Test
     %w[https://calcofi.io/datasets/ https://calcofi.io/species/ https://calcofi.io/measurements/
        https://calcofi.io/explore/ https://calcofi.io/#explore https://calcofi.io/#services https://calcofi.io/#packages
        https://calcofi.io/#build https://calcofi.io/docs/ https://calcofi.io/docs/faq.html https://calcofi.io/news/
-       https://calcofi.io/docs/cite.html https://calcofi.io/explore/builder.html https://calcofi.org].each do |u|
+       https://calcofi.io/docs/cite.html https://calcofi.io/query/ https://calcofi.org].each do |u|
       assert_includes urls, u
     end
   end

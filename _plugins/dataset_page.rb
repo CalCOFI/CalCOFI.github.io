@@ -37,7 +37,7 @@ module CalCOFI
       out
     end
 
-    # Can the Query Builder serve this measurement from this dataset (explore/builder.html?pick=env:<dataset>:<key>)?
+    # Can the Query Builder serve this measurement from this dataset (calcofi.io/query/?pick=env:<dataset>:<key>)?
     # The builder reads the release's observation tables. A series the record marks `grain: "sample"` is one value
     # per cast (the sample_measurement table: mixed-layer depth, chlorophyll maximum …), which the builder does not
     # read, so its row gets no CSV button rather than a button that opens the builder on "not in this release".

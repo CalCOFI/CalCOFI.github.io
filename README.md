@@ -47,17 +47,17 @@ where v2 changed how they are reached, this subsection is the current state.
 
   ```
   task (main, 2026-11-16)             on the first screen                          goes to
-  1 See what CalCOFI collects         header "Learn" ·                             #learn
+  1 See what CalCOFI collects         header Learn ▾ › How CalCOFI samples ·       #learn
                                       the label by the ship (hidden under 900 px)
   2 Explore and download on a map     card 1 "Explorer" (the one yellow button)    the Explorer
                                       header Map ▾ › All apps                      #explore (Maps and apps)
   3 Find and download a dataset       card 2 "Browse datasets" · header Data ▾     /datasets/
   4 Work with the data in code        card 3 "Code" · header Data ▾ › Get it       #program
-  5 Cite the data                     header "Cite"                                docs/cite.html
+  5 Cite the data                     header Learn ▾ › Cite the data               docs/cite.html
   6 Contribute data                   strip "Contribute"                           docs/provide.html
   7 Inform ocean and fisheries        strip "Statewide monitoring"                 #monitor
     management
-  new: one table across datasets      card 3 "Query Builder" · header "Query"      explore/builder.html
+  new: one table across datasets      card 3 "Query Builder" · Data ▾ › Get it     calcofi.io/query/
   ```
 
   **The strip had five links until 2026-11-17** (Share your data · Cite the data · What CalCOFI collects ·
@@ -84,17 +84,33 @@ where v2 changed how they are reached, this subsection is the current state.
   lands on Maps and apps at the apps for one dataset (`#dataset`); `#students` on the student projects
   (`#student`). Close puts focus back on the link that opened the panel, or on the start heading.
 - **The header is the brand's** since 2026-11-17 (brand v3, [`brand/v3/README.md`](brand/v3/README.md) § 4):
-  **Data ▾ · Map ▾ · Query · Cite · Learn · Docs · FAQ · News · calcofi.org ↗**, sentence case, from the one list
+  **Data ▾ · Map ▾ · Learn ▾ · calcofi.org ↗**, sentence case, from the one list
   `_data/nav.yml`, which `_plugins/nav.rb` resolves for this site's `_includes/site_nav.html` and for
   `/brand/v3/nav.json`, drawn by `brand/v3/header.js` into the Explorer and the Query Builder. A word with a
-  menu is a button: it opens on hover and on a press, and Escape closes it. Docs, FAQ and News were lines of
-  the Learn menu in the PR as reconciled; the owner asked for them back as words ("we lost items like News
-  and FAQ", then "Yes, Docs too"), and each is said once: no menu also lists them. That left Learn's menu
-  with one line, so Learn is a plain word that opens the front door's `#learn` panel. Where `main`'s eight uppercase words went: DATA is Data ▾; APPS is
-  Map ▾; ACCESS and BUILD are Data ▾ › Get it; DOCS, FAQ and NEWS are Docs, FAQ and News;
+  menu is a button: it opens on hover and on a press, and Escape closes it. The owner settled the words in
+  three steps on 2026-11-17: Docs, FAQ and News back as words of the bar, as on `main` (nine words with Query
+  and Cite); then, to simplify, all of them folded under **Learn**, which holds Guides (How CalCOFI samples,
+  Frequently asked questions, Cite the data, Documentation) and News (Tutorials, Stories, All news: the
+  ship's log filtered by type). Each destination is linked once. Where `main`'s eight uppercase words went:
+  DATA is Data ▾; APPS is Map ▾; ACCESS and BUILD are Data ▾ › Get it; DOCS, FAQ and NEWS are lines of Learn ▾;
   calcofi.org ↗ is itself. `main`'s rule that the header never wraps holds: the menu button takes over under
   1100 px (`NAV_BREAK` in `brand/v3/header.css`, `brand/v3/header.js` and `scripts/check_layout.py`), and
   the open column lists every line and scrolls inside itself.
+- **The Query Builder has its own address, `https://calcofi.io/query/`** (the owner, 2026-11-17: "move the
+  Query Builder to its own dedicated query, and then cross-link"). Its code stays in `CalCOFI/explore`
+  (`src/builder`, which shares the Explorer's engine); a thin repo `CalCOFI/query` builds and serves it.
+  Here the address is written once, as `CalCOFI::Nav::QUERY_URL`, and read by the header's Query Builder line, the first under Data ▾ › Get it
+  (`query: ""` in `_data/nav.yml`; it was a word of the bar, Query, until the owner moved it there that evening), the third start card and each dataset page's one-species and
+  one-measurement CSV links (`…/query/?pick=…`). A preview or a local build names its own copy with
+  `local_query` (`_config.netlify.yml`: `/query/`, placed there by `scripts/build_netlify.sh` from
+  `QUERY_DIST` or `npm run build:query`; `_config.local.yml`: the Vite dev server's `builder.html`).
+  `/explore/builder.html` redirects to it, query string and all, once `VITE_QUERY_URL` is set on the
+  Explorer's build. **The address is not new:** from 2026-08-10 (20f82df) to 2026-11-17 this repo's
+  `query/index.html` redirected `calcofi.io/query/` to `calcofi.io/db-query/`, the SQL console, which had that
+  name first. The project site CalCOFI/query took the path over when it first deployed (2026-11-17), so a link
+  to `/query/` written for the SQL console now opens the Query Builder, which links db-query for that reader;
+  the file is deleted here, since it was shadowed and would have come back to life had that repository ever
+  been removed.
 - **The wave** (brand v3 § 4.5) is under the bar on every page: the catalogs' search band and a dataset
   page's title band are the wave with a head in it; every other page, the front door included, has a slim
   one (34 px), drawn by `_layouts/default.html`. On the front door it cuts into the hero's sky.
@@ -108,10 +124,21 @@ where v2 changed how they are reached, this subsection is the current state.
   window and 32 px tall, nothing open on load, every old anchor opened from a shut page, one Download button per
   dataset page, a dataset page under 2,200 px. Three rules follow the new design and say so in the script's
   docstring: one yellow button on the first screen (the Explorer's; D6 A had none), four numbers (five before), and
-  the first screen one window tall. As of 2026-11-17 it fails on three things, all on the catalog pages and all
-  waiting for a decision, not a fix: `/datasets/` is 2,575 px with nothing open (ceiling 2,300), `/measurements/`
-  is 8,643 px with all 104 rows open (ceiling 1,625; issue #30 D8 had collapsed the categories), and
-  `/species/?q=sardin` lists one row where the one search listed the genus too.
+  the first screen one window tall. When front door v2 merged (2026-11-17) it failed on three things, all on
+  the catalog pages, left for the owner to decide; he decided them the same evening ("fix with mix … add species
+  hierarchy view back as another tab") and the check is green:
+  - `/measurements/` opens with its five categories closed (1,145 px at 1470 against the 1,625 ceiling, which did
+    not move; it was 8,643 px with all 104 rows open). A press opens a category in place, a search opens the
+    ones that hold a match, `?q=` and `?cat=` land the same way. Without JavaScript the full list is in
+    `<noscript>`.
+  - `/species/` finds higher taxa again: `_plugins/finder.rb` (`CalCOFI::Finder.higher_taxa`) writes
+    `/species/finder-taxa.json`, the taxa with a page that are not species rows, and a search lists the matches
+    under the species rows as "Groups and other taxa" (`?q=sardin`: the sardine, then *Sardinops*). The
+    hierarchy (the icicle) is a view tab again, drawn when shown; `?tab=hierarchy` lands on it. The hidden
+    legacy block that still fed the old class list is gone.
+  - `/datasets/` is unchanged at 2,575 px and **its ceiling is restated, 2,300 → 2,725**: a finder with every
+    dataset as a row is the page's point. The arithmetic is beside the constant in `scripts/check_layout.py`
+    (the fixed parts plus 22 rows), so a 23rd dataset fails. This is the one threshold that moved.
 - **Preview.** `scripts/build_netlify.sh` builds this site and the Explorer into one folder (`OUT`,
   default `_site`) and points every link to the live Explorer at the copy, so the Query Builder links
   stay inside the preview. `EXPLORE_DIST=` reuses a built Explorer. `scripts/dev_all.sh` runs both on one
@@ -687,7 +714,7 @@ identifier), and `STAGE_MEANING`, which is site-side text by nature — the stag
 Betty's form is `assets/download-form.js` / `download-form.css` (global `CCDownload`): it opens from
 the **CSV** button beside one species or one measurement on a dataset page and offers *Just that one*,
 which opens the Query Builder with it picked and starts the CSV
-(`explore/builder.html?pick=bio:<dataset>:<taxon>` or `env:<dataset>:<measurement>`, `&download=1`), or
+(`calcofi.io/query/?pick=bio:<dataset>:<taxon>` or `env:<dataset>:<measurement>`, `&download=1`), or
 *The whole dataset*, which is the release zip, with a link to the dialog for the other formats. The form
 first built a whole-dataset CSV in the browser from the release Parquet (a vendored reader, files up to
 30 MB) or sent the reader to ERDDAP; the zip replaced both, so nothing whole-dataset is assembled in the

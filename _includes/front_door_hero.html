@@ -11,7 +11,7 @@
 {%- assign p_explore = data.products | where: "key", "explore" | first -%}
 {%- comment -%} a local preview (scripts/dev_all.sh, _config.local.yml) points the Explorer buttons at the Explorer on this machine {%- endcomment -%}
 {%- assign explore_url = site.local_explore | default: p_explore.live_url | default: "https://calcofi.io/explore/" -%}
-{%- assign builder_url = explore_url | append: "builder.html" -%}
+{%- assign builder_url = site.data.query_url -%}
 {%- comment -%} "Contribute" is the docs book's chapter on providing data, as the seven-task front door linked it (main
   c064e7d). index.html passes it; the default keeps the include usable alone. {%- endcomment -%}
 {%- assign provide_url = include.provide_url | default: "https://calcofi.io/docs/provide.html" -%}

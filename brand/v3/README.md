@@ -35,7 +35,7 @@ v2's contract (`../v2/README.md` § The contract) stands, point for point, excep
    product has one. Then the words, the product's own icon buttons, and the toggle at the right.
 2. **The words are the brand's, the same on every product, in sentence case:**
 
-   **Data ▾ · Map ▾ · Query · Cite · Learn · Docs · FAQ · News · calcofi.org ↗**
+   **Data ▾ · Map ▾ · Learn ▾ · calcofi.org ↗**
 
    A product does not type them. It writes an empty
    `<nav class="cc-links cc-nav" id="cc-nav" data-cc-nav aria-label="Sections"></nav>` and `header.js` draws them
@@ -47,9 +47,11 @@ v2's contract (`../v2/README.md` § The contract) stands, point for point, excep
    hover and stays a moment after the pointer leaves; it also opens on a press (click, tap, Enter, Space), which
    is what a touch screen and a keyboard have. Escape closes it, even under the pointer, and returns focus to its
    button; so do a press outside and focus leaving. Focus alone does not open a menu, so tabbing through the bar
-   is nine stops, not every line of every menu. The first line of a menu is the page the word would otherwise
-   have linked (Data → Datasets, Map → the Explorer). A word is said once: Docs, FAQ and News are words, so no
-   menu lists them, and Learn, whose menu that left with one line, is a plain word to that line.
+   is four stops, not every line of every menu. The first line of a menu is the page the word would otherwise
+   have linked (Data → Datasets, Map → the Explorer, Learn → How CalCOFI samples). The Query Builder is the first line of
+   Data ▾ › Get it, not a word. A destination is said once:
+   Learn holds the guides (How CalCOFI samples, Frequently asked questions, Cite the data, Documentation) and the
+   news (Tutorials, Stories, All news), and none of them is also a word of the bar.
 4. **The bar never wraps.** From 1100 px the words are inline. Below that the menu button
    (`<button class="cc-icon-button cc-menu-button" aria-controls="cc-nav" aria-expanded="false">`) carries them
    in one column, every line of every menu shown, scrolling inside itself. The number 1100 is `NAV_BREAK` in
@@ -66,12 +68,20 @@ v2's contract (`../v2/README.md` § The contract) stands, point for point, excep
    The edge is drawn by `header.css` (a mask on `::after`), so the markup is one element. `--cc-wave-below` is
    the colour the wave cuts into: the page ground by default; a page whose first band is another colour sets it.
    A band that draws its own edge with an inline `<svg>` adds `.cc-wave-own`.
+   **Over a map.** An app whose first thing under the bar is a map (the Explorer) adds `.cc-wave-over` to the
+   slim wave: `<div class="cc-wave cc-wave-slim cc-wave-over"></div>`. The wave then takes no room; the map runs
+   up under it and shows through below the edge, so no strip of page ground sits between the wave and the map
+   (the owner, 2026-11-17: "the plain white sliver underneath and before the map" looked wrong, most in the light
+   theme). Nothing sits in it and it takes no pointer. The app keeps its own floating controls clear of it by
+   `--cc-wave-slim-h` (15 px in an app, 34 px on a page).
 6. Where a framework owns the bar (Quarto, pkgdown, mkdocs, bslib `page_navbar`), v2's rule stands: the lockup
    goes in its brand slot and its native toggle is bridged. Such a product adopts v3's words by linking the
    same destinations in its own navbar config, in sentence case, and puts a `.cc-wave.cc-wave-slim` under its
    navbar. `scripts/check_brand.py` holds a framework-owned bar to the wave and the case, not to the markup.
 
-And **10 (Version)** becomes: `window.ccTheme.version === "3"`, `window.ccHeader.version === "3"`.
+And **10 (Version)** becomes: `window.ccTheme.version === "3"`, `window.ccHeader.version === "3"`. `window.ccHeader.words()`
+(a promise of `nav.json`'s words) is part of the contract too: a framework-owned bar draws its own items from it (the
+docs book does), so it must keep its shape within v3.
 
 ## Using it
 
@@ -122,8 +132,9 @@ not re-checked on the live products for this change):
 |---|---|---|---|
 | calcofi.io (this site: front door, catalogs, dataset, species and measurement pages, news, stories, tutorials) | v2, uppercase words typed in the layout | **v3** | — |
 | Explorer (`/explore/`) | v2, its own bar, no site words | **v3**: the words behind the menu button, a slim wave | — |
-| Query Builder (`/explore/builder.html`) | new | **v3**: the words inline, its title in the wave | — |
-| docs, workflows (Quarto) | v2 through `libs/brand/quarto_head.html` | v2, unchanged | the head include and the navbar's words; § 4.6 |
+| Query Builder (`/query/`; `/explore/builder.html` until it moves) | new | **v3**: the words inline, its title in the wave | — |
+| docs (Quarto book) | v2 through its own `brand-head.html`, no navbar | v2, unchanged; **v3 on the local branch `brand-v3` of CalCOFI/docs (2026-11-17, not pushed)**: a Quarto navbar whose words are drawn from `nav.json` through `ccHeader.words()`, a slim wave under it | — |
+| workflows (Quarto) | v2 through `libs/brand/quarto_head.html` | v2, unchanged | the head include and the navbar's words; § 4.6 |
 | db-schema, db-query, ctd-transects (plain pages) | v2 | v2, unchanged | the head block and the empty nav, as above |
 | calcofi4r, calcofi4db (pkgdown), calcofi4py (mkdocs) | v2 | v2, unchanged | `_pkgdown.yml` / `mkdocs.yml` includes; § 4.6 |
 | Shiny apps on app.calcofi.io (station, ctd, pollutants, and the archived ones) | v2 through `calcofi4r::cc_brand_head()` | v2, unchanged | a `brand = "v3"` in calcofi4r, then each app's next deploy |
@@ -144,8 +155,8 @@ first, with no visible change anywhere; then the Explorer and the Query Builder;
 
 `scripts/check_brand.py`, for a product reporting version 3: the nav's words equal `nav.json`'s, in order; the
 words and the title compute to `text-transform: none`; a `.cc-wave` directly follows the bar; at 1099 px the menu
-button is shown and the nav is not. `_test/nav_test.rb` pins the list: the nine words, Docs, FAQ and News as words and
-not also lines of a menu, Learn as a plain word, and every destination `main`'s eight uppercase words reached still linked.
+button is shown and the nav is not. `_test/nav_test.rb` pins the list: the four words, the Query Builder as the first line of Data ▾ › Get it, what Learn holds, no
+destination linked twice, and every destination `main`'s eight uppercase words reached still linked.
 `scripts/check_layout.py` holds this site's header to one line from 1100 px, the menus to their behaviour and the
 open column to reaching every line on a 375 × 667 phone.
 

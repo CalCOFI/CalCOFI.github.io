@@ -2079,7 +2079,7 @@ a.cc-chip-lic:hover { color: var(--accent); border-color: var(--accent); text-de
   .calm-strip.mm-strip text { font-size: 18px; }
 }
 
-/* (the header's edge and the site nav — Data ▾ · Map ▾ · Query · Cite · Learn · Docs · FAQ · News · calcofi.org ↗, Betty's
+/* (the header's edge and the site nav — Data ▾ · Map ▾ · Learn ▾ · calcofi.org ↗, Betty's
    design of 2026-11-16 — are the brand's since v3: brand/v3/header.css) */
 
 /* the wave under the bar (brand v3 § 4): the layout draws a slim one on every page, and a page whose own head IS a

@@ -3,8 +3,8 @@ layout: default
 ---
 {%- comment -%}
   /species/ — the species catalog's index. Nothing here is authored: the finder's rows come from
-  /species/finder.json (_plugins/finder.rb), and the tree and the matrix are drawn by assets/species.js
-  from the ONE inline JSON _plugins/species.rb builds out of the release's taxa.json, as before.
+  /species/finder.json (_plugins/finder.rb), and the tree, the matrix and the hierarchy are drawn by
+  assets/species.js from the ONE inline JSON _plugins/species.rb builds out of the release's taxa.json.
 {%- endcomment -%}
 {%- assign sp = site.data.species -%}
 {%- assign c = sp.counts_fmt -%}
@@ -18,8 +18,10 @@ layout: default
 {%- comment -%}
   The species finder (Betty, 2026-11-15), in Browse datasets' shape: search in a navy band, then
   Groups (one card per class, with a plain name) and All species, each with a preview beside the
-  list (assets/finder.js, from /species/finder.json, _plugins/finder.rb). The tree and the matrix
-  stay as tabs, drawn by species.js as before. The search box is #door-q, so the tree folds to it too.
+  list (assets/finder.js, from /species/finder.json, _plugins/finder.rb). The tree, the matrix and
+  the hierarchy (main's icicle, back as a tab on 2026-11-17: ?tab=hierarchy) stay as tabs, drawn by
+  species.js as before. The search box is #door-q, so the tree folds to it too; a search also lists the
+  taxa that are not species rows (a genus, a family …, /species/finder-taxa.json) under the species.
 {%- endcomment -%}
 <header class="bd-head bd-wave cc-wave cc-wave-own">
   <div class="bd-in">
@@ -44,12 +46,14 @@ layout: default
       <button type="button" role="tab" data-tab="list" aria-selected="false" tabindex="-1">All species</button>
       <button type="button" role="tab" data-tab="tree" aria-selected="false" tabindex="-1">The tree</button>
       <button type="button" role="tab" data-tab="matrix" aria-selected="false" tabindex="-1">Which species, in which datasets</button>
+      <button type="button" role="tab" data-tab="hierarchy" aria-selected="false" tabindex="-1">The hierarchy</button>
       <span class="bd-count">{{ c.species_observed }} species{% if f.species_groups %} · {{ f.species_groups }} groups{% endif %}</span>
     </div>
 
     <div class="tabpanel" data-panel="groups" role="tabpanel">
-      <div id="cf"{% if site.data.catalog.span %} data-span="{{ site.data.catalog.span | join: ',' }}"{% endif %} data-kind="species" data-src="{{ '/species/finder.json' | relative_url }}" data-sils="{{ '/species/finder-sils.json' | relative_url }}" data-tabset="ts-species"
+      <div id="cf"{% if site.data.catalog.span %} data-span="{{ site.data.catalog.span | join: ',' }}"{% endif %} data-kind="species" data-src="{{ '/species/finder.json' | relative_url }}" data-sils="{{ '/species/finder-sils.json' | relative_url }}" data-taxa="{{ '/species/finder-taxa.json' | relative_url }}" data-tabset="ts-species"
            data-explore="{{ explore_url }}" data-base="{{ site.baseurl }}">
+        <h2 class="sr-only">The species</h2>
         <div class="cf-find">
           <div class="cf-lists" id="cf-list"><noscript><p class="cf-empty">The list is drawn by JavaScript; every species is also in
             <a href="{{ '/species/sitemap.xml' | relative_url }}">the sitemap</a>.</p></noscript></div>
@@ -90,14 +94,28 @@ layout: default
       </div>
     </div>
 
+    {%- comment -%} the icicle: kingdom → phylum → class → order → family, sized by observations or species;
+      species.js draws it the first time the panel shows (a hidden <svg> has no width to draw to) {%- endcomment -%}
+    <div class="tabpanel" data-panel="hierarchy" role="tabpanel" hidden>
+      <div class="sp-ice-wrap">
+        <div class="sp-ice-bar">
+          <h2 class="cc-eyebrow">The hierarchy · kingdom → phylum → class → order → family</h2>
+          <div class="sp-seg" role="group" aria-label="Size the icicle by">
+            <button type="button" data-by="o" aria-pressed="true">observations</button>
+            <button type="button" data-by="sp" aria-pressed="false">species</button>
+          </div>
+          <div class="sp-crumb" id="sp-crumb"></div>
+        </div>
+        <svg class="sp-ice" id="sp-ice" role="img" aria-label="Icicle of the taxonomic hierarchy, sized by observations"></svg>
+        <p class="sp-note">Click a band to zoom into that clade; the breadcrumb climbs back out.
+          The two authorities are merged where they name the same rank twice — the taxon table keys birds
+          through ITIS and everything else through WoRMS, so Animalia, Chordata, Vertebrata and Gnathostomata each
+          appear once here and link to their WoRMS page.</p>
+      </div>
+    </div>
+
   </div>
 
-  {%- comment -%} species.js still fills the old class list, matches and icicle; they stay here unseen so it runs unchanged {%- endcomment -%}
-  <div class="cf-legacy" aria-hidden="true">
-    <div id="sp-matches" hidden></div>
-    <div id="sp-classes"></div><p id="sp-empty" hidden></p><p id="sp-foot"></p>
-    <div class="sp-crumb" id="sp-crumb"></div><svg id="sp-ice"></svg>
-  </div>
   <div class="sp-ttip" id="sp-ttip" role="tooltip" aria-hidden="true"></div>
 </main>
 

@@ -6,7 +6,9 @@ layout: default
   shape: search in a navy band, then By category and A–Z with a preview beside the list
   (assets/finder.js, from /measurements/finder.json, _plugins/finder.rb). The timeline and the matrix
   stay as tabs, drawn by assets/measurements.js as before. The search box is #door-q, so the timeline
-  filters to it too; the old Liquid list stays on the page unseen because measurements.js reads it.
+  filters to it too. By category opens with the categories closed (issue #30 D8; a press opens one, a
+  search opens the ones that hold a match). The list rendered here in Liquid is what a reader WITHOUT
+  JavaScript gets, inside <noscript>: every measurement, by category, each a link to its page.
 {%- endcomment -%}
 {%- assign mm = site.data.measurements -%}
 {%- assign c = mm.counts_fmt -%}
@@ -47,9 +49,44 @@ layout: default
     <div class="tabpanel" data-panel="cat" role="tabpanel">
       <div id="cf"{% if site.data.catalog.span %} data-span="{{ site.data.catalog.span | join: ',' }}"{% endif %} data-kind="measurements" data-src="{{ '/measurements/finder.json' | relative_url }}" data-tabset="ts-mm"
            data-explore="{{ explore_url }}" data-base="{{ site.baseurl }}">
+        <h2 class="sr-only">The measurements</h2>
         <div class="cf-find">
-          <div class="cf-lists" id="cf-list"><noscript><p class="cf-empty">The list is drawn by JavaScript; every measurement is also in
-            <a href="{{ '/measurements/sitemap.xml' | relative_url }}">the sitemap</a>.</p></noscript></div>
+          {%- comment -%} without JavaScript: main's own list (the unified keys, then one fold per category), which
+            the finder replaces when it runs. In <noscript>, so a browser with scripting never builds it. {%- endcomment -%}
+          <div class="cf-lists" id="cf-list"><noscript><div class="cf-nojs">
+      <h2 class="calm-group mm-grp-h" id="mm-unified-h"><i class="cc-i cc-i-el-measured" aria-hidden="true"></i>Measured across datasets
+        <span class="mm-grp-n">{{ L.unified.size }} keys, bottle and CTD alike</span></h2>
+      <ul class="mm-rows mm-unified" id="mm-unified">
+        {%- for r in L.unified %}{% include measurement_row.html r=r %}{% endfor -%}
+      </ul>
+
+      <h2 class="calm-group mm-grp-h"><i class="cc-i cc-i-view-list" aria-hidden="true"></i>By category
+        <span class="mm-grp-n">{{ L.categories.size }} categories · open one to list its measurements</span></h2>
+      <div class="calm-list mm-cats" id="mm-cats">
+        {%- for g in L.categories %}
+        <details class="calm-item mm-cat-item" data-cat="{{ g.name | escape }}" id="cat-{{ g.name | slugify }}">
+          <summary>
+            <span class="calm-item-g" aria-hidden="true"><i class="cc-i cc-i-{{ g.icon }}"></i></span>
+            <span class="calm-item-tx">
+              <span class="calm-item-t">{{ g.name | escape }}</span>
+              {%- if g.desc %}<span class="calm-item-s" title="{{ g.desc | escape }}">{{ g.desc | escape }}</span>{% endif -%}
+            </span>
+            <span class="calm-item-k"><span class="mm-cat-n" data-n="{{ g.rows.size }}">{{ g.rows.size }}</span> measurement{% if g.rows.size != 1 %}s{% endif %}{% if g.n_unified > 0 %} <span class="mm-cat-plus">+ {{ g.n_unified }} above</span>{% endif %}</span>
+            <i class="calm-chev cc-i cc-i-ui-down" aria-hidden="true"></i>
+          </summary>
+          <div class="calm-item-b">
+            {%- if g.realm == "bio" %}<p class="cc-muted">A biology category whose cell counts are measurements — rows of <span class="mono">obs_env</span>, not organisms with a taxon.</p>{% endif -%}
+            <ul class="mm-rows">
+              {%- for r in g.rows %}{% include measurement_row.html r=r %}{% endfor -%}
+            </ul>
+          </div>
+        </details>
+        {%- endfor %}
+      </div>
+      <p class="mm-note">Category is the registry's (<span class="mono">metadata/category.csv</span>, the same the
+        Explorer folds its picker by). A key is the registry's variable where the crosswalk unifies two series, else
+        the measurement type itself; {{ c.n_p01 }} keys carry a NERC P01 concept.</p>
+          </div></noscript></div>
           <aside class="cf-pv" id="cf-pv" role="region" aria-label="Preview of the chosen row" data-stick hidden></aside>
     <p class="sr-only" id="cf-pv-say" role="status"></p>
         </div>
@@ -97,42 +134,6 @@ layout: default
         matrix is one sequential ramp.</p>
     </div>
   </div>
-  {%- comment -%} measurements.js still filters the old Liquid list; it stays here unseen so it runs unchanged {%- endcomment -%}
-    <div class="cf-legacy" aria-hidden="true">
-      <h2 class="calm-group mm-grp-h" id="mm-unified-h"><i class="cc-i cc-i-el-measured" aria-hidden="true"></i>Measured across datasets
-        <span class="mm-grp-n">{{ L.unified.size }} keys, bottle and CTD alike</span></h2>
-      <ul class="mm-rows mm-unified" id="mm-unified">
-        {%- for r in L.unified %}{% include measurement_row.html r=r %}{% endfor -%}
-      </ul>
-
-      <h2 class="calm-group mm-grp-h"><i class="cc-i cc-i-view-list" aria-hidden="true"></i>By category
-        <span class="mm-grp-n">{{ L.categories.size }} categories · open one to list its measurements</span></h2>
-      <div class="calm-list mm-cats" id="mm-cats">
-        {%- for g in L.categories %}
-        <details class="calm-item mm-cat-item" data-cat="{{ g.name | escape }}" id="cat-{{ g.name | slugify }}">
-          <summary>
-            <span class="calm-item-g" aria-hidden="true"><i class="cc-i cc-i-{{ g.icon }}"></i></span>
-            <span class="calm-item-tx">
-              <span class="calm-item-t">{{ g.name | escape }}</span>
-              {%- if g.desc %}<span class="calm-item-s" title="{{ g.desc | escape }}">{{ g.desc | escape }}</span>{% endif -%}
-            </span>
-            <span class="calm-item-k"><span class="mm-cat-n" data-n="{{ g.rows.size }}">{{ g.rows.size }}</span> measurement{% if g.rows.size != 1 %}s{% endif %}{% if g.n_unified > 0 %} <span class="mm-cat-plus">+ {{ g.n_unified }} above</span>{% endif %}</span>
-            <i class="calm-chev cc-i cc-i-ui-down" aria-hidden="true"></i>
-          </summary>
-          <div class="calm-item-b">
-            {%- if g.realm == "bio" %}<p class="cc-muted">A biology category whose cell counts are measurements — rows of <span class="mono">obs_env</span>, not organisms with a taxon.</p>{% endif -%}
-            <ul class="mm-rows">
-              {%- for r in g.rows %}{% include measurement_row.html r=r %}{% endfor -%}
-            </ul>
-          </div>
-        </details>
-        {%- endfor %}
-      </div>
-      <p class="mm-empty" id="mm-empty" hidden>No measurement matches — try a variable, a series name, a dataset, a unit or a NERC id.</p>
-      <p class="mm-note">Category is the registry's (<span class="mono">metadata/category.csv</span>, the same the
-        Explorer folds its picker by). A key is the registry's variable where the crosswalk unifies two series, else
-        the measurement type itself; {{ c.n_p01 }} keys carry a NERC P01 concept.</p>
-    </div>
   <div class="mm-ttip" id="mm-ttip" role="tooltip" aria-hidden="true"></div>
 </main>
 

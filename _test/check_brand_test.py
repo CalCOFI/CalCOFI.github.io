@@ -21,7 +21,13 @@ spec = importlib.util.spec_from_file_location("check_brand", os.path.join(HERE, 
 cb = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(cb)          # a bare python3: the script must not need PyYAML to be imported
 
+# a list of nine words to judge a page against: what a product's nav.json may carry (the brand's list
+# on the afternoon of 2026-11-17). judge_v3 holds a page to whatever list its nav.json gives, so the
+# fixture does not follow the repo's list; REPO_WORDS below is the list this repo's _data/nav.yml states now.
 WORDS = ["Data", "Map", "Query", "Cite", "Learn", "Docs", "FAQ", "News", "calcofi.org ↗"]
+# the repo's own list since the evening of 2026-11-17 (9f2b542): four words; Query, Cite, Docs, FAQ and
+# News are lines of the Data and Learn menus
+REPO_WORDS = ["Data", "Map", "Learn", "calcofi.org ↗"]
 
 
 def page(**over):
@@ -54,11 +60,11 @@ class NavList(unittest.TestCase):
         self.assertEqual(cb.nav_yml_titles(""), [])
         self.assertEqual(cb.nav_yml_titles(None), [])
 
-    # the repo's own list is the nine words, and the layout check's reader of the same file agrees
+    # the repo's own list is the four words, and the layout check's reader of the same file agrees
     def test_the_repos_list(self):
         with open(os.path.join(HERE, "..", "_data", "nav.yml"), encoding="utf-8") as f:
             text = f.read()
-        self.assertEqual(cb.nav_yml_titles(text), WORDS)
+        self.assertEqual(cb.nav_yml_titles(text), REPO_WORDS)
         s2 = importlib.util.spec_from_file_location("check_layout", os.path.join(HERE, "..", "scripts", "check_layout.py"))
         cl = importlib.util.module_from_spec(s2)
         s2.loader.exec_module(cl)

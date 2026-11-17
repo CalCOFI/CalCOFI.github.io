@@ -2,8 +2,8 @@
 
    Two pages, one file, no library and no network:
 
-   /measurements/            #mm-data      → the one search (#door-q, ?q=) filtering the Liquid list
-                                             and the TIMELINE view (one row per measurement, one
+   /measurements/            #mm-data      → the one search (#door-q, ?q=; the finder's box) filtering
+                                             the TIMELINE view (one row per measurement, one
                                              bar per series on a 1949 → release-year axis), the
                                              category × dataset MATRIX view and the datasets list
    /measurements/{key}/      #mm-strip-data → the years strip (an <svg>)
@@ -1300,69 +1300,24 @@
     });
   }
 
-  /* ── the list and the one search (issue #30 D8 A, D10 B) ────────────────────────────────────
-     The list is Liquid's (the unified keys, then one collapsed row per category); this filters it
-     in place as the ONE search box (#door-q, _includes/one_search.html) is typed into — the same
-     words the timeline's search reads (each row's data-q is the plugin's `row_hay`). A category
-     with a hit opens, one without hides, and clearing the box closes what the search opened and
-     leaves open what the reader opened. The timeline view filters on the same box. The dropdown
-     door-search.js draws for the other two indexes still answers. ?q= and ?cat= are read on load
-     (a measurement page's crumb links ?cat= to its category, which opens). */
+  /* ── the one search (issue #30 D10 B) ────────────────────────────────────────────────────────
+     #door-q is the finder's box (assets/finder.js filters its list; front door v2); the timeline here
+     filters on the same words as it is typed into, and `?q=` is kept on the URL and read on load.
+     (main's own list, rendered in Liquid, was filtered here too: it is now what a reader without
+     JavaScript gets, inside <noscript>, so with this script running there is no such list to filter.) */
   function writeParam(name, value) {
     if (!history.replaceState) return;
     var u = new URL(location.href);
     if (value) u.searchParams.set(name, value); else u.searchParams.delete(name);
     history.replaceState(null, "", u.toString());
   }
-  var rowsAll = [].slice.call(document.querySelectorAll("#ts-mm .mm-row[data-q]"));
-  var cats = [].slice.call(document.querySelectorAll("#mm-cats > details.mm-cat-item"));
-  var uniH = document.getElementById("mm-unified-h"), uni = document.getElementById("mm-unified");
-  var empty = document.getElementById("mm-empty");
-  var hint = document.querySelector("#door-search .dsearch-k");
-  var total = rowsAll.length;
-  function filterList(s) {
-    var n = 0;
-    rowsAll.forEach(function (li) {
-      var hit = !s || li.getAttribute("data-q").indexOf(s) >= 0;
-      li.hidden = !hit;
-      if (hit) n++;
-    });
-    cats.forEach(function (g) {
-      var hits = g.querySelectorAll(".mm-row:not([hidden])").length;
-      var cn = g.querySelector(".mm-cat-n");
-      if (cn) cn.textContent = s ? hits + " of " + cn.getAttribute("data-n") : cn.getAttribute("data-n");
-      g.hidden = !!s && !hits;
-      if (s && hits && !g.open) { g.open = true; g.setAttribute("data-searched", ""); }
-      if (!s && g.hasAttribute("data-searched")) { g.open = false; g.removeAttribute("data-searched"); }
-    });
-    if (uni && uniH) {
-      var u = uni.querySelectorAll(".mm-row:not([hidden])").length;
-      uni.hidden = uniH.hidden = !!s && !u;
-    }
-    if (empty) empty.hidden = n > 0;
-    if (hint) hint.textContent = s ? fmt(n) + " of " + fmt(total) : fmt(total);
-    return n;
-  }
   var q = document.getElementById("door-q");
-  function onQuery() {
-    var s = (q ? q.value : "").trim().toLowerCase();
-    filterList(s);
-    draw();
-  }
   if (q) {
-    q.addEventListener("input", function () { onQuery(); writeParam("q", q.value.trim()); });
+    q.addEventListener("input", function () { draw(); writeParam("q", q.value.trim()); });
   }
-  var params = new URLSearchParams(location.search);
-  var q0 = params.get("q"), cat0 = params.get("cat");
+  var q0 = new URLSearchParams(location.search).get("q");
   if (q0 && q) q.value = q0;
-  onQuery();
-  if (cat0) {
-    cats.forEach(function (g) {
-      if (g.getAttribute("data-cat") !== cat0) return;
-      g.open = true;
-      setTimeout(function () { g.scrollIntoView({ block: "start" }); }, 0);
-    });
-  }
+  draw();
 
   /* ── the matrix: category × dataset, the cell is how many measurements ──────────────────── */
   var mx = document.getElementById("mm-matrix");

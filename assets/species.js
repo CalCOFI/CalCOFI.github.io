@@ -1,12 +1,11 @@
 /* assets/species.js — the species catalog's drawings, from the inline JSON and nothing else.
 
-   On /species/ (`#sp-data`, built by _plugins/species.rb from the release's taxa.json), re-cut calm
-   for issue #30 (D7 A, D10 B):
-     · the CLASS LIST — the first rung: the classes, each with its PhyloPic silhouette, most observed
-       first; a class opens to its most-observed taxa (R1's .cc-result rows), built on first open;
-     · the SEARCH — #door-q, the one box over the three indexes (_includes/one_search.html): this
-       script also listens to it, fills the flat Matches list (#sp-matches) with the hits, keeps only
-       the classes that hold one, and folds the tree to them (`?q=` in the URL);
+   On /species/ (`#sp-data`, built by _plugins/species.rb from the release's taxa.json). The page's
+   first views, Groups and All species, and its list of matches are the finder's (assets/finder.js,
+   front door v2); main's class list and its flat Matches list, which this script drew, went with
+   them. What is drawn here:
+     · the SEARCH — #door-q, the finder's box: this script also listens to it and folds the tree to
+       the hits (`?q=` in the URL);
      · three VIEW TABS, unchanged from the panels they were: the TREE — the display forest, the
        kingdoms at the top (the WoRMS and the ITIS Animalia are one node, as are Chordata,
        Vertebrata and Gnathostomata), the 14 dataset-local classes under one node, lazy children,
@@ -190,84 +189,6 @@
   }
   function panel(id) { return document.querySelector('#ts-species .tabpanel[data-panel="' + id + '"]'); }
 
-  /* ── the class list (D7 A): every Class node, most observed first ─────────────────────────── */
-  var classesEl = document.getElementById('sp-classes');
-  var CLASSES = D.nodes.filter(function (n) { return n.r === 'Class' && R[n.k].o > 0; })
-                       .map(function (n) { return n.k; })
-                       .sort(function (a, b) { return R[b].o - R[a].o; });
-  var PHYLUM = { Phylum: 1, 'Phylum (Division)': 1 };
-  function phylumOf(k) { var p = N[k].p; while (p && N[p]) { if (PHYLUM[N[p].r]) return nameOf(N[p]); p = N[p].p; } return null; }
-  /* the class a taxon sits under (itself, for a class), or null above class / dataset-local */
-  var CLS = {};
-  CLASSES.forEach(function (k) { CLS[k] = 1; });
-  function classOf(k) { while (k && N[k]) { if (CLS[k]) return k; k = N[k].p; } return null; }
-  function silHtml(s, cls) {
-    if (!s) return '';
-    return '<svg class="' + cls + '" viewBox="' + esc(s.vb) + '" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">' + s.inner + '</svg>';
-  }
-  /* a class's most observed taxa: every taxon under it observed directly, by its own observations */
-  var TOP = 6;
-  function topOf(k) {
-    var out = [], stack = (C[k] || []).slice();
-    while (stack.length) {
-      var x = stack.pop();
-      if ((N[x].o || 0) > 0) out.push(x);
-      (C[x] || []).forEach(function (c) { stack.push(c); });
-    }
-    return out.sort(function (a, b) { return (N[b].o || 0) - (N[a].o || 0); });
-  }
-  function resultRow(k, metaObs) {
-    var n = N[k], it = ITALIC[n.r], label = nameOf(n), nds = dsOf(k).length;
-    var meta = esc(n.r || 'dataset-local class') + ' · ' + fmtK(metaObs) + ' obs · ' + fmt(nds) + ' dataset' + (nds === 1 ? '' : 's');
-    return '<a class="cc-result" href="' + esc(BASE + slugOf(k) + '/') + '">' +
-           '<b class="cc-result-n">' + (it ? '<i>' + esc(label) + '</i>' : esc(label)) + '</b>' +
-           (n.c ? ' <span class="cc-result-c">' + esc(n.c) + '</span>' : '') +
-           '<span class="cc-result-m tab">' + meta + '</span></a>';
-  }
-  function fillClass(item) {
-    if (item.dataset.filled) return;
-    var k = item.dataset.k, n = N[k], top = topOf(k), shown = top.slice(0, TOP);
-    item.querySelector('.calm-item-b').innerHTML =
-      '<p class="sp-top-h">Most observed' + (top.length > shown.length ? ', of ' + fmt(top.length) + ' taxa observed in it' : '') + '</p>' +
-      '<div class="sp-top">' + shown.map(function (x) { return resultRow(x, N[x].o || 0); }).join('') + '</div>' +
-      '<p class="sp-top-links"><a class="cc-text-link" href="' + esc(BASE + slugOf(k) + '/') + '">Open ' + esc(nameOf(n)) + ' →</a>' +
-      '<a class="cc-text-link" href="https://calcofi.io/explore/?taxon=' + esc(k) + '" rel="external">Explorer →</a>' +
-      '<button type="button" class="cc-text-link sp-in-tree" data-k="' + esc(k) + '">In the tree →</button></p>';
-    item.dataset.filled = '1';
-  }
-  if (classesEl) {
-    classesEl.innerHTML = CLASSES.map(function (k) {
-      var n = N[k], r = R[k], ph = phylumOf(k), nds = dsOf(k).length;
-      var common = n.c && !/unidentified/i.test(n.c) ? n.c : '';
-      var sub = (ph ? esc(ph) + ' · ' : '') +
-                (r.sp ? (r.sp === 1 ? '1 species' : fmt(r.sp) + ' species') + (r.t > r.sp ? ' · ' + fmt(r.t) + ' taxa' : '')
-                      : fmt(r.t) + (r.t === 1 ? ' taxon' : ' taxa') + ', none to species');
-      return '<details class="calm-item sp-class" data-k="' + esc(k) + '"><summary>' +
-        '<span class="calm-item-g">' + silHtml(n.sil, 'sp-csil') + '</span>' +
-        '<span class="calm-item-tx"><span class="calm-item-t">' + esc(nameOf(n)) +
-          (common ? ' <small class="sp-cn">' + esc(common.toLowerCase()) + '</small>' : '') + '</span>' +
-          '<span class="calm-item-s">' + sub + '</span></span>' +
-        '<span class="calm-item-k">' + fmtK(r.o) + ' obs · ' + fmt(nds) + ' dataset' + (nds === 1 ? '' : 's') + '</span>' +
-        '<i class="calm-chev cc-i cc-i-ui-down" aria-hidden="true"></i></summary>' +
-        '<div class="calm-item-b"></div></details>';
-    }).join('');
-    classesEl.querySelectorAll('.sp-class').forEach(function (item) {
-      item.addEventListener('toggle', function () { if (item.open) fillClass(item); });
-    });
-    classesEl.addEventListener('click', function (e) {
-      var b = e.target.closest && e.target.closest('.sp-in-tree');
-      if (b) openInTree(b.dataset.k);
-    });
-    var spIn = CLASSES.reduce(function (a, k) { return a + R[k].sp; }, 0);
-    var nLocal = (C._local || []).length;
-    var foot = document.getElementById('sp-foot');
-    if (foot) {
-      foot.textContent = fmt(CLASSES.length) + ' classes carry ' + fmt(spIn) + ' of the ' + fmt(D.counts.species_observed) +
-        ' species; the taxa identified above class level' + (nLocal ? ' and the ' + fmt(nLocal) + ' dataset-local classes' : '') +
-        ' are in the tree. Silhouettes from PhyloPic, as on the species pages.';
-    }
-  }
-
   /* ── which ranks the tree shows: the major ranks by default, every rank on request ──────────
      A WoRMS lineage carries Subphylum · Infraphylum · Parvphylum · Gigaclass · Superclass ·
      Subclass … between the ranks people name, so a species sat twelve indents deep with no room
@@ -410,48 +331,17 @@
     place(e);
   }
 
-  /* ── search: #door-q, the one box (D10 B). Scientific, common and dataset names; the hits fill
-     the Matches list, keep only the classes that hold one, and open their ancestors in the tree ── */
+  /* ── search: #door-q, the finder's box (assets/finder.js lists the matches: the species, then the
+     taxa that are not species rows). Here the same words fold the TREE: scientific, common and dataset
+     names; the hits open their ancestors in the tree ── */
   var q = document.getElementById('door-q') || { value: '', addEventListener: function () {} };
   var IDX = D.nodes.map(function (n) {
     return { k: n.k, s: [n.n, n.c, n.l].concat(dsOf(n.k).map(function (i) { return DS[i].s + ' ' + DS[i].k; }))
                        .filter(Boolean).join(' ').toLowerCase() };
   });
-  /* ── the Matches list (umbrella D9, I2): the same row shape as _includes/result_row.html
-     (`.cc-result` / `-n` / `-c` / `-m`), built here in JS rather than re-included per row, exactly
-     as that include's own header invites. Fed by the same `hits` the tree highlighting computes —
-     sorted by observations, up to 50 — so the two never disagree about which taxa matched. A
-     dataset-local synthetic node (`_…`) has no page and is left out of the list. */
-  var matchesEl = document.getElementById('sp-matches');
-  function renderMatches(hits) {
-    if (!matchesEl) return;
-    var rows = (hits || []).filter(function (k) { return k.charAt(0) !== '_'; }).slice(0, 50);
-    if (!rows.length) { matchesEl.hidden = true; matchesEl.innerHTML = ''; return; }
-    var html = '<h2 class="sp-matches-h">' + fmt(rows.length) + (rows.length === 1 ? ' match' : ' matches') +
-               ', most observed first · the classes below and the tree are folded to them</h2><div class="sp-matches-list">';
-    rows.forEach(function (k) { html += resultRow(k, R[k].o); });
-    matchesEl.innerHTML = html + '</div>';
-    matchesEl.hidden = false;
-  }
-  /* the class list keeps the classes that hold a hit (null = every class) */
-  function filterClasses(hits) {
-    if (!classesEl) return;
-    var keep = null;
-    if (hits) { keep = {}; hits.forEach(function (k) { var c = classOf(k); if (c) keep[c] = 1; }); }
-    var n = 0;
-    classesEl.querySelectorAll('.sp-class').forEach(function (item) {
-      var on = !keep || !!keep[item.dataset.k];
-      item.hidden = !on;
-      if (on) n++;
-    });
-    var empty = document.getElementById('sp-empty');
-    if (empty) empty.hidden = n > 0;
-  }
   function clearHits() {
     tree.querySelectorAll('.sp-tr.sp-hit').forEach(function (el) { el.classList.remove('sp-hit'); });
     qn.textContent = fmt(D.counts.tree) + ' in the tree';
-    renderMatches([]);
-    filterClasses(null);
   }
   /* the ancestors the tree SHOWS — a folded minor rank is not a row to open */
   function ancestorsOf(k) { var a = [], p = N[k].p; while (p) { if (shown(p)) a.unshift(p); p = N[p].p; } return a; }
@@ -478,8 +368,6 @@
     var found = IDX.filter(function (x) { return x.s.indexOf(s) >= 0; }).map(function (x) { return x.k; });
     var hits = found.filter(shown).sort(function (a, b) { return R[b].o - R[a].o; }).slice(0, 250);
     var folded = found.length - found.filter(shown).length;
-    renderMatches(hits);
-    filterClasses(found);
     tree.querySelectorAll(':scope > ul > li').forEach(collapse);
     var first = null;
     hits.forEach(function (k) {

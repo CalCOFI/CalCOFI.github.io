@@ -23,14 +23,22 @@ module CalCOFI
   module Nav
     module_function
 
+    QUERY_URL = "https://calcofi.io/query/"
+
+    # the Query Builder's address: a preview's or a local build's own copy when it names one, else the live one
+    def query_address(local) = present?(local) ? local : QUERY_URL
+
     def present?(v) = !(v.nil? || (v.respond_to?(:empty?) && v.empty?))
 
     # nav: the parsed _data/nav.yml · products / sections: products.yml's two lists · counts: {name => "1,000"}
-    def resolve(nav, products: [], sections: [], counts: {}, site_url: "", explore_url: nil)
+    def resolve(nav, products: [], sections: [], counts: {}, site_url: "", explore_url: nil, query_url: nil)
       prod = (products || []).to_h { |p| [p["key"], p] }
       sect = (sections || []).to_h { |s| [s["id"], s] }
       explore = explore_url || prod.dig("explore", "live_url") || "https://calcofi.io/explore/"
-      ctx = { prod: prod, sect: sect, counts: counts || {}, site_url: site_url.to_s.sub(%r{/\z}, ""), explore: explore }
+      # the Query Builder has its own address (Ben, 2026-11-17: "move the Query Builder to its own dedicated query");
+      # a preview or a local build names its own copy (_config.*.yml local_query)
+      query = query_address(query_url)
+      ctx = { prod: prod, sect: sect, counts: counts || {}, site_url: site_url.to_s.sub(%r{/\z}, ""), explore: explore, query: query }
       ((nav || {})["words"] || []).filter_map { |w| word(w, ctx) }
     end
 
@@ -77,6 +85,7 @@ module CalCOFI
         if x["product"] then ctx[:prod].dig(x["product"], "live_url")
         elsif x["section"] then ctx[:sect].dig(x["section"], "url")
         elsif x["explore"] then "#{ctx[:explore]}#{x['explore']}"
+        elsif x.key?("query") then "#{ctx[:query]}#{x['query']}"
         else x["href"]
         end
       return nil unless present?(href)
@@ -108,8 +117,10 @@ module CalCOFI
       prods = site.data["products"] || {}
       words = Nav.resolve(raw, products: prods["products"], sections: prods["sections"], counts: counts,
                                site_url: "#{site.config['url']}#{site.config['baseurl']}",
-                               explore_url: site.config["local_explore"])
+                               explore_url: site.config["local_explore"], query_url: site.config["local_query"])
       site.data["nav_words"] = words
+      # the one address of the Query Builder, for the start card and the dataset pages' CSV links
+      site.data["query_url"] = Nav.query_address(site.config["local_query"])
       page = Jekyll::PageWithoutAFile.new(site, site.source, "brand/v3", "nav.json")
       page.content = "{% raw %}#{JSON.pretty_generate({ 'version' => '3', 'words' => words })}{% endraw %}"
       page.data["layout"] = nil
