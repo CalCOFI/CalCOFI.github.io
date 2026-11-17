@@ -35,7 +35,7 @@ v2's contract (`../v2/README.md` § The contract) stands, point for point, excep
    product has one. Then the words, the product's own icon buttons, and the toggle at the right.
 2. **The words are the brand's, the same on every product, in sentence case:**
 
-   **Data ▾ · Map ▾ · Query · Learn ▾ · calcofi.org ↗**
+   **Data ▾ · Map ▾ · Learn ▾ · calcofi.org ↗**
 
    A product does not type them. It writes an empty
    `<nav class="cc-links cc-nav" id="cc-nav" data-cc-nav aria-label="Sections"></nav>` and `header.js` draws them
@@ -47,8 +47,9 @@ v2's contract (`../v2/README.md` § The contract) stands, point for point, excep
    hover and stays a moment after the pointer leaves; it also opens on a press (click, tap, Enter, Space), which
    is what a touch screen and a keyboard have. Escape closes it, even under the pointer, and returns focus to its
    button; so do a press outside and focus leaving. Focus alone does not open a menu, so tabbing through the bar
-   is five stops, not every line of every menu. The first line of a menu is the page the word would otherwise
-   have linked (Data → Datasets, Map → the Explorer, Learn → How CalCOFI samples). A destination is said once:
+   is four stops, not every line of every menu. The first line of a menu is the page the word would otherwise
+   have linked (Data → Datasets, Map → the Explorer, Learn → How CalCOFI samples). The Query Builder is the first line of
+   Data ▾ › Get it, not a word. A destination is said once:
    Learn holds the guides (How CalCOFI samples, Frequently asked questions, Cite the data, Documentation) and the
    news (Tutorials, Stories, All news), and none of them is also a word of the bar.
 4. **The bar never wraps.** From 1100 px the words are inline. Below that the menu button
@@ -145,7 +146,7 @@ first, with no visible change anywhere; then the Explorer and the Query Builder;
 
 `scripts/check_brand.py`, for a product reporting version 3: the nav's words equal `nav.json`'s, in order; the
 words and the title compute to `text-transform: none`; a `.cc-wave` directly follows the bar; at 1099 px the menu
-button is shown and the nav is not. `_test/nav_test.rb` pins the list: the five words, what Learn holds, no
+button is shown and the nav is not. `_test/nav_test.rb` pins the list: the four words, the Query Builder as the first line of Data ▾ › Get it, what Learn holds, no
 destination linked twice, and every destination `main`'s eight uppercase words reached still linked.
 `scripts/check_layout.py` holds this site's header to one line from 1100 px, the menus to their behaviour and the
 open column to reaching every line on a 375 × 667 phone.

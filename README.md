@@ -57,7 +57,7 @@ where v2 changed how they are reached, this subsection is the current state.
   6 Contribute data                   strip "Contribute"                           docs/provide.html
   7 Inform ocean and fisheries        strip "Statewide monitoring"                 #monitor
     management
-  new: one table across datasets      card 3 "Query Builder" · header "Query"      calcofi.io/query/
+  new: one table across datasets      card 3 "Query Builder" · Data ▾ › Get it     calcofi.io/query/
   ```
 
   **The strip had five links until 2026-11-17** (Share your data · Cite the data · What CalCOFI collects ·
@@ -84,7 +84,7 @@ where v2 changed how they are reached, this subsection is the current state.
   lands on Maps and apps at the apps for one dataset (`#dataset`); `#students` on the student projects
   (`#student`). Close puts focus back on the link that opened the panel, or on the start heading.
 - **The header is the brand's** since 2026-11-17 (brand v3, [`brand/v3/README.md`](brand/v3/README.md) § 4):
-  **Data ▾ · Map ▾ · Query · Learn ▾ · calcofi.org ↗**, sentence case, from the one list
+  **Data ▾ · Map ▾ · Learn ▾ · calcofi.org ↗**, sentence case, from the one list
   `_data/nav.yml`, which `_plugins/nav.rb` resolves for this site's `_includes/site_nav.html` and for
   `/brand/v3/nav.json`, drawn by `brand/v3/header.js` into the Explorer and the Query Builder. A word with a
   menu is a button: it opens on hover and on a press, and Escape closes it. The owner settled the words in
@@ -99,14 +99,14 @@ where v2 changed how they are reached, this subsection is the current state.
 - **The Query Builder has its own address, `https://calcofi.io/query/`** (the owner, 2026-11-17: "move the
   Query Builder to its own dedicated query, and then cross-link"). Its code stays in `CalCOFI/explore`
   (`src/builder`, which shares the Explorer's engine); a thin repo `CalCOFI/query` builds and serves it.
-  Here the address is written once, as `CalCOFI::Nav::QUERY_URL`, and read by the header's Query word
-  (`query: ""` in `_data/nav.yml`), the third start card and each dataset page's one-species and
+  Here the address is written once, as `CalCOFI::Nav::QUERY_URL`, and read by the header's Query Builder line, the first under Data ▾ › Get it
+  (`query: ""` in `_data/nav.yml`; it was a word of the bar, Query, until the owner moved it there that evening), the third start card and each dataset page's one-species and
   one-measurement CSV links (`…/query/?pick=…`). A preview or a local build names its own copy with
   `local_query` (`_config.netlify.yml`: `/query/`, placed there by `scripts/build_netlify.sh` from
   `QUERY_DIST` or `npm run build:query`; `_config.local.yml`: the Vite dev server's `builder.html`).
   `/explore/builder.html` redirects to it, query string and all. **Order of going live:** `/query/` first,
   then this site, then the Explorer's redirect; a deploy of this site before `/query/` answers would send the
-  header's Query word to a 404.
+  header's Query Builder line to a 404.
 - **The wave** (brand v3 § 4.5) is under the bar on every page: the catalogs' search band and a dataset
   page's title band are the wave with a head in it; every other page, the front door included, has a slim
   one (34 px), drawn by `_layouts/default.html`. On the front door it cuts into the hero's sky.

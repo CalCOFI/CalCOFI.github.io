@@ -9,7 +9,8 @@
 #   dropped    an item whose product or section is not there is dropped (no dead line), a menu emptied that way
 #              is dropped, and a rule is kept only between two items
 #   counts     the grey line is the release's own number ("All 20" for datasets), absent when the build has none
-#   the words  the committed list reads Data · Map · Query · Learn · calcofi.org ↗ (Ben, 2026-11-17, evening);
+#   the words  the committed list reads Data · Map · Learn · calcofi.org ↗ (Ben, 2026-11-17, evening); the Query
+#              Builder is the first line of Data ▾ › Get it, at its own address;
 #              Learn holds Guides (How CalCOFI samples, FAQ, Cite the data, Documentation) and News (Tutorials,
 #              Stories, All news); no destination is linked twice; and everything main's eight words reached
 #              (the catalogs, the apps, access, build, docs, FAQ, news) is still linked
@@ -70,7 +71,9 @@ class NavTest < Minitest::Test
   def test_query_is_its_own_address
     w = resolve([{ "id" => "query", "title" => "Query", "query" => "" }]).first
     assert_equal ["https://calcofi.io/query/", "https://calcofi.io/query/"], w.values_at("path", "url")
-    assert_equal "https://calcofi.io/query/", N.titles(committed).zip(committed).to_h["Query"]["url"], "the committed word"
+    get = committed.find { |x| x["id"] == "data" }["menu"].find { |c| c["title"] == "Get it" }["items"]
+    assert_equal ["Query Builder", "https://calcofi.io/query/"], get.first.values_at("title", "url"), "the committed line: first under Data ▾ › Get it"
+    assert_nil committed.find { |x| x["id"] == "query" }, "Query is not also a word of the bar (Ben, 2026-11-17)"
   end
 
   def test_query_follows_the_previews_own_copy
@@ -125,7 +128,7 @@ class NavTest < Minitest::Test
   end
 
   def test_the_committed_words
-    assert_equal ["Data", "Map", "Query", "Learn", "calcofi.org ↗"], N.titles(committed)
+    assert_equal ["Data", "Map", "Learn", "calcofi.org ↗"], N.titles(committed)
   end
 
   # Ben, 2026-11-17 (evening): the bar is simplified and Learn holds the rest. Docs, FAQ, News and Cite had been
