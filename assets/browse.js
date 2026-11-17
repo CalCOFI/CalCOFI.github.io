@@ -106,6 +106,7 @@
   document.addEventListener("click", function (e) {
     var a = e.target.closest && e.target.closest(".bd-r[data-k]");
     if (!a || e.metaKey || e.ctrlKey || e.shiftKey || e.button) return;
+    if (pv && getComputedStyle(pv).display === "none") return; // a phone: no preview, so follow the link to the page
     e.preventDefault(); select(a.dataset.k);
   });
   [].forEach.call(document.querySelectorAll(".bd-try [data-q]"), function (b) {

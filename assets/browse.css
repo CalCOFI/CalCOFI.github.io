@@ -121,6 +121,9 @@
   .bd-pv { position: static; order: -1; }
 }
 @media (max-width: 700px) {
+  /* on a phone a row opens its own page, as on Species and Measurements (finder.css): the preview sat ABOVE the
+     list (order: -1), so the first screen was one dataset's map and a tap on a row changed a pane out of sight */
+  .bd-pv { display: none !important; }
   .bd-colh { display: none; }
   .bd-r, .bd-card .bd-r { grid-template-columns: 1fr; grid-template-areas: none; }
   .bd-card .bd-rn, .bd-card .bd-rw, .bd-card .bd-ry { grid-area: auto; }
