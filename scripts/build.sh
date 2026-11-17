@@ -34,6 +34,8 @@ if [ -z "${CC_SKIP_TESTS:-}" ]; then
   ruby _test/downloads_test.rb >/dev/null || { echo "FAIL: _test/downloads_test.rb" >&2; exit 1; }
   # the redesigned dataset page's pure rules: the download form's whole dataset is the release zip
   ruby _test/dataset_page_test.rb >/dev/null || { echo "FAIL: _test/dataset_page_test.rb" >&2; exit 1; }
+  # Browse datasets' rules: the order, what is in a dataset and how many, asserted years, no typed axis
+  ruby _test/browse_test.rb >/dev/null || { echo "FAIL: _test/browse_test.rb" >&2; exit 1; }
 fi
 
 scripts/fetch_release.sh
