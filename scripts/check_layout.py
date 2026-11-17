@@ -18,7 +18,8 @@ can only pass by the layout actually being fixed:
              the 17 things NOT in the database read louder than the 16 that are.
   scroll     no horizontal scroll at either width, either theme.
   calm       (the dataset catalog and a dataset page, issue #30) the page is at most MAX_DS_H tall
-             at 1470 with nothing open; every fold, "Years covered", catalog row, "what is in it"
+             at 1470 with nothing open (the catalog's ceiling was restated for a finder on
+             2026-11-17: its fixed parts plus 22 rows, the arithmetic is beside the constant); every fold, "Years covered", catalog row, "what is in it"
              line and "What this is" is CLOSED on load; the catalog's list has exactly the record's
              datasets; and on the page kept for a holding no block under the head is a grid of more
              than one column (the CTD page's main column was once 418 px beside a 1,346 px sidebar —
@@ -74,13 +75,18 @@ can only pass by the layout actually being fixed:
              measurement the record's measurements.json carries for the dataset (#26: the per-cast
              ones too), each once, and the numbers in its band are the counts drawn.
   species    (/species/ and one taxon page, plan 2026-09-09 § S3; round 2 § I1, I2, P1–P3, WS-R5;
-             issue #30 D7, D10–D12, D14, D17) the index's five counts equal the inline record's and
-             its h1 carries no digit (the quiet line is the numbers' only home); the class list is
-             the record's classes, most observed first; the views are the four tabs and exactly one
-             panel shows; nothing is open on load; the matrix has exactly (rows x datasets) cells and
-             the icicle draws when its view is chosen; a search's hits fill a flat #sp-matches list
-             above the views, never hidden while there is at least one, and the class list keeps
-             only the classes holding one; every .sp-url is one line and elided from the middle; on
+             issue #30 D7, D10–D12, D14, D17; the finder of front door v2) the index's counts equal
+             the record's and its h1 carries no digit; Groups draws one card per group of
+             finder.json; the views are the five tabs (Groups · All species · The tree · the matrix ·
+             The hierarchy) and exactly one panel shows; ?tab=hierarchy lands on the hierarchy and
+             main's ?tab=classes on Groups; the matrix has exactly (rows x datasets) cells; the
+             hierarchy (main's icicle) is drawn when its view shows and only then, zooms on a band
+             and climbs back by its breadcrumb (`hierarchy_faults`); nothing is drawn into a block
+             that is never shown; a search's matches are the list's rows, species only, and the taxa
+             that are not species rows (a genus, a family …) are listed apart under them, each a
+             link to its page with its rank and what it holds, never without a search
+             (`higher_faults`; "sardin" finds the sardine and the genus Sardinops); every .sp-url is
+             one line and elided from the middle; on
              a taxon page the "Observed in" rows are the record's datasets[] with its counts and one
              DRAWN strip each, the lineage is a chain of links ending in the taxon's parent, the
              Explorer link opens prefilled on the taxon key, the ways are one line with the code
@@ -103,9 +109,15 @@ can only pass by the layout actually being fixed:
              datasets with every cell drawn and the counts summing to the series; every timeline bar
              has its dataset NAMED in the row (identity is never colour alone); the timeline is
              wider than a phone on purpose, so its own container scrolls and the page does not; the
-             default view is the LIST (issue #30 D8 A) — the unified keys, then the categories,
-             collapsed, holding every key once; the one search finds "nitrate", "NTRAZZXX",
-             "µmol/kg" and "METS" in the list and the timeline. On a measurement page every fold is
+             default view is the LIST (issue #30 D8 A), the finder's By category: every category a
+             CLOSED button on load that says what is inside, opened in place by a press and shut by
+             a second, the list holding every key once; a search opens the categories that hold a
+             match and draws no other, clearing it shuts them, and ?q= on the URL lands the same
+             way (`category_faults`); the preview never shows a row hidden in a closed category;
+             without JavaScript the page still lists every measurement (<noscript>), and with it
+             that list is not also built unseen; the one search finds "nitrate", "NTRAZZXX",
+             "µmol/kg" and "METS" in the list and the timeline; the page is at most MAX_MM_INDEX_H
+             at 1470 with nothing opened. On a measurement page every fold is
              closed on load and titled with its answer, then opened and measured; the years strip is
              DRAWN (`.mm-drawn`, the `[viewBox]` trap again) in one row per series, with one cell
              per year the record counts, the depth bars are the record's bands × its series with
@@ -208,11 +220,10 @@ can only pass by the layout actually being fixed:
                                                                 → the finder's counts against the
                                                                   record, its groups against
                                                                   finder.json, ?q= in its list; the
-                                                                  icicle is not a view of this page
-                                                                  (?tab=hierarchy must still land);
-    /measurements/: unified keys on top, categories collapsed   → the finder's By category sections,
-                                                                  every key once (the height ceiling
-                                                                  that collapsing served is kept);
+                                                                  icicle is a view again (2026-11-17);
+    /measurements/: unified keys on top                         → the finder's By category sections,
+                                                                  every key once (collapsed again on
+                                                                  2026-11-17; the ceiling never moved);
     the one search (#door-q → #door-res) on the catalog pages   → it is on the front door's Find panel
                                                                   only; each finder's own search is
                                                                   driven instead.
@@ -242,7 +253,8 @@ DEFAULT_PATHS = [
     "/datasets/cce-lter_euphausiids/",  # D3: the bio row's own taxa expander (37 taxa, custom licence)
     "/species/",                     # the species catalog: the finder's groups, the tree and the matrix behind tabs
     "/species/?tab=matrix",          # the matrix view, unchanged, one click away
-    "/species/?tab=hierarchy",       # an old link (the icicle was a view until front door v2): lands on one panel
+    "/species/?tab=hierarchy",       # the hierarchy (main's icicle), a tab again: the link lands on it, drawn
+    "/species/?tab=classes",         # main's first view's id: an old link lands on Groups
     "/species/?q=sardin",            # I2: a shared search link lands on the list of matches (umbrella D9)
     "/species/worms-217452/",        # the sardine: two datasets, twelve lineage ranks, five ways in
                                      # — and the full face: silhouette, photo, glance, five ladder
@@ -258,7 +270,8 @@ DEFAULT_PATHS = [
     "/species/worms-293496/",        # Teleostei: a class, nothing keyed to it directly
     "/species/itis-176817/",         # Larus occidentalis: a bird keyed through ITIS, a length, no plate
     "/species/worms-104085/",        # Eucalanidae: a silhouette and no photo — the silhouette is the picture
-    "/measurements/",                # the measurements catalog: search + timeline, matrix, datasets
+    "/measurements/",                # the measurements catalog: the categories closed, search + timeline, matrix, datasets
+    "/measurements/?q=nitrate",      # a shared search link lands with the categories that hold a match open
     "/measurements/temperature/",    # the unified key: two series, two datasets, eight ways in
     # the faces (plan 2026-09-11 § Verification MF5) — the seven states a measurement page can be in
     "/measurements/nitrate/",              # structure: one ion, a bounded scale, six anomaly bands
@@ -1223,12 +1236,27 @@ async (w, d) => {
       finder: (() => {
         const cf = d.getElementById("cf"); if (!cf) return null;
         let F = null; try { const x = new w.XMLHttpRequest(); x.open("GET", cf.getAttribute("data-src"), false); x.send(); F = JSON.parse(x.responseText); } catch (e) {}
+        // the taxa that are not species rows (a genus, a family …): /species/finder-taxa.json, what a search also lists
+        let T = null; try { const x = new w.XMLHttpRequest(); x.open("GET", cf.getAttribute("data-taxa"), false); x.send(); T = JSON.parse(x.responseText); } catch (e) {}
+        const hi = [...d.querySelectorAll("#cf-hi .cf-r")];
+        const head = u => { try { const x = new w.XMLHttpRequest(); x.open("HEAD", u, false); x.send(); return x.status; } catch (e) { return 0; } };
         const pv = d.getElementById("cf-pv"), isY = el => [tok("--cta-bg"), "rgb(255,205,0)"].indexOf(cs(el).backgroundColor.replace(/\s/g, "")) >= 0;
         return {
           n: ((d.getElementById("cf-n") || {}).textContent || "").trim(), count: ((d.querySelector(".bd-count") || {}).textContent || "").trim(),
           treeHead: ((d.querySelector(".sp-pane-tree h2") || {}).textContent || "").trim(),
           groups: d.querySelectorAll("#cf-list .cf-gc").length,
-          rows: [...d.querySelectorAll("#cf-list .cf-r")].map(a => a.textContent.replace(/\s+/g, " ").trim().slice(0, 90)),
+          // the list's rows are species (each carries its key); the other taxa a search finds are
+          // listed apart, in #cf-hi, each a link to its own page
+          rows: [...d.querySelectorAll("#cf-list .cf-r[data-k]")].map(a => a.textContent.replace(/\s+/g, " ").trim().slice(0, 90)),
+          rowsInHigher: d.querySelectorAll("#cf-hi .cf-r[data-k]").length,
+          higher: hi.map(a => { const tx = sel => ((a.querySelector(sel) || {}).textContent || "").replace(/\s+/g, " ").trim();
+            const ds = a.querySelector(".cf-ds"), sm = ds && ds.querySelector("small");
+            return { name: tx(".cf-nm b"), sub: tx(".cf-nm > span"), holds: ds ? ds.textContent.replace(sm ? sm.textContent : "", "").replace(/\s+/g, " ").trim() : "", href: a.getAttribute("href") }; }),
+          higherHead: ((d.querySelector("#cf-hi h2") || {}).textContent || "").replace(/\s+/g, " ").trim(),
+          higherAfterList: (() => { const b = d.getElementById("cf-hi"), last = [...d.querySelectorAll("#cf-list .cf-r[data-k]")].pop();
+            return !b || !last || !!(last.compareDocumentPosition(b) & 4); })(),
+          higherStatus: hi.length ? head(hi[0].href) : null,
+          recTaxa: T ? T.length : null,
           recGroups: F && F.groups ? F.groups.length : null, recRows: F && F.rows ? F.rows.length : null,
           recSpecies: F && F.counts ? F.counts.species_observed : null,
           pvShown: !!pv && !pv.hidden && cs(pv).display !== "none", pvTitle: pv && pv.querySelector("h2") ? pv.querySelector("h2").textContent.trim() : null,
@@ -1244,6 +1272,14 @@ async (w, d) => {
       views: [...d.querySelectorAll("#ts-species .tabrow > button")].map(b => b.getAttribute("data-tab")),
       // only the chosen view's panel showing
       panelsShown: [...d.querySelectorAll("#ts-species > .tabpanel")].filter(p => !p.hidden).length,
+      // the hierarchy (main's icicle, a tab again since 2026-11-17): what is drawn in it as the page landed
+      ice: (() => { const sv = d.getElementById("sp-ice"); return sv ? {
+        rects: sv.querySelectorAll("rect").length, labels: sv.querySelectorAll("text").length,
+        w: px(sv.getBoundingClientRect().width), crumb: d.querySelectorAll("#sp-crumb button").length,
+        seg: d.querySelectorAll(".sp-seg button").length, inPanel: (sv.closest(".tabpanel") || { getAttribute: () => null }).getAttribute("data-panel") } : null; })(),
+      // nothing is drawn into a block that is never shown (review S-26: main's class list and icicle
+      // were drawn into a hidden .cf-legacy)
+      neverShown: d.querySelectorAll(".cf-legacy").length,
       // the page's own content (header to its last row, the site footer excluded), at this width
       contentH: page ? px(page.getBoundingClientRect().bottom + w.scrollY) : 0,
       treeRoots: d.querySelectorAll('#sp-tree > ul > li[role="treeitem"]').length,
@@ -1272,6 +1308,23 @@ async (w, d) => {
       out.species.treeRowHNoSil = px(row.getBoundingClientRect().height);
       silEl.style.display = was;
       if (tp) tp.hidden = was0;
+    }
+    // the hierarchy is drawn when its tab is pressed (a hidden <svg> has no width to draw to), zooms on
+    // a band and climbs back by the breadcrumb; then the view the page landed on is chosen again
+    const tabOf = id => d.querySelector('#ts-species .tabrow > button[data-tab="' + id + '"]');
+    const hb = tabOf("hierarchy"), sv = d.getElementById("sp-ice");
+    if (hb && sv) {
+      const was = out.species.view, n = () => sv.querySelectorAll("rect").length;
+      hb.click(); await sleep(120);
+      const pressed = { view: (d.querySelector('#ts-species .tabrow > button[aria-selected="true"]') || hb).getAttribute("data-tab"),
+        rects: n(), w: px(sv.getBoundingClientRect().width), crumb: d.querySelectorAll("#sp-crumb button").length,
+        panels: [...d.querySelectorAll("#ts-species > .tabpanel")].filter(p => !p.hidden).length };
+      const g = sv.querySelector("g");
+      if (g) { g.dispatchEvent(new w.MouseEvent("click", { bubbles: true })); await sleep(60); pressed.zoomCrumb = d.querySelectorAll("#sp-crumb button").length; }
+      const c0 = d.querySelector("#sp-crumb button");
+      if (c0) { c0.click(); await sleep(60); pressed.backCrumb = d.querySelectorAll("#sp-crumb button").length; pressed.backRects = n(); }
+      out.species.icePressed = pressed;
+      const back = tabOf(was); if (back && was !== "hierarchy") { back.click(); await sleep(120); }
     }
   }
 
@@ -1491,18 +1544,43 @@ async (w, d) => {
     // and the timeline alike; a search reads both
     // (front door v2: the list is the finder's — #cf-list's rows, By category or A–Z — and #door-q is
     // its search box; main's own list is kept in the page unseen so measurements.js runs unchanged)
+    // a row is in view unless it is inside a closed category (issue #30 D8: the categories are closed
+    // groups, each a button; `hidden` is the state)
+    const inView = a => !a.closest("[hidden]") && a.getBoundingClientRect().height > 0;
+    const catsNow = () => [...d.querySelectorAll("#cf-list .cf-grp[data-cat]")].map(g => {
+      const b = g.querySelector("h3 > button.cf-gb"), body = b && d.getElementById(b.getAttribute("aria-controls"));
+      return { cat: g.getAttribute("data-cat"), rows: g.querySelectorAll(".cf-r").length,
+        shown: [...g.querySelectorAll(".cf-r")].filter(inView).length,
+        n: +((g.querySelector(".cf-gn") || {}).textContent || "").replace(/ of .*$/, "").replace(/[^0-9]/g, ""),
+        button: !!b && b.getAttribute("type") === "button", says: b ? b.getAttribute("aria-expanded") : null,
+        controls: !!body && g.contains(body), bodyHidden: body ? body.hidden : null,
+        hint: ((g.querySelector(".cf-gtop") || {}).textContent || "").trim().length };
+    });
+    // the row the preview is showing: in view, hidden inside a closed category, or none (the pane says to choose)
+    const pvRow = () => { const a = d.querySelector("#cf-list .cf-r.on"); return a ? (inView(a) ? "in view" : "hidden") : null; };
     const read = () => ({
       rows: tl.querySelectorAll(".mm-nm").length,
       list: d.querySelectorAll("#cf-list .cf-r").length,
+      shown: [...d.querySelectorAll("#cf-list .cf-r")].filter(inView).length,
+      cats: catsNow().map(c => ({ cat: c.cat, rows: c.rows, shown: c.shown, says: c.says })),
+      pvRow: pvRow(),
       n: ((d.getElementById("cf-n") || {}).textContent || "").trim()
     });
     out.mm = {
       h1: (d.querySelector(".calm-cathead h1, .bd-head h1") || {}).textContent || null,
       // the finder's By category list: one section per category, its count and its rows
-      listCats: [...d.querySelectorAll("#cf-list .cf-grp[data-cat]")].map(g => ({ cat: g.getAttribute("data-cat"),
-        rows: g.querySelectorAll(".cf-r").length,
-        n: +((g.querySelector(".cf-gn") || {}).textContent || "").replace(/[^0-9]/g, "") })),
+      listCats: catsNow(),
       listRows: d.querySelectorAll("#cf-list .cf-r").length,
+      listInView: [...d.querySelectorAll("#cf-list .cf-r")].filter(inView).length,
+      pvRow: pvRow(),
+      pvTitle: ((d.querySelector("#cf-pv h2") || {}).textContent || "").trim(),
+      q: (d.getElementById("door-q") || {}).value || "",
+      // main's list rendered in Liquid is what a reader WITHOUT JavaScript gets (<noscript>); with
+      // scripting it must not also be built and hidden (it was: 104 rows in a .cf-legacy block)
+      neverShown: d.querySelectorAll(".cf-legacy, #mm-cats, #mm-unified").length,
+      // (read from the page as served: the finder replaces the list's host, <noscript> and all, when it runs)
+      noscriptRows: (() => { try { const x = new w.XMLHttpRequest(); x.open("GET", w.location.pathname, false); x.send();
+        return (x.responseText.match(/<noscript>[\s\S]*?<\/noscript>/g) || []).reduce((a, t) => a + (t.match(/<li class="mm-row"/g) || []).length, 0); } catch (e) { return null; } })(),
       listKeys: [...d.querySelectorAll("#cf-list .cf-r[data-k]")].map(a => a.getAttribute("data-k")),
       // every row names the datasets that measure it (identity is never a dot alone)
       listRowsNoName: [...d.querySelectorAll("#cf-list .cf-r")].filter(a => {
@@ -1538,14 +1616,31 @@ async (w, d) => {
                        [...tl.querySelectorAll(".mm-ds span")].length
     };
     const q = d.getElementById("door-q");
+    // a press on a category's button opens it IN PLACE (the button does not move and keeps the focus),
+    // puts its first row in the preview, and a second press shuts it. Only on the page as it loads By
+    // category with no search; the search below then starts from every category closed again.
+    const b0 = d.querySelector("#cf-list .cf-grp h3 > button.cf-gb");
+    if (b0 && out.mm.view === "cat" && !out.mm.q) {
+      const top = () => px(b0.getBoundingClientRect().top + w.scrollY), t0 = top();
+      b0.focus(); b0.click(); await sleep(60);
+      const c1 = catsNow();
+      out.mm.press = { cat: c1[0].cat, says: c1[0].says, shown: c1[0].shown, rows: c1[0].rows, others: c1.slice(1).filter(c => c.shown || c.says === "true").length,
+        moved: top() - t0, focusKept: d.activeElement === b0, pvRow: pvRow(), pvTitle: ((d.querySelector("#cf-pv h2") || {}).textContent || "").trim(),
+        colHeads: [...d.querySelectorAll("#cf-list .cf-colh")].filter(inView).length };
+      b0.click(); await sleep(60);
+      out.mm.press.again = { says: catsNow()[0].says, shown: catsNow()[0].shown, pvRow: pvRow() };
+    }
     const MM_TERMS = ["nitrate", "NTRAZZXX", "µmol/kg", "METS"];
     const mtype = t => new Promise(res => {
       q.value = t;
       q.dispatchEvent(new w.Event("input", { bubbles: true }));
       setTimeout(() => { out.mm.search = out.mm.search || {}; out.mm.search[t] = read(); res(); }, 80);
     });
+    const q0 = q.value;
     return MM_TERMS.reduce((p, t) => p.then(() => mtype(t)), Promise.resolve())
-      .then(() => { q.value = ""; q.dispatchEvent(new w.Event("input", { bubbles: true })); return out; });
+      .then(() => { q.value = ""; q.dispatchEvent(new w.Event("input", { bubbles: true })); return sleep(80); })
+      // the box cleared: what the search opened is shut again
+      .then(() => { out.mm.cleared = read(); q.value = q0; q.dispatchEvent(new w.Event("input", { bubbles: true })); return out; });
   }
 
   // ── measurement faces: the row, the sentence, the collapsed why, the two charts ──────────
@@ -1740,9 +1835,28 @@ MAX_STRETCH = 1.25    # a tile drawn more than a quarter taller than its content
 # the Download button (2026-11-16): above the fold of a 1280 x 800 screen, at 1280 and wider
 DL_FOLD_W, DL_FOLD_H = 1280, 800
 PV_MIN_VIEW = 200     # px of the finder's preview on screen once a row is chosen (its name and its buttons)
-MAX_DS_H = {"catalog": 2300, "dataset": 2200}   # catalog: 19 rows + the 347 px site footer the mockup lacked
+# The height ceilings at 1470 with nothing open (issue #30).
+# catalog — RESTATED on 2026-11-17 by the owner's decision (Ben: "fix with mix"; the one threshold that day
+#   that moved). It was 2,300, set for main's calm list of 19 one-line rows. /datasets/ is a FINDER now
+#   (Browse datasets, front door v2): a row is a name, what the dataset holds and its years, about 74 px,
+#   and the rows are the page's point, so the ceiling is the page's fixed parts plus room for its rows:
+#       fixed parts  1,096 px = header 72 + search band 134 + crumb 54 + "When was it sampled" fold 68
+#                               + tab row 63 + column heads 71 + folds under the list 179
+#                               + page foot 56 + site footer 399
+#       rows         20 datasets in 1,479 px (v2026.11.14: 70 to 97 px each, a long name wraps) = 74 px a row
+#       measured     1,096 + 1,479 = 2,575 px
+#       ceiling      1,096 + 22 x 74 = 2,724 → 2,725: the page as it is, and two more datasets.
+#   A 23rd dataset (about 2,800 px) fails, and 25 (about 2,950) by more than 200 px: growth is noticed and
+#   the number is then restated on purpose, or the list is paged; it is not a licence for taller rows
+#   (20 rows over 2,725 px means the rows grew to more than 81 px each).
+# dataset — unchanged.
+MAX_DS_H = {"catalog": 2725, "dataset": 2200}
 MAX_GRID_H = 4400     # px at 1470 with the staging record (was 4,910)
-SPECIES_VIEWS = ["groups", "list", "tree", "matrix"]   # front door v2's finder: Groups · All species · The tree · the matrix
+# front door v2's finder: Groups · All species · The tree · the matrix, and (2026-11-17, Ben: "add species
+# hierarchy view back as another tab") The hierarchy, main's icicle
+SPECIES_VIEWS = ["groups", "list", "tree", "matrix", "hierarchy"]
+# a view's id on main that an old link may still carry, and the view it must land on now
+SPECIES_OLD_VIEWS = {"classes": "groups"}
 MAX_SPECIES_INDEX_H = 2220   # issue #30: /species/ at 1470, nothing open — the mockup's 1,775 + 25 %
 MAX_SPECIES_PAGE_H = 1500    # issue #30: a taxon page at 1470, nothing open — ~1,200 + 25 %
 # the front door (issue #30; the seven tasks of 2026-11-16; front door v2's first screen, 2026-11-17)
@@ -2246,6 +2360,133 @@ def check_fold(where, r, fails, notes):
     check_first_screen(where, H, FOLD_W, fails, notes, fold=True)
 
 
+def hierarchy_faults(sp):
+    """what is wrong with the species index's hierarchy view (main's icicle, a tab again since
+    2026-11-17), from the probe's `species` record: `view` the tab selected as the page landed, `ice`
+    what was drawn then, `icePressed` what pressing the tab drew. Drawn only when shown: a hidden
+    <svg> has no width, so an icicle drawn behind another view is drawn to nothing."""
+    out, ice, pr = [], sp.get("ice"), sp.get("icePressed")
+    if not ice or ice.get("inPanel") != "hierarchy":
+        return ["the hierarchy tab's panel holds no icicle (#sp-ice)"]
+    if ice.get("seg") != 2:
+        out.append(f"the hierarchy offers {ice.get('seg')} ways to size it, expected 2 (observations, species)")
+    if sp.get("view") == "hierarchy":
+        if ice["rects"] < 2 or ice["crumb"] < 1:
+            out.append(f"the hierarchy view is showing but drew {ice['rects']} band(s) and {ice['crumb']} breadcrumb(s)")
+    elif ice["rects"]:
+        out.append(f"the hierarchy drew {ice['rects']} band(s) while the {sp.get('view')!r} view is showing")
+    if not pr:
+        out.append("the hierarchy tab was not pressed (no tab, or no #sp-ice)")
+    elif pr.get("view") != "hierarchy" or pr.get("panels") != 1:
+        out.append(f"pressing The hierarchy selects {pr.get('view')!r} with {pr.get('panels')} panel(s) showing")
+    elif pr.get("rects", 0) < 2 or pr.get("w", 0) < 200 or pr.get("crumb", 0) < 1:
+        out.append(f"pressing The hierarchy drew {pr.get('rects')} band(s) in {pr.get('w')}px with {pr.get('crumb')} breadcrumb(s)")
+    elif pr.get("zoomCrumb", 0) != pr["crumb"] + 1:
+        out.append(f"a press on a band does not zoom into it (breadcrumb {pr['crumb']} → {pr.get('zoomCrumb')})")
+    elif pr.get("backCrumb") != 1 or pr.get("backRects", 0) < 2:
+        out.append(f"the breadcrumb does not climb back out ({pr.get('backCrumb')} crumb(s), {pr.get('backRects')} band(s))")
+    return out
+
+
+def higher_faults(fi, has_q, pages=None):
+    """what is wrong with the taxa a species search lists apart from the species (a genus, a family, an
+    order …: every taxon with a page that is not a row of the list), from the probe's `finder` record.
+    `pages` is the record's own count of taxon pages: rows and other taxa together cannot exceed it."""
+    out, hi = [], fi.get("higher") or []
+    if not fi.get("recTaxa"):
+        out.append("/species/finder-taxa.json is missing or empty: a search cannot find a genus or a family")
+    elif pages and fi.get("recRows") is not None and fi["recRows"] + fi["recTaxa"] > pages:
+        out.append(f"{fi['recRows']} species rows and {fi['recTaxa']} other taxa for {pages} taxon pages: a taxon is listed twice")
+    if not has_q:
+        if hi or fi.get("higherHead"):
+            out.append(f"{len(hi)} other taxa are listed with no search (the block is drawn only on a search)")
+        return out
+    if fi.get("rowsInHigher"):
+        out.append(f"{fi['rowsInHigher']} species row(s) inside the other-taxa block: the list and the count stay species")
+    if hi and not fi.get("higherHead"):
+        out.append("the other taxa are listed with no heading that says they are not species")
+    if hi and not fi.get("higherAfterList"):
+        out.append("the other taxa are listed before the species rows, expected under them")
+    bad = [x["href"] for x in hi if not re.search(r"(^|/)species/[\w.-]+/$", x.get("href") or "")]
+    if bad:
+        out.append(f"{len(bad)} other-taxa row(s) do not link a species page: {bad[:3]}")
+    norank = [x["name"] for x in hi if not x.get("sub") or not x.get("holds")]
+    if norank:
+        out.append(f"{len(norank)} other-taxa row(s) say no rank or not what they hold: {norank[:3]}")
+    st = fi.get("higherStatus")
+    if hi and not (st is not None and 200 <= st < 400):
+        out.append(f"the first other-taxa link ({hi[0].get('href')}) answers HTTP {st}")
+    return out
+
+
+def category_faults(mm, width):
+    """what is wrong with the measurements index's By category view (issue #30 D8, back on
+    2026-11-17: the categories are CLOSED groups), from the probe's `mm` record.
+      on load      every category is a button that names its rows (aria-controls) and says it is shut
+                   (aria-expanded=false), with no row in view and a line saying what is inside; the
+                   preview shows no row that is hidden inside one
+      ?q= on load  the categories drawn are the ones that hold a match, each open with every match in view
+      a press      opens that category in place (its button does not move and keeps the focus), every
+                   one of its rows in view and no other category's; the preview is then on a row in
+                   view; a second press shuts it
+      a search     (typed) opens every category that holds a match, draws none that holds none, with
+                   every match in view; clearing the box shuts what the search opened"""
+    out, lc, q = [], mm.get("listCats") or [], mm.get("q")
+    if mm.get("view") != "cat":
+        return out
+    for c in lc:
+        if not (c.get("button") and c.get("controls")):
+            out.append(f"category {c['cat']!r} is not a button naming its rows (h3 > button[aria-controls])")
+        elif q:
+            if c["says"] != "true" or c["shown"] != c["rows"] or not c["rows"]:
+                out.append(f"?q={q}: category {c['cat']!r} says aria-expanded={c['says']} with {c['shown']} of {c['rows']} match(es) in view")
+        else:
+            if c["says"] != "false" or c["shown"] or not c["bodyHidden"]:
+                out.append(f"category {c['cat']!r} is open on load (aria-expanded={c['says']}, {c['shown']} row(s) in view): "
+                           f"the categories are closed until pressed (issue #30 D8)")
+            if not c.get("hint"):
+                out.append(f"closed category {c['cat']!r} does not say what is inside")
+    if mm.get("pvRow") == "hidden":
+        out.append("the preview shows a row that is hidden inside a closed category")
+    if q and width >= 1000 and lc and mm.get("pvRow") != "in view":
+        out.append(f"?q={q}: the preview is not on a row in view")
+    if q:
+        return out
+    pr = mm.get("press")
+    if not pr:
+        out.append("no category button to press")
+    else:
+        if pr["says"] != "true" or not pr["rows"] or pr["shown"] != pr["rows"]:
+            out.append(f"pressing {pr['cat']!r}: aria-expanded={pr['says']}, {pr['shown']} of {pr['rows']} row(s) in view")
+        if pr["others"]:
+            out.append(f"pressing {pr['cat']!r} opened {pr['others']} other categor{'y' if pr['others'] == 1 else 'ies'}")
+        if abs(pr["moved"]) > 1:
+            out.append(f"pressing {pr['cat']!r} moved its own button {pr['moved']}px")
+        if not pr["focusKept"]:
+            out.append(f"pressing {pr['cat']!r} lost the focus from its button")
+        if width >= 1000 and pr["pvRow"] != "in view":
+            out.append(f"with {pr['cat']!r} open the preview is not on a row in view ({pr.get('pvTitle')!r})")
+        ag = pr.get("again") or {}
+        if ag.get("says") != "false" or ag.get("shown"):
+            out.append(f"a second press does not shut {pr['cat']!r} (aria-expanded={ag.get('says')}, {ag.get('shown')} row(s) in view)")
+        if ag.get("pvRow") == "hidden":
+            out.append(f"with {pr['cat']!r} shut again the preview still shows one of its rows")
+    for term, v in (mm.get("search") or {}).items():
+        cats = v.get("cats") or []
+        shut = [c["cat"] for c in cats if c["rows"] and (c["says"] != "true" or c["shown"] != c["rows"])]
+        empty = [c["cat"] for c in cats if not c["rows"]]
+        if shut:
+            out.append(f"search {term!r} leaves {shut} closed though each holds a match")
+        if empty:
+            out.append(f"search {term!r} draws {empty} though none holds a match")
+        if v.get("shown") != v.get("list"):
+            out.append(f"search {term!r}: {v.get('shown')} of {v.get('list')} match(es) in view")
+    left = [c["cat"] for c in (mm.get("cleared") or {}).get("cats") or [] if c["says"] != "false" or c["shown"]]
+    if left:
+        out.append(f"with the search cleared {left} stay open: what the search opened is shut again")
+    return out
+
+
 def bands_r2(P):
     """the record's own anomaly bands, as both the M10 assertions read them"""
     return (P.get("anomaly") or {}).get("bands") or []
@@ -2583,16 +2824,20 @@ def check(path, r, width, theme, fails, notes):
             fails.append(f"{where}: the species index has no h1")
         elif any(ch.isdigit() for ch in sp["h1"]):
             fails.append(f"{where}: the species index h1 carries a digit: {sp['h1']!r}")
-        # the dense views stay, one click away: the tabs, unchanged panels behind them. (The icicle,
-        # main's "hierarchy" view, is not a view of the finder's page: an old ?tab=hierarchy link lands
-        # on the default view, which is asserted — exactly one panel showing — rather than a blank page.)
+        # the dense views stay, one click away: the tabs, unchanged panels behind them. The hierarchy
+        # (main's icicle) is one of them again: ?tab=hierarchy lands on it (review S-29: it fell back to
+        # Groups), and main's ?tab=classes lands on Groups, the view that took the class list's place.
         if sp.get("views") != SPECIES_VIEWS:
             fails.append(f"{where}: the view tabs read {sp.get('views')}, expected {' · '.join(SPECIES_VIEWS)}")
         if sp.get("panelsShown") != 1:
             fails.append(f"{where}: {sp.get('panelsShown')} view panels showing, expected exactly one")
         mtab = re.search(r"[?&]tab=([\w-]+)", path)
-        if mtab and mtab.group(1) in SPECIES_VIEWS and sp.get("view") != mtab.group(1):
-            fails.append(f"{where}: ?tab={mtab.group(1)} on the URL but the {sp.get('view')!r} view is selected")
+        want_view = SPECIES_OLD_VIEWS.get(mtab.group(1), mtab.group(1)) if mtab else None
+        if want_view in SPECIES_VIEWS and sp.get("view") != want_view:
+            fails.append(f"{where}: ?tab={mtab.group(1)} on the URL but the {sp.get('view')!r} view is selected, expected {want_view!r}")
+        fails.extend(f"{where}: {x}" for x in hierarchy_faults(sp))
+        if sp.get("neverShown"):
+            fails.append(f"{where}: {sp['neverShown']} .cf-legacy block(s) on the species index — a view drawn where it is never shown")
         # the matrix is exactly (classes + the two rows the record makes necessary) x datasets
         if sp["rows"] and sp["cols"]:
             wantc = sp["rows"] * sp["cols"]
@@ -2608,29 +2853,44 @@ def check(path, r, width, theme, fails, notes):
             fails.append(f"{where}: a tree row with its silhouette is {sp['treeRowH']}px, "
                          f"{sp['treeRowHNoSil']}px without it — the glyph grew the row")
         notes.append(f"{where}: view {sp.get('view')}, {fi['groups'] if fi else '?'} groups / {len(fi['rows']) if fi else '?'} rows drawn, "
-                     f"matrix {sp['cells']} cells, content {sp['contentH']}px")
+                     f"matrix {sp['cells']} cells, hierarchy {(sp.get('ice') or {}).get('rects')} bands as landed / "
+                     f"{(sp.get('icePressed') or {}).get('rects')} when its tab is pressed, content {sp['contentH']}px")
         # issue #30: a height ceiling with nothing open — the mockup's 1,775 px + 25 %
         if width >= 1400 and not has_q and sp.get("view") == SPECIES_VIEWS[0] and sp["contentH"] > MAX_SPECIES_INDEX_H:
             fails.append(f"{where}: the species index is {sp['contentH']}px with nothing open, "
                          f"ceiling {MAX_SPECIES_INDEX_H}px")
         # I2 (umbrella D9): a shared ?q= link lands with the search applied — the finder's list holds the
         # matches (was the flat #sp-matches list above the views), most recorded first
+        # a search finds the higher taxa too (2026-11-17; main's one search listed the genus Sardinops for
+        # "sardin", the finder listed species only): every taxon with a page that is not a species row is
+        # in /species/finder-taxa.json and is listed APART from the species, under them, only on a search
+        if fi:
+            fails.extend(f"{where}: {x}" for x in higher_faults(fi, has_q, rec.get("pages")))
         if has_q and fi:
             rows = fi["rows"]
             if sp.get("view") != "list":
                 fails.append(f"{where}: ?q= on the URL but the {sp.get('view')!r} view shows, not the list of matches")
             if re.search(r"[?&]q=sardin\b", path):
-                if len(rows) < 2:
-                    fails.append(f"{where}: the list has {len(rows)} row(s) for 'sardin', expected >= 2")
-                elif "Sardinops" not in rows[0]:
-                    fails.append(f"{where}: the list's first row for 'sardin' is {rows[0]!r}, "
+                hi = fi.get("higher") or []
+                genus = [x for x in hi if x["name"] == "Sardinops"]
+                if len(rows) + len(hi) < 2:
+                    fails.append(f"{where}: 'sardin' finds {len(rows)} species row(s) and {len(hi)} other taxa, expected >= 2 "
+                                 f"(the species and the genus Sardinops, as on main)")
+                elif not rows or "Sardinops" not in rows[0]:
+                    fails.append(f"{where}: the list's first row for 'sardin' is {rows[0] if rows else None!r}, "
                                  f"expected a Sardinops by observations")
+                elif not genus:
+                    fails.append(f"{where}: 'sardin' does not list the genus Sardinops among the other taxa ({[x['name'] for x in hi]})")
+                elif not genus[0]["sub"].startswith("Genus") or not re.search(r"^[\d,]+ species$", genus[0]["holds"]):
+                    fails.append(f"{where}: the genus Sardinops is listed as {genus[0]['sub']!r} holding {genus[0]['holds']!r}, "
+                                 f"expected its rank and how many species it holds")
                 if fi["recRows"] and not (0 < len(rows) < fi["recRows"]):
                     fails.append(f"{where}: 'sardin' keeps {len(rows)} of {fi['recRows']} rows")
                 if num(fi["n"]) != len(rows):
                     fails.append(f"{where}: the search's count says {fi['n']!r} for {len(rows)} rows drawn")
             if rows:
-                notes.append(f"{where}: {len(rows)} match(es), first {rows[0][:50]!r}")
+                notes.append(f"{where}: {len(rows)} match(es), first {rows[0][:50]!r}; other taxa: "
+                             f"{', '.join(x['name'] + ' (' + x['sub'] + ')' for x in (fi.get('higher') or [])[:4]) or 'none'}")
 
     # ── one taxon page (issue #30: D11 A, D12 A, D14 A, D17 A) ──────────────────────
     spp = r.get("speciesPage")
@@ -2811,15 +3071,23 @@ def check(path, r, width, theme, fails, notes):
         notes.append(f"{where}: timeline {mm['tlRows']} rows / {mm['tlBars']} bars in {mm['tlCats']} categories, "
                      f"matrix {mm['mxRows']}x{mm['ds']} = {mm['mxCells']} cells ({mm['mxFilled']} with a series, "
                      f"summing {mm['mxSum']}), {mm['dsRows']} datasets, list {mm['listRows']} rows in "
-                     f"{len(mm['listCats'])} categories, {r.get('docHeight')}px")
-        if mm["tlRows"] != rec.get("measurements"):
-            fails.append(f"{where}: the timeline draws {mm['tlRows']} rows, the record has "
-                         f"{rec.get('measurements')} measurements")
-        if mm["tlBars"] != mm["recSeries"] or mm["tlBars"] != rec.get("series"):
-            fails.append(f"{where}: the timeline draws {mm['tlBars']} bars, the record has "
-                         f"{mm['recSeries']} series in rows[] and {rec.get('series')} in counts")
-        if mm["tlCats"] != mm["cats"]:
-            fails.append(f"{where}: {mm['tlCats']} category headings for {mm['cats']} categories")
+                     f"{len(mm['listCats'])} categories ({mm.get('listInView')} in view, "
+                     f"{sum(1 for c in mm['listCats'] if c.get('says') == 'true')} open), {r.get('docHeight')}px")
+        # (a page that lands on a search, ?q=, draws the matches only: the timeline against the record
+        # is judged on the page with no search, and there it must still find something)
+        has_q = bool(mm.get("q"))
+        if has_q:
+            if not (0 < mm["tlRows"] < (rec.get("measurements") or 0)):
+                fails.append(f"{where}: ?q={mm['q']} leaves the timeline {mm['tlRows']} of {rec.get('measurements')} rows")
+        else:
+            if mm["tlRows"] != rec.get("measurements"):
+                fails.append(f"{where}: the timeline draws {mm['tlRows']} rows, the record has "
+                             f"{rec.get('measurements')} measurements")
+            if mm["tlBars"] != mm["recSeries"] or mm["tlBars"] != rec.get("series"):
+                fails.append(f"{where}: the timeline draws {mm['tlBars']} bars, the record has "
+                             f"{mm['recSeries']} series in rows[] and {rec.get('series')} in counts")
+            if mm["tlCats"] != mm["cats"]:
+                fails.append(f"{where}: {mm['tlCats']} category headings for {mm['cats']} categories")
         # the matrix is category x dataset, every cell drawn, the counts summing to the series
         if mm["mxCells"] != mm["cats"] * mm["ds"]:
             fails.append(f"{where}: the matrix has {mm['mxCells']} cells, expected "
@@ -2846,34 +3114,51 @@ def check(path, r, width, theme, fails, notes):
             fails.append(f"{where}: the tooltip's role is {mm['tipRole']!r}, expected 'tooltip'")
         # issue #30 D8 A: the default view is the LIST — since front door v2 the finder's By category
         # (then A–Z), each category a section saying its count over its rows; every key once, the
-        # counts the record's. (D8 A's "unified keys on top" and "categories collapsed on load" have no
-        # counterpart: the finder marks a unified key in its own row and lists every category open —
-        # what the collapsing bought, a short page, is still asserted by MAX_MM_INDEX_H below.)
+        # counts the record's. The categories are COLLAPSED on load again (2026-11-17, Ben: the finder
+        # listed every category open, 8,643 px): `category_faults` holds the closed default, the press
+        # and the search, and MAX_MM_INDEX_H the short page that buys. (D8 A's "unified keys on top"
+        # has no counterpart: the finder marks a unified key in its own row.)
         lc = mm["listCats"]
+        fails.extend(f"{where}: {x}" for x in category_faults(mm, width))
+        if mm.get("neverShown"):
+            fails.append(f"{where}: main's list is built and never shown ({mm['neverShown']} of .cf-legacy, #mm-cats, #mm-unified)")
+        if mm.get("noscriptRows") != rec.get("measurements"):
+            fails.append(f"{where}: without JavaScript the page lists {mm.get('noscriptRows')} measurement(s) (<noscript>), "
+                         f"the record has {rec.get('measurements')}")
         if not mm["listShown"] or mm["viewTabs"][:2] != ["cat", "az"] or mm.get("view") not in ("cat", "az"):
             fails.append(f"{where}: the list is not the default view (tabs {mm['viewTabs']!r}, selected {mm.get('view')!r})")
         if "timeline" not in mm["viewTabs"] or "matrix" not in mm["viewTabs"]:
             fails.append(f"{where}: the timeline and the matrix are not view tabs ({mm['viewTabs']!r})")
         if mm.get("view") == "cat":
-            if len(lc) != mm["cats"]:
+            if not has_q and len(lc) != mm["cats"]:
                 fails.append(f"{where}: the list has {len(lc)} category sections for {mm['cats']} categories")
             for c in lc:
                 if c["n"] != c["rows"]:
                     fails.append(f"{where}: category {c['cat']!r} says {c['n']} but lists {c['rows']}")
-        if mm["listRows"] != rec.get("measurements") or len(set(mm["listKeys"])) != mm["listRows"]:
-            fails.append(f"{where}: the list holds {mm['listRows']} rows ({len(set(mm['listKeys']))} distinct keys), the "
-                         f"record has {rec.get('measurements')} measurements")
         said_n = int(re.sub(r"[^0-9]", "", mm.get("countSaid") or "") or 0)
-        if said_n != rec.get("measurements"):
-            fails.append(f"{where}: the search's count says {mm.get('countSaid')!r}, the record has {rec.get('measurements')} measurements")
+        if has_q:
+            # a shared ?q= link lands with the search applied: fewer rows than the record, the count the rows drawn
+            if not (0 < mm["listRows"] < (rec.get("measurements") or 0)) or said_n != mm["listRows"]:
+                fails.append(f"{where}: ?q={mm['q']} lists {mm['listRows']} of {rec.get('measurements')} measurements and says {mm.get('countSaid')!r}")
+        else:
+            if mm["listRows"] != rec.get("measurements") or len(set(mm["listKeys"])) != mm["listRows"]:
+                fails.append(f"{where}: the list holds {mm['listRows']} rows ({len(set(mm['listKeys']))} distinct keys), the "
+                             f"record has {rec.get('measurements')} measurements")
+            if said_n != rec.get("measurements"):
+                fails.append(f"{where}: the search's count says {mm.get('countSaid')!r}, the record has {rec.get('measurements')} measurements")
         if mm["listRowsNoName"]:
             fails.append(f"{where}: {mm['listRowsNoName']} list row(s) name no dataset")
         if width >= 1000 and not mm.get("pvShown"):
             fails.append(f"{where}: the finder's preview is not drawn beside the list at {width}px")
-        if width >= 1400 and (r.get("docHeight") or 0) > MAX_MM_INDEX_H:
+        if width >= 1400 and not has_q and (r.get("docHeight") or 0) > MAX_MM_INDEX_H:
             fails.append(f"{where}: the catalog is {r.get('docHeight')}px with nothing open, max {MAX_MM_INDEX_H}")
         s = mm.get("search") or {}
-        notes.append(f"{where}: search " + " · ".join(f"{t}: {v['list']} listed / {v['rows']} timeline" for t, v in s.items()))
+        pr = mm.get("press")
+        if pr:
+            notes.append(f"{where}: pressing {pr['cat']!r} puts {pr['shown']} of {pr['rows']} rows in view, its button moved {pr['moved']}px, "
+                         f"preview {pr.get('pvTitle')!r}; pressed again {(pr.get('again') or {}).get('shown')} in view")
+        notes.append(f"{where}: search " + " · ".join(f"{t}: {v['list']} listed in {len(v.get('cats') or [])} categor{'y' if len(v.get('cats') or []) == 1 else 'ies'}"
+                                                      f" / {v['rows']} timeline" for t, v in s.items()))
         for term in ("nitrate", "NTRAZZXX", "µmol/kg", "METS"):
             if s.get(term, {}).get("rows", 0) < 1:
                 fails.append(f"{where}: the index search finds nothing for {term!r} in the timeline")
