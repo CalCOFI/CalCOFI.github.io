@@ -32,6 +32,9 @@
   // ── 1 · the words ──
   var CAR = '<svg class="cc-car" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 9l5 6 5-6z"/></svg>';
   function icons() { return !!document.querySelector('link[href*="icons.css"]'); }
+  // a word's address as this page would resolve it, without query or fragment: nav.json holds full URLs on calcofi.io
+  // and bare paths on a preview, and a string compare with location.href never matched the paths
+  function abs(u) { try { return new URL(u, location.href).href.replace(/[?#].*$/, ""); } catch (e) { return u; } }
   function render(nav, words) {
     var withI = icons(), here = location.href.replace(/[?#].*$/, ""), h = "";
     (words || []).forEach(function (w) {
@@ -50,7 +53,7 @@
         });
         h += "</div></div>";
       } else {
-        h += "<a" + (w.ext ? ' class="cc-ext"' : "") + ' data-word="' + esc(w.id) + '" href="' + esc(w.url) + '"' + (w.url.replace(/[?#].*$/, "") === here ? ' aria-current="page"' : "") + ">" + esc(w.title) + "</a>";
+        h += "<a" + (w.ext ? ' class="cc-ext"' : "") + ' data-word="' + esc(w.id) + '" href="' + esc(w.url) + '"' + (abs(w.url) === here ? ' aria-current="page"' : "") + ">" + esc(w.title) + "</a>";
       }
     });
     nav.innerHTML = h;

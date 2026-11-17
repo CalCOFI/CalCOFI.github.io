@@ -41,7 +41,7 @@
   box-shadow: 0 2px 6px rgba(0,0,0,.08), 0 18px 44px rgba(10,20,36,.28);
   visibility: hidden; opacity: 0; transition: visibility 0s linear .18s, opacity .12s ease .06s;
 }
-:root[data-theme="dark"] .cc-header .cc-dd { box-shadow: 0 18px 44px rgba(0,0,0,.6); }
+:root[data-theme="dark"] .cc-header:not(.cc-nav-open) .cc-dd { box-shadow: 0 18px 44px rgba(0,0,0,.6); }   /* not in the open column, where a menu is inline: this rule outranked its `box-shadow: none` and dimmed the lines below */
 .cc-header .cc-dd::before { content: ""; position: absolute; left: 0; right: 0; bottom: 100%; height: 16px; } /* the hover bridge */
 .cc-header .cc-dd::after { content: ""; position: absolute; top: -7px; left: 26px; width: 12px; height: 12px; background: var(--bg);
   border-left: 1px solid var(--edge); border-top: 1px solid var(--edge); transform: rotate(45deg); }
@@ -72,7 +72,7 @@
 .cc-header .cc-menu-button .cc-menu-icon-close { display: none; }
 .cc-header.cc-nav-open .cc-menu-button .cc-menu-icon-close { display: block; }
 .cc-header.cc-nav-open .cc-menu-button .cc-menu-icon-open { display: none; }
-.cc-header.cc-nav-menu { flex-wrap: wrap; }
+.cc-header.cc-nav-menu { flex-wrap: nowrap; position: sticky; }   /* an app's bar never grows: its words drop as a panel (below) */
 .cc-header.cc-nav-menu:not(.cc-nav-open) .cc-links.cc-nav { display: none; }
 .cc-header.cc-nav-menu .cc-menu-button { display: inline-flex; }
 @media (max-width: 1100px) { .cc-header .cc-tagline { display: none; } }
@@ -107,6 +107,15 @@
 .cc-header.cc-nav-open .cc-dd small, .cc-header.cc-nav-open .cc-dd h5 { display: none; }
 .cc-header.cc-nav-open .cc-links.cc-nav .cc-dd a { padding: 6px 8px; }
 
+/* On a bar that asks for the menu button at every width (.cc-nav-menu: an app, whose bar holds its own controls and
+   whose page is exactly one window tall) the open words are a PANEL that drops from the bar's right end, not a row
+   of the bar: as a row it made the Explorer's bar 640 px taller and pushed the map off the window. */
+.cc-header.cc-nav-menu.cc-nav-open .cc-links.cc-nav {
+  position: absolute; top: calc(100% + 4px); right: 6px; left: auto; width: min(300px, calc(100vw - 12px)); box-sizing: border-box;
+  flex-basis: auto; order: 0; margin: 0; padding: 6px 10px 8px; background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,.08), 0 18px 44px rgba(10,20,36,.28); z-index: 1030;
+}
+
 /* ── 4 · the wave ─────────────────────────────────────────────────────────────
    A navy band directly under the bar, ending in a wave. It is navy in both themes (the bar is white in light,
    navy in dark). A page puts its own head in it — a search, a title and its numbers — or nothing:
@@ -119,7 +128,7 @@
    edge (an inline <svg>) says so with .cc-wave-own. */
 .cc-wave {
   --cc-wave-h: 28px;
-  position: relative; background: linear-gradient(180deg, #14284a 0%, #1d3d66 100%); color: #fff;
+  position: relative; background: #14284a linear-gradient(180deg, #14284a 0%, #1d3d66 100%); color: #fff;   /* the colour under the gradient is what a contrast tool reads */
   padding-bottom: calc(var(--cc-wave-h) - 2px);
 }
 .cc-wave::after {
@@ -129,7 +138,7 @@
           mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 40' preserveAspectRatio='none'%3E%3Cpath d='M0 30 C150 10 300 34 450 22 S750 6 900 20 S1100 34 1200 18 V40 H0Z'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
 }
 .cc-wave.cc-wave-own::after { content: none; }
-.cc-wave-in { max-width: var(--container); margin: 0 auto; padding: calc(var(--space) * 3) calc(var(--space) * 3) 6px; }
+.cc-wave-in { box-sizing: border-box; max-width: var(--container); margin: 0 auto; padding: calc(var(--space) * 3) calc(var(--space) * 3) 6px; }
 .cc-wave a { color: #fff; }
 .cc-wave-slim { --cc-wave-h: 18px; height: 34px; padding-bottom: 0; box-sizing: border-box; }
 /* an app: the band is a strip under the app's bar, so the map keeps its height */
