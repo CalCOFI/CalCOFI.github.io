@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "The warmest fall ocean in CalCOFI's record"
-description: "In early November 2026, CalCOFI's fall cruise found the upper ocean off Southern California further above normal than on any cruise in a record that goes back to 1949. Preliminary data."
+description: "In early November 2026, CalCOFI's fall cruise found the upper ocean off Southern California further above normal than on any cruise in a record that goes back to 1949, far above the 2014–2016 Blob marine heatwave and El Niño. Preliminary data."
 permalink: /stories/elnino-2026/
 ---
 {%- comment -%}
@@ -9,9 +9,10 @@ permalink: /stories/elnino-2026/
   hand-written from the analysis of release v2026.11.12 against the 1993–2013 FALL normal (CalCOFI/workflows,
   2026-11_temperature-anomaly.qmd) and must agree with it; a change of release or normal is a change to this page.
   The films are served by the workflows site, where they are rendered from CalCOFI/explore story/elnino-2026: the
-  28 s cut (`?cut=short`, after the reviewers' notes of 17 November) leads, the one-minute cut is linked under it.
+  35 s cut (`?cut=35s`, after the notes of 18 November: the partners' logos, "The Blob + El Niño" on 2014–2016) leads,
+  the one-minute cut is linked under it. The 28 s cut (`calcofi_elnino_2026_short*`) is still served, unlinked.
 {%- endcomment -%}
-{%- assign film = "https://calcofi.io/workflows/figures/2026-11_temperature-anomaly/calcofi_elnino_2026_short" -%}
+{%- assign film = "https://calcofi.io/workflows/figures/2026-11_temperature-anomaly/calcofi_elnino_2026_35s" -%}
 {%- assign film60 = "https://calcofi.io/workflows/figures/2026-11_temperature-anomaly/calcofi_elnino_2026_square" -%}
 <section class="cc-band story-page">
   <div class="cc-container">
@@ -24,8 +25,9 @@ permalink: /stories/elnino-2026/
       <video controls playsinline preload="metadata" poster="{{ film }}_CF_poster.png">
         <source src="{{ film }}_CF.mp4" type="video/mp4">
       </video>
-      <figcaption>28 seconds, 34 falls, no sound: a cruise sailed station by station, the 1993–2013 fall average of
-        the upper 50 m, each fall since 2014 against it, and a slice of the sea off San Diego. Download it with its
+      <figcaption>35 seconds, 34 falls, no sound: a cruise sailed station by station, the 1993–2013 fall average of
+        the upper 50 m, each fall since 2014 against it (the Blob and El Niño of 2014–2016 marked), and a slice of the
+        sea off San Diego. Download it with its
         numbers in <a href="{{ film }}_CF.mp4">°C and °F</a>, <a href="{{ film }}_F.mp4">°F</a> or
         <a href="{{ film }}.mp4">°C</a> (1080 × 1080). A slower, one-minute version:
         <a href="{{ film60 }}_CF.mp4">°C and °F</a>, <a href="{{ film60 }}_F.mp4">°F</a>,
@@ -37,8 +39,8 @@ permalink: /stories/elnino-2026/
         instruments from the surface into the deep. Between 31 October and 7 November 2026, R/V <i>Sally Ride</i>
         worked 36 of them off Southern California.</p>
       <p><b>Averaged over the upper 50 m (164 ft), the ocean was 4.5 °C (8.0 °F) warmer than the 1993–2013 fall
-        average</b> at the stations sampled. The previous high over the same stations, in fall 2015, was
-        2.7 °C (4.8 °F).</p>
+        average</b> at the stations sampled. That is far above anything measured during the 2014–2016 Blob marine
+        heatwave and El Niño: the previous high over the same stations, in fall 2015, was 2.7 °C (4.8 °F).</p>
       <p>The warmth reached unusually deep. About 12 km (7 miles) off northern San Diego County, water of 25 °C
         (77 °F) extended down to 55 m (180 ft), where the fall average is about 13 °C (55 °F). At 50 to 60 m that is
         <b>11.9 °C (21.3 °F) above normal, the largest departure CalCOFI has measured</b> at any station and depth.</p>
@@ -55,7 +57,9 @@ permalink: /stories/elnino-2026/
       <li><a class="cc-text-link" href="{{ '/news/' | relative_url }}">The ship's log</a></li>
     </ul>
     <p class="story-cite">Data: CalCOFI Integrated Database, release v2026.11.12
-      (<a href="https://doi.org/10.5281/zenodo.24187468">doi:10.5281/zenodo.24187468</a>). Normal: the 1993–2013
+      (<a href="https://doi.org/10.5281/zenodo.24187468">doi:10.5281/zenodo.24187468</a>). CalCOFI's surveys are
+      carried out by Scripps Institution of Oceanography at UC San Diego and NOAA Fisheries' Southwest Fisheries
+      Science Center. Normal: the 1993–2013
       average for September to November at the same station and depth. Preliminary data.</p>
   </div>
 </section>
