@@ -8,9 +8,11 @@ permalink: /stories/elnino-2026/
   A story (the ship's log type `story`, _data/news.yml): something the data show, told for anyone. Its numbers are
   hand-written from the analysis of release v2026.11.12 against the 1993–2013 FALL normal (CalCOFI/workflows,
   2026-11_temperature-anomaly.qmd) and must agree with it; a change of release or normal is a change to this page.
-  The film is served by the workflows site, where it is rendered from CalCOFI/explore story/elnino-2026.
+  The films are served by the workflows site, where they are rendered from CalCOFI/explore story/elnino-2026: the
+  28 s cut (`?cut=short`, after the reviewers' notes of 17 November) leads, the one-minute cut is linked under it.
 {%- endcomment -%}
-{%- assign film = "https://calcofi.io/workflows/figures/2026-11_temperature-anomaly/calcofi_elnino_2026_square" -%}
+{%- assign film = "https://calcofi.io/workflows/figures/2026-11_temperature-anomaly/calcofi_elnino_2026_short" -%}
+{%- assign film60 = "https://calcofi.io/workflows/figures/2026-11_temperature-anomaly/calcofi_elnino_2026_square" -%}
 <section class="cc-band story-page">
   <div class="cc-container">
     <div class="cc-eyebrow">Story · fall 2026 cruise · preliminary data</div>
@@ -22,10 +24,12 @@ permalink: /stories/elnino-2026/
       <video controls playsinline preload="metadata" poster="{{ film }}_CF_poster.png">
         <source src="{{ film }}_CF.mp4" type="video/mp4">
       </video>
-      <figcaption>One minute, 34 falls, no sound: a cruise sailed station by station, the 1993–2013 fall average of
+      <figcaption>28 seconds, 34 falls, no sound: a cruise sailed station by station, the 1993–2013 fall average of
         the upper 50 m, each fall since 2014 against it, and a slice of the sea off San Diego. Download it with its
         numbers in <a href="{{ film }}_CF.mp4">°C and °F</a>, <a href="{{ film }}_F.mp4">°F</a> or
-        <a href="{{ film }}.mp4">°C</a> (1080 × 1080).</figcaption>
+        <a href="{{ film }}.mp4">°C</a> (1080 × 1080). A slower, one-minute version:
+        <a href="{{ film60 }}_CF.mp4">°C and °F</a>, <a href="{{ film60 }}_F.mp4">°F</a>,
+        <a href="{{ film60 }}.mp4">°C</a>.</figcaption>
     </figure>
 
     <div class="cc-prose story-text">
