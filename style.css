@@ -230,6 +230,7 @@ a.fd-door:hover .fd-door-t, a.fd-door:focus-visible .fd-door-t { color: var(--ac
 #layout:has(.fd-screen) .v2-footer > .cc-container { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 20px 40px; align-items: center; }
 #layout:has(.fd-screen) .v2-footer .partners { margin-bottom: 0; gap: 14px 20px; }
 #layout:has(.fd-screen) .v2-footer .partners img { height: 46px; }
+#layout:has(.fd-screen) .v2-footer .partners img.sio { width: 300px; height: auto; }
 #layout:has(.fd-screen) .v2-footer .cols { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
 #layout:has(.fd-screen) .v2-footer .cols .cc-h3 { margin-top: 0; }
 
@@ -472,6 +473,10 @@ svg.map { display: block; width: 100%; height: auto; border-radius: var(--radius
 .v2-footer .partners { display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--space) * 4); margin-bottom: calc(var(--space) * 4); }
 .v2-footer .partners img { height: 72px; width: auto; display: block; }
 :root[data-theme="dark"] .v2-footer .partners img { background: #ffffff; border-radius: var(--radius); padding: 6px; }
+/* Scripps: the UC San Diego lockup (horizontal, as the Scripps brand guidelines show it), at least 300 px wide (their web
+   minimum); on the dark theme the version with the logotype reversed to white, on the page itself rather than a white box */
+.v2-footer .partners img.sio { width: 340px; max-width: 100%; height: auto; }
+:root[data-theme="dark"] .v2-footer .partners img.sio { background: none; border-radius: 0; padding: 0; }
 .v2-footer .partners-lede { margin: 0; font-size: var(--fs-sm); color: var(--muted); max-width: 40ch; }
 .v2-footer .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: calc(var(--space) * 4); }
 .v2-footer .cols h4 { margin-bottom: 0.3em; font-size: 0.9em; }
