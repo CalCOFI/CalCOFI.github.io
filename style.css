@@ -2194,6 +2194,12 @@ body:has(.cc-wave-own) .cc-wave-auto { display: none; }
 .fd-mon .ap-mon .cc-i { flex: none; font-size: 20px; color: var(--accent); }
 .fd-mon .ap-feat-b > p.ap-acts { margin-top: 28px; }
 .fd-mon .ap-feat .ap-lk { margin-top: auto; padding-top: 18px; }
+.fd-mon .mon-nums { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 18px 0 0; padding: 14px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.fd-mon .mon-nums div { margin: 0; }
+.fd-mon .mon-nums dt { font-family: var(--display, Teko, sans-serif); font-size: 40px; font-weight: 500; line-height: 1; color: var(--fg); }
+.fd-mon .mon-nums dd { margin: 4px 0 0; font-size: 13px; line-height: 1.3; color: var(--muted); }
+.fd-mon .mon-h { margin: 18px 0 0; font-size: 12.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.fd-mon .mon-h + .ap-mon { margin-top: 10px; }
 @media (max-width: 1100px) { .fd-mon .ap-feat { grid-template-columns: 1fr; } }
 @media (max-width: 640px) { .fd-mon .ap-mon { grid-template-columns: 1fr; } .fd-mon .mon-head { padding-right: 0; } }
 /* the station maps (Betty 2026-11-18, option C of four): a clearer ocean, a lighter coast line, and the sampled
