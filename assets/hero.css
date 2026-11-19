@@ -241,12 +241,13 @@ body:has(.hero) .cc-wave-auto { --cc-wave-below: #f3f7fb; }
 .hero-nums dt { font-size: 12px; }
 @media (max-height: 720px) and (min-width: 901px) { .hero-nums dd { font-size: 44px; } }
 @media (min-width: 481px) and (max-width: 900px) { .hero-nums dd { font-size: 38px; } }
-/* the cards a little smaller (Betty 2026-11-18: "boxes a little big") */
+/* the cards (Betty 2026-11-18): a little less padding than before, the words and buttons at their full size */
 @media (min-width: 901px) {
-  .hero-goal { padding: 16px 20px 14px; }
-  .hero-goal .hero-q { margin-top: 4px; font-size: 13.5px; }
-  .hero-goal h3 { margin-top: 4px; font-size: 20px; }
-  .hero-goal h3 + p { margin: 4px 0 12px; font-size: 14px; line-height: 1.45; }
-  .hero-dest { padding-top: 10px; font-size: 14px; }
-  .hero-btn { padding: 6px 14px; }
+  .hero-goal { padding: 18px 22px 16px; }
+  .hero-goal .hero-q { margin-top: 6px; font-size: 15px; }
+  .hero-goal h3 { margin-top: 6px; font-size: 23px; }
+  .hero-goal h3 + p { margin: 6px 0 14px; font-size: 16px; line-height: 1.45; }
+  .hero-dest { padding-top: 12px; font-size: 15.5px; }
+  .hero-btn { padding: 9px 20px; }
+  .hero-opt small { font-size: 13px; }
 }
