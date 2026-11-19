@@ -180,3 +180,7 @@
 /* sizes (Betty 2026-11-19): this page was tuned with the browser at 90%; drawn at 90% at desktop widths so it looks
    at 100% the way it was approved. assets/stick.js allows for the zoom. */
 @media (min-width: 901px) { .calm-page.ds-cat.ds-browse { zoom: .9; } }
+
+/* a group's name and its line on one line (Betty 2026-11-19): "Environment  Temperature, salinity…" */
+.bt-rh > div { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 14px; }
+.bt-rh > div p { margin: 0; }
