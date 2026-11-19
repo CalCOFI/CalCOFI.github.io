@@ -18,7 +18,7 @@
   function files() { var f = {}; f[D.key] = D.file || {}; return f; }
 
   // the rest of the record's description
-  var more = root.querySelector("[data-more]"), rest = document.getElementById("dp-rest");
+  var more = document.querySelector("[data-more]"), rest = document.getElementById("dp-rest");
   if (more && rest) more.addEventListener("click", function () {
     rest.hidden = !rest.hidden;
     more.setAttribute("aria-expanded", rest.hidden ? "false" : "true");
@@ -88,5 +88,18 @@
       var t = b.getAttribute("data-copy");
       (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(function () { toast("Copied"); }, function () { toast("Could not copy; select the text instead"); });
     }
+  });
+})();
+
+// the hero's Download button opens the same dialog as the side card's (#dl-btn; assets/download.js), and
+// "In code" opens the Every endpoint fold it points to
+(function () {
+  "use strict";
+  document.addEventListener("click", function (e) {
+    var t = e.target.closest && e.target.closest("[data-dl-open], [data-open-fold]");
+    if (!t) return;
+    if (t.hasAttribute("data-dl-open")) { var b = document.getElementById("dl-btn"); if (b) { e.preventDefault(); b.click(); } return; }
+    var f = document.querySelector(t.getAttribute("href"));
+    if (f && f.tagName === "DETAILS") f.open = true;
   });
 })();

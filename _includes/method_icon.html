@@ -1,0 +1,15 @@
+{%- comment -%} A collection-method picture (_data/dataset_extras.yml `method`; Betty 2026-11-18): a line drawing in
+  currentColor, so it follows the theme. include.m: net · pump · ctd · bottle · ship · eye · calc; include.size (px, default 40).
+  Decorative: the method's words are always beside it. {%- endcomment -%}
+{%- assign sz = include.size | default: 40 -%}
+<svg class="cc-method" aria-hidden="true" viewBox="0 0 34 30" width="{{ sz }}" height="{{ sz | times: 30 | divided_by: 34 }}" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+{%- case include.m -%}
+{%- when "net" -%}<ellipse cx="9" cy="16" rx="3" ry="7"/><path d="M9 9 L27 14.5 M9 23 L27 17.5"/><rect x="27" y="13.5" width="4" height="5" rx="1"/><path d="M9 9 L4 3"/><path d="M13 12 L13 20 M18 13 L18 19 M23 14 L23 18"/>
+{%- when "pump" -%}<path d="M3 12 h26 l-4 6 h-18 z"/><path d="M10 12 V7 h6 v5"/><path d="M2 22 q3 -2 6 0 t6 0 t6 0 t6 0 t6 0"/><path d="M20 18 V27"/><path d="M17 24 l3 3 l3 -3"/>
+{%- when "ctd" -%}<path d="M17 2 V7"/><rect x="11" y="7" width="12" height="17" rx="2"/><path d="M14 11 V20 M17 11 V20 M20 11 V20"/><path d="M13 24 l-2 4 M21 24 l2 4"/>
+{%- when "bottle" -%}<rect x="12" y="4" width="10" height="22" rx="2"/><path d="M12 9 h10 M12 21 h10"/><path d="M17 1 V4 M17 26 V29"/><path d="M15 13 h4"/>
+{%- when "ship" -%}<path d="M3 17 h28 l-4 6 h-20 z"/><path d="M9 17 V11 h10 v6"/><path d="M14 11 V5 M14 5 l6 2"/><path d="M2 27 q3 -2 6 0 t6 0 t6 0 t6 0 t6 0"/>
+{%- when "eye" -%}<path d="M2 15 C7 7 27 7 32 15 C27 23 7 23 2 15 Z"/><circle cx="17" cy="15" r="4.5"/><circle cx="17" cy="15" r="1.5"/>
+{%- when "calc" -%}<rect x="7" y="3" width="20" height="24" rx="3"/><path d="M11 8 h12"/><path d="M12 14 h3 M13.5 12.5 v3 M19 14 h3 M12 21 l3 -3 M12 18 l3 3 M19 20.5 h3"/>
+{%- endcase -%}
+</svg>

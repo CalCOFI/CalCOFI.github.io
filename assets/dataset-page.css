@@ -143,3 +143,94 @@ a.dp-big, .dp-page a.dp-big, .dp-page a.dp-big:hover { box-sizing: border-box; t
 .dp-lic .cc-chip { opacity: 1; color: var(--fg); }
 /* rows and category heads past the first eight are [hidden]; their own display rules must not undo that */
 .dp-tbl .dp-tr[hidden], .dp-tbl .dp-cath[hidden] { display: none; }
+
+/* ── the redesign (Betty 2026-11-18, mockup "Full details page") ─────────────────────────────────────────── */
+/* the hero: back, category and status, the plain name, collection and analysis, the record's first sentence,
+   the original data, three ways in; the station map beside it; the numbers along the bottom */
+.dp-hero { padding: 0 0 18px; }
+.dp-hero .dp-in { align-items: flex-start; gap: 32px; padding-top: 16px; }
+.dp-back { display: inline-flex; align-items: center; gap: 6px; font-size: 13.5px; font-weight: 600; color: #c9d4e3; text-decoration: none; }
+.dp-back:hover { color: #fff; text-decoration: underline; }
+.dp-eb { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; margin: 12px 0 6px; font-size: 13px; font-weight: 600; color: #c9d4e3; }
+.dp-eb > span { display: inline-flex; align-items: center; gap: 7px; } .dp-eb .cc-i { font-size: 17px; color: #9fb8d9; }
+/* ongoing / archived: a small dot and the word, no badge */
+.dp-st { font-weight: 500; color: #b9c6da; } .dp-st i { width: 7px; height: 7px; border-radius: 50%; background: #9fb8d9; }
+.dp-st-ongoing i { background: #ffcd00; }
+.dp-hero h1 { font-size: 30px; }
+.dp-ca { margin: 12px 0 0; display: grid; gap: 3px; font-size: 14.5px; line-height: 1.45; color: #e3e9f2; }
+.dp-ca b { color: #fff; } .dp-ca strong { color: #ffcd00; font-weight: 700; }
+.dp-hero .dp-lede { margin: 12px 0 0; max-width: 68ch; font-size: 15px; line-height: 1.55; color: #dbe3ee;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.dp-hero .dp-rest { max-width: 68ch; color: #c9d4e3; }
+.dp-hero:has(.dp-rest:not([hidden])) .dp-lede { -webkit-line-clamp: unset; display: block; }
+.dp-hero .dp-lnk { color: #ffcd00; }
+.dp-orig { margin: 10px 0 0; font-size: 13.5px; color: #c9d4e3; }
+.dp-orig a { color: #fff; font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
+.dp-acts { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+.dp-a1, .dp-a2 { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px; border-radius: 9px; font: 700 14px var(--sans); text-decoration: none; cursor: pointer; }
+.dp-a1 { border: 0; background: #ffcd00; color: #182b49; } .dp-a1:hover { filter: brightness(.95); }
+.dp-a2 { border: 1px solid rgba(255,255,255,.35); background: transparent; color: #fff; } .dp-a2:hover { background: rgba(255,255,255,.08); }
+.dp-a1:focus-visible, .dp-a2:focus-visible, .dp-back:focus-visible { outline: 2px solid #ffcd00; outline-offset: 2px; }
+.dp-hmap { flex: none; width: 340px; margin: 16px 0 0; }
+.dp-hmap .dp-map { margin: 0; height: 230px; border-radius: 10px; border: 0; }
+.dp-hmap figcaption { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 7px; font-size: 12.5px; color: #c9d4e3; }
+.dp-hmap figcaption a { margin-left: auto; color: #fff; font-weight: 600; text-decoration: none; } .dp-hmap figcaption a + a { margin-left: 0; }
+.dp-hmap figcaption a:hover { text-decoration: underline; }
+.dp-hero > .dp-nums { max-width: var(--container, 1280px); margin: 18px auto 0; padding: 14px calc(var(--space, 8px) * 3) 0; box-sizing: border-box;
+  flex-wrap: wrap; row-gap: 10px; border-top: 1px solid rgba(255,255,255,.16); }
+
+/* the section links under the hero */
+.dp-tabs { position: sticky; top: var(--header-h, 72px); z-index: 5; display: flex; gap: 4px; overflow-x: auto;
+  padding: 0 calc((100% - min(100%, var(--container, 1280px))) / 2 + var(--space, 8px) * 3); background: var(--bg); border-bottom: 1px solid var(--border); }
+.dp-tabs a { flex: none; padding: 12px 12px 10px; font-size: 14px; font-weight: 600; color: var(--muted); text-decoration: none; border-bottom: 2px solid transparent; }
+.dp-tabs a:hover { color: var(--fg); border-bottom-color: var(--accent); }
+
+/* the main column's cards */
+.dp-pad { padding: 16px 18px; }
+.dp-notes .dp-note:first-child { margin-top: 0; }
+.dp-wh2 { margin-top: 18px; }
+.dp-mt { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 4px; }
+.dp-mt div { padding: 7px 2px 6px; border-radius: 6px; text-align: center; background: color-mix(in srgb, var(--accent) var(--p), var(--panel)); }
+.dp-mt b { display: block; font-size: 12px; } .dp-mt span { display: block; margin-top: 1px; font-size: 11px; font-variant-numeric: tabular-nums; color: var(--muted); }
+.dp-mt .dk b, .dp-mt .dk span { color: #fff; }
+.dp-ft { width: 100%; border-collapse: collapse; font-size: 13.5px; table-layout: fixed; }
+.dp-ft th { text-align: left; padding: 7px 8px; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--border); }
+.dp-ft td { padding: 7px 8px; vertical-align: top; border-top: 1px solid color-mix(in srgb, var(--border) 60%, transparent); overflow-wrap: anywhere; }
+.dp-ft th:nth-child(1), .dp-ft td:nth-child(1) { width: 20%; color: var(--muted); }
+.dp-ft th:nth-child(2), .dp-ft td:nth-child(2) { width: 24%; }
+.dp-ft th:nth-child(3), .dp-ft td:nth-child(3) { width: 12%; color: var(--muted); }
+.dp-ft code { font-size: 12.5px; }
+.dp-fmore { margin-top: 4px; } .dp-fmore summary { cursor: pointer; padding: 8px 8px 4px; font-size: 13.5px; font-weight: 700; color: var(--accent); }
+.dp-fmore .dp-ft tr:first-child td { border-top: 0; }
+.dp-fmore .dp-sm { margin: 8px 8px 0; font-size: 12.5px; color: var(--muted); }
+/* combined from N source tables: the tables, an arrow, this one dataset */
+.dp-comb { display: grid; grid-template-columns: minmax(0, 1fr) 56px 200px; gap: 12px; align-items: center; }
+.dp-cg { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; }
+.dp-cg a { display: block; height: 100%; box-sizing: border-box; padding: 9px 11px; border-radius: 9px; background: var(--panel); color: var(--fg); text-decoration: none; }
+.dp-cg a:hover { background: color-mix(in srgb, var(--accent) 12%, var(--panel)); }
+.dp-cg b { display: block; font-size: 13.5px; } .dp-cg code { display: block; margin-top: 2px; font-size: 11.5px; color: var(--muted); overflow-wrap: anywhere; }
+.dp-carr { color: var(--muted); }
+.dp-cone { display: flex; align-items: center; gap: 10px; padding: 14px; border-radius: 10px; background: #182b49; color: #fff; }
+.dp-cone .cc-i { font-size: 24px; color: #ffcd00; } .dp-cone small { display: block; font-size: 12px; color: #c9d4e3; } .dp-cone b { display: block; font-size: 14px; }
+
+/* get the data, the parts */
+.dp-sh { margin: 14px 18px 0; font-size: 12.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.dp-sh + .dp-gl { margin-top: 6px; }
+.dp-orig2 { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 10px 18px 0; padding: 9px 12px; border-radius: 9px;
+  background: var(--panel); color: var(--fg); text-decoration: none; }
+.dp-page a.dp-orig2 { color: var(--fg); } .dp-orig2:hover { background: color-mix(in srgb, var(--accent) 10%, var(--panel)); }
+.dp-orig2 b { display: block; font-size: 13.5px; } .dp-orig2 small { display: block; font-size: 12px; color: var(--muted); } .dp-orig2 em { font-style: normal; color: var(--muted); }
+
+@media (max-width: 1050px) {
+  .dp-hmap { width: 100%; max-width: 520px; }
+  .dp-comb { grid-template-columns: 1fr; } .dp-carr { transform: rotate(90deg); justify-self: center; }
+}
+@media (max-width: 640px) {
+  .dp-hero h1 { font-size: 24px; }
+  .dp-mt { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .dp-ft th:nth-child(1), .dp-ft td:nth-child(1) { display: none; }
+}
+/* the section links stick under the header, so the side column and the anchors sit below both */
+.dp-side { top: calc(var(--header-h, 72px) + 58px); }
+.dp-sec[id], .dp-card[id] { scroll-margin-top: calc(var(--header-h, 72px) + 56px); }
+@media (max-width: 1050px) { .dp-tabs { position: static; } }

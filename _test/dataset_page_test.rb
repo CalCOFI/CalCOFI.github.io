@@ -404,4 +404,14 @@ class DatasetPageTest < Minitest::Test
     assert_nil DP.yrs(nil, 2000)
     assert_equal "1996", DP.yrs(1996, 1996)
   end
+
+  def test_month_tiles
+    m = DP.month_tiles({ "months" => [54370, 54004, 40939, 89529, 34989, 31411, 56301, 33624, 19214, 38448, 23091, 11696] })
+    assert_equal 12, m["tiles"].size
+    assert_equal({ "m" => "Apr", "n" => "89,529", "pct" => 100 }, m["tiles"][3])
+    assert_equal 13, m["tiles"][11]["pct"]
+    assert_equal "Most in April, fewest in December", m["note"]
+    assert_equal "Most in March", DP.month_tiles({ "months" => [0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0] })["note"]
+    assert_nil DP.month_tiles({ "months" => [1, 2] })
+  end
 end

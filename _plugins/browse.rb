@@ -14,6 +14,7 @@
 # within one release the larger first. A dataset added later lands at the bottom on its own, so the
 # order needs no list kept by hand. Categories follow their earliest dataset, realms likewise.
 require_relative "datasets"
+require_relative "dataset_extras"
 
 module CalCOFI
   # The rules of Browse datasets, as plain functions with no Jekyll dependency, so
@@ -245,7 +246,16 @@ module CalCOFI
     def generate(site)
       cat = self.class.catalog
       return unless cat
-      site.data["browse"] = cat.browse(raw_measurements(site))
+      b = cat.browse(raw_measurements(site))
+      # the words the record does not carry yet (_data/dataset_extras.yml) and the category tiles
+      extras = site.data["dataset_extras"]
+      recs = cat.datasets.to_h { |d| [d["dataset_key"], d] }
+      b["rows"].each do |r|
+        r.merge!(DatasetExtras.for(extras, r["key"]))
+        r["sources"] = DatasetExtras.source_tables(recs[r["key"]] || {})
+      end
+      b["tiles"] = DatasetExtras.tiles(extras, b["rows"])
+      site.data["browse"] = b
       page = Jekyll::PageWithoutAFile.new(site, site.source, "datasets", "browse.json")
       page.content = "{% raw %}#{JSON.generate(cat.browse_maps)}{% endraw %}"
       page.data["layout"] = nil

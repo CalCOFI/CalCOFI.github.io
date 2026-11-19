@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "cgi"
+require "date"
 require "digest"
 require "json"
 
@@ -19,6 +20,7 @@ require "json"
 # A page exists only for a dataset the catalog shows (Catalog#visible), so nothing here is drawn for
 # a `visibility: internal` record.
 require_relative "datasets"
+require_relative "dataset_extras"
 
 module CalCOFI
   # Pure rules of the redesigned dataset page, with no Jekyll dependency, so _test/dataset_page_test.rb
@@ -155,6 +157,23 @@ module CalCOFI
                   %(<div class="dp-mol">#{MON.map { |m| "<span>#{m}</span>" }.join}</div>) }
     end
 
+    MONTHS = %w[Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec].freeze
+
+    # Records by month as twelve tiles (Betty 2026-11-18): {tiles: [{m, n, pct}], note}. pct is the
+    # month's share of the busiest month (0–100), which the page turns into a shade. The note names the
+    # busiest and the quietest month with records. nil unless the record carries twelve months.
+    def month_tiles(cov)
+      ms = (cov || {})["months"]
+      return nil unless ms.is_a?(Array) && ms.size == 12
+      ms = ms.map(&:to_i)
+      max = [ms.max, 1].max
+      lo = ms.each_with_index.select { |v, _| v.positive? }.min_by(&:first)
+      hi = ms.each_with_index.max_by(&:first)
+      note = hi && hi[0].positive? ? "Most in #{Date::MONTHNAMES[hi[1] + 1]}" : nil
+      note = "#{note}, fewest in #{Date::MONTHNAMES[lo[1] + 1]}" if note && lo && lo[1] != hi[1]
+      { "tiles" => ms.each_with_index.map { |v, i| { "m" => MONTHS[i], "n" => num(v), "pct" => (v * 100.0 / max).round } }, "note" => note }
+    end
+
     # taxa.json → {dataset_key => [[taxon, n_obs in that dataset], …]}: every taxon a dataset observed
     # (the record's coverage lists only the top 50), none with a count of zero
     def observed_by_dataset(taxa)
@@ -273,6 +292,9 @@ module CalCOFI
       # every taxon a dataset observed, from taxa.json (the record's coverage lists only the top 50)
       @by_ds = DatasetPage.observed_by_dataset(@taxa.values)
       @series = DatasetPage.series_by_dataset((read("measurements") || {})["measurements"])
+      @extras = site.data["dataset_extras"]
+      @tiles = site.data.dig("browse", "tiles") || []
+      @meta = read("release_metadata")
       site.pages.each do |page|
         next unless page.data["layout"] == "dataset" && !page.data["is_holding"]
         r = page.data["record"] or next
@@ -309,6 +331,7 @@ module CalCOFI
         "facts" => DatasetPage.facts(r, years_span: page.data["years_span"], depth: page.data["depth"],
                                         n_taxa: taxa[:rows].size, n_meas: n_meas),
         "years" => DatasetPage.years_svg(cov, @cat.strip_span), "months" => DatasetPage.months_html(cov),
+        "month_tiles" => DatasetPage.month_tiles(cov),
         "n_years" => (cov["years"] || []).count { |y| y["n_obs"].to_i.positive? },
         "taxa" => taxa[:rows].first(SHOWN), "sprite" => taxa[:sprite], "n_taxa" => taxa[:rows].size,
         # the rest, drawn by assets/dataset-page.js on "Show all" or a search (992 rows for Ichthyoplankton)
@@ -334,6 +357,12 @@ module CalCOFI
         "funding" => Fmt.present(a["funding"]), "ack" => Fmt.present(a["acknowledgement"]),
         "license" => Fmt.present(a["license_name"]) || Fmt.present(a["license"]), "license_url" => Fmt.present(a["license_url"]),
         "doi" => Fmt.present(a["doi"]),
+        # Betty 2026-11-18: the words the record does not carry yet, the tile it sits in (the back link),
+        # the NOAA ERDDAP tables it combines, the download's columns, and the first five species
+        "extra" => DatasetExtras.for(@extras, key),
+        "tile" => DatasetExtras.tile_of(@tiles, key),
+        "sources" => DatasetExtras.source_tables(r),
+        "fields" => DatasetExtras.fields(@meta, r),
         # what assets/dataset-page.js needs for the download form
         "dl" => JSON.generate({
           "key" => key, "name" => r["dataset_name_short"] || r["dataset_name"] || key,

@@ -125,6 +125,15 @@
   }
 
   document.addEventListener("click", function (e) {
+    // a category tile, a rail link, "All categories" (Betty 2026-11-18): open it in place
+    var t = e.target.closest && e.target.closest(".bt-tile[data-cat], .bt-rail a[data-cat], [data-home]");
+    if (t && !(e.metaKey || e.ctrlKey || e.shiftKey || e.button)) {
+      e.preventDefault();
+      if (t.hasAttribute("data-home")) showHome(true); else showCat(t.getAttribute("data-cat"), true);
+      return;
+    }
+    // the ERDDAP fold in a row and its links are not "show this row"
+    if (e.target.closest && e.target.closest("details, .bt-ext")) return;
     var a = e.target.closest && e.target.closest(".bd-r[data-k]");
     if (!a || e.metaKey || e.ctrlKey || e.shiftKey || e.button) return;
     if (pv && getComputedStyle(pv).display === "none") return; // a phone: no preview, so follow the link to the page
@@ -139,16 +148,44 @@
   if (type) type.addEventListener("change", apply);
   if (sort) sort.addEventListener("change", function () { reorder(); select(firstVisible()); });
 
-  // a dataset page's breadcrumb links here as ?cat=<category>: open By category at that card
+  // By category (Betty 2026-11-18): the tiles, or one category open with the preview beside it. Without
+  // JavaScript every category is drawn under the tiles and each tile links to it.
+  var find = document.getElementById("bd-find"), home = document.getElementById("bt-home");
+  var cats = [].slice.call(document.querySelectorAll(".bt-cat"));
+  var gridTab = document.getElementById("ds-view-tab-grid"), listTab = document.getElementById("ds-view-tab-list");
+  function setUrl(slug) {
+    try { var u = new URL(location.href); if (slug) u.searchParams.set("cat", slug); else u.searchParams.delete("cat"); u.hash = ""; history.replaceState(null, "", u.toString()); } catch (err) { /* an old browser keeps its URL */ }
+  }
+  function toTop() { var v = document.getElementById("ts-ds-views"); if (v && v.getBoundingClientRect().top < 0) v.scrollIntoView({ block: "start" }); }
+  function showHome(user) {
+    if (!home) return;
+    home.hidden = false; cats.forEach(function (c) { c.hidden = true; });
+    if (find) find.classList.add("bt-home-on");
+    if (user) { setUrl(null); toTop(); }
+  }
+  function showCat(slug, user) {
+    var sec = cats.filter(function (c) { return c.getAttribute("data-cat") === slug; })[0];
+    if (!sec) return showHome(user);
+    if (gridTab && gridTab.getAttribute("aria-selected") !== "true") gridTab.click();
+    if (home) home.hidden = true;
+    cats.forEach(function (c) { c.hidden = c !== sec; });
+    if (find) find.classList.remove("bt-home-on");
+    var first = sec.querySelector(".bd-r[data-k]");
+    if (first) select(first.getAttribute("data-k"));
+    if (user) { setUrl(slug); toTop(); }
+  }
+  // the List shows the preview; the tiles do not
+  if (listTab) listTab.addEventListener("click", function () { if (find) find.classList.remove("bt-home-on"); });
+  if (gridTab) gridTab.addEventListener("click", function () { if (find && home && !home.hidden) find.classList.add("bt-home-on"); });
+  // a search reads the whole list
+  if (q) q.addEventListener("input", function () { if (q.value.trim() && listTab && listTab.getAttribute("aria-selected") !== "true") { listTab.click(); } });
+  // ?cat= : a tile's slug, or a record category's name (a dataset page's breadcrumb)
   try {
     var c = new URL(location.href).searchParams.get("cat");
-    if (c) {
-      var g = [].slice.call(document.querySelectorAll(".bd-grp")).find(function (x) { return x.dataset.cat === c; });
-      var tab = document.getElementById("ds-view-tab-grid");
-      if (g && tab) { tab.click(); setTimeout(function () { g.scrollIntoView({ block: "start" }); }, 0); }
-    }
-  } catch (err) { /* an old browser keeps the List */ }
+    var hit = c && cats.filter(function (x) { return x.getAttribute("data-cat") === c || (x.getAttribute("data-cats") || "").split("|").indexOf(c) >= 0; })[0];
+    if (hit) showCat(hit.getAttribute("data-cat")); else showHome();
+  } catch (err) { showHome(); }
 
-  select(ROWS.length ? ROWS[0].key : null);
+  if (!sel) select(ROWS.length ? ROWS[0].key : null);
   if (mapsUrl && window.fetch) fetch(mapsUrl).then(function (r) { return r.json(); }).then(function (m) { maps = m; if (sel) select(sel); }).catch(function () { maps = {}; if (sel) select(sel); });
 })();

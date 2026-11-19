@@ -1,0 +1,170 @@
+# Words for people browsing the datasets that the release record does not carry (yet).
+# Read by _plugins/dataset_extras.rb into the Browse datasets tiles and rows and each dataset page.
+#
+# Betty, 2026-11-18. DRAFTS written from each dataset's own description in the release record:
+# confirm with Ben and the data providers before relying on them. Anything left out (or blank)
+# is simply not drawn — nothing here is required, and nothing is guessed at build time.
+#
+#   plain       a name people recognise, shown above the record's own short name
+#   collection  how the samples or readings were collected
+#   analysis    how they were analysed (method), and by whom (lab): "<method> (<lab>)"
+#   method      the collection-method picture: net · pump · ctd · bottle · ship · eye · calc
+#   status      ongoing · archived (blank: not stated anywhere yet, so no label)
+#
+# `tiles` sets the category tiles on /datasets/: Environment first, then Biology. A tile lists the
+# record categories it holds (`categories`) or individual datasets (`datasets`); its `line` is the
+# one "what's in it" line on the tile.
+
+tiles:
+  - realm: env
+    title: Environment
+    sub: Temperature, salinity, chemistry and weather at sea
+    groups:
+      - name: CTD & Bottle
+        icon: cat-physical
+        line: Temperature, salinity, oxygen, nutrients and chlorophyll by depth
+        datasets: [calcofi_ctd-cast, calcofi_bottle, calcofi_ctd-derived, calcofi_bottle-derived]
+      - name: Carbonate Chemistry
+        icon: cat-carbonate
+        line: Dissolved inorganic carbon (DIC), alkalinity and dissolved iron
+        datasets: [calcofi_dic, cce-lter_iron]
+      - name: Underway Weather & Surface Water
+        icon: cat-meteorology
+        line: Weather and surface water every minute along the ship’s track
+        datasets: [calcofi_mets]
+  - realm: bio
+    title: Biology
+    sub: Fish eggs and larvae, plankton, krill, seabirds, marine mammals and eDNA
+    groups:
+      - name: Fish Eggs & Larvae
+        line: Eggs and larvae from net tows and the ship’s pump
+        categories: [Fish Eggs & Larvae]
+      - name: Phytoplankton
+        line: Counts by species or group
+        categories: [Phytoplankton]
+      - name: Euphausiids (Krill)
+        line: Species and life stages from net tows
+        categories: [Euphausiids (Krill)]
+      - name: Zooplankton
+        line: Counts, carbon and size from net tows
+        categories: [Zooplankton]
+      - name: Picoplankton & Bacteria
+        line: Cell counts by flow cytometry
+        categories: [Picoplankton & Bacteria]
+      - name: Seabirds & Marine Mammals
+        line: Counts along the cruise track
+        categories: [Seabirds & Marine Mammals]
+      - name: Mesopelagic Fish
+        line: Catches from midwater trawls
+        categories: [Mesopelagic Fish]
+      - name: Genomics & eDNA
+        line: DNA detected in seawater
+        categories: [Genomics & eDNA]
+
+datasets:
+  swfsc_ichthyo:
+    plain: Fish Egg and Larva Counts
+    collection: Bongo and manta net tows on CalCOFI cruises
+    analysis: Visual microscopy (NOAA SWFSC)   # method to confirm with SWFSC
+    method: net
+  swfsc_cufes:
+    plain: Fish Egg Counts from the Ship’s Underway Pump
+    collection: Underway pump (CUFES) on CalCOFI cruises
+    analysis: Visual microscopy (CalCOFI, NOAA SWFSC)
+    method: pump
+    status: ongoing        # "Sampling is ongoing" (record description)
+  calcofi_phytoplankton:
+    plain: Phytoplankton Counts by Species
+    collection: Near-surface water samples, pooled into four regions
+    analysis: Inverted-microscope counts (CalCOFI, E. Venrick)
+    method: bottle
+  cce-lter_euphausiids:
+    plain: Krill Counts by Species and Life Stage
+    collection: Net tows on CalCOFI / CCE-LTER cruises
+    analysis: (CCE-LTER)
+    method: net
+    status: ongoing        # "1951-present" (record description)
+  calcofi_phyllosoma:
+    plain: Spiny Lobster Larva Counts
+    collection: Net tows on CalCOFI cruises
+    analysis: Counts by developmental stage (CalCOFI)
+    method: net
+  cce-lter_zooscan:
+    plain: Zooplankton Counts, Carbon and Size from Scanned Images
+    collection: PRPOOS net tows on lines 80, 87 and 90
+    analysis: ZooScan imaging, machine-classified (Ohman Lab, CCE-LTER)
+    method: net
+    status: ongoing        # "2005-present" (record description)
+  cce-lter_zoodb:
+    plain: Zooplankton Counts and Carbon by Group
+    collection: Net tows on CalCOFI cruises
+    analysis: Microscopy (Ohman Lab, SIO Pelagic Invertebrate Collection)
+    method: net
+  sio_pic-zooplankton:
+    plain: "Zooplankton Net Tow Log: Where and When Each Tow Was Made"
+    collection: Net tows in the SIO Pelagic Invertebrate Collection
+    analysis: Tow registry, no counts yet (SIO)
+    method: net
+  cdfw_dungeness-crab:
+    plain: Dungeness Crab Larva Counts
+    collection: Archived CalCOFI oblique-tow plankton samples
+    analysis: Examined for crab megalopae (CDFW)
+    method: net
+  cce-lter_picoplankton-bacteria:
+    plain: Counts of the Smallest Phytoplankton and Bacteria
+    collection: Water bottles at 3 to 8 depths per station
+    analysis: Flow cytometry (CCE-LTER)
+    method: bottle
+    status: ongoing        # "2004-2023 (ongoing)" (record description)
+  farallon_bird-mammal:
+    plain: Seabird and Marine Mammal Sightings
+    collection: Visual strip transects along the cruise track
+    analysis: Visual observation (Farallon Institute, Bill Sydeman)
+    method: eye
+    status: ongoing        # "1987-present" (record description)
+  sio_mesopelagic-fish:
+    plain: Midwater Fish Catches by Species
+    collection: Midwater trawl (MOHT) tows, 7 cruises in 2010 to 2012
+    analysis: (SIO)
+    method: net
+  calcofi_2022-edna:
+    plain: Fish, Whale and Dolphin DNA in Seawater (Oct 2022)
+    collection: Seawater filtered at stations on the October 2022 cruise
+    analysis: eDNA metabarcoding, D-loop and 12S MiFish assays (CalCOFI)
+    method: bottle
+  calcofi_bottle:
+    plain: "Water Samples: Temperature, Salinity, Oxygen, Nutrients"
+    collection: Water bottles on rosette casts, CalCOFI cruises
+    analysis: (CalCOFI)
+    method: bottle
+  calcofi_ctd-cast:
+    plain: "Sensor Profiles by Depth: Temperature, Salinity, Oxygen"
+    collection: CTD downcasts on CalCOFI cruises
+    analysis: Sensors, binned to 1 m (CalCOFI)
+    method: ctd
+  calcofi_ctd-derived:
+    plain: "Calculated from Sensor Profiles: Mixed-Layer Depth, Low-Oxygen Depths, Spice"
+    collection: Calculated from the CTD Cast Files
+    analysis: The CalCOFI CTD team’s definitions (CalCOFI)
+    method: calc
+  calcofi_bottle-derived:
+    plain: "Calculated from Water Samples: Density, Spice, Nitracline Depth"
+    collection: Calculated from the Hydrographic Bottle data
+    analysis: TEOS-10 and the CTD team’s rule (CalCOFI)
+    method: calc
+  calcofi_dic:
+    plain: "Ocean Carbon: Dissolved Inorganic Carbon and Alkalinity"
+    collection: Niskin bottle samples on CalCOFI cruises
+    analysis: WOCE-flagged (CalCOFI)
+    method: bottle
+  calcofi_mets:
+    plain: Weather and Surface Water Along the Ship’s Track
+    collection: The ship’s underway sensors, about every minute
+    analysis: Thermosalinograph and weather sensors (CalCOFI)
+    method: ship
+  cce-lter_iron:
+    plain: Dissolved Iron in Surface Water
+    collection: Surface pole samples on CalCOFI cruises, 2002 to 2004
+    analysis: FeLume flow-injection analysis (CCE-LTER)
+    method: bottle
+    status: archived       # "(completed)" (record description)
