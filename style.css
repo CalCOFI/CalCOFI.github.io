@@ -2180,9 +2180,9 @@ body:has(.cc-wave-own) .cc-wave-auto { display: none; }
 .fd-mon .ap-feat-b { padding: 30px 32px; }
 .fd-mon .ap-feat h3 { font-size: 30px; }
 .fd-mon .ap-feat-b > p { font-size: 16.5px; }
-.fd-mon .ap-mon { list-style: none; margin: 16px 0 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 20px; font-size: 15.5px; }
-.fd-mon .ap-mon li { position: relative; padding-left: 16px; }
-.fd-mon .ap-mon li::before { content: ""; position: absolute; left: 0; top: .6em; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+.fd-mon .ap-mon { list-style: none; margin: 18px 0 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 24px; font-size: 16px; }
+.fd-mon .ap-mon li { display: flex; align-items: center; gap: 10px; white-space: nowrap; }
+.fd-mon .ap-mon .cc-i { flex: none; font-size: 20px; color: var(--accent); }
 @media (max-width: 640px) { .fd-mon .ap-mon { grid-template-columns: 1fr; } }
 /* the station maps (Betty 2026-11-18, option C of four): a clearer ocean, a lighter coast line, and the sampled
    stations in CalCOFI yellow to orange, four shades by how much each holds, outlined in navy. Colours only. */

@@ -226,3 +226,18 @@ body:has(.hero) .cc-wave-auto { --cc-wave-below: #f3f7fb; }
 @media (min-width: 901px) and (max-height: 720px) {
   .hero-goal { min-height: 0; padding: 14px 20px; }
 }
+
+/* the cards' question line, and the sentence under the title (Betty 2026-11-18) */
+.hero-goal .hero-q { margin: 6px 0 0; font-size: 14px; font-weight: 600; color: var(--c-ink); opacity: .8; }
+.hero-goal h3 { margin-top: 6px; }
+.hero-goal h3 + p { color: var(--c-mute); }
+@media (min-width: 901px) {
+  .hero-goal { min-height: 0; }
+  .hero-goal h3 { margin-top: 8px; font-size: 22px; }
+  .hero-goal h3 + p { margin: 6px 0 16px; font-size: 14.5px; line-height: 1.5; }
+}
+/* the numbers, a little bigger (Betty 2026-11-18) */
+.hero-nums dd { font-size: 50px; }
+.hero-nums dt { font-size: 12px; }
+@media (max-height: 720px) and (min-width: 901px) { .hero-nums dd { font-size: 44px; } }
+@media (min-width: 481px) and (max-width: 900px) { .hero-nums dd { font-size: 38px; } }

@@ -22,7 +22,7 @@
   <div class="cc-m2" data-word="{{ w.id | escape }}">
     <button type="button" class="cc-m2-t" aria-expanded="false" aria-controls="cc-dd-{{ w.id | escape }}"{% if cur %} aria-current="true"{% endif %}>{{ w.title | escape }}{{ car }}</button>
     {%- assign titled = false -%}{%- if w.menu.size > 1 -%}{%- assign titled = true -%}{%- endif -%}
-    <div class="cc-dd{% if titled %} cc-dd-2{% endif %}{% if w.align == 'right' %} cc-dd-r{% endif %}" id="cc-dd-{{ w.id | escape }}">
+    <div class="cc-dd{% if titled %} cc-dd-2{% endif %}{% if w.align == 'right' %} cc-dd-r{% elsif w.align == 'center' %} cc-dd-c{% endif %}" id="cc-dd-{{ w.id | escape }}">
       {%- for c in w.menu -%}
       {%- if titled %}<div>{% if c.title %}<h5>{{ c.title | escape }}</h5>{% endif %}{% endif -%}
       {%- for i in c.items -%}

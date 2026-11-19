@@ -46,6 +46,7 @@
 .cc-header .cc-dd::after { content: ""; position: absolute; top: -7px; left: 26px; width: 12px; height: 12px; background: var(--bg);
   border-left: 1px solid var(--edge); border-top: 1px solid var(--edge); transform: rotate(45deg); }
 .cc-header .cc-dd-r { left: auto; right: -16px; } .cc-header .cc-dd-r::after { left: auto; right: 30px; }
+.cc-header .cc-dd-c { left: 50%; transform: translateX(-50%); } .cc-header .cc-dd-c::after { left: calc(50% - 6px); }
 /* open: the pointer is over the group, or the button was pressed (.open, header.js: click, tap, Enter, Space).
    .shut is Escape while the pointer is still over it (WCAG 1.4.13: dismissable without moving the pointer). */
 .cc-header .cc-m2:hover > .cc-dd, .cc-header .cc-m2.open > .cc-dd { visibility: visible; opacity: 1; transition-delay: 0s; }

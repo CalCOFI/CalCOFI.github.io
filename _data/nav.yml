@@ -36,7 +36,8 @@
 words:
   - id: data
     title: Data
-    align: right   # its two-column panel ran 3 px outside a 1100 to 1206 px window when it hung from the word's left
+    align: center  # under its word (Betty 2026-11-18: hung from the right it reached far to the left); from the word's
+                   # left its two-column panel ran 3 px outside a 1100 to 1206 px window
     here: [datasets, species, measurements]
     menu:
       - title: Find

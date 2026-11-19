@@ -1,6 +1,6 @@
 {%- comment -%}
   The front door, v2 (Betty, 2026-11-13, after the 12 Nov database tour: Ed, Mark, Nastassia, Erin's "what do you want to
-  do?"). One screen: what CalCOFI is, then three goals, each with its destinations named — Visualize CalCOFI Data (the
+  do?"). One screen: what CalCOFI is, then three goals, each with its destinations named — Explore species and ocean conditions (the
   Explorer), Download a dataset (the dataset pages), Pull exact data (the Query Builder · code). Data providers and the
   seven tasks' panels (main, 2026-11-16) are one row of quiet links under them. Behind it, Line 90's real sea floor (_data/line90_floor.json,
   GEBCO 2025, drawn by assets/hero.js) — no figure is drawn from anything else.
@@ -36,24 +36,32 @@
     <div class="hero-start">
       <h2 class="hero-h2" id="start-h" tabindex="-1">Where do you want to start?</h2>
       <div class="hero-goals">
+        {%- comment -%} the three cards' words (Betty 2026-11-18): what it is, the question it answers, a title and a
+          sentence on what you can do there, then the ways in {%- endcomment -%}
         <div class="hero-goal">
-          <div class="hero-who"><i class="cc-i cc-i-door-explore" aria-hidden="true"></i>I'm curious</div>
-          <h3>Visualize CalCOFI Data</h3><p>Species and ocean conditions</p>
+          <div class="hero-who"><i class="cc-i cc-i-door-explore" aria-hidden="true"></i>Explore</div>
+          <p class="hero-q">Want to explore the data visually?</p>
+          <h3>Explore species and ocean conditions</h3>
+          <p>Use the Explorer to visualize species distributions and ocean conditions, examine patterns over time, and download the data you&#8217;re viewing or data from a specific cruise.</p>
           {%- comment -%} one app on the first screen (reconciled 2026-11-17): the reply to Ed Weber (2026-11-10) committed to
             one explorer, and main stopped calling to the station app from the front door on 2026-11-16 ("the Explorer
             replaces it", Ben). The Dataset Finder keeps its card in Maps and apps (#explore) and its line in Map ▾. {%- endcomment -%}
           <div class="hero-dest">
-            <a class="hero-opt" href="{{ explore_url }}"><span class="hero-btn main">Explorer</span><small>Maps and trends over time</small></a>
+            <a class="hero-opt" href="{{ explore_url }}"><span class="hero-btn main">Explorer App</span><small>Maps and trends over time</small></a>
           </div>
         </div>
         <a class="hero-goal" href="{{ '/datasets/' | relative_url }}">
-          <div class="hero-who"><i class="cc-i cc-i-ui-download" aria-hidden="true"></i>I need data</div>
-          <h3>Download a dataset</h3><p>One dataset, as its owner published it</p>
+          <div class="hero-who"><i class="cc-i cc-i-ui-download" aria-hidden="true"></i>Find</div>
+          <p class="hero-q">Looking for a specific dataset?</p>
+          <h3>Find and download datasets</h3>
+          <p>Browse individual datasets and download them in CalCOFI&#8217;s standard format, so they&#8217;re easy to combine, or get the original files from the data provider.</p>
           <div class="hero-dest"><span class="hero-opt"><span class="hero-btn">Browse datasets</span><small>All {{ site.data.catalog.counts.datasets }} datasets</small></span></div>
         </a>
         <div class="hero-goal">
-          <div class="hero-who"><i class="cc-i cc-i-view-matrix" aria-hidden="true"></i>I need specific data</div>
-          <h3>Pull exact data</h3><p>Combined across datasets, by station or area</p>
+          <div class="hero-who"><i class="cc-i cc-i-view-matrix" aria-hidden="true"></i>Query</div>
+          <p class="hero-q">Need specific data across datasets?</p>
+          <h3>Build a custom data query</h3>
+          <p>Use the Query Builder to pull data across datasets by station or area, no coding needed. For more advanced access, use R, Python, SQL, or ERDDAP.</p>
           <div class="hero-dest two">
             <a class="hero-opt" href="{{ builder_url }}"><span class="hero-btn">Query Builder</span><small>No code needed</small></a>
             {%- comment -%} #program: R, Python, SQL and ERDDAP side by side (main's "Work with the data in code"), where the
