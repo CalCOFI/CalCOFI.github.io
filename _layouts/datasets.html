@@ -161,7 +161,7 @@ layout: default
     front door (index.html "Or pick one of N datasets"); the fold had only the empty host, so it opened blank. {%- endcomment -%}
   {%- assign ydss = site.data.reach.datasets -%}
   <div id="strip-host" class="fd-ylist bd-strip" data-sprite="{{ '/brand/v2/icons/calcofi-icons.svg' | relative_url }}">
-    <div class="fd-yhead"><div></div><div class="fd-yaxis" aria-hidden="true"></div></div>
+    <div class="fd-yhead"><div></div><div class="fd-yaxis" aria-hidden="true"></div><div></div></div>
     {%- assign yrealms = "env:Environment,bio:Biology,:" | split: "," -%}
     {%- for yr in yrealms -%}
       {%- assign yrp = yr | split: ":" -%}
@@ -172,8 +172,11 @@ layout: default
     <ul class="fd-yrows">
       {%- for d in yrows %}
       <li class="fd-yrow" data-key="{{ d.key | escape }}">
-        <a class="fd-yname" href="{{ d.url }}"><i class="cc-i cc-i-{{ d.cat | default: 'cat-other' }}" aria-hidden="true"></i><span>{{ d.name | escape }}</span></a>
-        <span class="fd-ycells"><span class="fd-yspan">{% if d.ymin %}{{ d.ymin }}{% if d.ymax != d.ymin %} – {{ d.ymax }}{% endif %}{% else %}{{ d.temporal | escape }}{% endif %}</span></span>
+        {%- comment -%} Betty 2026-11-19: easier to read — a colour square (the dataset's own colour, as its bars), the name in
+          dark type, and its years at the row's end {%- endcomment -%}
+        <a class="fd-yname" href="{{ d.url }}"><i class="bd-ysw" style="background: {{ d.color | default: '#00629b' | escape }}" aria-hidden="true"></i><span>{{ d.name | escape }}</span></a>
+        <span class="fd-ycells"></span>
+        <span class="bd-yr">{% if d.ymin %}{{ d.ymin }}{% if d.ymax != d.ymin %}–{{ d.ymax }}{% endif %}{% else %}{{ d.temporal | escape }}{% endif %}</span>
       </li>
       {%- endfor %}
     </ul>
