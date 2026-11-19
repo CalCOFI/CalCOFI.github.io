@@ -259,3 +259,11 @@ body:has(.hero) .cc-wave-auto { --cc-wave-slim-h: 22px; --cc-wave-h: 13px; }
   .hero-in, .hero-in-row { max-width: 1320px; }   /* Betty 2026-11-18: 1400 was too wide */
   .hero-goals { gap: 20px; }
 }
+
+/* sizes (Betty 2026-11-19): the hero was tuned with the browser at 90%, so at 100% everything read a size too big
+   and the margins went thin. The hero's words and cards are drawn at 90% at desktop widths; the sky, sea and ship
+   behind them are not. The scrim is twice the window wide so it still reaches both edges inside the 90%. */
+@media (min-width: 901px) {
+  .hero-in, .hero-in-row { zoom: .9; }
+  :root:not([data-theme="dark"]) .hero-start::before { width: 200vw; }
+}

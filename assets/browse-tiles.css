@@ -176,3 +176,7 @@
 .bd-strip .bd-ysw { flex: none; width: 11px; height: 11px; border-radius: 2px; }
 .bd-strip .fd-ycells { min-height: 22px; }
 .bd-strip .bd-yr { align-self: center; text-align: right; font-size: 13.5px; font-variant-numeric: tabular-nums; color: color-mix(in srgb, var(--fg) 75%, var(--bg)); white-space: nowrap; }
+
+/* sizes (Betty 2026-11-19): this page was tuned with the browser at 90%; drawn at 90% at desktop widths so it looks
+   at 100% the way it was approved. assets/stick.js allows for the zoom. */
+@media (min-width: 901px) { .calm-page.ds-cat.ds-browse { zoom: .9; } }

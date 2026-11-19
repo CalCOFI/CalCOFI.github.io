@@ -2214,3 +2214,7 @@ body:has(.cc-wave-own) .cc-wave-auto { display: none; }
 /* the monitoring panel wider than the page column, about an inch from each edge (Betty 2026-11-19), so the screenshot is
    big enough to show whole beside the words */
 .fd-mon > .cc-container { max-width: min(1800px, calc(100% - 2in)); }
+
+/* sizes (Betty 2026-11-19): the monitoring panel was tuned with the browser at 90%; drawn at 90% at desktop widths so
+   it looks at 100% the way it was approved — smaller words, wider margins */
+@media (min-width: 901px) { .fd-mon > .cc-container { zoom: .9; } }
