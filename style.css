@@ -2214,19 +2214,3 @@ body:has(.cc-wave-own) .cc-wave-auto { display: none; }
 /* the monitoring panel wider than the page column, about an inch from each edge (Betty 2026-11-19), so the screenshot is
    big enough to show whole beside the words */
 .fd-mon > .cc-container { max-width: min(1800px, calc(100% - 2in)); }
-/* the whole panel fits one screen (Betty 2026-11-19: "a lil tall"): the screenshot sets the card's height, at its own
-   shape, no taller than 60% of the window; the words take the rest of the width, so the list runs in two columns */
-.fd-mon .ap-feat { grid-template-columns: auto minmax(0, 1fr); }
-.fd-mon .ap-feat-shot { position: static; min-height: 0; height: min(560px, 60vh); aspect-ratio: 1200 / 750; }
-.fd-mon .ap-feat-shot img { position: static; width: 100%; height: 100%; object-fit: cover; object-position: left top; }
-.fd-mon .ap-feat-b { padding: 22px 26px 16px; }
-.fd-mon .ap-feat h3 { font-size: 25px; }
-.fd-mon .mon-nums { margin-top: 14px; padding: 12px 0; }
-.fd-mon .mon-nums dt { font-size: 36px; }
-.fd-mon .mon-h { margin-top: 14px; }
-.fd-mon .ap-mon { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px 18px; font-size: 15px; }
-.fd-mon .ap-feat-b > p.ap-acts { margin-top: 18px; }
-.fd-mon .mon-head { margin-bottom: 16px; }
-.fd-mon .mon-head h2 { font-size: 30px; }
-.fd-mon .mon-head p:last-child { font-size: 17px; }
-@media (max-width: 1100px) { .fd-mon .ap-feat { grid-template-columns: 1fr; } .fd-mon .ap-feat-shot { height: auto; width: 100%; } }
