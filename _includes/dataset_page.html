@@ -106,12 +106,12 @@
     {%- assign fmore = dp.fields | where: "main", false -%}
     {%- if fmain.size == 0 %}{% assign fmain = dp.fields | slice: 0, 8 %}{% assign fmore = dp.fields | slice: 8, 999 %}{% endif -%}
     <section class="dp-sec dp-card dp-pad" id="fields">
-      <div class="dp-ih"><h2>Field descriptions</h2><span>the columns in the CSV download</span></div>
+      <div class="dp-ih dp-fih"><h2>Field descriptions</h2><span>the columns in the CSV download</span><button type="button" class="dp-flcsv" data-fields-csv hidden><i class="cc-i cc-i-ui-download" aria-hidden="true"></i>Field list (CSV)</button></div>
       <table class="dp-ft"><thead><tr><th scope="col">File</th><th scope="col">Field</th><th scope="col">Units</th><th scope="col">Description</th></tr></thead>
-        <tbody>{% for f in fmain %}<tr><td>{{ f.file }}</td><td><code>{{ f.field | escape }}</code></td><td>{{ f.units | escape }}</td><td>{{ f.desc | escape }}</td></tr>{% endfor %}</tbody></table>
+        <tbody>{% for f in fmain %}<tr data-f="{{ f.file | escape }}"><td>{{ f.file | escape | replace: ", ", "<br>" }}</td><td><code>{{ f.field | escape }}</code></td><td>{{ f.units | escape }}</td><td>{{ f.desc | escape }}</td></tr>{% endfor %}</tbody></table>
       {%- if fmore.size > 0 -%}
       <details class="dp-fmore"><summary>Show {{ fmore.size }} more field{% if fmore.size != 1 %}s{% endif %}</summary>
-        <table class="dp-ft"><tbody>{% for f in fmore %}<tr><td>{{ f.file }}</td><td><code>{{ f.field | escape }}</code></td><td>{{ f.units | escape }}</td><td>{{ f.desc | escape }}</td></tr>{% endfor %}</tbody></table>
+        <table class="dp-ft"><tbody>{% for f in fmore %}<tr data-f="{{ f.file | escape }}"><td>{{ f.file | escape | replace: ", ", "<br>" }}</td><td><code>{{ f.field | escape }}</code></td><td>{{ f.units | escape }}</td><td>{{ f.desc | escape }}</td></tr>{% endfor %}</tbody></table>
         <p class="dp-sm">Every download zip also has <code>columns.csv</code>, listing every column.</p></details>
       {%- endif -%}
     </section>

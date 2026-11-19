@@ -103,3 +103,26 @@
     if (f && f.tagName === "DETAILS") f.open = true;
   });
 })();
+
+// Field list (CSV): every row of the field tables (the shown ones and the "Show more" ones) as one CSV —
+// file, field, units, description. Drawn hidden, shown here, so it never sits there doing nothing without JavaScript.
+(function () {
+  "use strict";
+  var b = document.querySelector("[data-fields-csv]");
+  if (!b) return;
+  b.hidden = false;
+  var q = function (v) { v = String(v == null ? "" : v).trim(); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+  b.addEventListener("click", function () {
+    var lines = ["file,field,units,description"];
+    document.querySelectorAll("#fields .dp-ft tbody tr").forEach(function (tr) {
+      var td = tr.children;
+      lines.push([tr.getAttribute("data-f"), td[1].textContent, td[2].textContent, td[3].textContent].map(q).join(","));
+    });
+    var name = (location.pathname.replace(/\/+$/, "").split("/").pop() || "dataset").replace(/\.html$/, "");
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([lines.join("\r\n") + "\r\n"], { type: "text/csv" }));
+    a.download = name + "_fields.csv";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+  });
+})();

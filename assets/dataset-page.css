@@ -240,3 +240,25 @@ a.dp-big, .dp-page a.dp-big, .dp-page a.dp-big:hover { box-sizing: border-box; t
 .dp-map, .dp-hmap .dp-map { height: auto; }
 .dp-map .cc-map { position: relative; inset: auto; display: block; width: 100%; height: auto; max-height: 320px; }
 .dp-hmap .dp-map .cc-map { max-height: 260px; }
+
+/* Field descriptions as a ruled table (Betty 2026-11-19, option A): a dark line under the header, a clear line under
+   every row; a file list is one file per line, so a name no longer breaks mid-word. The shown table and the "Show more"
+   table keep the same column widths, so their columns line up */
+.dp-fih { align-items: center; }
+.dp-flcsv { margin-left: auto; display: inline-flex; align-items: center; gap: 7px; padding: 7px 13px; border: 1px solid var(--border);
+  border-radius: 8px; background: var(--bg); color: var(--fg); font: 700 13.5px var(--sans); cursor: pointer; white-space: nowrap; }
+.dp-flcsv:hover { border-color: var(--accent); color: var(--accent); }
+.dp-flcsv .cc-i { font-size: 16px; }
+.dp-ft th { color: var(--fg); border-bottom: 2px solid var(--fg); padding: 9px 14px; }
+.dp-ft td { padding: 10px 14px; border-top: 1px solid var(--border); }
+.dp-ft tbody tr:last-child td { border-bottom: 1px solid var(--border); }
+.dp-ft th:nth-child(1), .dp-ft td:nth-child(1) { width: 18%; }
+.dp-ft th:nth-child(2), .dp-ft td:nth-child(2) { width: 22%; }
+.dp-ft th:nth-child(3), .dp-ft td:nth-child(3) { width: 14%; }
+.dp-ft code { font-weight: 600; }
+.dp-fmore .dp-ft tr:first-child td { border-top: 1px solid var(--border); }
+.dp-flcsv[hidden] { display: none; }
+
+/* the dataset page's navy head starts right under the bar, so the brand's wave band (which cuts into the page
+   ground, white) drew a white wave across the navy (Betty 2026-11-19): the head is the band here */
+body:has(.dp-band) .cc-wave-auto { display: none; }
