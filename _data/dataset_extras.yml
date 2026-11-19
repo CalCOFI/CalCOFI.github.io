@@ -10,6 +10,8 @@
 #   analysis    how they were analysed (method), and by whom (lab): "<method> (<lab>)"
 #   method      the collection-method picture: net · pump · ctd · bottle · ship · eye · calc
 #   status      ongoing · archived (blank: not stated anywhere yet, so no label)
+#   blurb       a short description for the row; without it, the record's first sentence (the second too when the first is
+#               short), minus notes for the data team such as "(see questions …)"
 #
 # `tiles` sets the category tiles on /datasets/: Environment first, then Biology. A tile lists the
 # record categories it holds (`categories`) or individual datasets (`datasets`); its `line` is the
@@ -147,11 +149,13 @@ datasets:
     collection: Calculated from the CTD Cast Files
     analysis: The CalCOFI CTD team’s definitions (CalCOFI)
     method: calc
+    blurb: Values worked out from the CTD profiles, not measured. Per depth, spice and density; per cast, the mixed-layer, chlorophyll-maximum, low-oxygen, nitracline and pycnocline depths.
   calcofi_bottle-derived:
     plain: "Calculated from Water Samples: Density, Spice, Nitracline Depth"
     collection: Calculated from the Hydrographic Bottle data
     analysis: TEOS-10 and the CTD team’s rule (CalCOFI)
     method: calc
+    blurb: Values worked out from the bottle data, not measured. At every bottle, spice and density (sigma-theta); per cast, the nitracline depth.
   calcofi_dic:
     plain: "Ocean Carbon: Dissolved Inorganic Carbon and Alkalinity"
     collection: Niskin bottle samples on CalCOFI cruises

@@ -41,8 +41,30 @@ module CalCOFI
         "plain" => present(e["plain"]), "collection" => present(e["collection"]),
         "analysis_method" => meth, "analysis_lab" => lab,
         "method" => METHODS.key?(mk) ? mk : nil, "method_label" => METHODS[mk],
-        "status" => STATUS.key?(st) ? st : nil, "status_label" => STATUS[st]
+        "status" => STATUS.key?(st) ? st : nil, "status_label" => STATUS[st],
+        "blurb" => present(e["blurb"])
       }
+    end
+
+    # A short description for a dataset's row (Betty 2026-11-18: "desc are unnecessarily long"): the record's
+    # first sentence, and the second too when the first is short; without the notes meant for the data team
+    # ("(see questions calcofidic01 and calcofidic07)") or a status the row already shows ("(completed)").
+    # `blurb:` in _data/dataset_extras.yml replaces it.
+    NOTE = /\s*\((?:see\b[^)]*|[^)]*\bquestions?\b[^)]*|completed|ongoing|archived)\)/i
+    def short_desc(text)
+      s = present(text.to_s.gsub(NOTE, "").gsub(/\s+/, " ").strip) or return nil
+      # a sentence ends at . ! or ? before a capital or a number, but not after an initial ("(J. Smith") or a short
+      # form ("Nov. 2002", "ca. 5", "e.g. CTD")
+      parts = s.split(/(?<=[.!?])\s+(?=[A-Z0-9])/).each_with_object([]) do |p, a|
+        if a.any? && a.last.match?(/(?:\b[A-Z]|\b(?:Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sept?|Oct|Nov|Dec|ca|approx|vs|e\.g|i\.e|No|St|Dr|et al))\.\z/)
+          a[-1] = "#{a.last} #{p}"
+        else
+          a << p
+        end
+      end
+      out = parts.shift.to_s
+      out += " " + parts.shift if out.length < 90 && parts.any?
+      out
     end
 
     def slug(s) = s.to_s.downcase.gsub(/&/, " and ").gsub(/[^a-z0-9]+/, "-").gsub(/\A-|-\z/, "")

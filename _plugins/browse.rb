@@ -253,6 +253,7 @@ module CalCOFI
       b["rows"].each do |r|
         r.merge!(DatasetExtras.for(extras, r["key"]))
         r["sources"] = DatasetExtras.source_tables(recs[r["key"]] || {})
+        r["short"] = r["blurb"] || DatasetExtras.short_desc(r["desc"])
       end
       b["tiles"] = DatasetExtras.tiles(extras, b["rows"])
       site.data["browse"] = b

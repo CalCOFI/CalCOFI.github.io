@@ -13,7 +13,8 @@
       {%- if d.analysis_method or d.analysis_lab %}<div><b>Analysis:</b> {{ d.analysis_method | escape }}{% if d.analysis_lab %} (<strong>{{ d.analysis_lab | escape }}</strong>){% endif %}</div>{% endif -%}
     </div>
     {%- endif -%}
-    {%- if d.desc %}<p class="bt-rd">{{ d.desc | escape }}</p>{% endif -%}
+    {%- assign dd = d.short | default: d.desc -%}
+    {%- if dd %}<p class="bt-rd">{{ dd | escape }}</p>{% endif -%}
     {%- if d.sources.size > 1 -%}
     <details class="bt-src"><summary>Combines {{ d.sources.size }} NOAA ERDDAP tables</summary>
       <ul>{% for s in d.sources %}<li><a class="bt-ext" href="{{ s.url | escape }}">{{ s.title | escape }} ↗</a><code>{{ s.id | escape }}</code></li>{% endfor %}</ul>

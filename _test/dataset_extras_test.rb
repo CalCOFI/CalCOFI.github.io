@@ -117,4 +117,13 @@ class DatasetExtrasTest < Minitest::Test
     end
     assert_equal %w[env bio], y["tiles"].map { |r| r["realm"] }
   end
+  def test_short_desc
+    e = CalCOFI::DatasetExtras
+    assert_equal "Discrete DIC from CalCOFI Niskin bottles, quality-controlled using WOCE flagging, at every station.",
+      e.short_desc("Discrete DIC from CalCOFI Niskin bottles, quality-controlled using WOCE flagging, at every station. Values on a bottle are published once (see questions calcofidic01 and calcofidic07).")
+    assert_equal "Dissolved iron from CalCOFI cruises, Nov. 2002 - July 2004.", e.short_desc("Dissolved iron from CalCOFI cruises, Nov. 2002 - July 2004 (completed). Surface samples.").sub(/ Surface samples\.\z/, "")
+    assert_equal "CTD profiles at standard depths. 1 m-binned data come from the archive (J. Smith).",
+      e.short_desc("CTD profiles at standard depths. 1 m-binned data come from the archive (J. Smith). More text here.")
+    assert_nil e.short_desc("  ")
+  end
 end

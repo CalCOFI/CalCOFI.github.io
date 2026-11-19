@@ -108,9 +108,12 @@
 .bt-cat .bt-ch { padding-right: 190px; }
 @media (max-width: 760px) { .bd-views > .tabrow { position: static; justify-content: flex-end; margin-bottom: 8px; } #ds-view-list { padding-top: 0; } .bt-cat .bt-ch { padding-right: 0; } }
 
-/* an open category: the page uses more of the screen's width (the margins were empty), so the rows have room beside
-   the preview; the description is read whole (Betty 2026-11-18, "very cluttered in middle") */
-.calm-page.ds-browse:has(.bd-find:not(.bt-home-on) .bt-cat:not([hidden])) { max-width: min(1760px, 100%); }
+/* an open category: less padding and narrower side columns give the rows more room beside the preview, inside the
+   page's own width; the (short) description is read whole (Betty 2026-11-18, "very cluttered in middle") */
 .bt-cat .bt-rd { display: block; -webkit-line-clamp: unset; overflow: visible; }
 .bt-cat { grid-template-columns: 200px minmax(0, 1fr); gap: 24px; }
 .bt-cat .bt-row { grid-template-columns: minmax(0, 1fr) 120px; gap: 22px; }
+
+/* with the preview beside the views (an open category, the List), the switch sits over the rows, not over the map */
+.bd-views:has(> .bd-find:not(.bt-home-on)) > .tabrow { right: calc(380px + 28px); }
+@media (max-width: 1000px) { .bd-views:has(> .bd-find:not(.bt-home-on)) > .tabrow { right: 0; } }
