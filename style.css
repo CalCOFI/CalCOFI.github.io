@@ -2176,7 +2176,8 @@ body:has(.cc-wave-own) .cc-wave-auto { display: none; }
 
 /* Statewide monitoring (Betty 2026-11-18): the map as one big card, like the Explorer's, taller to fill the view */
 .fd-mon .ap-feat { margin-top: 18px; }
-.fd-mon .ap-feat-shot img { height: min(540px, 62vh); object-position: center top; }
+.fd-mon .ap-feat-shot { display: flex; align-items: center; }
+.fd-mon .ap-feat-shot img { height: auto; object-fit: contain; }   /* the whole screenshot, uncropped (Betty 2026-11-18) */
 .fd-mon .ap-feat-b { padding: 30px 32px; }
 .fd-mon .ap-feat h3 { font-size: 30px; }
 .fd-mon .ap-feat-b > p { font-size: 16.5px; }
