@@ -184,3 +184,10 @@
 /* a group's name and its line on one line (Betty 2026-11-19): "Environment  Temperature, salinity…" */
 .bt-rh > div { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 14px; }
 .bt-rh > div p { margin: 0; }
+
+/* an open category without the category list on its left (Betty 2026-11-19): only "← All categories" above it,
+   and the datasets take the room */
+.bt-cat { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+.bt-rail { position: static; flex-direction: row; }
+.bt-rail .bt-rl, .bt-rail a[data-cat] { display: none; }
+.bt-rail .bt-back { padding: 0 0 4px; }

@@ -116,7 +116,7 @@ layout: default
         <div class="bt-cats" id="bt-cats">
           {%- for rl in b.tiles %}{% for g in rl.groups %}
           <section class="bt-cat" id="cat-{{ g.slug }}" data-cat="{{ g.slug }}" data-cats="{% for d in g.rows %}{{ d.cat | escape }}|{% endfor %}">
-            <nav class="bt-rail" aria-label="Categories">
+            <nav class="bt-rail" aria-label="Back to all categories">
               <a class="bt-back" href="./" data-home>← All categories</a>
               {%- for rl2 in b.tiles %}
               <span class="bt-rl">{{ rl2.title | escape }}</span>
