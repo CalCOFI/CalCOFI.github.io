@@ -2176,12 +2176,12 @@ body:has(.cc-wave-own) .cc-wave-auto { display: none; }
 
 /* Statewide monitoring (Betty 2026-11-18): the map as one big card, like the Explorer's, taller to fill the view */
 .fd-mon .ap-feat { margin-top: 18px; }
-.fd-mon .ap-feat-shot img { height: min(620px, 68vh); object-position: center top; }
+.fd-mon .ap-feat-shot img { height: min(540px, 62vh); object-position: center top; }
 .fd-mon .ap-feat-b { padding: 30px 32px; }
 .fd-mon .ap-feat h3 { font-size: 30px; }
 .fd-mon .ap-feat-b > p { font-size: 16.5px; }
-.fd-mon .ap-mon { list-style: none; margin: 18px 0 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 24px; font-size: 16px; }
-.fd-mon .ap-mon li { display: flex; align-items: center; gap: 10px; white-space: nowrap; }
+.fd-mon .ap-mon { list-style: none; margin: 18px 0 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 32px; font-size: 16px; }
+.fd-mon .ap-mon li { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .fd-mon .ap-mon .cc-i { flex: none; font-size: 20px; color: var(--accent); }
 @media (max-width: 640px) { .fd-mon .ap-mon { grid-template-columns: 1fr; } }
 /* the station maps (Betty 2026-11-18, option C of four): a clearer ocean, a lighter coast line, and the sampled
