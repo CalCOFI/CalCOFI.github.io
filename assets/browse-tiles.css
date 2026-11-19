@@ -78,3 +78,6 @@
 }
 @media (max-width: 760px) { .bt-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } .bt-row { grid-template-columns: 1fr; } .bt-rs { flex-direction: row; } }
 @media (max-width: 480px) { .bt-tiles { grid-template-columns: 1fr; } .bt-rh { flex-wrap: wrap; } .bt-rh > span { margin-left: 0; } }
+
+/* Years covered, moved under the datasets (Betty 2026-11-18) */
+.ds-browse > .bd-when { margin: 40px 0 16px; }

@@ -64,12 +64,6 @@ layout: default
 <main class="calm-page ds-cat ds-browse">
 {% include catalog_crumb.html on="datasets" %}
 
-<details class="bd-when">
-  <summary><i class="cc-i cc-i-ui-years" aria-hidden="true"></i><b>Years covered</b><span>which datasets were collected each year</span><i class="calm-chev cc-i cc-i-ui-down" aria-hidden="true"></i></summary>
-  <script type="application/json" id="reach">{{ site.data.reach | jsonify }}</script>
-  <div id="strip-host" class="fd-strip bd-strip" data-sprite="{{ '/brand/v2/icons/calcofi-icons.svg' | relative_url }}"></div>
-</details>
-
 <h2 class="sr-only">The datasets</h2>
 {%- comment -%}
   Two views (Betty 2026-11-18, mockup "Browse datasets — by category", Option A):
@@ -149,6 +143,13 @@ layout: default
   </div>
 </div>
 <script type="application/json" id="bd-rows">{{ b.rows | jsonify }}</script>
+
+{%- comment -%} Years covered sits under the datasets now (Betty 2026-11-18), above the other folds {%- endcomment -%}
+<details class="bd-when">
+  <summary><i class="cc-i cc-i-ui-years" aria-hidden="true"></i><b>Years covered</b><span>which datasets were collected each year</span><i class="calm-chev cc-i cc-i-ui-down" aria-hidden="true"></i></summary>
+  <script type="application/json" id="reach">{{ site.data.reach | jsonify }}</script>
+  <div id="strip-host" class="fd-strip bd-strip" data-sprite="{{ '/brand/v2/icons/calcofi-icons.svg' | relative_url }}"></div>
+</details>
 
 <div class="calm-folds ds-cat-folds">
   {%- assign n_held = cat.counts.holdings -%}
