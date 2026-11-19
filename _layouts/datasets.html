@@ -148,7 +148,29 @@ layout: default
 <details class="bd-when">
   <summary><i class="cc-i cc-i-ui-years" aria-hidden="true"></i><b>Years covered</b><span>which datasets were collected each year</span><i class="calm-chev cc-i cc-i-ui-down" aria-hidden="true"></i></summary>
   <script type="application/json" id="reach">{{ site.data.reach | jsonify }}</script>
-  <div id="strip-host" class="fd-strip bd-strip" data-sprite="{{ '/brand/v2/icons/calcofi-icons.svg' | relative_url }}"></div>
+  {%- comment -%} The rows assets/reach.js draws each dataset's years into (.fd-yaxis, .fd-yrow .fd-ycells), as on the
+    front door (index.html "Or pick one of N datasets"); the fold had only the empty host, so it opened blank. {%- endcomment -%}
+  {%- assign ydss = site.data.reach.datasets -%}
+  <div id="strip-host" class="fd-ylist bd-strip" data-sprite="{{ '/brand/v2/icons/calcofi-icons.svg' | relative_url }}">
+    <div class="fd-yhead"><div></div><div class="fd-yaxis" aria-hidden="true"></div></div>
+    {%- assign yrealms = "env:Environment,bio:Biology,:" | split: "," -%}
+    {%- for yr in yrealms -%}
+      {%- assign yrp = yr | split: ":" -%}
+      {%- if yrp[0] -%}{%- assign yrows = ydss | where: "realm", yrp[0] -%}
+      {%- else -%}{%- assign yrows = ydss | where_exp: "d", "d.realm != 'bio' and d.realm != 'env'" -%}{%- endif -%}
+      {%- if yrows.size > 0 -%}
+    {%- if yrp[1] %}<h3 class="fd-yg"><i class="cc-i cc-i-realm-{{ yrp[0] }}" aria-hidden="true"></i>{{ yrp[1] }}</h3>{% endif %}
+    <ul class="fd-yrows">
+      {%- for d in yrows %}
+      <li class="fd-yrow" data-key="{{ d.key | escape }}">
+        <a class="fd-yname" href="{{ d.url }}"><i class="cc-i cc-i-{{ d.cat | default: 'cat-other' }}" aria-hidden="true"></i><span>{{ d.name | escape }}</span></a>
+        <span class="fd-ycells"><span class="fd-yspan">{% if d.ymin %}{{ d.ymin }}{% if d.ymax != d.ymin %} – {{ d.ymax }}{% endif %}{% else %}{{ d.temporal | escape }}{% endif %}</span></span>
+      </li>
+      {%- endfor %}
+    </ul>
+      {%- endif -%}
+    {%- endfor %}
+  </div>
 </details>
 
 <div class="calm-folds ds-cat-folds">
