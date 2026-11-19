@@ -234,3 +234,9 @@ a.dp-big, .dp-page a.dp-big, .dp-page a.dp-big:hover { box-sizing: border-box; t
 .dp-side { top: calc(var(--header-h, 72px) + 58px); }
 .dp-sec[id], .dp-card[id] { scroll-margin-top: calc(var(--header-h, 72px) + 56px); }
 @media (max-width: 1050px) { .dp-tabs { position: static; } }
+
+/* the station map takes its own shape (no fixed height), so it is never cut off; a tall one is held to a height,
+   against the right, coast side (Betty 2026-11-18) */
+.dp-map, .dp-hmap .dp-map { height: auto; }
+.dp-map .cc-map { position: relative; inset: auto; display: block; width: 100%; height: auto; max-height: 420px; }
+.dp-hmap .dp-map .cc-map { max-height: 320px; }

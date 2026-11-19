@@ -1146,8 +1146,10 @@ module CalCOFI
     # drawn — clipped to the frame, dashed, with a corner note when it continues beyond.
     #
     # Projection: equirectangular with a cos(mean latitude) correction on longitude, as bbox_svg
-    # used. Width is 360; height follows the frame's aspect.
+    # used. Width is 360; height is 360 / MAP_ASPECT.
     MAP_W = 360.0
+    MAP_ASPECT = 1.45 # the width : height a map is widened toward
+    LAND_FRAME = [-135.0, -105.0, 19.0, 49.0].freeze # lon0, lon1, lat0, lat1 of _data/land.geojson (build_land.py)
 
     def map_svg(r)
       cells = grid
@@ -1163,7 +1165,23 @@ module CalCOFI
       pady = [(y1 - y0) * 0.06, 0.4].max
       x0 -= padx; x1 += padx; y0 -= pady; y1 += pady
 
+      # Toward one shape, MAP_ASPECT wide to 1 tall (Betty 2026-11-18, "don't cut off map"): a frame narrower
+      # than that widens about its centre, more ocean west and more coast east; a wider one grows north and
+      # south. Less empty box around a tall map, more real geography in it.
       k  = Math.cos((y0 + y1) / 2 * Math::PI / 180)
+      if (x1 - x0) * k < MAP_ASPECT * (y1 - y0)
+        grow = (MAP_ASPECT * (y1 - y0) / k - (x1 - x0)) / 2
+        x0 -= grow; x1 += grow
+      else
+        grow = ((x1 - x0) * k / MAP_ASPECT - (y1 - y0)) / 2
+        y0 -= grow; y1 += grow
+      end
+      # …but never past the coast the site has (scripts/build_land.py's frame), where land would stop at a
+      # straight edge; a frame that cannot widen enough there stays a little taller, and the box it sits in
+      # takes the map's own shape ("aspect" below), so nothing is cut off either way
+      x0 = [x0, LAND_FRAME[0]].max; x1 = [x1, LAND_FRAME[1]].min
+      y0 = [y0, LAND_FRAME[2]].max; y1 = [y1, LAND_FRAME[3]].min
+      k = Math.cos((y0 + y1) / 2 * Math::PI / 180)
       wl = (x1 - x0) * k
       hl = (y1 - y0)
       w  = MAP_W
@@ -1193,11 +1211,14 @@ module CalCOFI
         cy = format("%.1f", py.(c["lat"]))
         if (v = sampled[c["key"]])
           n = v["n"]
-          rr = 1.6 + 4.4 * Math.sqrt(n.to_f / max)
+          f  = Math.sqrt(n.to_f / max)
+          rr = 1.6 + 4.4 * f
+          # four shades by the same measure as the size (style.css .cc-map .l1–.l4), light for few, deep for many
+          lv = f < 0.3 ? 1 : f < 0.55 ? 2 : f < 0.8 ? 3 : 4
           # the data-* is what assets/coverage.js reads for the tap/hover card; <title> stays as the
           # no-JS hover and the accessible name
-          dots << format('<circle class="st st-on" cx="%s" cy="%s" r="%.1f" tabindex="0" data-key="%s" data-n="%d" data-ymin="%s" data-ymax="%s" data-nyr="%d"><title>%s · %s obs · %s–%s</title></circle>',
-                         cx, cy, rr, c["key"], n, v["ymin"], v["ymax"], v["nyr"], c["key"], Fmt.num(n), v["ymin"], v["ymax"])
+          dots << format('<circle class="st st-on l%d" cx="%s" cy="%s" r="%.1f" tabindex="0" data-key="%s" data-n="%d" data-ymin="%s" data-ymax="%s" data-nyr="%d"><title>%s · %s obs · %s–%s</title></circle>',
+                         lv, cx, cy, rr, c["key"], n, v["ymin"], v["ymax"], v["nyr"], c["key"], Fmt.num(n), v["ymin"], v["ymax"])
         else
           dots << %(<circle class="st" cx="#{cx}" cy="#{cy}" r="1.3"/>)
         end
@@ -1243,7 +1264,7 @@ module CalCOFI
         "The CalCOFI station grid over the coastline"
       end
       {
-        "svg" => %(<svg class="cc-map" viewBox="0 0 #{w.to_i} #{h}" preserveAspectRatio="xMaxYMin meet" ) +
+        "svg" => %(<svg class="cc-map" viewBox="0 0 #{w.to_i} #{h}" preserveAspectRatio="xMaxYMid meet" ) +
                  %(role="img" aria-label="#{label}">#{out}</svg>),
         "w" => w.to_i, "h" => h, "aspect" => format("%d / %d", w.to_i, h),
         "n_stations" => sampled.size, "beyond" => beyond,

@@ -145,3 +145,8 @@
 .bt-row.on { border-color: color-mix(in srgb, var(--accent) 45%, var(--border)); }
 .bt-rn span { display: block; margin-top: 3px; font-size: 14.5px; }
 .bd-dd-n b em { font-style: normal; font-weight: 400; color: var(--muted); }
+
+/* the preview's map: the box takes the map's own shape (no fixed height), so it is never cut off; a tall one (the
+   whole coast) is held to a height, against the box's right, coast side, with ocean to its left (Betty 2026-11-18) */
+.bd-pv-map { height: auto; }
+.bd-pv-map .cc-map { position: relative; inset: auto; display: block; width: 100%; height: auto; max-height: 420px; }

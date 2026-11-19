@@ -81,7 +81,7 @@
     if (r.depth) f += "<div><dt>Depth</dt><dd>" + esc(r.depth) + "</dd></div>";
     if (r.stations) f += "<div><dt>Stations</dt><dd>" + esc(r.stations) + "</dd></div>";
     if (r.records) f += "<div><dt>Records</dt><dd>" + esc(r.records) + "</dd></div>";
-    return '<div class="bd-pv-map">' + (m && m.svg ? m.svg.replace(/preserveAspectRatio="[^"]*"/, 'preserveAspectRatio="xMidYMid meet"') + (m.n ? '<span class="bd-pv-cap">' + m.n + " station" + (m.n === 1 ? "" : "s") + " sampled</span>" : "")
+    return '<div class="bd-pv-map">' + (m && m.svg ? m.svg.replace(/preserveAspectRatio="[^"]*"/, 'preserveAspectRatio="xMaxYMid meet"') + (m.n ? '<span class="bd-pv-cap">' + m.n + " station" + (m.n === 1 ? "" : "s") + " sampled</span>" : "")
              : '<span class="bd-pv-nomap">' + (maps ? "No station locations listed" : "") + "</span>") + "</div>" +
       '<div class="bd-pv-b"><span class="bd-pv-cat"><i class="cc-i cc-i-' + esc(r.icon) + '" aria-hidden="true"></i>' + esc(r.cat) + "</span>" +
       "<h2>" + esc(r.name) + "</h2>" + (r.full !== r.name ? '<p class="bd-pv-full">' + esc(r.full) + "</p>" : "") +
