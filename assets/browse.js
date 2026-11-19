@@ -174,15 +174,14 @@
     if (gridTab && gridTab.getAttribute("aria-selected") !== "true") gridTab.click();
     if (home) home.hidden = true;
     cats.forEach(function (c) { c.hidden = c !== sec; });
-    // an open category takes the width too: no preview beside it (Betty 2026-11-18, "very cluttered in middle")
-    if (find) find.classList.add("bt-home-on");
+    if (find) find.classList.remove("bt-home-on");
     var first = sec.querySelector(".bd-r[data-k]");
     if (first) select(first.getAttribute("data-k"));
     if (user) { setUrl(slug); toTop(); }
   }
   // the List shows the preview; the tiles do not
   if (listTab) listTab.addEventListener("click", function () { if (find) find.classList.remove("bt-home-on"); });
-  if (gridTab) gridTab.addEventListener("click", function () { if (find) find.classList.add("bt-home-on"); });
+  if (gridTab) gridTab.addEventListener("click", function () { if (find && home && !home.hidden) find.classList.add("bt-home-on"); });
   // a search reads the whole list
   if (q) q.addEventListener("input", function () { if (q.value.trim() && listTab && listTab.getAttribute("aria-selected") !== "true") { listTab.click(); } });
   // ?cat= : a tile's slug, or a record category's name (a dataset page's breadcrumb)
