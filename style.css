@@ -2211,3 +2211,6 @@ body:has(.cc-wave-own) .cc-wave-auto { display: none; }
 .cc-map .st-on.l1 { fill: #ffe27a; } .cc-map .st-on.l2 { fill: #ffd23f; }
 .cc-map .st-on.l3 { fill: #ffbf00; } .cc-map .st-on.l4 { fill: #f29f05; }
 [data-theme="dark"] .cc-map .st-on { stroke: #0f1a2e; }
+/* the monitoring panel wider than the page column, about an inch from each edge (Betty 2026-11-19), so the screenshot is
+   big enough to show whole beside the words */
+.fd-mon > .cc-container { max-width: min(1800px, calc(100% - 2in)); }
