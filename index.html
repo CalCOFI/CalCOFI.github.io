@@ -574,9 +574,8 @@ SELECT * FROM read_json('{{ rel.catalog_url }}')</pre>
   <div class="cc-container">
     {{ close_btn }}
     {%- comment -%} the words (Betty 2026-11-18): a question the map answers, and what it shows {%- endcomment -%}
-    <div class="mon-head"><p class="mon-eb">Statewide monitoring</p>
-      <h2 id="monitor-h">Who monitors California&#8217;s coastal ocean?</h2>
-      <p>Every ocean and coastal monitoring program within 12 nautical miles of the coast, on one map: who samples where, what they measure, and where no one does.</p></div>
+    <div class="mon-head"><h2 id="monitor-h">Statewide ocean monitoring</h2>
+      <p>Every ocean and coastal monitoring program out to 350 miles from the California coast, on one map.</p></div>
     {%- comment -%} Betty 2026-11-18: the map as one big card, the screenshot beside what it shows and how to open
       it, as the Explorer's card in Maps and apps (.ap-feat) {%- endcomment -%}
     {%- for p in m_items -%}
@@ -585,7 +584,9 @@ SELECT * FROM read_json('{{ rel.catalog_url }}')</pre>
       <div class="ap-feat-b">
         {%- if p.credits %}<span class="ap-k">{{ p.credits.org | escape }}{% if p.credits.year %} {{ p.credits.year }}{% endif %}{% if p.credits.team %} · {{ p.credits.team | join: ", " | escape }}{% endif %}</span>{% endif %}
         <h3><a href="{{ p.live_url }}">{{ p.title | escape }}</a></h3>
-        <p>Pick programs, parameters or Essential Ocean Variables, and see their coverage on a 1, 3 or 5 km hexagon grid. Turn on the layers that set the context:</p>
+        {%- comment -%} the map's own "What's new, Nov 2026": 350 miles offshore (was 12 nautical miles), every hex links to
+          its data, the years each parameter was sampled {%- endcomment -%}
+        <p>Pick programs, parameters or Essential Ocean Variables and see their coverage on a 1, 3 or 5 km hexagon grid. Click a hexagon for the years each parameter was sampled and a link to its data. Turn on the layers that set the context:</p>
         {%- comment -%} the map's layers, each one short line with its glyph, two even columns (Betty 2026-11-18) {%- endcomment -%}
         <ul class="ap-mon">
           <li><i class="cc-i cc-i-lens-sections" aria-hidden="true"></i>Survey transects</li>
