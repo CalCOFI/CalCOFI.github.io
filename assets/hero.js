@@ -5,7 +5,7 @@
   'use strict';
   var svg = document.getElementById('hero-sea'), src = document.getElementById('hero-floor');
   if (!svg) return;
-  var NS = 'http://www.w3.org/2000/svg', W = 1280, H = 720, SURF = 352, X1 = 1170;
+  var NS = 'http://www.w3.org/2000/svg', W = 1280, H = 720, SURF = 300, X1 = 1170;
   function el(tag, attrs, parent) { var e = document.createElementNS(NS, tag); for (var k in attrs) e.setAttribute(k, attrs[k]); (parent || svg).appendChild(e); return e; }
   var d = null; try { d = JSON.parse(src.textContent); } catch (e) { d = null; }
   var defs = el('defs', {});
