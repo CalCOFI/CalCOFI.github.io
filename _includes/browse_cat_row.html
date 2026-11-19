@@ -5,12 +5,13 @@
 {%- assign d = include.d -%}
 <div class="bt-row bd-r" data-k="{{ d.key | escape }}" data-r="{{ d.realm | escape }}">
   <div class="bt-rb">
-    <a class="bt-rn" href="{{ d.url | relative_url }}"><b>{{ d.plain | default: d.name | escape }}</b>
-      <span>{% if d.plain %}{{ d.name | escape }} · {% endif %}{{ d.prov | escape }}</span></a>
+    {%- comment -%} the record's own name leads, the plain name under it (Betty 2026-11-18) {%- endcomment -%}
+    <a class="bt-rn" href="{{ d.url | relative_url }}"><b>{{ d.name | escape }} · {{ d.prov | escape }}</b>
+      {%- if d.plain %}<span>{{ d.plain | escape }}</span>{% endif %}</a>
     {%- if d.collection or d.analysis_method or d.analysis_lab -%}
     <div class="bt-ca">
       {%- if d.collection %}<div><b>Collection:</b> {{ d.collection | escape }}</div>{% endif -%}
-      {%- if d.analysis_method or d.analysis_lab %}<div><b>Analysis:</b> {{ d.analysis_method | escape }}{% if d.analysis_lab %} (<strong>{{ d.analysis_lab | escape }}</strong>){% endif %}</div>{% endif -%}
+      {%- if d.analysis_method or d.analysis_lab %}<div><b>Analysis:</b> {% if d.analysis_method %}{{ d.analysis_method | escape }}{% if d.analysis_lab %} (<strong>{{ d.analysis_lab | escape }}</strong>){% endif %}{% else %}<strong>{{ d.analysis_lab | escape }}</strong>{% endif %}</div>{% endif -%}
     </div>
     {%- endif -%}
     {%- assign dd = d.short | default: d.desc -%}

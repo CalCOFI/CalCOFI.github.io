@@ -23,8 +23,8 @@
       <a class="dp-back" href="{{ '/datasets/' | relative_url }}{% if tile %}?cat={{ tile[1] }}{% endif %}"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Back</a>
       <p class="dp-eb"><span><i class="cc-i cc-i-{{ page.icon | escape }}" aria-hidden="true"></i>{% if tile %}{{ tile[0] | escape }}{% else %}{{ r.category.name | escape }}{% endif %}</span>
         {%- if ex.status %}<span class="dp-st dp-st-{{ ex.status }}"><i aria-hidden="true"></i>{{ ex.status_label }}</span>{% endif %}</p>
-      <h1>{{ ex.plain | default: page.h1 | escape }}</h1>
-      <p class="dp-by">{% if ex.plain %}{{ page.h1 | escape }}{% if dp.byline != "" %} · {% endif %}{% endif %}{{ dp.byline | escape }}</p>
+      <h1>{{ page.h1 | escape }}</h1>
+      <p class="dp-by">{% if ex.plain %}{{ ex.plain | escape }}{% if dp.byline != "" %} · {% endif %}{% endif %}{{ dp.byline | escape }}</p>
       {%- if ex.collection or ex.analysis_method or ex.analysis_lab -%}
       <div class="dp-ca">
         {%- if ex.collection %}<div><b>Collection:</b> {{ ex.collection | escape }}</div>{% endif -%}
@@ -177,7 +177,7 @@
       <div class="dp-comb">
         <ul class="dp-cg">{% for t in dp.sources %}<li><a href="{{ t.url | escape }}"><b>{{ t.title | escape }} <span aria-hidden="true">↗</span></b><code>{{ t.id | escape }}</code></a></li>{% endfor %}</ul>
         <svg class="dp-carr" viewBox="0 0 56 40" width="56" height="40" aria-hidden="true"><path d="M6 20h40M36 10l10 10-10 10" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        <div class="dp-cone"><i class="cc-i cc-i-{{ page.icon | escape }}" aria-hidden="true"></i><span><small>1 dataset here</small><b>{{ ex.plain | default: page.h1 | escape }}</b></span></div>
+        <div class="dp-cone"><i class="cc-i cc-i-{{ page.icon | escape }}" aria-hidden="true"></i><span><small>1 dataset here</small><b>{{ page.h1 | escape }}</b></span></div>
       </div>
     </section>
     {%- endif -%}

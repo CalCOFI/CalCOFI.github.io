@@ -171,7 +171,7 @@
     var hits = [];
     ROWS.forEach(function (r) {
       var m = hit(r, v);
-      if (m) hits.push({ r: r, m: m, rank: m === true ? ((r.plain || r.name || "").toLowerCase().indexOf(v) === 0 ? 0 : 1) : 2 });
+      if (m) hits.push({ r: r, m: m, rank: m === true ? ((r.name || "").toLowerCase().indexOf(v) === 0 || (r.plain || "").toLowerCase().indexOf(v) === 0 ? 0 : 1) : 2 });
     });
     hits.sort(function (a, b) { return a.rank - b.rank || a.r.order - b.r.order; });
     var w = esc(q.value.trim()), h = "";
@@ -181,7 +181,7 @@
         var r = x.r, why = typeof x.m === "string" ? 'Has <mark>' + esc(x.m) + "</mark>" : esc(r.cat || "");
         h += '<a class="bd-dd-r" role="option" data-dd="' + esc(r.key) + '" href="' + esc(r.url || "#") + '">' +
           '<i class="cc-i cc-i-' + esc(r.icon || "cat-other") + '" aria-hidden="true"></i>' +
-          '<span class="bd-dd-n"><b>' + esc(r.plain || r.name) + "</b><small>" + why + (r.years ? " · " + esc(r.years) : "") + "</small></span></a>";
+          '<span class="bd-dd-n"><b>' + esc(r.name) + (r.plain ? " <em>" + esc(r.plain) + "</em>" : "") + "</b><small>" + why + (r.years ? " · " + esc(r.years) : "") + "</small></span></a>";
       });
       h += '<button type="button" class="bd-dd-all" data-dd="all">See all ' + hits.length + ' in the list <span aria-hidden="true">↵</span></button>';
     } else {
