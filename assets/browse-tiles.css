@@ -191,3 +191,6 @@
 .bt-rail { position: static; flex-direction: row; }
 .bt-rail .bt-rl, .bt-rail a[data-cat] { display: none; }
 .bt-rail .bt-back { padding: 0 0 4px; }
+
+/* no rule under the group headings (Betty 2026-11-19) */
+.bt-rh { border-bottom: 0; padding-bottom: 0; margin-bottom: 14px; }
