@@ -92,28 +92,28 @@
 .bt-realm + .bt-realm { margin-top: 26px; }
 .bt-rh { margin-bottom: 12px; } .bt-rh h2 { font-size: 24px; } .bt-rh p { font-size: 15px; }
 
-/* the view switch: a small text switch at the top right, over the first heading's free corner, so it takes no line
-   of its own (Betty 2026-11-18). The count it carried is on each realm's heading already. */
-.bd-views { position: relative; }
-.bd-views > .tabrow { position: absolute; top: 4px; right: 0; z-index: 2; margin: 0; padding: 0; gap: 2px; background: none; border: 0; box-shadow: none; }
-.bd-views > .tabrow::before { content: "View"; margin-right: 6px; font-size: 13px; color: var(--muted); }
-.bd-views > .tabrow button { padding: 2px 6px; border-radius: 0; font-size: 13.5px; font-weight: 500; color: var(--muted); background: none; box-shadow: none; border-bottom: 2px solid transparent; }
-.bd-views > .tabrow button + button { border-left: 0; }
-.bd-views > .tabrow button[aria-selected="true"] { color: var(--fg); font-weight: 700; background: none; box-shadow: none; border-bottom-color: var(--accent); }
-.bd-views > .tabrow .bd-count { display: none; }
-/* the first realm's count sits on its heading's bottom line, under the switch */
-.bt-rh { min-height: 58px; }
-/* the list and an open category start with their own heads: keep them clear of the switch */
-#ds-view-list { padding-top: 34px; }
-.bt-cat .bt-ch { padding-right: 190px; }
-@media (max-width: 760px) { .bd-views > .tabrow { position: static; justify-content: flex-end; margin-bottom: 8px; } #ds-view-list { padding-top: 0; } .bt-cat .bt-ch { padding-right: 0; } }
-
 /* an open category: less padding and narrower side columns give the rows more room beside the preview, inside the
    page's own width; the (short) description is read whole (Betty 2026-11-18, "very cluttered in middle") */
 .bt-cat .bt-rd { display: block; -webkit-line-clamp: unset; overflow: visible; }
 .bt-cat { grid-template-columns: 200px minmax(0, 1fr); gap: 24px; }
 .bt-cat .bt-row { grid-template-columns: minmax(0, 1fr) 120px; gap: 22px; }
 
-/* with the preview beside the views (an open category, the List), the switch sits over the rows, not over the map */
-.bd-views:has(> .bd-find:not(.bt-home-on)) > .tabrow { right: calc(380px + 28px); }
-@media (max-width: 1000px) { .bd-views:has(> .bd-find:not(.bt-home-on)) > .tabrow { right: 0; } }
+/* the page: about an inch of margin each side instead of two (Betty 2026-11-18) */
+.calm-page.ds-browse { position: relative; max-width: min(1720px, calc(100% - 2in)); }
+
+/* the view switch: a two-button switch on the catalogs line (Datasets · Species · Measurements), right-aligned, so it
+   takes no line of its own (Betty 2026-11-18). The count it carried is on each realm's heading already. */
+.ds-browse .cf-crumb { min-height: 42px; align-items: center; padding-right: 260px; }
+.ds-browse .bd-views { position: static; }
+.ds-browse .bd-views > .tabrow { position: absolute; top: calc(var(--space, 8px) * 3); right: var(--gutter-r, 16px); z-index: 2; margin: 0;
+  display: flex; gap: 2px; padding: 4px; border: 0; border-radius: 11px; background: color-mix(in srgb, var(--fg) 7%, var(--bg)); box-shadow: none; }
+.ds-browse .bd-views > .tabrow button { padding: 6px 18px; border: 0; border-radius: 8px; background: none; box-shadow: none;
+  font: 500 15.5px var(--sans); letter-spacing: 0; text-transform: none; color: var(--muted); }
+.ds-browse .bd-views > .tabrow button:hover { color: var(--fg); }
+.ds-browse .bd-views > .tabrow button[aria-selected="true"] { color: var(--fg); font-weight: 700; background: var(--bg); box-shadow: 0 1px 3px rgba(0,0,0,.14); border-bottom: 0; }
+.ds-browse .bd-views > .tabrow .bd-count { display: none; }
+@media (max-width: 760px) {
+  .calm-page.ds-browse { max-width: none; }
+  .ds-browse .cf-crumb { padding-right: 0; }
+  .ds-browse .bd-views > .tabrow { position: static; width: max-content; margin: 0 0 12px auto; }
+}
