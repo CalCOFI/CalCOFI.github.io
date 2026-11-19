@@ -149,4 +149,4 @@
 /* the preview's map: the box takes the map's own shape (no fixed height), so it is never cut off; a tall one (the
    whole coast) is held to a height, against the box's right, coast side, with ocean to its left (Betty 2026-11-18) */
 .bd-pv-map { height: auto; }
-.bd-pv-map .cc-map { position: relative; inset: auto; display: block; width: 100%; height: auto; max-height: 420px; }
+.bd-pv-map .cc-map { position: relative; inset: auto; display: block; width: 100%; height: auto; max-height: 320px; }

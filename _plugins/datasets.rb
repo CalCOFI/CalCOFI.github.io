@@ -1148,7 +1148,7 @@ module CalCOFI
     # Projection: equirectangular with a cos(mean latitude) correction on longitude, as bbox_svg
     # used. Width is 360; height is 360 / MAP_ASPECT.
     MAP_W = 360.0
-    MAP_ASPECT = 1.45 # the width : height a map is widened toward
+    MAP_ASPECT = 1.9  # the width : height a map is widened toward (Betty 2026-11-18: shorter boxes)
     LAND_FRAME = [-135.0, -105.0, 19.0, 49.0].freeze # lon0, lon1, lat0, lat1 of _data/land.geojson (build_land.py)
 
     def map_svg(r)

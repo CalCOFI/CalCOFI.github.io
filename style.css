@@ -2184,14 +2184,12 @@ body:has(.cc-wave-own) .cc-wave-auto { display: none; }
 .fd-mon .ap-mon li { position: relative; padding-left: 16px; }
 .fd-mon .ap-mon li::before { content: ""; position: absolute; left: 0; top: .6em; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
 @media (max-width: 640px) { .fd-mon .ap-mon { grid-template-columns: 1fr; } }
-/* the station maps, a little brighter (Betty 2026-11-18: "the dull coloring"): a clearer ocean, a lighter coast
-   line, and the sampled stations in four shades of the brand blue by how much each holds. Colours only. */
-:root:not([data-theme="dark"]) { --cc-map-water: #d9eaf5; --cc-map-land: #f8f4ec; --cc-map-coast: #9aa8b5; --cc-map-grid: #7f9db5; }
+/* the station maps (Betty 2026-11-18, option C of four): a clearer ocean, a lighter coast line, and the sampled
+   stations in CalCOFI yellow to orange, four shades by how much each holds, outlined in navy. Colours only. */
+:root:not([data-theme="dark"]) { --cc-map-water: #d3e6f3; --cc-map-land: #f8f4ec; --cc-map-coast: #8fa0b0; --cc-map-grid: #6f8faa; }
 .cc-map .land { stroke-width: 0.6; }
-.cc-map .st { opacity: 0.45; }
-.cc-map .st-on { stroke: #fff; stroke-width: 0.7; opacity: 0.95; }
-.cc-map .st-on.l1 { fill: #6cbde0; } .cc-map .st-on.l2 { fill: #2f91c9; }
-.cc-map .st-on.l3 { fill: #0b6aa6; } .cc-map .st-on.l4 { fill: #0a3f73; }
+.cc-map .st { opacity: 0.4; }
+.cc-map .st-on { stroke: #182b49; stroke-width: 0.7; opacity: 0.95; }
+.cc-map .st-on.l1 { fill: #ffe27a; } .cc-map .st-on.l2 { fill: #ffd23f; }
+.cc-map .st-on.l3 { fill: #ffbf00; } .cc-map .st-on.l4 { fill: #f29f05; }
 [data-theme="dark"] .cc-map .st-on { stroke: #0f1a2e; }
-[data-theme="dark"] .cc-map .st-on.l1 { fill: #2f6f99; } [data-theme="dark"] .cc-map .st-on.l2 { fill: #3f95c8; }
-[data-theme="dark"] .cc-map .st-on.l3 { fill: #4fb6e6; } [data-theme="dark"] .cc-map .st-on.l4 { fill: #9fdcf7; }
