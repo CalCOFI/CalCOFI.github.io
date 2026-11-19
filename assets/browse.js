@@ -136,7 +136,12 @@
     if (e.target.closest && e.target.closest("details, .bt-ext")) return;
     var a = e.target.closest && e.target.closest(".bd-r[data-k]");
     if (!a || e.metaKey || e.ctrlKey || e.shiftKey || e.button) return;
-    if (pv && getComputedStyle(pv).display === "none") return; // a phone: no preview, so follow the link to the page
+    if (pv && getComputedStyle(pv).display === "none") {
+      // no preview (a phone, or a category's rows): a click anywhere on a row opens the dataset's page
+      var go = !e.target.closest("a") && a.querySelector("a.bt-rn");
+      if (go) location.href = go.href;
+      return;
+    }
     e.preventDefault(); select(a.dataset.k);
   });
   [].forEach.call(document.querySelectorAll(".bd-try [data-q]"), function (b) {
@@ -169,14 +174,15 @@
     if (gridTab && gridTab.getAttribute("aria-selected") !== "true") gridTab.click();
     if (home) home.hidden = true;
     cats.forEach(function (c) { c.hidden = c !== sec; });
-    if (find) find.classList.remove("bt-home-on");
+    // an open category takes the width too: no preview beside it (Betty 2026-11-18, "very cluttered in middle")
+    if (find) find.classList.add("bt-home-on");
     var first = sec.querySelector(".bd-r[data-k]");
     if (first) select(first.getAttribute("data-k"));
     if (user) { setUrl(slug); toTop(); }
   }
   // the List shows the preview; the tiles do not
   if (listTab) listTab.addEventListener("click", function () { if (find) find.classList.remove("bt-home-on"); });
-  if (gridTab) gridTab.addEventListener("click", function () { if (find && home && !home.hidden) find.classList.add("bt-home-on"); });
+  if (gridTab) gridTab.addEventListener("click", function () { if (find) find.classList.add("bt-home-on"); });
   // a search reads the whole list
   if (q) q.addEventListener("input", function () { if (q.value.trim() && listTab && listTab.getAttribute("aria-selected") !== "true") { listTab.click(); } });
   // ?cat= : a tile's slug, or a record category's name (a dataset page's breadcrumb)

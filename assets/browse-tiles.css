@@ -107,3 +107,8 @@
 #ds-view-list { padding-top: 34px; }
 .bt-cat .bt-ch { padding-right: 190px; }
 @media (max-width: 760px) { .bd-views > .tabrow { position: static; justify-content: flex-end; margin-bottom: 8px; } #ds-view-list { padding-top: 0; } .bt-cat .bt-ch { padding-right: 0; } }
+
+/* an open category without the preview: the rows take the width and the description is read whole (Betty 2026-11-18) */
+.bt-cat .bt-rd { display: block; -webkit-line-clamp: unset; overflow: visible; max-width: 80ch; }
+.bt-cat { grid-template-columns: 210px minmax(0, 1fr); }
+.bt-cat .bt-row { grid-template-columns: minmax(0, 1fr) 140px; gap: 28px; padding: 22px 26px; }

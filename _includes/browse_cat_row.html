@@ -10,7 +10,7 @@
     {%- if d.collection or d.analysis_method or d.analysis_lab -%}
     <div class="bt-ca">
       {%- if d.collection %}<div><b>Collection:</b> {{ d.collection | escape }}</div>{% endif -%}
-      {%- if d.analysis_method or d.analysis_lab %}<div><b>Analysis:</b> {{ d.analysis_method | escape }}{% if d.analysis_lab %}{% if d.analysis_method %} {% endif %}(<strong>{{ d.analysis_lab | escape }}</strong>){% endif %}</div>{% endif -%}
+      {%- if d.analysis_method or d.analysis_lab %}<div><b>Analysis:</b> {{ d.analysis_method | escape }}{% if d.analysis_lab %} (<strong>{{ d.analysis_lab | escape }}</strong>){% endif %}</div>{% endif -%}
     </div>
     {%- endif -%}
     {%- if d.desc %}<p class="bt-rd">{{ d.desc | escape }}</p>{% endif -%}
