@@ -251,3 +251,11 @@ body:has(.hero) .cc-wave-auto { --cc-wave-below: #f3f7fb; }
   .hero-btn { padding: 9px 20px; }
   .hero-opt small { font-size: 13px; }
 }
+
+/* proportions (Betty 2026-11-18): the navy band under the bar a little shorter on this page, and the hero a little
+   wider, so the cards' sentences take three lines instead of four */
+body:has(.hero) .cc-wave-auto { --cc-wave-slim-h: 22px; --cc-wave-h: 13px; }
+@media (min-width: 1300px) {
+  .hero-in, .hero-in-row { max-width: 1400px; }
+  .hero-goals { gap: 20px; }
+}
