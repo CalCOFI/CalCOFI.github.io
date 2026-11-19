@@ -153,7 +153,7 @@
 
 /* the tiles (Betty 2026-11-19): outlined at rest, as the hover outline was, a little taller, and no underlined words
    when pointed at — the card lifts and its outline darkens instead */
-.bt-tile { border: 1.5px solid color-mix(in srgb, var(--accent) 35%, var(--border)); padding: 22px 18px 16px; gap: 8px; min-height: 270px; }
+.bt-tile { border: 1.5px solid color-mix(in srgb, var(--accent) 35%, var(--border)); padding: 20px 18px 14px; gap: 8px; min-height: 240px; }
 .bt-tile:hover { border-color: var(--accent); box-shadow: 0 6px 18px rgba(10, 40, 80, .10); text-decoration: none; }
 .bt-tile, .bt-tile:hover, .bt-tile:hover * { text-decoration: none; }
 .bt-tile .bt-ic { width: 64px; height: 64px; } .bt-tile .bt-ic .cc-i { font-size: 32px; }
