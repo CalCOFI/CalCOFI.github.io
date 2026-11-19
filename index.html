@@ -566,8 +566,8 @@ SELECT * FROM read_json('{{ rel.catalog_url }}')</pre>
 
 {%- comment -%}
   ── 7 · Inform ocean and fisheries management (was "Ocean monitoring throughout California"): the
-  products carrying `doors: [monitor]`. Only what is built today — the statewide inventory and the
-  offshore wind baseline; the door says more is to come and the panel claims nothing it cannot show.
+  products carrying `doors: [monitor]`: the statewide inventory (Betty 2026-11-18: the offshore wind map is
+  archived, so it is in the archived apps now, not here; no eyebrow over the title).
 {%- endcomment -%}
 {%- assign m_items = data.products | where_exp: "p", "p.doors contains 'monitor'" -%}
 {%- assign m_first = m_items | first -%}
@@ -575,10 +575,9 @@ SELECT * FROM read_json('{{ rel.catalog_url }}')</pre>
   <div class="cc-container">
     {{ close_btn }}
     <div class="fd-phead">
-      <div class="cc-eyebrow">Beyond the grid{% for p in m_items %} · {{ p.credits.org | default: p.title }} {{ p.credits.year }}{% endfor %}</div>
       <h2 class="cc-h2" id="monitor-h">Inform ocean and fisheries management</h2>
       <p class="blurb">Ocean monitoring throughout California: a statewide inventory of the monitoring programs
-        along the coast, and the baseline data around the planned floating offshore wind areas.</p>
+        along the coast.</p>
       {%- if m_first %}<p class="fd-pact"><a class="cc-btn cc-btn-cta" href="{{ m_first.live_url }}">Open the monitoring map</a></p>{% endif -%}
     </div>
     <div class="card-grid">

@@ -656,7 +656,7 @@ products:
     title: Offshore Wind Monitoring
     section: students
     tab: student
-    doors: [monitor]
+    status: archived   # Betty 2026-11-18: superseded by the CA Ocean & Coastal Monitoring Map; off the monitoring door
     live_url: https://elizathomas.shinyapps.io/california_ofw_monitoring/
     img: images/offshore-wind-monitoring.png
     description: >-
