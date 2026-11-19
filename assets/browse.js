@@ -32,7 +32,10 @@
 
   function apply() {
     var v = (q && q.value || "").trim().toLowerCase(), t = type ? type.value : "", n = 0, seen = {};
-    rowsEls().forEach(function (a) {
+    // a search, a "Try" word or a type reads the whole list: on the tiles or an open category the hits were out of
+    // sight, so the search seemed not to work (Betty 2026-11-18). Only the List's rows are filtered.
+    if ((v || t) && listTab && listTab.getAttribute("aria-selected") !== "true") listTab.click();
+    [].slice.call(document.querySelectorAll("#bd-list .bd-r[data-k]")).forEach(function (a) {
       var r = BY[a.dataset.k], m = v ? hit(r, v) : true, show = !!m && (!t || r.realm === t);
       a.hidden = !show;
       var w = a.querySelector(".bd-rw");
@@ -182,8 +185,6 @@
   // the List shows the preview; the tiles do not
   if (listTab) listTab.addEventListener("click", function () { if (find) find.classList.remove("bt-home-on"); });
   if (gridTab) gridTab.addEventListener("click", function () { if (find && home && !home.hidden) find.classList.add("bt-home-on"); });
-  // a search reads the whole list
-  if (q) q.addEventListener("input", function () { if (q.value.trim() && listTab && listTab.getAttribute("aria-selected") !== "true") { listTab.click(); } });
   // ?cat= : a tile's slug, or a record category's name (a dataset page's breadcrumb)
   try {
     var c = new URL(location.href).searchParams.get("cat");
