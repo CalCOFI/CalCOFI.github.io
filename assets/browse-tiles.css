@@ -117,3 +117,23 @@
   .ds-browse .cf-crumb { padding-right: 0; }
   .ds-browse .bd-views > .tabrow { position: static; width: max-content; margin: 0 0 12px auto; }
 }
+
+/* the search's dropdown: the datasets the words match, as they are typed (Betty 2026-11-18) */
+.bd-qw { position: relative; flex: 1 1 360px; min-width: 0; }
+.bd-qw > .bd-q { flex: none; width: 100%; box-sizing: border-box; }
+.bd-dd { position: absolute; left: 0; right: 0; top: calc(100% + 6px); z-index: 30; max-height: min(520px, 70vh); overflow: auto; padding: 6px 0;
+  background: var(--bg); color: var(--fg); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 12px 34px rgba(0,0,0,.22); }
+.bd-dd[hidden] { display: none; }
+.bd-dd-g { display: flex; justify-content: space-between; padding: 8px 16px 4px; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.bd-dd-g span { letter-spacing: 0; font-variant-numeric: tabular-nums; }
+.bd-dd-r { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 12px; align-items: center; padding: 8px 16px; color: var(--fg); text-decoration: none; }
+.bd-dd-r .cc-i { font-size: 19px; color: var(--accent); }
+.bd-dd-r:hover, .bd-dd-r.on { background: var(--accent-bg); }
+.bd-dd-n { min-width: 0; } .bd-dd-n b { display: block; font-size: 15px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bd-dd-n small { display: block; font-size: 13px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bd-dd-n mark { background: none; color: var(--fg); font-weight: 700; }
+.bd-dd-all { all: unset; box-sizing: border-box; display: block; width: 100%; padding: 9px 16px; cursor: pointer; font-size: 14px; font-weight: 700; color: var(--accent); }
+.bd-dd-all:hover, .bd-dd-all.on, .bd-dd-all:focus-visible { background: var(--accent-bg); }
+.bd-dd-none { margin: 0; padding: 10px 16px; font-size: 14px; color: var(--muted); }
+.bd-dd-o { display: flex; flex-wrap: wrap; gap: 4px 20px; margin-top: 4px; padding: 9px 16px 5px; border-top: 1px solid var(--border); font-size: 13.5px; }
+.bd-dd-o a { color: var(--accent); text-decoration: none; } .bd-dd-o a:hover { text-decoration: underline; }

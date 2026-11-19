@@ -44,10 +44,19 @@ layout: default
   <div class="bd-in">
     <h1 class="sr-only">Browse datasets</h1>
     <div class="bd-tools">
+      {%- comment -%} the search, with a dropdown of the datasets it matches as you type (Betty 2026-11-18): each with
+        why it matched ("Has anchovy"), its category and years; a click shows it in the List with the preview; Enter
+        shows them all in the List; the same words on the Species and Measurements pages one click away
+        (assets/browse.js) {%- endcomment -%}
+      <div class="bd-qw">
       <label class="bd-q"><i class="cc-i cc-i-ui-search" aria-hidden="true"></i>
         <span class="sr-only">Search datasets, species or measurements</span>
-        <input id="bd-q" type="search" autocomplete="off" spellcheck="false" placeholder="Search datasets, species or measurements">
+        <input id="bd-q" type="search" autocomplete="off" spellcheck="false" placeholder="Search datasets, species or measurements"
+               role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="bd-dd">
         <span class="bd-qn" id="bd-qn" aria-hidden="true">{{ b.rows.size }}</span></label>
+      <div class="bd-dd" id="bd-dd" role="listbox" aria-label="Matching datasets" hidden
+           data-species="{{ '/species/' | relative_url }}" data-measurements="{{ '/measurements/' | relative_url }}"></div>
+      </div>
       <label class="bd-sel"><span class="sr-only">Type</span><select id="bd-type">
         <option value="">All types</option>
         {%- for r in b.realms %}<option value="{{ r.id | escape }}">{{ r.title | escape }}</option>{% endfor -%}

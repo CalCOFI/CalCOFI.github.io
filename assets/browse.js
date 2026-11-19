@@ -23,7 +23,7 @@
   rowsEls().forEach(function (a) { var w = a.querySelector(".bd-rw"); if (w) w.setAttribute("data-orig", w.innerHTML); });
 
   function hit(r, v) {
-    var hay = [r.name, r.full, r.cat, r.prov, r.prov_name].join(" ").toLowerCase();
+    var hay = [r.plain, r.name, r.full, r.cat, r.prov, r.prov_name].join(" ").toLowerCase();
     if (hay.indexOf(v) >= 0) return true;
     var t = (r.terms || "").split("|");
     for (var i = 0; i < t.length; i++) if (t[i].toLowerCase().indexOf(v) >= 0) return t[i];
@@ -34,7 +34,7 @@
     var v = (q && q.value || "").trim().toLowerCase(), t = type ? type.value : "", n = 0, seen = {};
     // a search, a "Try" word or a type reads the whole list: on the tiles or an open category the hits were out of
     // sight, so the search seemed not to work (Betty 2026-11-18). Only the List's rows are filtered.
-    if ((v || t) && listTab && listTab.getAttribute("aria-selected") !== "true") listTab.click();
+    if (t && listTab && listTab.getAttribute("aria-selected") !== "true") toList();
     [].slice.call(document.querySelectorAll("#bd-list .bd-r[data-k]")).forEach(function (a) {
       var r = BY[a.dataset.k], m = v ? hit(r, v) : true, show = !!m && (!t || r.realm === t);
       a.hidden = !show;
@@ -148,11 +148,72 @@
     e.preventDefault(); select(a.dataset.k);
   });
   [].forEach.call(document.querySelectorAll(".bd-try [data-q]"), function (b) {
-    b.addEventListener("click", function () { q.value = b.dataset.q; apply(); q.focus(); });
+    b.addEventListener("click", function () { q.value = b.dataset.q; apply(); q.focus(); drop(); });
   });
   var clr = document.getElementById("bd-clear");
   if (clr) clr.addEventListener("click", function () { q.value = ""; if (type) type.value = ""; apply(); });
-  if (q) q.addEventListener("input", apply);
+  if (q) q.addEventListener("input", function () { apply(); drop(); });
+
+  // ── the dropdown under the search (Betty 2026-11-18): the datasets the words match, as they are typed ──
+  var dd = document.getElementById("bd-dd"), ddAt = -1;
+  function toList() { if (listTab && listTab.getAttribute("aria-selected") !== "true") listTab.click(); }
+  function ddItems() { return dd ? [].slice.call(dd.querySelectorAll("[data-dd]")) : []; }
+  function ddClose() { if (!dd) return; dd.hidden = true; ddAt = -1; if (q) q.setAttribute("aria-expanded", "false"); }
+  function ddMark(i) {
+    var it = ddItems(); ddAt = Math.max(-1, Math.min(i, it.length - 1));
+    it.forEach(function (el, j) { el.classList.toggle("on", j === ddAt); el.setAttribute("aria-selected", j === ddAt ? "true" : "false"); });
+    if (ddAt >= 0) it[ddAt].scrollIntoView({ block: "nearest" });
+  }
+  function drop() {
+    if (!dd || !q) return;
+    var v = q.value.trim().toLowerCase();
+    if (!v) return ddClose();
+    var hits = [];
+    ROWS.forEach(function (r) {
+      var m = hit(r, v);
+      if (m) hits.push({ r: r, m: m, rank: m === true ? ((r.plain || r.name || "").toLowerCase().indexOf(v) === 0 ? 0 : 1) : 2 });
+    });
+    hits.sort(function (a, b) { return a.rank - b.rank || a.r.order - b.r.order; });
+    var w = esc(q.value.trim()), h = "";
+    if (hits.length) {
+      h += '<div class="bd-dd-g">Datasets<span>' + hits.length + "</span></div>";
+      hits.slice(0, 7).forEach(function (x) {
+        var r = x.r, why = typeof x.m === "string" ? 'Has <mark>' + esc(x.m) + "</mark>" : esc(r.cat || "");
+        h += '<a class="bd-dd-r" role="option" data-dd="' + esc(r.key) + '" href="' + esc(r.url || "#") + '">' +
+          '<i class="cc-i cc-i-' + esc(r.icon || "cat-other") + '" aria-hidden="true"></i>' +
+          '<span class="bd-dd-n"><b>' + esc(r.plain || r.name) + "</b><small>" + why + (r.years ? " · " + esc(r.years) : "") + "</small></span></a>";
+      });
+      h += '<button type="button" class="bd-dd-all" data-dd="all">See all ' + hits.length + ' in the list <span aria-hidden="true">↵</span></button>';
+    } else {
+      h += '<p class="bd-dd-none">No dataset matches &#8220;' + w + '&#8221;</p>';
+    }
+    var enc = encodeURIComponent(q.value.trim());
+    h += '<div class="bd-dd-o"><a href="' + esc(dd.getAttribute("data-species")) + "?q=" + enc + '">Species named &#8220;' + w + '&#8221; →</a>' +
+         '<a href="' + esc(dd.getAttribute("data-measurements")) + "?q=" + enc + '">Measurements named &#8220;' + w + '&#8221; →</a></div>';
+    dd.innerHTML = h; dd.hidden = false; ddAt = -1; q.setAttribute("aria-expanded", "true");
+  }
+  function ddPick(el) {
+    var k = el.getAttribute("data-dd");
+    ddClose(); toList();
+    if (k !== "all") { select(k); var row = document.querySelector('#bd-list .bd-r[data-k="' + k + '"]'); if (row) row.scrollIntoView({ block: "nearest" }); }
+    else select(firstVisible());
+    var v = document.getElementById("ts-ds-views"); if (v) v.scrollIntoView({ block: "start", behavior: "smooth" });
+  }
+  if (dd && q) {
+    dd.addEventListener("click", function (e) {
+      var el = e.target.closest("[data-dd]");
+      if (!el || e.metaKey || e.ctrlKey || e.shiftKey || e.button) return; // a modified click opens the page itself
+      e.preventDefault(); ddPick(el);
+    });
+    q.addEventListener("keydown", function (e) {
+      if (e.key === "ArrowDown") { if (dd.hidden) drop(); e.preventDefault(); ddMark(ddAt + 1); }
+      else if (e.key === "ArrowUp") { e.preventDefault(); ddMark(ddAt - 1); }
+      else if (e.key === "Escape") ddClose();
+      else if (e.key === "Enter") { e.preventDefault(); var it = ddItems(); ddPick(ddAt >= 0 ? it[ddAt] : (dd.querySelector('[data-dd="all"]') || { getAttribute: function () { return "all"; } })); }
+    });
+    q.addEventListener("focus", function () { if (q.value.trim()) drop(); });
+    document.addEventListener("click", function (e) { if (!e.target.closest(".bd-qw") && !e.target.closest(".bd-try")) ddClose(); });
+  }
   if (type) type.addEventListener("change", apply);
   if (sort) sort.addEventListener("change", function () { reorder(); select(firstVisible()); });
 
@@ -188,8 +249,8 @@
   // ?cat= : a tile's slug, or a record category's name (a dataset page's breadcrumb)
   try {
     var c = new URL(location.href).searchParams.get("cat");
-    var hit = c && cats.filter(function (x) { return x.getAttribute("data-cat") === c || (x.getAttribute("data-cats") || "").split("|").indexOf(c) >= 0; })[0];
-    if (hit) showCat(hit.getAttribute("data-cat")); else showHome();
+    var cm = c && cats.filter(function (x) { return x.getAttribute("data-cat") === c || (x.getAttribute("data-cats") || "").split("|").indexOf(c) >= 0; })[0];
+    if (cm) showCat(cm.getAttribute("data-cat")); else showHome();
   } catch (err) { showHome(); }
 
   if (!sel) select(ROWS.length ? ROWS[0].key : null);
