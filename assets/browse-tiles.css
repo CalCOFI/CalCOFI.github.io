@@ -81,3 +81,13 @@
 
 /* Years covered, moved under the datasets (Betty 2026-11-18) */
 .ds-browse > .bd-when { margin: 40px 0 16px; }
+
+/* smaller tiles (Betty 2026-11-18: "the cards quite big") — same card, about two-thirds the height */
+.bt-tiles { gap: 14px; }
+.bt-tile { min-height: 0; gap: 6px; padding: 16px 16px 12px; }
+.bt-ic { width: 56px; height: 56px; } .bt-ic .cc-i { font-size: 30px; }
+.bt-nm { margin-top: 2px; font-size: 17.5px; }
+.bt-line { font-size: 14px; line-height: 1.35; }
+.bt-ft { padding-top: 7px; margin-top: 4px; } .bt-ft b { font-size: 13px; } .bt-ft span { font-size: 12.5px; }
+.bt-realm + .bt-realm { margin-top: 26px; }
+.bt-rh { margin-bottom: 12px; } .bt-rh h2 { font-size: 24px; } .bt-rh p { font-size: 15px; }
