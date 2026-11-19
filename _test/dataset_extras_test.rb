@@ -10,7 +10,7 @@
 #                  years and programs from the rows
 #   tile_of        the tile a dataset sits in
 #   source_tables  only current NOAA ERDDAP mirrors with an id and a url
-#   fields         only the dataset's tables, in the record's order; keys and geometry skipped;
+#   fields         one row per column of the dataset's tables, main ones first; database plumbing skipped;
 #                  MAIN columns marked; no metadata → []
 require "minitest/autorun"
 require "yaml"
@@ -94,17 +94,20 @@ class DatasetExtrasTest < Minitest::Test
     meta = { "columns" => {
       "obs.datetime" => { "description_md" => "Observation time (UTC)." },
       "obs.latitude" => { "units" => "decimal degrees", "description_md" => "Observation latitude (WGS84)." },
+      "sample.latitude" => { "units" => "decimal degrees", "description_md" => "Event latitude." },
       "obs.obs_id" => { "description_md" => "Surrogate key." },
       "obs.hex_id" => { "description_md" => "H3 cell." },
+      "obs.sample_key" => { "description_md" => "Event key." },
+      "measurement_type._source_column" => { "description_md" => "Plumbing." },
       "sample.tow_type" => { "description_md" => "Net gear code, `C1`." },
       "taxon.rank" => { "description_md" => "Taxonomic rank." },
       "other.x" => { "description_md" => "Not this dataset's." } } }
-    f = X.fields(meta, { "tables" => %w[sample obs] })
-    assert_equal %w[tow_type datetime latitude], f.map { |x| x["field"] }, "record's table order; keys and cells skipped; other tables out"
-    assert_equal "sample.csv", f[0]["file"]
-    assert_equal "Net gear code, C1.", f[0]["desc"], "backticks dropped"
-    assert_equal [false, true, true], f.map { |x| x["main"] }
-    assert_equal "decimal degrees", f[2]["units"]
+    f = X.fields(meta, { "tables" => %w[sample obs measurement_type] })
+    assert_equal %w[datetime latitude tow_type], f.map { |x| x["field"] }, "main first in MAIN's order; keys, cells, plumbing and other tables out"
+    assert_equal "sample.csv, obs.csv", f[1]["file"], "one row per column, every file it is in"
+    assert_equal "Event latitude.", f[1]["desc"], "the first file's description"
+    assert_equal "Net gear code, C1.", f[2]["desc"], "backticks dropped"
+    assert_equal [true, true, true], f.map { |x| x["main"] }
     assert_equal [], X.fields(nil, { "tables" => %w[obs] })
   end
 

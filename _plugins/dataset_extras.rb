@@ -122,18 +122,23 @@ module CalCOFI
 
     # The columns of the download, from the release's own metadata.json (_data/release_metadata.json,
     # scripts/fetch_release.sh): `columns` keyed "table.column" → { description, units, … }. Only the
-    # dataset's own tables, in the record's table order. The columns a reader needs first are MAIN
-    # (when, where, which species, how many, how much water); the rest are folded. Without the file:
-    # [] and the section is not drawn.
-    MAIN = %w[obs.datetime obs.latitude obs.longitude obs.cruise_key obs.site_key obs.scientific_name obs.life_stage
-              obs.measurement_type obs.measurement_value sample_measurement.measurement_type].freeze
-    SKIP = /(_uuid|_id|hex\d*|hex_id|geom|_source_row|_source_file)\z/
+    # dataset's own tables. One row per column NAME (Betty 2026-11-18: the same cruise_key, latitude … sat in
+    # three files and read as repeats), with every file it is in. The database's own plumbing is left out
+    # (the event keys that tie the files together, provenance stamps, columns starting "_"); every column is
+    # still in columns.csv in the zip. The columns a reader needs first are MAIN, in MAIN's order (when,
+    # where, what, how much); the rest are folded. Without the file: [] and the section is not drawn.
+    MAIN = %w[datetime latitude longitude cruise_key site_key depth_min_m depth_max_m scientific_name taxon_key life_stage
+              measurement_type measurement_value units tow_type].freeze
+    SKIP = /\A_|(_uuid|_id|hex\d*|hex_id|geom|_source_row|_source_file)\z|\A(sample_key|parent_sample_key|root_sample_key|
+            dataset_key|grid_key|realm|data_stage|order_occ)\z/x
 
-    def fields(meta, record)
+    # (`bio: false`, a dataset with no species, also folds the species columns its files carry empty)
+    BIO = %w[scientific_name taxon_key life_stage tow_type].freeze
+    def fields(meta, record, bio: true)
       cols = meta.is_a?(Hash) ? meta["columns"] : nil
       return [] unless cols.is_a?(Hash)
       tables = (record["tables"] || []).map(&:to_s)
-      out = []
+      by = {}
       tables.each do |t|
         cols.each do |k, v|
           tb, col = k.to_s.split(".", 2)
@@ -141,11 +146,19 @@ module CalCOFI
           v = {} unless v.is_a?(Hash)
           d = present(v["description"]) || present(v["description_md"])
           next unless d
-          out << { "file" => "#{t}.csv", "field" => col, "units" => present(v["units"]),
-                   "desc" => d.gsub(/`([^`]+)`/, '\1'), "main" => MAIN.include?(k.to_s) }
+          if (row = by[col])
+            row["files"] << "#{t}.csv" unless row["files"].include?("#{t}.csv")
+            row["units"] ||= present(v["units"])
+          else
+            by[col] = { "field" => col, "files" => ["#{t}.csv"], "units" => present(v["units"]),
+                        "desc" => d.gsub(/`([^`]+)`/, '\1'), "main" => MAIN.include?(col) && (bio || !BIO.include?(col)) }
+          end
         end
       end
-      out
+      rows = by.values
+      rows.each { |r| r["file"] = r["files"].join(", ") }
+      main = rows.select { |r| r["main"] }.sort_by { |r| MAIN.index(r["field"]) }
+      main + rows.reject { |r| r["main"] }
     end
   end
 end

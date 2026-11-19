@@ -362,7 +362,7 @@ module CalCOFI
         "extra" => DatasetExtras.for(@extras, key),
         "tile" => DatasetExtras.tile_of(@tiles, key),
         "sources" => DatasetExtras.source_tables(r),
-        "fields" => DatasetExtras.fields(@meta, r),
+        "fields" => DatasetExtras.fields(@meta, r, bio: taxa[:rows].any?),
         # what assets/dataset-page.js needs for the download form
         "dl" => JSON.generate({
           "key" => key, "name" => r["dataset_name_short"] || r["dataset_name"] || key,
