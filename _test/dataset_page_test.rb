@@ -15,7 +15,7 @@
 #   byline      the full name where it differs from the short one, then who it is from
 #   facts       the band's numbers: Years, or Dates where the years are asserted (it showed no year);
 #               singular and plural; Taxa or Measurements; nothing the record does not carry
-#   creators    the lead marked; one organisation said once, several beside each name; "A, B and C"
+#   creators    no lead marked (Betty 2026-11-21); one organisation said once, several beside each name; "A, B and C"
 #   years_svg   records per year on the release's own axis (no typed 1949), a minimum bar, a stub
 #   months_html "9 of 12" / "all 12", a minimum bar; nil without twelve months
 #   taxa_rows   every taxon the dataset observed, most recorded first, ties by name; the bar's per
@@ -174,22 +174,22 @@ class DatasetPageTest < Minitest::Test
   end
 
   # ── creators ─────────────────────────────────────────────────────────────
-  def test_creators_one_two_and_three_the_lead_marked
+  def test_creators_one_two_and_three_no_lead_marked
     one = { "pi_names" => ["Ann Lee"], "creators" => [{ "name" => "Ann Lee", "organization" => "SIO" }] }
-    assert_equal "Ann Lee (lead), SIO", DP.creators(one)
+    assert_equal "Ann Lee, SIO", DP.creators(one)
     two = { "pi_names" => ["Ann Lee"], "creators" => [{ "name" => "Bo Chen", "organization" => "SIO" }, { "name" => "Ann Lee", "organization" => "SIO" }] }
-    assert_equal "Bo Chen and Ann Lee (lead), SIO", DP.creators(two)
+    assert_equal "Bo Chen and Ann Lee, SIO", DP.creators(two)
     three = { "pi_names" => ["Ann Lee"], "creators" => [{ "name" => "Ann Lee", "organization" => "SIO" },
                                                         { "name" => "Bo Chen", "organization" => "NOAA SWFSC" }, { "name" => "Cy Diaz" }] }
-    assert_equal "Ann Lee (lead) (SIO), Bo Chen (NOAA SWFSC) and Cy Diaz", DP.creators(three),
+    assert_equal "Ann Lee (SIO), Bo Chen (NOAA SWFSC) and Cy Diaz", DP.creators(three),
                  "two organisations are said beside each name; a creator with none has none"
   end
 
   def test_creators_fall_back_to_the_pi_names_and_to_nothing
-    assert_equal "Ann Lee (lead) and Bo Chen", DP.creators({ "pi_names" => ["Ann Lee", "Bo Chen"] })
+    assert_equal "Ann Lee and Bo Chen", DP.creators({ "pi_names" => ["Ann Lee", "Bo Chen"] })
     assert_nil DP.creators({})
     assert_nil DP.creators(nil)
-    assert_equal "Ann Lee", DP.creators({ "creators" => [{ "name" => "Ann Lee" }] }), "no PI named: no lead marked"
+    assert_equal "Ann Lee", DP.creators({ "creators" => [{ "name" => "Ann Lee" }] }), "no PI named"
   end
 
   # ── when it was sampled ──────────────────────────────────────────────────
@@ -367,9 +367,9 @@ class DatasetPageTest < Minitest::Test
     g = DP.meas_rows(DP.series_by_dataset(MEAS)["x_bottle"])
     assert_equal ["Physical Oceanography", "Nutrients & Chemistry"], g.map { |x| x["cat"] }
     assert_equal %w[salinity temperature], g[0]["rows"].map { |x| x["k"] }
-    assert_equal({ "k" => "temperature", "lab" => "Temperature", "units" => "°C", "cat" => "Physical Oceanography", "order" => 1,
+    assert_equal({ "k" => "temperature", "mt" => "temperature", "lab" => "Temperature", "units" => "°C", "canon" => true, "cat" => "Physical Oceanography", "order" => 1,
                    "n" => "884k", "n_raw" => 884_383, "years" => "1949–2021", "y0" => 1949, "y1" => 2021,
-                   "url" => "/measurements/temperature/", "unified" => true, "pick" => true }, g[0]["rows"][1],
+                   "url" => "/measurements/temperature/", "unified" => true, "desc" => nil, "pick" => true }, g[0]["rows"][1],
                  "a key with two series in the dataset keeps its first")
     assert_equal "1950", g[0]["rows"][0]["years"]
     assert_equal "9,000", g[1]["rows"][0]["n"]
