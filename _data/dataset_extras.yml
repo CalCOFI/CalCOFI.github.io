@@ -171,6 +171,9 @@ datasets:
     source_label: UC San Diego Library
     method: net
     status: archived        # Betty’s CalOOS list: archived
+    data_provider:       # site-only (the release has no data-provider field); the email is the release's Contact line
+      name: Christy Juhasz
+      organization: California Department of Fish and Wildlife (CDFW)
   cce-lter_picoplankton-bacteria:
     more: "Seawater is collected from Niskin bottles at 3–8 depths per station; cells are fixed on board with paraformaldehyde, stained with a DNA-specific dye and counted on an Altra flow cytometer."
     plain: Counts of the Smallest Phytoplankton and Bacteria
