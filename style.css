@@ -2238,7 +2238,18 @@ body:has(.cc-wave-own) .cc-wave-auto { display: none; }
    /measurements/, whose catalog name beside the logo is the longest), so it is eased left. */
 .cc-header #cc-dd-data { left: -27px; transform: none; }   /* transform: none undoes .cc-dd-c, in case the page still carries the old centred class */
 .cc-header #cc-dd-data::after { left: 43px; }
+/* measured: the word "Data" is at window width - 415 px up to 1200 px, then 0.5 px per px (the header column stops growing),
+   and the panel is 485 px wide, so it is eased left by 86 px up to 1200 px, 70 px to 1260 px and 50 px to 1320 px; the arrow
+   moves right by the same amount so it still points at the word (header breakpoint check, 2026-11-21) */
 @media (max-width: 1320px) {
   .cc-header #cc-dd-data { left: -50px; }
   .cc-header #cc-dd-data::after { left: 66px; }
+}
+@media (max-width: 1260px) {
+  .cc-header #cc-dd-data { left: -70px; }
+  .cc-header #cc-dd-data::after { left: 86px; }
+}
+@media (max-width: 1200px) {
+  .cc-header #cc-dd-data { left: -86px; }
+  .cc-header #cc-dd-data::after { left: 102px; }
 }
