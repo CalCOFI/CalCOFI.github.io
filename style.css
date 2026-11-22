@@ -2234,10 +2234,11 @@ body:has(.cc-wave-own) .cc-wave-auto { display: none; }
 
 /* the Data menu hangs from its word so "Find data" is directly under "Data" (Betty 2026-11-20; it was centred under it). The
    menu's left edge is 27 px left of the word (its padding and the column's heading put the text there), and the arrow points at
-   the word. Between the nav collapsing (1100 px) and about 1200 px the panel would run past the window's edge, so it is eased left. */
+   the word. Between the nav collapsing (1100 px) and about 1320 px the panel would run past the window's edge (1 px at 1280 px on
+   /measurements/, whose catalog name beside the logo is the longest), so it is eased left. */
 .cc-header #cc-dd-data { left: -27px; transform: none; }   /* transform: none undoes .cc-dd-c, in case the page still carries the old centred class */
 .cc-header #cc-dd-data::after { left: 43px; }
-@media (max-width: 1200px) {
+@media (max-width: 1320px) {
   .cc-header #cc-dd-data { left: -50px; }
   .cc-header #cc-dd-data::after { left: 66px; }
 }
