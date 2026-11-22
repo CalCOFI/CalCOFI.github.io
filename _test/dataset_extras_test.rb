@@ -87,7 +87,9 @@ class DatasetExtrasTest < Minitest::Test
       { "portal" => "erddap-noaa", "id" => "erdCalCOFIlrvcnt", "title" => "CalCOFI NOAA Fish Larvae Counts", "url" => "https://x/erdCalCOFIlrvcnt.html" },
       { "portal" => "erddap-noaa", "id" => nil, "url" => "https://x/source" },
       { "portal" => "obis", "id" => "o", "url" => "https://obis" }] }
-    assert_equal [{ "id" => "erdCalCOFIlrvcnt", "title" => "Fish Larvae Counts", "url" => "https://x/erdCalCOFIlrvcnt.html" }], X.source_tables(r)
+    assert_equal [{ "id" => "erdCalCOFIlrvcnt", "title" => "Fish Larvae Counts", "url" => "https://x/erdCalCOFIlrvcnt.html" },
+                  { "id" => "source", "title" => "source", "url" => "https://x/source" }], X.source_tables(r),
+                 "a table with no id or title keeps its address's end as the id (Betty 2026-11-20)"
   end
 
   def test_fields
@@ -107,7 +109,7 @@ class DatasetExtrasTest < Minitest::Test
     assert_equal "sample.csv, obs.csv", f[1]["file"], "one row per column, every file it is in"
     assert_equal "Event latitude.", f[1]["desc"], "the first file's description"
     assert_equal "Net gear code, C1.", f[2]["desc"], "backticks dropped"
-    assert_equal [true, true, true], f.map { |x| x["main"] }
+    assert_equal [true, true, false], f.map { |x| x["main"] }, "tow_type folds with the rest (Betty 2026-11-21)"
     assert_equal [], X.fields(nil, { "tables" => %w[obs] })
   end
 
