@@ -54,7 +54,7 @@ new Promise(done => setTimeout(() => done((() => {
   const cs = el => getComputedStyle(el), drawn = el => cs(el).display !== "none" && cs(el).visibility !== "hidden" && el.getBoundingClientRect().height > 0;
   // the bar is the brand's own (.cc-header) or, where a framework owns it (Quarto, pkgdown, mkdocs, bslib:
   // brand v3 § 6), the framework's navbar: that one is held to the wave and the case, not to the markup
-  const hdr = document.querySelector(".cc-header"), nav = hdr && hdr.querySelector(".cc-links");
+  const hdr = document.querySelector(".cc-header"), nav = hdr && hdr.querySelector(".cc-links:not(.cc-viewnav)");  // not the catalog menu beside the logo (Datasets ▾, Species ▾, Measurements ▾)
   const fw = hdr ? null : document.querySelector("#quarto-header, header.md-header, nav.navbar, .navbar, body > header");
   const words = nav ? [...nav.children].filter(el => el.matches("a, .cc-m2, .cc-m")).map(el => el.matches("a") ? el : el.querySelector(":scope > .cc-m2-t, :scope > a")).filter(Boolean)
     : fw ? [...fw.querySelectorAll("a.nav-link, .navbar-nav a, .md-tabs__link, a.dropdown-toggle")].filter(drawn) : [];
@@ -85,7 +85,7 @@ new Promise(done => {
       const d = f.contentDocument, w = f.contentWindow;
       const shown = el => !!el && w.getComputedStyle(el).display !== "none" && el.getBoundingClientRect().width > 0;
       const hdr = d.querySelector(".cc-header");
-      done({width: w.innerWidth, header: !!hdr, button: shown(hdr && hdr.querySelector(".cc-menu-button")), nav: shown(hdr && hdr.querySelector(".cc-links"))});
+      done({width: w.innerWidth, header: !!hdr, button: shown(hdr && hdr.querySelector(".cc-menu-button")), nav: shown(hdr && hdr.querySelector(".cc-links:not(.cc-viewnav)"))});
     } catch (e) { done({error: String(e)}); }
   }, WAIT_MS);
   document.body.appendChild(f);
