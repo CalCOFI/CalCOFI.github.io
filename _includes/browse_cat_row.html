@@ -11,19 +11,26 @@
     {%- if d.collection or d.analysis_method or d.analysis_lab -%}
     <div class="bt-ca">
       {%- if d.collection %}<div><b>Collection:</b> {{ d.collection | escape }}</div>{% endif -%}
-      {%- if d.analysis_method or d.analysis_lab %}<div><b>Analysis:</b> {% if d.analysis_method %}{{ d.analysis_method | escape }}{% if d.analysis_lab %} (<strong>{{ d.analysis_lab | escape }}</strong>){% endif %}{% else %}<strong>{{ d.analysis_lab | escape }}</strong>{% endif %}</div>{% endif -%}
+      {%- if d.analysis_method or d.analysis_lab %}<div><b>Analysis:</b> {% if d.analysis_method %}{{ d.analysis_method | escape }}{% if d.analysis_lab or d.analysis_who %} (<strong>{{ d.analysis_lab | escape }}</strong>{% if d.analysis_who %}{% if d.analysis_lab %}: {% endif %}{{ d.analysis_who | escape }}{% endif %}){% endif %}{% else %}<strong>{{ d.analysis_lab | escape }}</strong>{% if d.analysis_who %}: {{ d.analysis_who | escape }}{% endif %}{% endif %}</div>{% endif -%}
     </div>
     {%- endif -%}
     {%- assign dd = d.short | default: d.desc -%}
     {%- if dd %}<p class="bt-rd">{{ dd | escape }}</p>{% endif -%}
     {%- if d.sources.size > 1 -%}
     <details class="bt-src"><summary>Combines {{ d.sources.size }} NOAA ERDDAP tables</summary>
-      <ul>{% for s in d.sources %}<li><a class="bt-ext" href="{{ s.url | escape }}">{{ s.title | escape }} ↗</a><code>{{ s.id | escape }}</code></li>{% endfor %}</ul>
+      <ul>{% for s in d.sources %}<li><a class="bt-ext" href="{{ s.url | escape }}" target="_blank" rel="noopener">{{ s.title | escape }} ↗</a><code>{{ s.id | escape }}</code></li>{% endfor %}</ul>
     </details>
     {%- endif -%}
   </div>
-  <div class="bt-rs">
+  {%- comment -%} the method picture on the right, with its words under it (Betty 2026-11-20, option A) {%- endcomment -%}
+  {%- if d.method %}
+  <div class="bt-rs"><span class="bt-mi">{% include method_icon.html m=d.method size=64 %}</span><span class="bt-ml">{{ d.method_label }}</span></div>
+  {%- endif %}
+  {%- comment -%} the footer across the bottom: the years it covers, whether collection goes on, and the dataset's own page.
+    browse.js lets the link go there; a click anywhere else on the card shows it in the preview {%- endcomment -%}
+  <div class="bt-rf">
+    {%- if d.y0 %}<span class="bt-ry"><b>{{ d.y0 }}{% if d.y1 and d.y1 != d.y0 %}–{{ d.y1 }}{% endif %}</b></span>{% elsif d.years %}<span class="bt-ry"><b>{{ d.years | escape }}</b></span>{% endif -%}
     {%- if d.status %}<span class="bt-st bt-st-{{ d.status }}"><i aria-hidden="true"></i>{{ d.status_label }}</span>{% endif -%}
-    {%- if d.method %}<span class="bt-mt"><span class="bt-mi">{% include method_icon.html m=d.method size=56 %}</span>{{ d.method_label }}</span>{% endif -%}
+    <a class="bt-more" href="{{ d.url | relative_url }}">Open dataset <span aria-hidden="true">→</span></a>
   </div>
 </div>

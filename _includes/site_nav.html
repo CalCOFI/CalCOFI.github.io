@@ -28,7 +28,7 @@
       {%- for i in c.items -%}
       {%- if i.rule %}<hr>{% else -%}
       {%- assign first = i.path | slice: 0 -%}
-      <a href="{% if first == '/' %}{{ i.path | relative_url }}{% else %}{{ i.path }}{% endif %}"{% if i.go %} data-go="{{ i.go | escape }}"{% endif %}>{% if i.icon %}<i class="cc-i cc-i-{{ i.icon | escape }}" aria-hidden="true"></i>{% endif %}<span><b>{{ i.title | escape }}</b>{% if i.small %}<small>{{ i.small | escape }}</small>{% endif %}</span></a>
+      <a href="{% if first == '/' %}{{ i.path | relative_url }}{% else %}{{ i.path }}{% endif %}"{% if i.go %} data-go="{{ i.go | escape }}"{% endif %}{% if i.new %} target="_blank" rel="noopener"{% endif %}>{% if i.icon %}<i class="cc-i cc-i-{{ i.icon | escape }}" aria-hidden="true"></i>{% endif %}<span><b>{{ i.title | escape }}</b>{% if i.small %}<small>{{ i.small | escape }}</small>{% endif %}</span></a>
       {%- endif -%}
       {%- endfor -%}
       {%- if titled %}</div>{% endif -%}

@@ -96,7 +96,7 @@
       return h2i.toCanvas(document.body, {
         width: window.innerWidth, height: window.innerHeight, pixelRatio: scale, backgroundColor: bg, cacheBust: false,
         skipFonts: true, fontEmbedCSS: css || undefined,
-        filter: function (n) { return !(n.classList && (n.classList.contains('fb') || n.classList.contains('fb-backdrop'))); },
+        filter: function (n) { return n.nodeName !== 'NOSCRIPT' && !(n.classList && (n.classList.contains('fb') || n.classList.contains('fb-backdrop'))); },
         style: { transform: 'translate(' + (-sx) + 'px,' + (-sy) + 'px)', transformOrigin: '0 0', width: window.innerWidth + 'px' }
       });
     }).then(function (c) { if (unstamp) unstamp(); return c; }, function (e) { if (unstamp) unstamp(); throw e; });

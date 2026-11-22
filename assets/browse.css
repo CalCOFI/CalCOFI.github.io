@@ -99,6 +99,11 @@
 .bd-pv-by { margin: 1px 0 0; font-size: 13.5px; color: var(--muted); }
 .bd-pv-desc { margin: 8px 0 0; font-size: 14px; line-height: 1.5; color: color-mix(in srgb, var(--fg) 80%, var(--bg)); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 .bd-pv-has { margin-top: 10px; font-size: 14px; line-height: 1.45; }
+/* a long preview description is cut at three lines until "Show more" (Betty 2026-11-20) */
+.bd-pv-desc.open { display: block; -webkit-line-clamp: unset; overflow: visible; }
+.bd-pv-more { display: block; margin: 4px 0 0; padding: 2px 0; border: 0; background: none; font: inherit; font-size: 13.5px; font-weight: 700; color: var(--accent); cursor: pointer; }
+.bd-pv-more:hover { text-decoration: underline; }
+
 .bd-pv-has b, .bd-pv-yr b { display: block; font-size: 12.5px; color: var(--muted); margin-bottom: 2px; }
 .bd-pv-yr { margin-top: 10px; }
 .bd-pv-yr > div:first-child { display: flex; justify-content: space-between; align-items: baseline; }
@@ -141,3 +146,24 @@ button.bd-b2 { font: inherit; font-weight: 700; font-size: 14px; background: var
 .bd-pv-act .bd-b1 { padding: 0 14px; white-space: nowrap; }
 .bd-pv-act .bd-b2 { padding: 0 11px; white-space: nowrap; }
 .bd-pv-act .bd-b3 { white-space: nowrap; }
+
+/* "Open dataset" as a blue chevron tab on the right edge of the preview card, outside it (Betty 2026-11-20); on narrower screens,
+   with no room outside the card, the link at the foot of the card stays */
+.bd-pv-go { display: none; }
+@media (min-width: 1200px) {
+  .bd-pv .bd-pv-go { position: absolute; left: calc(100% + 1px); top: 50%; transform: translateY(-50%); display: flex; align-items: center; justify-content: center; width: 26px; height: 76px;
+    background: var(--accent); color: #fff; border-radius: 0 12px 12px 0; box-shadow: 2px 1px 6px rgba(24, 43, 73, .16); text-decoration: none; }
+  .bd-pv .bd-pv-go:hover { background: color-mix(in srgb, var(--accent) 80%, #000); }
+  .bd-pv .bd-pv-go:focus-visible { outline: 2px solid #ffcd00; outline-offset: 2px; }
+}
+
+/* picking another dataset: a yellow bar sweeps the top of the preview card and its content fades up from dim (Betty 2026-11-20) */
+.bd-pv-bar { position: absolute; left: 0; top: 0; height: 4px; width: 0; background: #ffcd00; border-radius: 14px 14px 0 0; pointer-events: none; }
+.bd-pv-bar-b { top: auto; bottom: 0; border-radius: 0 0 14px 14px; }   /* the same bar along the foot, for a card scrolled so its top is out of sight */
+.bd-pv.swap .bd-pv-bar:not(.bd-pv-bar-b) { animation: bdSweep .6s ease-out; }
+.bd-pv.swap-b .bd-pv-bar:not(.bd-pv-bar-b) { animation: none; }
+.bd-pv.swap-b .bd-pv-bar-b { animation: bdSweep .6s ease-out; }
+.bd-pv.swap .bd-pv-map, .bd-pv.swap .bd-pv-b { animation: bdDim .6s ease-out; }
+@keyframes bdSweep { 0% { width: 0; opacity: 1; } 70% { width: 100%; opacity: 1; } 100% { width: 100%; opacity: 0; } }
+@keyframes bdDim { 0% { opacity: .25; } 100% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .bd-pv.swap .bd-pv-bar, .bd-pv.swap .bd-pv-map, .bd-pv.swap .bd-pv-b { animation: none !important; } }

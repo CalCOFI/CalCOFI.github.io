@@ -15,7 +15,7 @@
 {%- comment -%} "Contribute" is the docs book's chapter on providing data, as the seven-task front door linked it (main
   c064e7d). index.html passes it; the default keeps the include usable alone. {%- endcomment -%}
 {%- assign provide_url = include.provide_url | default: "https://calcofi.io/docs/provide.html" -%}
-<link rel="stylesheet" href="{{ '/assets/hero.css' | relative_url }}">
+<link rel="stylesheet" href="{{ '/assets/hero.css' | relative_url }}?v={{ site.time | date: '%s' }}">
 <section class="hero" aria-label="CalCOFI ocean data">
   <svg class="hero-sea" id="hero-sea" viewBox="0 0 1280 720" preserveAspectRatio="xMidYMax slice" role="group" aria-label="Line 90: the survey ship over the sea floor"></svg>
   <script type="application/json" id="hero-floor">{{ site.data.line90_floor | jsonify }}</script>
@@ -85,4 +85,4 @@
     <span>Line 90 sea floor, GEBCO 2025</span>
   </div></div>
 </section>
-<script defer src="{{ '/assets/hero.js' | relative_url }}"></script>
+<script defer src="{{ '/assets/hero.js' | relative_url }}?v={{ site.time | date: '%s' }}"></script>

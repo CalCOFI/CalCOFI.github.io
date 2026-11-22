@@ -15,13 +15,10 @@
 {%- if page.access.size > 0 -%}
 <details class="calm-fold" id="access">
   <summary><i class="cc-i cc-i-el-endpoints" aria-hidden="true"></i>Every endpoint
-    <span class="calm-ans">{{ page.n_endpoints }} · {% for g in page.access %}{% if g.n > 0 %}{{ g.title | downcase | escape }} {{ g.n }}{% unless forloop.last %}, {% endunless %}{% endif %}{% endfor %}</span><i class="calm-chev cc-i cc-i-ui-down" aria-hidden="true"></i></summary>
+    <span class="calm-ans">{{ page.n_endpoints }}</span><i class="calm-chev cc-i cc-i-ui-down" aria-hidden="true"></i></summary>
   <div class="calm-body">
     <p class="ds-access-lede cc-prose">{% if page.is_holding %}This dataset is not in the integrated
-      database, so nothing below comes from a CalCOFI release. Here is where it lives today.{% else %}Every
-      endpoint this dataset can be reached through, grouped by how you would use it. Each name is
-      the link; the copy button beside it copies the address. Everything is in the release record and
-      was answered when the release was cut.{% endif %}</p>
+      database, so nothing below comes from a CalCOFI release. Here is where it lives today.{% else %}Grouped by use. The button beside a link copies its address.{% endif %}</p>
     <div class="tabset" id="ts-ds-access">
       <div class="tabrow" role="tablist" aria-label="Access, by group">
         {%- for g in page.access -%}
@@ -38,8 +35,12 @@
         {%- if g.lede %}<p class="ds-access-lede cc-muted cc-prose">{{ g.lede | markdownify | remove: "<p>" | remove: "</p>" }}</p>{% endif -%}
         {%- if g.policy %}<p class="ds-policy cc-prose"><span class="ds-policy-k">Policy</span> {{ g.policy | escape }}</p>{% endif -%}
         {%- for b in g.blocks -%}
+        {%- if b.title and b.lede -%}
+        <div class="ds-access-subrow"><h4 class="ds-access-sub">{{ b.title | escape }}</h4><p class="ds-access-lede cc-muted cc-prose">{{ b.lede | markdownify | remove: "<p>" | remove: "</p>" }}</p></div>
+        {%- else -%}
         {%- if b.title %}<h4 class="ds-access-sub">{{ b.title | escape }}</h4>{% endif -%}
         {%- if b.lede %}<p class="ds-access-lede cc-muted cc-prose">{{ b.lede | markdownify | remove: "<p>" | remove: "</p>" }}</p>{% endif -%}
+        {%- endif -%}
         {%- if b.layout == "table" -%}
         {% include access_table.html block=b %}
         {%- elsif b.layout == "portals" -%}

@@ -36,32 +36,35 @@
 words:
   - id: data
     title: Data
-    align: center  # under its word (Betty 2026-11-18: hung from the right it reached far to the left); from the word's
-                   # left its two-column panel ran 3 px outside a 1100 to 1206 px window
+    # left-aligned under its word (Betty 2026-11-20: "Find data" directly under Data; it was centred). Hung from the right it
+    # reached far to the left (2026-11-18); in a window under about 1200 px the panel is eased left in assets style.css (#cc-dd-data)
     here: [datasets, species, measurements]
     menu:
-      - title: Find
+      # Betty 2026-11-20: clearer lines. The counts keep coming from the release (`count`); `before` / `after` only
+      # put words around the number ("Browse all 20 datasets"), and a number the build cannot read still leaves the line off.
+      - title: Find data
         items:
-          - { title: Datasets,     href: /datasets/,     count: datasets,     icon: ui-data }
-          - { title: Species,      href: /species/,      count: species,      icon: realm-bio }
-          - { title: Measurements, href: /measurements/, count: measurements, icon: el-measured }
-      - title: Get it
+          - { title: Datasets,     href: /datasets/,     count: datasets,     before: "Browse all ", after: " datasets",     icon: ui-data }
+          - { title: Species,      href: /species/,      count: species,      before: "Browse ",     after: " species",      icon: realm-bio }
+          - { title: Measurements, href: /measurements/, count: measurements, before: "Browse ",     after: " measurements", icon: el-measured }
+      - title: Get the data
         items:
-          - { title: Query Builder,          query: "",                                    small: One table across datasets,          icon: way-query }
-          - { title: ERDDAP and cloud files, href: "/#services", go: "access:services", small: For servers and scripts,      icon: way-erddap }
-          - { title: R and Python,           href: "/#packages", go: "access:packages", small: Packages,                     icon: ui-code }
-          - { title: Build with CalCOFI,     href: "/#build",                           small: Workflows and the database,   icon: ui-code }
+          - { title: Query Builder,          query: "",                                    small: Combine datasets into one table,        icon: way-query }
+          - { title: ERDDAP and cloud files, href: "/#services", go: "access:services", small: Direct links for servers and scripts, icon: way-erddap }
+          - { title: R and Python,           href: "/#packages", go: "access:packages", small: Packages that load data in code,      icon: ui-code }
+          - { title: Build with CalCOFI,     href: "/#build",                           small: Workflows and database code,           icon: ui-code }
   - id: map
     title: Map
+    # Betty 2026-11-20: each app opens in a new tab (`new: true`); one line each; no rule above "All apps"
     menu:
-      - { title: Explorer,       product: explore,             small: Maps and trends over time,    icon: way-explorer }
-      - { title: Dataset Finder, product: db-viz-station,      small: Data by station,              icon: way-explorer }
-      - { title: product,        product: ucla-monitoring-map, small: "Who monitors what, statewide", icon: way-explorer }
-      - { rule: true }
-      - { title: All apps,       href: "/#explore",            small: "Dashboards, student projects", icon: ui-more }
+      - { title: Explorer App,       product: explore,             new: true, small: Maps and trends over time,    icon: way-explorer }
+      - { title: Dataset Finder App, product: db-viz-station,      new: true, small: Data by station,              icon: way-explorer }
+      - { title: product,            product: ucla-monitoring-map, new: true, small: "Who monitors what, statewide", icon: way-explorer }
+      - { title: All apps,           href: "/#explore",            small: "Dashboards, student projects", icon: ui-more }
   - id: learn
     title: Learn
-    align: right
+    # centred under its word (Betty 2026-11-21): right-aligned it left Guides well to the left of "Learn"; left-aligned it would run off the window
+    align: center
     here: [news, stories, tutorials]
     menu:
       - title: Guides

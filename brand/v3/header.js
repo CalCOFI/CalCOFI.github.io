@@ -41,12 +41,12 @@
       if (w.menu) {
         var two = w.menu.length > 1;
         h += '<div class="cc-m2" data-word="' + esc(w.id) + '"><button type="button" class="cc-m2-t" aria-expanded="false" aria-controls="cc-dd-' + esc(w.id) + '">' + esc(w.title) + CAR + "</button>" +
-          '<div class="cc-dd' + (two ? " cc-dd-2" : "") + (w.align === "right" ? " cc-dd-r" : "") + '" id="cc-dd-' + esc(w.id) + '">';
+          '<div class="cc-dd' + (two ? " cc-dd-2" : "") + (w.align === "right" ? " cc-dd-r" : w.align === "center" ? " cc-dd-c" : "") + '" id="cc-dd-' + esc(w.id) + '">';
         w.menu.forEach(function (c) {
           if (two) h += "<div>" + (c.title ? "<h5>" + esc(c.title) + "</h5>" : "");
           c.items.forEach(function (i) {
             if (i.rule) { h += "<hr>"; return; }
-            h += '<a href="' + esc(i.url) + '"' + (withI && i.icon ? "" : ' class="cc-dd-noi"') + ">" + (withI && i.icon ? '<i class="cc-i cc-i-' + esc(i.icon) + '" aria-hidden="true"></i>' : "") +
+            h += '<a href="' + esc(i.url) + '"' + (i.new ? ' target="_blank" rel="noopener"' : "") + (withI && i.icon ? "" : ' class="cc-dd-noi"') + ">" + (withI && i.icon ? '<i class="cc-i cc-i-' + esc(i.icon) + '" aria-hidden="true"></i>' : "") +
               "<span><b>" + esc(i.title) + "</b>" + (i.small ? "<small>" + esc(i.small) + "</small>" : "") + "</span></a>";
           });
           if (two) h += "</div>";

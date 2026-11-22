@@ -53,7 +53,7 @@
 .dp-tr:first-child { border-top: 0; }
 .dp-tr:not(.dp-th):hover { background: color-mix(in srgb, var(--panel) 70%, var(--bg)); }
 .dp-th { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); background: color-mix(in srgb, var(--panel) 50%, var(--bg)); padding: 9px 16px; }
-.dp-m .dp-tr { grid-template-columns: minmax(0, 1fr) 110px 110px 92px; }
+.dp-md { font-size: 14px; color: var(--muted); }
 .dp-cath { display: flex; gap: 8px; padding: 9px 16px 7px; border-top: 1px solid var(--border); font-size: 12.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; background: color-mix(in srgb, var(--panel) 35%, var(--bg)); }
 .dp-cath span { margin-left: auto; font-weight: 600; letter-spacing: 0; color: var(--muted); }
 .dp-si { display: block; width: 44px; height: 26px; color: var(--fg); fill: currentColor; opacity: .75; }
@@ -99,7 +99,8 @@
 .dp-cpy { all: unset; cursor: pointer; margin-top: 14px; font-size: 13px; font-weight: 700; color: var(--accent); }
 .dp-cite { margin: 10px 18px 0; padding: 10px 12px; border-radius: 9px; background: var(--panel); font-size: 13px; line-height: 1.5; overflow-wrap: anywhere; }
 .dp-lic { margin: 8px 18px 0; font-size: 13px; color: var(--muted); }
-.dp-cfoot { display: flex; gap: 14px; align-items: center; margin: 8px 18px 0; font-size: 13px; } .dp-cfoot a, .dp-cfoot .dp-lnk { font-weight: 600; font-size: 13px; }
+.dp-ackp { margin: 10px 18px 0; font-size: 12.5px; line-height: 1.5; color: var(--muted); overflow-wrap: anywhere; } .dp-ackp b { color: var(--fg); }
+.dp-cfoot { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; margin: 8px 18px 0; font-size: 13px; } .dp-cfoot > * { white-space: nowrap; } .dp-cfoot a, .dp-cfoot .dp-lnk { font-weight: 600; font-size: 13px; }
 
 /* about the data */
 .dp-about { margin-top: 40px; }
@@ -120,8 +121,7 @@
 @media (max-width: 640px) {
   .dp-nums div { padding-left: 14px; margin-left: 14px; }
   .dp-when { grid-template-columns: 1fr; }
-  .dp-tr { grid-template-columns: 44px minmax(0, 1fr) 80px; } .dp-tr .dp-nb { display: none; }
-  .dp-m .dp-tr { grid-template-columns: minmax(0, 1fr) 80px; }
+  .dp-tr { grid-template-columns: 44px minmax(0, 1fr) 80px; } .dp-tr .dp-nb, .dp-tr .dp-md { display: none; }
   .dp-th { display: none; }
   .dp-ih { flex-wrap: wrap; } .dp-q { width: 100%; margin-left: 0; }
 }
@@ -141,6 +141,11 @@ a.dp-big, .dp-page a.dp-big, .dp-page a.dp-big:hover { box-sizing: border-box; t
 /* the licence chip in the Cite card: "unstated" and "licence pending" keep their dashed edge but not the 60% shade,
    which on this card measured under 3:1 for the one word the line is there to say */
 .dp-lic .cc-chip { opacity: 1; color: var(--fg); }
+/* the licence reads as a plain link here, not a pill (Betty 2026-11-20): no edge, fill or icon, underlined like the other links on the card */
+.dp-lic .cc-chip { border: 0; background: none; padding: 0; border-radius: 0; font: inherit; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
+.dp-lic .cc-chip svg, .dp-lic .cc-chip img { display: none; }
+.dp-lic > a { text-decoration: underline; text-underline-offset: 2px; }
+.dp-lic a.cc-chip:hover { color: var(--accent); text-decoration-thickness: 2px; }
 /* rows and category heads past the first eight are [hidden]; their own display rules must not undo that */
 .dp-tbl .dp-tr[hidden], .dp-tbl .dp-cath[hidden] { display: none; }
 
@@ -168,14 +173,22 @@ a.dp-big, .dp-page a.dp-big, .dp-page a.dp-big:hover { box-sizing: border-box; t
 .dp-orig a { color: #fff; font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
 .dp-acts { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
 .dp-a1, .dp-a2 { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px; border-radius: 9px; font: 700 14px var(--sans); text-decoration: none; cursor: pointer; }
-.dp-a1 { border: 0; background: #ffcd00; color: #182b49; } .dp-a1:hover { filter: brightness(.95); }
-.dp-a2 { border: 1px solid rgba(255,255,255,.35); background: transparent; color: #fff; } .dp-a2:hover { background: rgba(255,255,255,.08); }
+.dp-a1 { border: 0; background: #ffcd00; color: #182b49; } .dp-a1:hover { filter: brightness(.95); color: #182b49; text-decoration: none; }
+.dp-a2 { border: 1px solid rgba(255,255,255,.35); background: transparent; color: #fff; } .dp-a2:hover, .dp-a2:focus-visible { background: rgba(255,255,255,.08); color: #fff; text-decoration: none; }  /* the site's a:hover (dark teal, underlined) was winning on the navy hero (Betty 2026-11-21) */
 .dp-a1:focus-visible, .dp-a2:focus-visible, .dp-back:focus-visible { outline: 2px solid #ffcd00; outline-offset: 2px; }
-.dp-hmap { flex: none; width: 340px; margin: 16px 0 0; }
-.dp-hmap .dp-map { margin: 0; height: 230px; border-radius: 10px; border: 0; }
-.dp-hmap figcaption { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 7px; font-size: 12.5px; color: #c9d4e3; }
-.dp-hmap figcaption a { margin-left: auto; color: #fff; font-weight: 600; text-decoration: none; } .dp-hmap figcaption a + a { margin-left: 0; }
-.dp-hmap figcaption a:hover { text-decoration: underline; }
+/* the right column: a rounded station map level with the category line and filling down the hero, its count as a label on it,
+   and the four numbers flat beneath it (Betty 2026-11-20, mockup H) */
+.dp-hero .dp-in { align-items: stretch; }
+.dp-hr { flex: none; width: 480px; display: flex; flex-direction: column; padding-top: 38px; }
+.dp-hr .dp-hmap { flex: 1; display: flex; width: 100%; margin: 0; min-height: 280px; }
+.dp-hmap .dp-map { flex: 1; position: relative; margin: 0; height: auto; border-radius: 16px; border: 0; overflow: hidden; }
+.dp-hmap .dp-map .cc-map { position: absolute; inset: 0; width: 100%; height: 100%; max-height: none; border-radius: 0; }
+.dp-mcap { position: absolute; right: 14px; top: 14px; max-width: calc(100% - 28px); padding: 6px 12px; border-radius: 99px; background: rgba(20, 40, 75, .86); color: #fff; font-size: 13.5px; font-weight: 600; line-height: 1.3; }
+.dp-hr .dp-nums { justify-content: space-between; gap: 10px; padding: 16px 0 0; }
+.dp-hr .dp-nums div { margin-left: 0; padding-left: 14px; }
+.dp-hr .dp-nums div:first-child { padding-left: 0; }
+.dp-hr .dp-nums dd { font-size: 22px; }
+.dp-hr .dp-nums dt { font-size: 14px; margin-top: 3px; }
 .dp-hero > .dp-nums { max-width: var(--container, 1280px); margin: 18px auto 0; padding: 14px calc(var(--space, 8px) * 3) 0; box-sizing: border-box;
   flex-wrap: wrap; row-gap: 10px; border-top: 1px solid rgba(255,255,255,.16); }
 
@@ -222,7 +235,8 @@ a.dp-big, .dp-page a.dp-big, .dp-page a.dp-big:hover { box-sizing: border-box; t
 .dp-orig2 b { display: block; font-size: 13.5px; } .dp-orig2 small { display: block; font-size: 12px; color: var(--muted); } .dp-orig2 em { font-style: normal; color: var(--muted); }
 
 @media (max-width: 1050px) {
-  .dp-hmap { width: 100%; max-width: 520px; }
+  .dp-hr { width: 100%; max-width: 520px; padding-top: 0; }
+  .dp-hr .dp-hmap { min-height: 0; } .dp-hmap .dp-map { aspect-ratio: 16 / 10; }
   .dp-comb { grid-template-columns: 1fr; } .dp-carr { transform: rotate(90deg); justify-self: center; }
 }
 @media (max-width: 640px) {
@@ -239,7 +253,6 @@ a.dp-big, .dp-page a.dp-big, .dp-page a.dp-big:hover { box-sizing: border-box; t
    against the right, coast side (Betty 2026-11-18) */
 .dp-map, .dp-hmap .dp-map { height: auto; }
 .dp-map .cc-map { position: relative; inset: auto; display: block; width: 100%; height: auto; max-height: 320px; }
-.dp-hmap .dp-map .cc-map { max-height: 260px; }
 
 /* Field descriptions as a ruled table (Betty 2026-11-19, option A): a dark line under the header, a clear line under
    every row; a file list is one file per line, so a name no longer breaks mid-word. The shown table and the "Show more"
@@ -262,3 +275,84 @@ a.dp-big, .dp-page a.dp-big, .dp-page a.dp-big:hover { box-sizing: border-box; t
 /* the dataset page's navy head starts right under the bar, so the brand's wave band (which cuts into the page
    ground, white) drew a white wave across the navy (Betty 2026-11-19): the head is the band here */
 body:has(.dp-band) .cc-wave-auto { display: none; }
+
+/* Field descriptions (Betty 2026-11-20): no File column on the page. The cells stay in the table (hidden), so "Field list (CSV)"
+   (assets/dataset-page.js) still writes the file for every row; the freed width goes to Field and Units. */
+.dp-ft th:nth-child(1), .dp-ft td:nth-child(1) { display: none; }
+.dp-ft th:nth-child(2), .dp-ft td:nth-child(2) { width: 26%; }
+.dp-ft th:nth-child(3), .dp-ft td:nth-child(3) { width: 16%; }
+
+/* Where else to find this dataset, option E (Betty 2026-11-20): who made it on the left, where else it lives on the right.
+   Sized with the rest of the page (14–15px text, an 18px heading), not as a hero. */
+.dp-ab { display: flex; gap: 40px; align-items: flex-start; border-top: 1px solid var(--border); padding-top: 18px; }
+.dp-ab-l { width: 260px; flex: none; }
+.dp-ab-h { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.dp-ab-h h3 { margin: 0; font: 700 15px/1.2 var(--sans); letter-spacing: 0; text-transform: none; color: var(--fg); }
+.dp-ab-i { width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; background: color-mix(in srgb, var(--fg) 7%, var(--bg)); color: var(--fg); }
+.dp-ab-i svg { width: 16px; height: 16px; }
+.dp-ab-n { margin: 0; font-size: 15px; line-height: 1.5; font-weight: 600; }
+.dp-ab .dp-sm { margin: 8px 0 0; font-size: 13.5px; color: var(--muted); }
+.dp-ab .dp-ab-c { line-height: 1.5; }
+/* a long acknowledgement (ack_override) gets a wide left column, so it runs long instead of tall */
+.dp-ab-wide .dp-ab-l { width: 62%; max-width: 760px; }
+.dp-ab-wide .dp-ab-l .dp-sm { max-width: none; }
+.dp-ab-r { flex: 1; min-width: 0; border-left: 1px solid var(--border); padding-left: 40px; }
+.dp-ab > .dp-ab-r:first-child { border-left: 0; padding-left: 0; }
+.dp-ab-r h2 { margin: 0 0 8px; font: 700 18px/1.3 var(--sans); letter-spacing: 0; text-transform: none; }
+.dp-ab-p { margin: 0; max-width: 620px; font-size: 14.5px; line-height: 1.55; }
+.dp-ab-b { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+.dp-page a.dp-btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none; color: var(--accent); background: var(--bg); border: 1.5px solid color-mix(in srgb, var(--accent) 40%, var(--border)); }
+.dp-page a.dp-btn:hover { background: var(--accent-bg); }
+.dp-page a.dp-btn-p { color: #fff; background: var(--accent); border-color: var(--accent); }
+.dp-page a.dp-btn-p:hover { background: color-mix(in srgb, var(--accent) 85%, #000); }
+.dp-ext { flex: none; width: 12px; height: 12px; }
+@media (max-width: 900px) { .dp-ab { flex-direction: column; gap: 20px; } .dp-ab-l, .dp-ab-wide .dp-ab-l { width: auto; max-width: none; } .dp-ab-r { border-left: 0; padding-left: 0; border-top: 1px solid var(--border); padding-top: 18px; } }
+/* the button that shows the rest of the field descriptions is at the end of the table (Betty 2026-11-20) */
+.dp-fmore-btn { display: block; margin: 4px 0 0; padding: 10px 14px; border: 0; background: none; font: inherit; font-size: 13.5px; font-weight: 700; color: var(--accent); cursor: pointer; }
+.dp-fmore-btn:hover { text-decoration: underline; }
+.dp-fmore-btn { position: relative; }
+.dp-fmore-btn::before { content: "▾"; position: absolute; left: 1px; }   /* the arrow hangs left so "Show/Hide" lines up with the field names */
+.dp-fmore-btn[aria-expanded="true"]::before { content: "▴"; }
+/* the columns.csv note sits on the same line as the "Show more fields" button, at the right (Betty 2026-11-20) */
+.dp-fbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px 16px; margin-top: 4px; }
+.dp-fbar .dp-fmore-btn { margin: 0; }
+.dp-fnote { margin: 0 14px 0 auto; font-size: 12.5px; color: var(--muted); text-align: right; }
+
+/* Measurements (Betty 2026-11-21): the same table as Field descriptions, but its first column (the measurement) shows, because that column is what the
+   table is about. Environmental pages add Years and a CSV per measurement; biology pages stop at the description. */
+.dp-ft.dp-mtbl th:nth-child(1), .dp-ft.dp-mtbl td:nth-child(1) { display: table-cell; width: 27%; color: var(--fg); }
+.dp-ft.dp-mtbl th:nth-child(2), .dp-ft.dp-mtbl td:nth-child(2) { width: 13%; color: var(--muted); }
+.dp-ft.dp-mtbl th:nth-child(3), .dp-ft.dp-mtbl td:nth-child(3) { width: auto; color: var(--fg); }
+.dp-mtbl-env th:nth-child(4), .dp-mtbl-env td:nth-child(4) { width: 11%; color: var(--muted); white-space: nowrap; }
+.dp-mtbl-env th:nth-child(5), .dp-mtbl-env td:nth-child(5) { width: 92px; }
+.dp-mtbl td:nth-child(1) a { color: var(--fg); text-decoration: none; } .dp-mtbl td:nth-child(1) a:hover { color: var(--accent); text-decoration: underline; }
+.dp-mtbl td:nth-child(1) code { display: block; margin-top: 2px; font-size: 12px; font-weight: 400; color: var(--muted); }
+.dp-mtbl td:nth-child(1) > code:only-child { font-size: 12.5px; font-weight: 600; color: var(--fg); margin-top: 0; }
+.dp-mtbl .dp-mc { text-align: right; } .dp-mtbl .dp-mc .dp-csv { height: 28px; }
+.dp-mtbl tr[hidden] { display: none; }
+@media (max-width: 640px) {
+  .dp-ft.dp-mtbl th:nth-child(1), .dp-ft.dp-mtbl td:nth-child(1) { width: 34%; }
+  .dp-mtbl-env th:nth-child(4), .dp-mtbl-env td:nth-child(4) { display: none; }
+  .dp-mtbl-env th:nth-child(5), .dp-mtbl-env td:nth-child(5) { width: 76px; }
+}
+.dp-fmore-btn[hidden] { display: none; }
+
+/* Every endpoint: one short intro, then room between the tabs, each group and its blocks (Betty 2026-11-21) */
+.dp-folds #access .ds-access-lede { margin: 0 0 18px; max-width: 110ch; }
+.dp-folds #access .tabrow { margin-bottom: 22px; }
+.dp-folds #access .ds-access-group > .ds-access-lede { margin-bottom: 26px; }
+.dp-folds #access .ds-access-sub { margin: 32px 0 8px; }
+.dp-folds #access .ds-access-sub + .ds-access-lede { margin-bottom: 16px; }
+.dp-folds #access .ds-access-group > .ds-access-sub:first-child, .dp-folds #access .ds-access-group > .ds-access-lede + .ds-access-sub:first-of-type { margin-top: 0; }
+/* a code row has its own copy button on the code; the one beside the name would copy a package page, so one button per row (Betty 2026-11-21) */
+.dp-folds #access .ds-arow:has(.ds-arow-code) .ds-arow-copy { display: none; }
+
+/* Also archived at: a small note with text links, not a heading and two buttons (Betty 2026-11-21) */
+.dp-ab-r h2.dp-ab-sm { font-size: 15px; margin: 0 0 4px; }
+.dp-ab-r .dp-sm a { white-space: nowrap; margin-left: 4px; }
+
+/* a block's title and its one-line description share a line (Betty 2026-11-21) */
+.dp-folds #access .ds-access-subrow { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 16px; margin: 32px 0 10px; }
+.dp-folds #access .ds-access-subrow .ds-access-sub { margin: 0; }
+.dp-folds #access .ds-access-subrow .ds-access-lede { margin: 0; flex: 1 1 320px; }
+.dp-folds #access .ds-access-group > .ds-access-subrow:first-child, .dp-folds #access .ds-access-group > .ds-access-lede + .ds-access-subrow { margin-top: 0; }

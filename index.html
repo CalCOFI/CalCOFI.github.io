@@ -86,9 +86,10 @@ layout: default
 {%- assign cats = site.data.catalog.categories -%}
 {%- assign core_icons = "cat-ichthyo,cat-physical,cat-zooplankton" | split: "," -%}
 <section class="fd-panel fd-learn" id="learn" hidden aria-labelledby="learn-h">
+  <div class="cc-wave cc-wave-slim fd-learnwavetop" aria-hidden="true"></div>
   <div class="fd-learnhead"><div class="cc-container">
     <div class="fd-learnbar">
-      <h2 class="fd-learnh" id="learn-h">How CalCOFI samples the ocean <span>Click anything in the drawing to learn more</span></h2>
+      <h2 class="fd-learnh" id="learn-h">What CalCOFI samples, and how deep <span>Line 90, from the ship to the sea floor. Click anything to learn more.</span></h2>
       <a class="fd-learngo" href="https://calcofi.org/sampling-info/">Sampling methods <span aria-hidden="true">↗</span></a>
       {{ close_btn }}
     </div>
@@ -112,7 +113,6 @@ layout: default
     {%- if cats and cats.size > 0 -%}
     <div class="fd-kinds" id="kinds">
       <h3 class="fd-h3">The kinds of data <span class="pill">{{ cats | size }}</span></h3>
-      <p class="blurb tab-blurb">The three long series first, then the rest. Years are the years each dataset holds.</p>
       <ul class="fd-kind-list">
         {%- comment -%} the long series, in core_icons order, then every other category in the record's order {%- endcomment -%}
         {%- assign ordered = "" | split: "" -%}

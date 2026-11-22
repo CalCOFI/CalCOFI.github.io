@@ -71,7 +71,7 @@ layout: default
 </header>
 
 <main class="calm-page ds-cat ds-browse">
-{% include catalog_crumb.html on="datasets" %}
+{%- comment -%} the Datasets · Species · Measurements row was here; it is now the header menu beside the logo (Betty 2026-11-19) {%- endcomment -%}
 
 <h2 class="sr-only">The datasets</h2>
 {%- comment -%}
@@ -117,7 +117,10 @@ layout: default
           {%- for rl in b.tiles %}{% for g in rl.groups %}
           <section class="bt-cat" id="cat-{{ g.slug }}" data-cat="{{ g.slug }}" data-cats="{% for d in g.rows %}{{ d.cat | escape }}|{% endfor %}">
             <nav class="bt-rail" aria-label="Back to all categories">
-              <a class="bt-back" href="./" data-home>← All categories</a>
+              {%- comment -%} a breadcrumb instead of "← All categories" (Betty 2026-11-19): Datasets and the realm go back to the
+                tiles (the realm also scrolls to its row, assets/browse.js); the category is where you are {%- endcomment -%}
+              {%- comment -%} simpler still (Betty 2026-11-20): "Back to Datasets › Carbonate Chemistry" — Environment and Biology went to the same page {%- endcomment -%}
+              <span class="bt-crumb"><a href="./" data-home>Back to Datasets</a><svg aria-hidden="true" viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M9 6l6 6-6 6-1.4-1.4 4.6-4.6-4.6-4.6z"/></svg><span aria-current="location">{{ g.name | escape }}</span></span>
               {%- for rl2 in b.tiles %}
               <span class="bt-rl">{{ rl2.title | escape }}</span>
               {%- for g2 in rl2.groups %}<a href="?cat={{ g2.slug }}#cat-{{ g2.slug }}" data-cat="{{ g2.slug }}"{% if g2.slug == g.slug %} aria-current="true"{% endif %}><i class="cc-i cc-i-{{ g2.icon | escape }}" aria-hidden="true"></i><span>{{ g2.name | escape }}</span><em>{{ g2.n }}</em></a>{% endfor %}
@@ -125,9 +128,9 @@ layout: default
             </nav>
             <div class="bt-main">
               <header class="bt-ch">
-                <span class="bt-eb"><i class="cc-i cc-i-{{ g.icon | escape }}" aria-hidden="true"></i>{{ rl.title | escape }}</span>
                 <h2>{{ g.name | escape }}</h2>
                 {%- if g.line %}<p class="bt-cd">{{ g.line | escape }}</p>{% endif %}
+                {%- if g.about %}<p class="bt-about">{{ g.about | escape }}</p>{% endif %}
                 <p class="bt-cs"><b>{{ g.n }}</b> dataset{% if g.n != 1 %}s{% endif %}{% if g.years %} · <b>{{ g.years | escape }}</b>{% endif %} · <b>{{ g.programs | escape }}</b></p>
               </header>
               <div class="bt-rows">
@@ -208,7 +211,7 @@ layout: default
       <span class="calm-ans">{{ ref.tables.size }} tables · {{ ref.layers.size }} spatial layers{% for r in ref.rasters %} · {{ r.name | escape }}{% endfor %}</span><i class="calm-chev cc-i cc-i-ui-down" aria-hidden="true"></i></summary>
     <div class="calm-body">{% include reference_band.html %}</div>
   </details>
-  <details class="calm-fold" id="release">
+  <details class="calm-fold" id="release" open>
     <summary><i class="cc-i cc-i-el-release" aria-hidden="true"></i>The release
       <span class="calm-ans">{{ rel.version | escape }}{% if rel.release_date %} · {{ rel.release_date | escape }}{% endif %} · {{ rel.n_tables }} tables · {{ nums.rows_m }} M rows</span><i class="calm-chev cc-i cc-i-ui-down" aria-hidden="true"></i></summary>
     <div class="calm-body">{% include release_strip.html %}</div>

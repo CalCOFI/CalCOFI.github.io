@@ -85,7 +85,28 @@
       <img class="cc-logo-dark"  src="{{ '/brand/v2/logo_calcofi_h.svg'       | relative_url }}" alt="CalCOFI.io">
       <img class="cc-logo-light" src="{{ '/brand/v2/logo_calcofi_h_light.svg' | relative_url }}" alt="CalCOFI.io">
     </a>
+    {%- comment -%} beside the logo, the catalog you are in (Betty, 2026-11-19), as the Query Builder's own header names it:
+      Datasets on /datasets/ and every dataset page, Species, Measurements; a page can set its own with `view_name`;
+      elsewhere the site's tagline {%- endcomment -%}
+    {%- assign cc_sec = page.url | split: '/' -%}
+    {%- assign cc_view = page.view_name -%}
+    {%- unless cc_view -%}{%- case cc_sec[1] -%}{%- when 'datasets' -%}{%- assign cc_view = 'Datasets' -%}{%- when 'species' -%}{%- assign cc_view = 'Species' -%}{%- when 'measurements' -%}{%- assign cc_view = 'Measurements' -%}{%- endcase -%}{%- endunless -%}
+    {%- if cc_view %}
+    {%- comment -%} the catalog's name is also the way to the other two (Betty 2026-11-19: it replaces the Datasets ·
+      Species · Measurements row under the search band): a header menu like Data ▾, opened on hover, a click or Enter
+      (brand/v3/header.js handles any .cc-header .cc-m2) {%- endcomment -%}
+    {%- assign cc_n = site.data.catalog.numbers -%}
+    <div class="cc-links cc-nav cc-viewnav"><div class="cc-m2" data-word="view">
+      <button type="button" class="cc-m2-t cc-tagline-view" aria-expanded="false" aria-controls="cc-dd-view">{{ cc_view | escape }}<svg class="cc-car" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 9l5 6 5-6z"/></svg></button>
+      <div class="cc-dd" id="cc-dd-view">
+        <a class="cc-dd-noi" href="{{ '/datasets/' | relative_url }}"{% if cc_sec[1] == 'datasets' %} aria-current="page"{% endif %}><span><b>Datasets</b>{% if site.data.catalog.counts.datasets %}<small>{{ site.data.catalog.counts.datasets }} datasets</small>{% endif %}</span></a>
+        <a class="cc-dd-noi" href="{{ '/species/' | relative_url }}"{% if cc_sec[1] == 'species' %} aria-current="page"{% endif %}><span><b>Species</b>{% if cc_n.species_fmt %}<small>{{ cc_n.species_fmt }} species</small>{% endif %}</span></a>
+        <a class="cc-dd-noi" href="{{ '/measurements/' | relative_url }}"{% if cc_sec[1] == 'measurements' %} aria-current="page"{% endif %}><span><b>Measurements</b>{% if cc_n.measurements_keys_fmt %}<small>{{ cc_n.measurements_keys_fmt }} measurements</small>{% endif %}</span></a>
+      </div>
+    </div></div>
+    {%- else %}
     <span class="cc-tagline">open data ecosystem</span>
+    {%- endif %}
 
     <span class="cc-spacer"></span>
 
@@ -157,9 +178,17 @@
       </div>
     </div>
   </footer>
-  <div class="cc-footer-bar"><div class="cc-container">© {{ site.time | date: "%Y" }} CalCOFI · calcofi.io</div></div>
+  <div class="cc-footer-bar"><div class="cc-container">© {{ site.time | date: "%Y" }} CalCOFI · calcofi.io · <a href="{{ '/ai-use/' | relative_url }}">How we use AI</a></div></div>
 
 </div>
 <script defer src="{{ '/assets/feedback.js' | relative_url }}"></script>
+<script>
+/* a page you navigate to opens at its top (Betty 2026-11-20: a dataset opened from a scrolled /datasets/ came up scrolled down).
+   Not for a link with a #anchor, Back / Forward or a reload, which keep the browser's own place; and not once the reader has scrolled. */
+(function(){try{var n=performance.getEntriesByType("navigation")[0];if(location.hash||(n&&n.type!=="navigate"))return;var moved=false,d=document.documentElement;
+function top(){if(moved)return;var b=d.style.scrollBehavior;d.style.scrollBehavior="auto";window.scrollTo(0,0);d.style.scrollBehavior=b}
+["wheel","touchstart","keydown","mousedown"].forEach(function(t){window.addEventListener(t,function(){moved=true},{once:true,passive:true})});
+top();window.addEventListener("DOMContentLoaded",top);window.addEventListener("load",top)}catch(e){}})();
+</script>
 </body>
 </html>

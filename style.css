@@ -484,6 +484,7 @@ svg.map { display: block; width: 100%; height: auto; border-radius: var(--radius
 .v2-footer .cols a { color: var(--fg); }
 .v2-footer .cols a:hover { color: var(--accent); }
 .cc-footer-bar .cc-container a { text-decoration: underline; }
+body .cc-footer-bar .cc-container a, body .cc-footer-bar .cc-container a:visited, body .cc-footer-bar .cc-container a:hover, body .cc-footer-bar .cc-container a:focus { color: #ffffff !important; } /* the AI-use link was dark on the navy bar (Betty 2026-11-21) */
 
 /* ── phone ───────────────────────────────────────────────────────────────── */
 
@@ -2222,3 +2223,21 @@ body:has(.cc-wave-own) .cc-wave-auto { display: none; }
 /* sizes (Betty 2026-11-19): the monitoring panel was tuned with the browser at 90%; drawn at 90% at desktop widths so
    it looks at 100% the way it was approved — smaller words, wider margins */
 @media (min-width: 901px) { .fd-mon > .cc-container { zoom: .9; } }
+
+/* the catalog's name beside the logo (Datasets ▾, Species ▾, Measurements ▾), set like the Query Builder's: bold, in the ink;
+   it opens a menu of the three catalogs
+   (_layouts/default.html, Betty 2026-11-19) */
+.cc-header .cc-viewnav { flex: none; }
+.cc-header .cc-viewnav > .cc-m2 > .cc-m2-t.cc-tagline-view { font-weight: 700; color: var(--fg); }
+.cc-header .cc-viewnav .cc-dd a[aria-current="page"] b { color: var(--accent); }
+@media (max-width: 1100px) { .cc-header .cc-links.cc-nav.cc-viewnav, .cc-header.cc-nav-open .cc-links.cc-nav.cc-viewnav { display: none; } }
+
+/* the Data menu hangs from its word so "Find data" is directly under "Data" (Betty 2026-11-20; it was centred under it). The
+   menu's left edge is 27 px left of the word (its padding and the column's heading put the text there), and the arrow points at
+   the word. Between the nav collapsing (1100 px) and about 1200 px the panel would run past the window's edge, so it is eased left. */
+.cc-header #cc-dd-data { left: -27px; transform: none; }   /* transform: none undoes .cc-dd-c, in case the page still carries the old centred class */
+.cc-header #cc-dd-data::after { left: 43px; }
+@media (max-width: 1200px) {
+  .cc-header #cc-dd-data { left: -50px; }
+  .cc-header #cc-dd-data::after { left: 66px; }
+}

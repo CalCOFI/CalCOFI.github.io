@@ -47,7 +47,7 @@ module CalCOFI
       if w["menu"]
         cols = columns(w["menu"], ctx)
         return nil if cols.empty?
-        base.merge("menu" => cols, "align" => w["align"] == "right" ? "right" : "left")
+        base.merge("menu" => cols, "align" => %w[right center].include?(w["align"]) ? w["align"] : "left")
       else
         l = link(w, ctx) or return nil
         base.merge(l).merge("ext" => w["ext"] == true)
@@ -68,14 +68,18 @@ module CalCOFI
       l = link(i, ctx) or return nil
       title = i["title"] == "product" ? ctx[:prod].dig(i["product"], "title") : i["title"]
       return nil unless present?(title)
-      small = i["count"] ? count_line(i["count"], ctx[:counts]) : i["small"]
-      { "title" => title, "small" => present?(small) ? small : nil, "icon" => i["icon"], "go" => i["go"] }.merge(l)
+      small = i["count"] ? count_line(i["count"], ctx[:counts], i["before"], i["after"]) : i["small"]
+      out = { "title" => title, "small" => present?(small) ? small : nil, "icon" => i["icon"], "go" => i["go"] }.merge(l)
+      out["new"] = true if i["new"] == true   # opens in a new tab (the Map menu's apps); absent otherwise
+      out
     end
 
     # "All 20" for datasets (the menu's first line names the whole list), the bare number otherwise
-    def count_line(name, counts)
+    # `before` / `after` (nav.yml) put words round the number: "Browse all 20 datasets"
+    def count_line(name, counts, before = nil, after = nil)
       n = counts[name]
       return nil unless present?(n)
+      return "#{before}#{n}#{after}" if present?(before) || present?(after)
       name == "datasets" ? "All #{n}" : n.to_s
     end
 

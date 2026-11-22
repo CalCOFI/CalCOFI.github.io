@@ -86,14 +86,24 @@
       '<div class="bd-pv-b"><span class="bd-pv-cat"><i class="cc-i cc-i-' + esc(r.icon) + '" aria-hidden="true"></i>' + esc(r.cat) + "</span>" +
       "<h2>" + esc(r.name) + "</h2>" + (r.full !== r.name ? '<p class="bd-pv-full">' + esc(r.full) + "</p>" : "") +
       '<p class="bd-pv-by">' + esc(r.prov_name) + "</p>" +
-      (r.desc ? '<p class="bd-pv-desc">' + esc(r.desc) + "</p>" : "") +
-      (r.has_long ? '<div class="bd-pv-has"><b>' + esc(r.has_label) + "</b>" + esc(r.has_long) + "</div>" : "") +
+      (blurb(r) ? '<p class="bd-pv-desc">' + esc(blurb(r)) + "</p>" + (blurb(r).length > 170 ? '<button type="button" class="bd-pv-more" aria-expanded="false">Show more</button>' : "") : "") +
+      hasBlock(r) +
       '<div class="bd-pv-yr"><div><b>Years with data</b><span>' + esc(r.years || "not listed") + "</span></div>" + r.strip_big +
       '<div class="bd-pv-ax">' + axis() + "</div></div>" +
       (f ? '<dl class="bd-pv-f">' + f + "</dl>" : "") +
       '<div class="bd-pv-act">' + (r.explore ? '<a class="bd-b1" href="' + esc(r.explore) + '">View on map</a>' : "") +
       dlMenu(r) +
-      '<a class="bd-b3" href="' + esc(r.url) + '">Full details →</a></div></div>';
+      '<a class="bd-b3" href="' + esc(r.url) + '">Open dataset →</a></div></div>' +
+      '<a class="bd-pv-go" href="' + esc(r.url) + '" title="Open dataset" aria-label="Open dataset: ' + esc(r.name) + '"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></a>';
+  }
+  // The preview's description is the short one (the record's long text carries the provenance, which is on the dataset's page),
+  // and the Measurements / Species and groups line is the names the record leads with, without "and 38 more" or a "show all"
+  // (Betty 2026-11-20).
+  function blurb(r) { return r.short || r.desc || ""; }
+  function hasBlock(r) {
+    if (!r.has_long) return "";
+    var m = /^(.*) and ([\d,]+) more$/.exec(r.has_long);
+    return '<div class="bd-pv-has"><b>' + esc(r.has_label) + "</b>" + esc(m ? m[1] : r.has_long) + "</div>";
   }
   function axis() {
     var w = BSPAN[1] - BSPAN[0] + 1, h = '<span style="left:0">' + BSPAN[0] + "</span>";
@@ -121,10 +131,11 @@
 
   function select(key) {
     sel = key;
-    rowsEls().forEach(function (a) { a.classList.toggle("on", a.dataset.k === key); a.setAttribute("aria-current", a.dataset.k === key ? "true" : "false"); });
+    rowsEls().forEach(function (a) { a.classList.toggle("on", a.dataset.k === key); if (a.dataset.k !== key) a.classList.remove("picked"); a.setAttribute("aria-current", a.dataset.k === key ? "true" : "false"); });
     if (!pv) return;
     if (!key) { pv.hidden = true; return; }
-    pv.innerHTML = preview(BY[key]); pv.hidden = false;
+    pv.innerHTML = preview(BY[key]) + '<span class="bd-pv-bar" aria-hidden="true"></span><span class="bd-pv-bar bd-pv-bar-b" aria-hidden="true"></span>'; pv.hidden = false;
+    pv.classList.remove("picked");   // the chevron tab shows only once a card has been clicked (Betty 2026-11-20)
   }
 
   document.addEventListener("click", function (e) {
@@ -132,11 +143,16 @@
     var t = e.target.closest && e.target.closest(".bt-tile[data-cat], .bt-rail a[data-cat], [data-home]");
     if (t && !(e.metaKey || e.ctrlKey || e.shiftKey || e.button)) {
       e.preventDefault();
-      if (t.hasAttribute("data-home")) showHome(true); else showCat(t.getAttribute("data-cat"), true);
+      if (t.hasAttribute("data-home")) {
+        showHome(true);
+        // the breadcrumb's realm (Environment, Biology): back to the tiles, at that realm's row
+        var rh = t.getAttribute("data-realm") && document.getElementById("bt-h-" + t.getAttribute("data-realm"));
+        if (rh) rh.closest(".bt-realm").scrollIntoView({ block: "start" });
+      } else showCat(t.getAttribute("data-cat"), true);
       return;
     }
     // the ERDDAP fold in a row and its links are not "show this row"
-    if (e.target.closest && e.target.closest("details, .bt-ext")) return;
+    if (e.target.closest && e.target.closest("details, .bt-ext, .bt-more")) return;
     var a = e.target.closest && e.target.closest(".bd-r[data-k]");
     if (!a || e.metaKey || e.ctrlKey || e.shiftKey || e.button) return;
     if (pv && getComputedStyle(pv).display === "none") {
@@ -145,7 +161,20 @@
       if (go) location.href = go.href;
       return;
     }
-    e.preventDefault(); select(a.dataset.k);
+    e.preventDefault();
+    select(a.dataset.k);
+    // every click on a card, even the one already shown, plays the bar: it tells the reader that card is the selected one (Betty 2026-11-20)
+    // the bar runs along whichever edge of the pane is in view: the top, or the foot when the top is scrolled under the header
+    if (pv) { var top = pv.getBoundingClientRect().top >= 70; pv.classList.remove("swap", "swap-b"); void pv.offsetWidth; pv.classList.add("swap"); if (!top) pv.classList.add("swap-b"); }
+    if (pv) pv.classList.add("picked");
+    a.classList.add("picked");   // "Open dataset" shows on the card that was clicked, not on the one picked for the preview by default (Betty 2026-11-20)
+  });
+  // "Show more" on the preview's description, which is otherwise cut at three lines
+  if (pv) pv.addEventListener("click", function (e) {
+    var b = e.target.closest && e.target.closest(".bd-pv-more");
+    if (!b) return;
+    var p = b.previousElementSibling, open = p.classList.toggle("open");
+    b.textContent = open ? "Show less" : "Show more"; b.setAttribute("aria-expanded", open ? "true" : "false");
   });
   [].forEach.call(document.querySelectorAll(".bd-try [data-q]"), function (b) {
     b.addEventListener("click", function () { q.value = b.dataset.q; apply(); q.focus(); drop(); });
@@ -225,7 +254,8 @@
   function setUrl(slug) {
     try { var u = new URL(location.href); if (slug) u.searchParams.set("cat", slug); else u.searchParams.delete("cat"); u.hash = ""; history.replaceState(null, "", u.toString()); } catch (err) { /* an old browser keeps its URL */ }
   }
-  function toTop() { var v = document.getElementById("ts-ds-views"); if (v && v.getBoundingClientRect().top < 0) v.scrollIntoView({ block: "start" }); }
+  // every time a category (or the tiles) opens, the page starts at its very top (Betty 2026-11-20); before, it kept the scroll from the tile that was clicked, or put the breadcrumb under the header
+  function toTop() { window.scrollTo(0, 0); }
   function showHome(user) {
     if (!home) return;
     home.hidden = false; cats.forEach(function (c) { c.hidden = true; });
@@ -238,6 +268,7 @@
     if (gridTab && gridTab.getAttribute("aria-selected") !== "true") gridTab.click();
     if (home) home.hidden = true;
     cats.forEach(function (c) { c.hidden = c !== sec; });
+    [].forEach.call(sec.querySelectorAll(".bt-row.picked"), function (x) { x.classList.remove("picked"); });
     if (find) find.classList.remove("bt-home-on");
     var first = sec.querySelector(".bd-r[data-k]");
     if (first) select(first.getAttribute("data-k"));
@@ -250,7 +281,11 @@
   try {
     var c = new URL(location.href).searchParams.get("cat");
     var cm = c && cats.filter(function (x) { return x.getAttribute("data-cat") === c || (x.getAttribute("data-cats") || "").split("|").indexOf(c) >= 0; })[0];
-    if (cm) showCat(cm.getAttribute("data-cat")); else showHome();
+    if (cm) {
+      showCat(cm.getAttribute("data-cat"));
+      // arriving by a link that ends #cat-…: the browser jumps to that spot; start at the top instead, and drop the hash
+      if (/^#cat-/.test(location.hash)) { setUrl(cm.getAttribute("data-cat")); toTop(); window.addEventListener("load", toTop); }
+    } else showHome();
   } catch (err) { showHome(); }
 
   if (!sel) select(ROWS.length ? ROWS[0].key : null);

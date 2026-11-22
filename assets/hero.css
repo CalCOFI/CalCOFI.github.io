@@ -5,7 +5,10 @@
   --hl:#00629b; --h-ink:#182b49; --h-body:#3d5172; --h-mute:#5b6e8c; --h-eyebrow:#00629b; --h-ship:#182b49;
   --c-bg:rgba(255,255,255,.94); --c-b:rgba(255,255,255,.6); --c-ink:#182b49; --c-mute:#5b6e8c; --c-who:#00629b; --c-link:#00629b; --c-line:#e3eaf2;
   --foot:#b9cde3;
-  position: relative; overflow: hidden; min-height: max(606px, calc(100vh - var(--header-h, 72px) - 34px)); display: flex; flex-direction: column; background: var(--w4);
+  position: relative; overflow: hidden; min-height: max(606px, calc(100vh - var(--hero-top, 106px))); display: flex; flex-direction: column;
+  /* the picture's own sky and water as the background (Betty, 2026-11-19): assets/hero.js draws the picture only once the
+     page has loaded, and the plain deep-water navy flashed first. The surface sits about 40% down, as in the picture. */
+  background: var(--w4) linear-gradient(to bottom, var(--sky1) 0%, var(--sky2) 29%, var(--sky3) 40%, var(--w1) 40%, var(--w2) 54.5%, var(--w3) 80.5%, var(--w4) 100%);
 }
 [data-theme="dark"] .hero {
   --sky1:#0a1426; --sky2:#14284a; --sky3:#22436f; --w1:#1b5d8f; --w2:#103d66; --w3:#0a2443; --w4:#06162b; --f1:#0b1a30; --f2:#040b16;
@@ -88,11 +91,16 @@
 
 /* the label by the ship (hero.js): the way in to the Learn drawing */
 .hero-sea .hero-tag { cursor: pointer; }
+/* no underline on hover (Betty, 2026-11-19): the site-wide a:hover underlined both lines; the yellow edge is the hover */
+.hero-sea .hero-tag, .hero-sea .hero-tag:hover, .hero-sea .hero-tag:focus { text-decoration: none; }
 .hero-sea .hero-tag rect { fill: var(--c-bg); stroke: var(--c-b); stroke-width: 1; filter: drop-shadow(0 4px 10px rgba(4,12,24,.18)); }
 .hero-sea .hero-tag:hover rect, .hero-sea .hero-tag:focus rect { stroke: var(--cc-yellow, #ffcd00); stroke-width: 1.5; }
 .hero-sea .hero-tag-t { font: 700 13.5px "Source Sans 3", system-ui, sans-serif; fill: var(--c-ink); }
 .hero-sea .hero-tag-s { font: 600 12.5px "Source Sans 3", system-ui, sans-serif; fill: var(--c-who); }
 .hero-sea { pointer-events: none; } .hero-sea .hero-tag { pointer-events: auto; }
+/* the CTD's rosette is a link to #learn (hero.js), with a box so the whole of it can be clicked */
+.hero-sea .hero-gear-link { cursor: pointer; pointer-events: auto; text-decoration: none; }
+.hero-sea .hero-gear-hit { pointer-events: all; }
 /* the text layer lies over the picture: let clicks through its empty space to the label */
 .hero-in { pointer-events: none; } .hero-in > * { pointer-events: auto; }
 .hero-start { pointer-events: none; } .hero-start > * { pointer-events: auto; } .hero .hero-h2 { width: fit-content; }
@@ -165,6 +173,10 @@
   .hero-nums dt { letter-spacing: .08em; }
 }
 
+/* --hero-top: how far down the page the hero starts (the header and the slim wave above it), measured by
+   assets/hero.js on load and resize, so the hero ends exactly at the bottom of the window on every screen;
+   106 px (72 + 34) without JavaScript. Was a fixed 72 + 34, which left a white strip of footer showing where
+   the real header is shorter (Betty, 2026-11-19). */
 /* ── main's first-screen rules, kept on this screen (reconciled 2026-11-17; scripts/check_layout.py asserts each) ──
    · every task link is a 32 px target: the strip's links were 18 px tall
    · the dark theme's eyebrow was #ffcd00, which is --warn there: yellow marks a state, never a kind of thing. It
@@ -180,7 +192,7 @@
 .hero-nums dd a:hover, .hero-nums dd a:focus-visible { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px; }
 @media (max-height: 720px) and (min-width: 901px) {
   /* the window less the header (72 px) and the brand's slim wave above the hero (34 px, brand v3 § 4) */
-  .hero { min-height: calc(100vh - var(--header-h, 72px) - 34px); }
+  .hero { min-height: calc(100vh - var(--hero-top, 106px)); }
   .hero-intro { margin-top: 6px; }
   .hero .hero-h1 { font-size: clamp(42px, 4.3vw, 56px); margin: 4px 0 6px; }
   .hero-lede { font-size: 17px; line-height: 1.35; }
@@ -276,3 +288,128 @@ body:has(.hero) .cc-wave-auto { --cc-wave-slim-h: 22px; --cc-wave-h: 13px; }
   .hero-start { margin-bottom: 52px; }
 }
 @media (min-width: 901px) and (max-height: 720px) { .hero-start { margin-bottom: 38px; } }
+
+/* bigger screens (Betty, 2026-11-19): the hero's words and cards grow with the window instead of staying laptop-sized
+   in the middle of a big monitor. Each step keeps about the proportions of a ~1500 px laptop window at .9; a step
+   only applies when the window is also tall enough for the bigger cards to fit above the hero's edge. */
+@media (min-width: 1700px) and (min-height: 820px) { .hero-in, .hero-in-row { zoom: 1; } }
+@media (min-width: 1900px) and (min-height: 900px) { .hero-in, .hero-in-row { zoom: 1.12; } }
+@media (min-width: 2200px) and (min-height: 1050px) { .hero-in, .hero-in-row { zoom: 1.28; } }
+@media (min-width: 2500px) and (min-height: 1200px) { .hero-in, .hero-in-row { zoom: 1.45; } }
+@media (min-width: 3200px) and (min-height: 1550px) { .hero-in, .hero-in-row { zoom: 1.85; } }
+
+/* the header lines up with the hero's words (Betty, 2026-11-19): from 1300 px the hero's text column is 1272 px wide
+   (1320 less its padding) at the hero's zoom (--hz, the same steps as above); the header's logo and its last icon take
+   that column's edges instead of the site's own container, so the logo sits over "CalCOFI ocean data" and the icons
+   end over the numbers, at every size */
+@media (min-width: 901px) {
+  /* under 1300 px the hero is the site's container (1170) less its padding (48): 1122 px of text */
+  body:has(.hero) .cc-header { --hz: .9; --hcol: 1122px; padding-left: max(calc(var(--space, 8px) * 2), calc((100% - var(--hz) * var(--hcol)) / 2)); padding-right: max(calc(var(--space, 8px) * 2), calc((100% - var(--hz) * var(--hcol)) / 2)); }
+}
+@media (min-width: 1300px) { body:has(.hero) .cc-header { --hcol: 1272px; } }
+@media (min-width: 1700px) and (min-height: 820px) { body:has(.hero) .cc-header { --hz: 1; } }
+@media (min-width: 1900px) and (min-height: 900px) { body:has(.hero) .cc-header { --hz: 1.12; } }
+@media (min-width: 2200px) and (min-height: 1050px) { body:has(.hero) .cc-header { --hz: 1.28; } }
+@media (min-width: 2500px) and (min-height: 1200px) { body:has(.hero) .cc-header { --hz: 1.45; } }
+@media (min-width: 3200px) and (min-height: 1550px) { body:has(.hero) .cc-header { --hz: 1.85; } }
+
+/* the cards higher (Betty, 2026-11-19): on a tall window "Where do you want to start?" and the cards sat at the very
+   bottom with a wide band of empty sea above them; they now stand a tenth of the window above the edge, and the strip
+   (Contribute · Cite the data · Statewide monitoring) moves up with them, over the sea floor */
+@media (min-width: 901px) and (min-height: 820px) {
+  .hero-start { margin-bottom: max(52px, 10vh); }
+  .hero-foot { bottom: max(0px, calc(10vh - 52px)); }
+}
+
+/* Betty 2026-11-20: "Where do you want to start?" and the three cards sit about as before (back to 72px; 20px, then 8px, were still a bit high, 40px ran into the "What is sampled" tag), so more of the sea floor shows
+   under them. Only where the window has room to spare: in a short window (under 800 px) the whole first screen must still
+   fit (issue #30), so it keeps its own spacing above. */
+@media (min-width: 901px) and (min-height: 800px) { .hero-start { margin-bottom: 72px; } }
+
+/* Betty 2026-11-20: each white card a few pixels shorter (about 12 px): a little less padding top and bottom and a little
+   less between the sentence and the line over the buttons; the sides and the text sizes are as they were. */
+@media (min-width: 901px) {
+  .hero-goal { padding: 14px 22px 12px; }
+  .hero-goal h3 + p { margin-bottom: 10px; }
+}
+
+/* Betty 2026-11-20: the strip under the cards (Contribute, Cite the data, Statewide monitoring, the sea-floor credit) sits
+   a little higher, off the window's bottom edge (26 px at first, then 10 px lower again: 16 px). Not in a short window (under 721 px), where it keeps its own place so the
+   whole first screen still fits (issue #30). */
+@media (min-width: 901px) and (min-height: 721px) { .hero-foot { bottom: 16px; } }
+
+/* Betty 2026-11-20: Learn as a full page. The navy bar and its wave are gone: the drawing fills the window under the site
+   header, and the title, Sampling methods and Close float over its sky (the title as plain text, Sampling methods as a white pill, Close as quiet text), so nothing frames it. The drawing
+   itself is untouched. Phones (under 761 px) keep the bar above the drawing, where there is no spare sky. */
+#learn .fd-learnwavetop { display: none; }
+@media (min-width: 761px) {
+  #learn.fd-learn { position: relative; }
+  #learn .fd-learnhead { position: absolute; top: 14px; left: 16px; right: 16px; z-index: 4; background: none; padding: 0; pointer-events: none; }
+  #learn .fd-learnhead .cc-container { max-width: none; padding: 16px 22px 0; }
+  #learn .fd-learnwave { display: none; }
+  #learn .fd-learnbar { align-items: flex-start; gap: 10px; }
+  #learn .fd-learnbar > * { pointer-events: auto; }
+  /* the title is plain text on the sky (no bubble); Sampling methods is an underlined link and Close a quiet text button; the row sits close under the wave */
+  #learn .fd-learnbar .fd-learnh { display: flex; flex-direction: column; gap: 2px; margin: 0 auto 0 0; padding: 0; background: none; border: 0; box-shadow: none;
+    color: var(--c-ink, #182b49); font-size: 29px; font-weight: 700; letter-spacing: -.012em; line-height: 1.15; }
+  #learn .fd-learnbar .fd-learnh span { margin: 0; font-size: 17px; font-weight: 400; letter-spacing: 0; color: var(--c-who, #4f607a); }
+  #learn .fd-learnbar .fd-learngo { display: inline-flex; align-items: center; gap: 6px; padding: 4px 6px; font-size: 15px; font-weight: 700; line-height: 1.2;
+    background: none; border: 0; border-radius: 0; box-shadow: none; color: var(--c-ink, #182b49);
+    text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 5px; }
+  #learn .fd-learnbar .fd-learngo:hover { color: var(--c-link, #00629b); box-shadow: none; }
+  #learn .fd-learnbar .fd-close { display: inline-flex; align-items: center; gap: 6px; padding: 4px 6px 4px 10px; font-size: 15px; font-weight: 600; line-height: 1.2;
+    background: none; border: 0; box-shadow: none; color: var(--c-ink, #182b49); }
+  #learn .fd-learnbar .fd-close:hover { color: var(--c-link, #00629b); text-decoration: underline; }
+  /* the navy wave from the top of the landing and every page opens the drawing (Betty 2026-11-20), so the step up from the
+     landing above it is the brand's own edge rather than a bare strip; the drawing runs full width under it */
+  #learn.fd-learn { padding-top: 42px; }   /* the navy wave above the drawing is gone (Betty 2026-11-20); this keeps the title and frame where they were */
+  #learn .fd-learnwavetop { display: none; }
+  [data-theme="dark"] #learn .fd-learnwavetop { --cc-wave-below: var(--bg); }
+  #learn .fd-learnhead { top: 20px; left: 0; right: 0; }
+  #learn .fd-learnhead .cc-container { padding: 4px 36px 0; }
+  /* Betty 2026-11-20: the frame's sides start at the middle of the title's first letter (margin-top 22px) and end just under the caption;
+     the drawing sits 25px lower in it. The drawing sits a little above the window's bottom edge, so the caption under it is not on the edge, in a
+     thin frame that is open at the top: the line runs down the sides and along the bottom, never across the title or Close */
+  #learn .fd-secscreen { margin: 0 16px 14px; box-sizing: border-box; padding-bottom: 10px; min-height: calc(100vh - var(--header-h, 72px) - 20px - 14px - 27px);
+    display: flex; flex-direction: column; justify-content: flex-end;
+    border: 1px solid var(--c-b, #cfd8e6); border-top: 0; border-radius: 0 0 18px 18px; overflow: hidden; }
+  #learn .fd-secscreen .fd-sec svg.sec { max-height: calc(100vh - var(--header-h, 72px) - 20px - 14px - 50px - 28px); }
+  #learn .fd-secscreen .fd-cap { width: 100%; box-sizing: border-box; padding-bottom: 6px; }
+}
+/* the depth scale was grey on the blue water and hard to read: white with a dark edge, and a clearer dotted line at each depth */
+#learn .sec .ax.axd, #learn .sec .axt.axd { fill: #fff; paint-order: stroke; stroke: rgba(8, 24, 48, .6); stroke-width: 3px; stroke-linejoin: round; }
+#learn .sec .ax.axd { font-size: 12.5px; font-weight: 600; }
+#learn .sec .axt.axd { font-size: 12px; }
+#learn .sec .axl.axd { stroke: rgba(255, 255, 255, .9); stroke-width: 1.4; }
+#learn .sec .grid { stroke: #fff; opacity: .3; }
+
+/* the pins by kind, so each stands out from the pale water instead of all being the same blue (Betty 2026-11-20): the ring and the
+   icon take the kind's colour (each 4.5:1 or better on white), with a soft shadow; on hover the disc fills with it */
+#learn .sec .pin { --pin: #00629b; }
+#learn .sec .pin[data-cat="cat-phytoplankton"], #learn .sec .pin[data-cat="cat-picoplankton"], #learn .sec .pin[data-cat="cat-zooplankton"], #learn .sec .pin[data-cat="cat-krill"] { --pin: #157a3c; }
+#learn .sec .pin[data-cat="cat-ichthyo"], #learn .sec .pin[data-cat="cat-fish"] { --pin: #b4500a; }
+#learn .sec .pin[data-cat="cat-birds-mammals"] { --pin: #7a3fa8; }
+#learn .sec .pin[data-cat="cat-meteorology"] { --pin: #182b49; }
+#learn .sec .pin circle { stroke: var(--pin); stroke-width: 2.4; filter: drop-shadow(0 1px 2px rgba(8, 26, 52, .35)); }
+#learn .sec .pin use { fill: var(--pin); color: var(--pin); }
+#learn .sec .pin:hover circle, #learn .sec .pin:focus-visible circle { fill: var(--pin); }
+#learn .sec .pin:hover use, #learn .sec .pin:focus-visible use { fill: #fff; color: #fff; }
+
+/* the links and the kinds of data below the drawing, given room (Betty 2026-11-20): the row of links sat right on the heading */
+#learn .fd-learnmore { padding-top: 26px; }
+#learn .fd-learnmore .fd-pact { gap: 14px 32px; margin: 0 0 44px; }
+#learn .fd-learnmore .fd-kinds .fd-h3 { margin: 0 0 22px; }
+
+/* dark mode (Betty 2026-11-20: the title, Close and the navy-ringed pin disappeared into the dark water): light text for the
+   title and Close, and lighter pin colours that read on the dark disc */
+[data-theme="dark"] #learn .fd-learnbar .fd-learnh { color: #fff; }
+[data-theme="dark"] #learn .fd-learnbar .fd-learnh span { color: #b9c9e0; }
+[data-theme="dark"] #learn .fd-learnbar .fd-close, [data-theme="dark"] #learn .fd-learnbar .fd-learngo { color: #fff; }
+[data-theme="dark"] #learn .fd-learnbar .fd-close:hover, [data-theme="dark"] #learn .fd-learnbar .fd-learngo:hover { color: var(--cc-yellow, #ffcd00); }
+[data-theme="dark"] #learn .sec .pin { --pin: #6cc4ff; }
+[data-theme="dark"] #learn .sec .pin[data-cat="cat-phytoplankton"], [data-theme="dark"] #learn .sec .pin[data-cat="cat-picoplankton"], [data-theme="dark"] #learn .sec .pin[data-cat="cat-zooplankton"], [data-theme="dark"] #learn .sec .pin[data-cat="cat-krill"] { --pin: #4fdc86; }
+[data-theme="dark"] #learn .sec .pin[data-cat="cat-ichthyo"], [data-theme="dark"] #learn .sec .pin[data-cat="cat-fish"] { --pin: #ffa25a; }
+[data-theme="dark"] #learn .sec .pin[data-cat="cat-birds-mammals"] { --pin: #cfa6ff; }
+[data-theme="dark"] #learn .sec .pin[data-cat="cat-meteorology"] { --pin: #dbe7f6; }
+[data-theme="dark"] #learn .sec .pin:hover use, [data-theme="dark"] #learn .sec .pin:focus-visible use { fill: #0a1426; color: #0a1426; }
+[data-theme="dark"] #learn .fd-secscreen { border-color: rgba(255, 255, 255, .16); }

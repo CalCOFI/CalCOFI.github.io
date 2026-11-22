@@ -63,6 +63,17 @@
 .cc-header .cc-dd small { display: block; margin-top: 1px; font-size: 12.5px; color: var(--muted); }
 .cc-header .cc-dd hr { border: 0; border-top: 1px solid var(--border); margin: 4px 8px; }
 
+/* Betty 2026-11-20: the Data panel's two columns sized to their words (they were 230 px each, the left one mostly empty), a
+   hairline between them, lines on one row each; the Map panel's lines never wrap ("CA Ocean & Coastal Monitoring Map").
+   Not in the open column (under 1100 px), where the menus are inline. */
+.cc-header:not(.cc-nav-open) #cc-dd-data.cc-dd-2 { grid-template-columns: max-content max-content; gap: 0; padding: 14px 8px 10px; width: max-content; }
+.cc-header:not(.cc-nav-open) #cc-dd-data.cc-dd-2 > div { padding: 0 8px; }
+.cc-header:not(.cc-nav-open) #cc-dd-data.cc-dd-2 > div + div { border-left: 1px solid var(--border); padding-left: 16px; margin-left: 8px; }
+.cc-header:not(.cc-nav-open) #cc-dd-data h5 { margin: 0 10px 8px; }
+.cc-header:not(.cc-nav-open) .cc-links.cc-nav #cc-dd-data a { white-space: nowrap; padding: 8px 10px; }
+.cc-header:not(.cc-nav-open) #cc-dd-map { width: max-content; }
+.cc-header:not(.cc-nav-open) .cc-links.cc-nav #cc-dd-map a { white-space: nowrap; }
+
 /* ── 3 · the menu button, and the column it opens ─────────────────────────────
    THE BREAKPOINT IS 1100 px: the row holds the lockup, the words and the icon buttons on ONE line from
    there (the tagline goes at 1100 to make sure). Below it the menu button takes over and the nav never wraps.
