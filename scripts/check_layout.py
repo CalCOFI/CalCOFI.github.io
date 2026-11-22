@@ -451,7 +451,7 @@ HERO_JS = r"""
     try { floorData = ((JSON.parse(d.getElementById("hero-floor").textContent) || {}).profile || []).length > 0; } catch (e) {}
     // the header is part of the first screen (brand v3): each word, whether it is drawn, the link it
     // is or the lines its menu holds — a task may be answered by a word instead of a link below it
-    const navEl = d.querySelector(".cc-header .cc-links"), burger = d.querySelector(".cc-header .cc-menu-button");
+    const navEl = d.querySelector(".cc-header .cc-links:not(.cc-viewnav)"), burger = d.querySelector(".cc-header .cc-menu-button");
     const navShown = !!navEl && w.getComputedStyle(navEl).display !== "none";
     const header = navEl ? [...navEl.children].filter(el => el.matches("a, .cc-m2, .cc-m")).map(el => {
       const t = el.matches("a") ? el : el.querySelector(":scope > .cc-m2-t, :scope > a");
@@ -944,9 +944,9 @@ async (w, d) => {
       // line that opened the panel is hidden by then, so focus must land on something that IS drawn
       // — never on a hidden link, which leaves it on <body>. Under NAV_BREAK the same line is in the
       // menu button's column; it is followed the same way.
-      const line = d.querySelector('.cc-header .cc-links a[href$="#explore"]');
+      const line = d.querySelector('.cc-header .cc-links:not(.cc-viewnav) a[href$="#explore"]');
       const lineMenu = line && line.closest(".cc-m2"), lineBtn = lineMenu && lineMenu.querySelector(".cc-m2-t");
-      const navDrawn = !!line && cs(d.querySelector(".cc-header .cc-links")).display !== "none";
+      const navDrawn = !!line && cs(d.querySelector(".cc-header .cc-links:not(.cc-viewnav)")).display !== "none";
       let viaHeader = null;
       if (line) {
         if (navDrawn && lineBtn) { lineBtn.focus(); lineBtn.click(); await sleep(80); line.focus(); }
@@ -1025,7 +1025,7 @@ async (w, d) => {
   // button), then it is pressed open again and focus is sent away (it must shut). A menu closes on a
   // short delay (the visibility transition that lets a pointer cross the gap), so each state is read
   // after waiting it out.
-  const nav = d.querySelector(".cc-header .cc-links");
+  const nav = d.querySelector(".cc-header .cc-links:not(.cc-viewnav)");
   const navItems = () => nav ? [...nav.children].filter(el => el.matches("a, .cc-m, .cc-m2")) : [];
   const trigOf = el => el.matches(".cc-m, .cc-m2") ? el.querySelector(":scope > .cc-m2-t, :scope > a") : el;
   const listOf = m => m.querySelector(":scope > ul, :scope > .cc-dd");
