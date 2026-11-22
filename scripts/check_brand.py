@@ -61,7 +61,7 @@ new Promise(done => setTimeout(() => done((() => {
   const bar = hdr || fw, title = bar && bar.querySelector(".cc-title, .navbar-title, .navbar-brand");
   const hjs = [...document.scripts].map(x => x.src).find(x => /\/brand\/v3\/header\.js(\?|$)/.test(x)) || null;
   const v3 = {
-    header: !!hdr, framework: !hdr && !!fw, headerJs: hjs, headerVersion: (window.ccHeader && window.ccHeader.version) || null,
+    header: !!hdr, framework: !hdr && !!fw, ownBand: !!document.querySelector(".dp-band"), headerJs: hjs, headerVersion: (window.ccHeader && window.ccHeader.version) || null,
     navState: nav ? nav.getAttribute("data-cc-nav-state") : null, navClass: nav ? String(nav.className) : null,
     words: words.map(el => el.textContent.replace(/\s+/g, " ").trim()),
     cased: words.map(el => cs(el).textTransform).concat(title ? [cs(title).textTransform] : []),
@@ -160,6 +160,9 @@ def judge_v3(v3, narrow, titles):
         why.append(f"case: text-transform on the bar's words and title is {sorted(set(cased)) or 'unread (no words)'}, expected none (sentence case)")
     waves, hb = v3.get("waves") or [], v3.get("headerBottom")
     wave = len(waves) == 1 and hb is not None and abs(waves[0]["top"] - hb) <= 1
+    # a dataset page draws its own navy band (.dp-band) under the bar in place of the header's wave (Betty 2026-11-21)
+    if not waves and v3.get("ownBand"):
+        wave = True
     if not wave:
         why.append(f"wave: {len(waves)} .cc-wave band(s) drawn"
                    + (f", starting {[x['top'] for x in waves]}px under a bar that ends {hb}px" if waves else ", none under the bar"))
