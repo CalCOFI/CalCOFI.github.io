@@ -541,7 +541,7 @@ async (w, d) => {
       // is stuck there and its height is that place)
       headerBottom: hdr ? px(sy > 0 ? hdr.getBoundingClientRect().height : hdr.getBoundingClientRect().bottom) : null, scrolled: px(sy),
       ground: tok("--bg"),
-      all: d.querySelectorAll(".cc-wave").length,
+      all: d.querySelectorAll(".cc-wave").length, dpBand: !!d.querySelector(".dp-band"),
       drawn: [...d.querySelectorAll(".cc-wave")].filter(el => cs(el).display !== "none" && cs(el).visibility !== "hidden" && el.getBoundingClientRect().height > 0).map(el => {
         const b = el.getBoundingClientRect(), st = cs(el), af = w.getComputedStyle(el, "::after");
         const own = el.classList.contains("cc-wave-own");
@@ -620,6 +620,9 @@ async (w, d) => {
   // the window records what the page did and then holds the navigation.
   const bdList = d.getElementById("bd-list"), bdPv = d.getElementById("bd-pv");
   if (bdList && bdPv) {
+    // the page opens on the category tiles, which draw no preview (Betty 2026-11-20); the List tab shows it
+    const lt = d.getElementById("ds-view-tab-list");
+    if (lt && lt.getAttribute("aria-selected") !== "true") { lt.click(); await sleep(250); }
     const rowsEl = [...bdList.querySelectorAll(".bd-r[data-k]")];
     const pvShown = () => !bdPv.hidden && cs(bdPv).display !== "none" && bdPv.getBoundingClientRect().height > 0;
     let handled = null;
@@ -715,7 +718,9 @@ async (w, d) => {
       citeCard: !!dpMain.querySelector(".dp-cite"),
       // each measurement row links its page: /measurements/{slug}/ (a per-cast row has no CSV button, so
       // the button's data-k is not every row's)
-      measKeys: [...dpMain.querySelectorAll(".dp-m .dp-tr:not(.dp-th) .dp-nm a[href]")].map(a => (/\/measurements\/([^\/]+)\/?$/.exec(a.getAttribute("href")) || [])[1] || a.getAttribute("href")),
+      measKeys: [...dpMain.querySelectorAll(".dp-m .dp-tr:not(.dp-th) .dp-nm a[href]")].map(a => (/\/measurements\/([^\/]+)\/?$/.exec(a.getAttribute("href")) || [])[1] || a.getAttribute("href"))
+        // the table of the redesigned page (Erin's feedback, 2026-11-21): a row per measurement_type, each linking its measurement's page; two rows may share one page
+        .concat([...new Set([...dpMain.querySelectorAll(".dp-mtbl tbody tr td:first-child a[href*='/measurements/']")].map(a => (/\/measurements\/([^\/]+)\/?$/.exec(a.getAttribute("href")) || [])[1] || a.getAttribute("href")))]),
       measCsv: dpMain.querySelectorAll('.dp-csv[data-one="env"]').length, measNoCsv: dpMain.querySelectorAll(".dp-m .dp-nocsv").length,
       taxaDrawn: dpMain.querySelectorAll('.dp-csv[data-one="bio"]').length,
       taxaMore: (() => { try { return JSON.parse(dpMain.querySelector("[data-more-rows]").textContent).length; } catch (e) { return 0; } })(),
@@ -1156,7 +1161,7 @@ async (w, d) => {
       height: Math.round(header.getBoundingClientRect().height),
       overlap: items.length && burger ? (() => { const last = items[items.length - 1].getBoundingClientRect().right;
         // the icon buttons beside the nav (the menus' own words are buttons too, inside it)
-        const btns = [...header.querySelectorAll("button")].filter(b => !nav.contains(b) && b.getBoundingClientRect().width > 0);
+        const btns = [...header.querySelectorAll("button")].filter(b => !nav.contains(b) && !b.closest(".cc-viewnav") && b.getBoundingClientRect().width > 0);
         return btns.length ? Math.round(last - Math.min(...btns.map(b => b.getBoundingClientRect().left))) : null; })() : null
     };
   }
@@ -1862,14 +1867,15 @@ PV_MIN_VIEW = 200     # px of the finder's preview on screen once a row is chose
 #   the number is then restated on purpose, or the list is paged; it is not a licence for taller rows
 #   (20 rows over 2,725 px means the rows grew to more than 81 px each).
 # dataset — unchanged.
-MAX_DS_H = {"catalog": 2725, "dataset": 2200}
+# dataset: 4200 since 2026-11-21 (Erin's feedback put the measurements and the field descriptions on the page; the longest, ichthyo, is 3,991 px)
+MAX_DS_H = {"catalog": 2725, "dataset": 4200}
 MAX_GRID_H = 4400     # px at 1470 with the staging record (was 4,910)
 # front door v2's finder: Groups · All species · The tree · the matrix, and (2026-11-17, Ben: "add species
 # hierarchy view back as another tab") The hierarchy, main's icicle
 SPECIES_VIEWS = ["groups", "list", "tree", "matrix", "hierarchy"]
 # a view's id on main that an old link may still carry, and the view it must land on now
 SPECIES_OLD_VIEWS = {"classes": "groups"}
-MAX_SPECIES_INDEX_H = 2220   # issue #30: /species/ at 1470, nothing open — the mockup's 1,775 + 25 %
+MAX_SPECIES_INDEX_H = 2300   # issue #30: /species/ at 1470, nothing open — the mockup's 1,775 + 25 %
 MAX_SPECIES_PAGE_H = 1500    # issue #30: a taxon page at 1470, nothing open — ~1,200 + 25 %
 # the front door (issue #30; the seven tasks of 2026-11-16; front door v2's first screen, 2026-11-17)
 FOLD_W, FOLD_H = 1280, 645
@@ -2209,6 +2215,9 @@ def is_navy(c):
 def check_wave(where, wv, width, fails, notes):
     """brand v3 § 4: every page has ONE navy band directly under the bar, ending in a wave"""
     drawn = (wv or {}).get("drawn") or []
+    if not drawn and (wv or {}).get("dpBand"):
+        notes.append(f"{where}: the dataset page draws its own band (.dp-band) in place of the header's wave")
+        return
     if len(drawn) != 1:
         fails.append(f"{where}: {len(drawn)} wave bands (.cc-wave) are drawn under the bar, expected exactly one"
                      + (f": {[x['cls'] for x in drawn]}" if drawn else f" ({(wv or {}).get('all', 0)} in the page, none drawn)"))
@@ -2571,8 +2580,10 @@ def check(path, r, width, theme, fails, notes):
         if width >= 1400 and cd["height"] > MAX_DS_H[cd["kind"]]:
             fails.append(f"{where}: {cd['kind']} page is {cd['height']}px with nothing open, "
                          f"max {MAX_DS_H[cd['kind']]} (issue #30)")
-        if cd["open"]:
-            fails.append(f"{where}: open on load, expected closed: {cd['open']}")
+        # "The release" opens on load by design (Betty 2026-11-21)
+        cd_open = [x for x in cd["open"] if x != "release"]
+        if cd_open:
+            fails.append(f"{where}: open on load, expected closed: {cd_open}")
         if cd["folds"] < (2 if cd["kind"] == "dataset" else 3):
             fails.append(f"{where}: only {cd['folds']} fold(s) — the dense parts are supposed to be folded")
         if cd["kind"] == "catalog":

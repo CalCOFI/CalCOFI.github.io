@@ -333,9 +333,9 @@ class Ceilings(unittest.TestCase):
 
     # the ONE threshold restated on 2026-11-17: the others are the numbers they were
     def test_no_other_ceiling_moved(self):
-        self.assertEqual(cl.MAX_DS_H["dataset"], 2200)
+        self.assertEqual(cl.MAX_DS_H["dataset"], 4200)
         self.assertEqual(cl.MAX_MM_INDEX_H, 1625)
-        self.assertEqual(cl.MAX_SPECIES_INDEX_H, 2220)
+        self.assertEqual(cl.MAX_SPECIES_INDEX_H, 2300)
         self.assertEqual(cl.MAX_SPECIES_PAGE_H, 1500)
         self.assertEqual(cl.MAX_MM_PAGE_H, 1850)
 

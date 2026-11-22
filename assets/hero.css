@@ -284,10 +284,10 @@ body:has(.hero) .cc-wave-auto { --cc-wave-slim-h: 22px; --cc-wave-h: 13px; }
    with empty navy under it (Betty 2026-11-19): it sits nearer the edge, and the cards come down by the same */
 @media (min-width: 901px) {
   .hero-foot { bottom: 0; }
-  .hero-foot nav a { min-height: 30px; }
-  .hero-start { margin-bottom: 52px; }
+  .hero-foot nav a { min-height: 36px; }
+  .hero-start { margin-bottom: 58px; }
 }
-@media (min-width: 901px) and (max-height: 720px) { .hero-start { margin-bottom: 38px; } }
+@media (min-width: 901px) and (max-height: 720px) { .hero-start { margin-bottom: 44px; } }
 
 /* bigger screens (Betty, 2026-11-19): the hero's words and cards grow with the window instead of staying laptop-sized
    in the middle of a big monitor. Each step keeps about the proportions of a ~1500 px laptop window at .9; a step
