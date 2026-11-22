@@ -82,7 +82,21 @@
     });
   });
 
-  function fromHash() { if (location.hash === "#download") open(btn); }
+  // Arriving on #download (a catalog row's Download link): the browser would scroll to the sidebar's
+  // #download card and leave the page half-way down behind the dialog. So the hash is dropped at once
+  // (nothing is left for the browser to scroll to, now or after load) and the page is held at its top.
+  function top() { if (dlg.open) window.scrollTo(0, 0); }
+  function fromHash() {
+    if (location.hash !== "#download") return;
+    history.replaceState(null, "", location.pathname + location.search);
+    if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+    open(btn);
+    top();
+    window.requestAnimationFrame(top);
+    window.addEventListener("load", top);
+    window.setTimeout(top, 150);
+    window.setTimeout(top, 500);
+  }
   fromHash();
   window.addEventListener("hashchange", fromHash);
 })();

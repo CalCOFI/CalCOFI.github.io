@@ -17,8 +17,8 @@
 {%- assign dl = include.dl -%}
 {%- assign idp = include.idp | default: "dl" -%}
 {%- assign lic = dl.licence -%}
-<p class="dl-lede" id="{{ idp }}-desc">Each download is one zip: the data tables, {{ dl.inside }}.
-  {%- if dl.version %} Verified against release <span class="mono">{{ dl.version | escape }}</span>
+<p class="dl-lede" id="{{ idp }}-desc">
+  {%- if dl.version %}Verified against release <span class="mono">{{ dl.version | escape }}</span>
   {%- if dl.since %}; the data are unchanged since <span class="mono">{{ dl.since | escape }}</span>{% endif %}.{% endif %}</p>
 <ul class="dl-opts">
   {%- for o in dl.main -%}
@@ -27,8 +27,7 @@
     <a class="cc-btn {% if o.primary %}cc-btn-primary{% else %}cc-btn-ghost{% endif %} dl-get" href="{{ o.url | escape }}" download="{{ o.file | escape }}" type="application/zip"
        data-dl-key="{{ dl.key | escape }}" data-dl-format="{{ o.format | escape }}"{% if o.primary and include.autofocus %} autofocus{% endif %}>
       <i class="cc-i cc-i-ui-download" aria-hidden="true"></i><span>{{ o.label | escape }}</span>{% if o.size %}<span class="dl-get-n">{{ o.size | escape }} zip</span>{% endif %}</a>
-    <p class="dl-about">{{ o.about | escape }}</p>
-    <p class="dl-inside">Inside: {{ o.inside | escape }}.</p>
+    {%- if o.about != "" or o.primary %}<p class="dl-about">{{ o.about | escape }}{% if o.primary %}{% if o.tables.size > 0 %}Inside: {{ o.tables.size }} data table{% if o.tables.size != 1 %}s{% endif %} ({{ o.tables | join: ", " | escape }}), {{ dl.inside }}.{% else %}Inside: {{ o.inside | escape }}.{% endif %}{% endif %}</p>{% endif -%}
     {%- if o.note %}<p class="dl-note">{{ o.note | escape }}</p>{% endif -%}
   </li>
   {%- else -%}
@@ -40,22 +39,21 @@
   {%- endfor -%}
 </ul>
 {%- if dl.part -%}
-<p class="dl-part"><b>Only want part of it?</b> Pick years, an area or a few variables
-  {% if dl.part.app %}in the <a href="{{ dl.part.url | escape }}">Explorer</a>{% else %}with SQL in <a href="{{ dl.part.url | escape }}">{{ dl.part.label | escape }}</a>{% endif %}
-  and download just that.</p>
+<p class="dl-part"><b>Just part of it?</b> Pick years, an area or variables
+  {% if dl.part.app %}in the <a href="{{ dl.part.url | escape }}">Explorer</a>{% else %}with SQL in <a href="{{ dl.part.url | escape }}">{{ dl.part.label | escape }}</a>{% endif %}.</p>
 {%- endif -%}
 <h3 class="dl-h" id="{{ idp }}-other">Other formats</h3>
 <ul class="dl-more" aria-labelledby="{{ idp }}-other">
   {%- for o in dl.other -%}
   <li><a href="{{ o.url | escape }}" download="{{ o.file | escape }}" type="application/zip" data-dl-key="{{ dl.key | escape }}" data-dl-format="{{ o.format | escape }}"><i class="cc-i cc-i-ui-download" aria-hidden="true"></i>{{ o.label | escape }}{% if o.size %} · {{ o.size | escape }} zip{% endif %}</a>
-    <span>{{ o.about | escape }} Inside: {{ o.inside | escape }}.</span></li>
+    <span>{{ o.about | escape }}</span></li>
   {%- endfor -%}
   {%- for e in dl.endpoints -%}
   <li><a href="{{ e.url | escape }}"><i class="cc-i cc-i-way-file" aria-hidden="true"></i>{{ e.label | escape }}</a> <span>{{ e.about | escape }}</span></li>
   {%- endfor -%}
-  <li><a href="#access" data-dl-endpoints><i class="cc-i cc-i-el-endpoints" aria-hidden="true"></i>Every endpoint</a> <span>the release’s parquet tables, ERDDAP, code, metadata and archives, on this page</span></li>
+  <li><a href="#access" data-dl-endpoints><i class="cc-i cc-i-el-endpoints" aria-hidden="true"></i>Every endpoint</a> <span>every table, ERDDAP and code, on this page</span></li>
 </ul>
 <p class="dl-lic dl-lic-{{ lic.kind | escape }}"><svg class="dl-lic-i" aria-hidden="true"><use href="#i-licence"/></svg><span><b>Licence:</b> {% if lic.contact %}{% capture mail %}<a href="mailto:{{ lic.contact | escape }}">{{ lic.contact | escape }}</a>{% endcapture %}{{ lic.text | escape | replace: lic.contact, mail }}{% else %}{{ lic.text | escape }}{% endif %}
   {%- if lic.url %} <a href="{{ lic.url | escape }}" rel="{% if lic.kind == 'custom' %}external{% else %}license external{% endif %}">{{ lic.url_label | escape }} ↗</a>{% endif %}</span></p>
-<p class="dl-reg">No sign-up, ever. If it ends up in something you publish or build,
-  <a href="{{ site.register_use_url }}">register your use</a> (encouraged, never required) so it can be credited and linked back.</p>
+<p class="dl-reg">No sign-up. If you publish or build with it,
+  <a href="{{ site.register_use_url }}">register your use</a> (optional) so it can be credited.</p>

@@ -13,7 +13,7 @@ require "json"
 #            (records per year and by month), what is in it (species and/or measurements, each with a
 #            CSV button for just that one, from this dataset)
 #   right    the map with View on map (Explorer) and See stations (Dataset Finder), Get the data, Cite
-#   bottom   About the data: creators (the lead marked), contact, credit, also archived at
+#   bottom   About the data: creators (none marked as lead), contact, credit, also archived at
 #
 # Everything is read from the release record. Taxa, silhouettes and measurement series are read from
 # disk (_data/*.json), as finder.rb does: species.rb and measurements.rb replace their site.data keys.
@@ -76,12 +76,13 @@ module CalCOFI
     end
 
     # under the name: the full name where it differs from the short one, then who it is from
-    def byline(r)
+    # `from: false` leaves "From <provider>, <PIs>" out: the Analysis line under the title already says who did the work
+    def byline(r, from = true)
       full = Fmt.present(r["dataset_name"])
       short = Fmt.present(r["dataset_name_short"])
       prov = r.dig("provider", "short") || r.dig("provider", "name")
       pis = r.dig("attribution", "pi_names") || []
-      [full && full != short ? full : nil, prov ? "From #{prov}#{pis.empty? ? '' : ", #{pis.join(', ')}"}" : nil].compact.join(" · ")
+      [full && full != short ? full : nil, prov && from ? "From #{prov}#{pis.empty? ? '' : ", #{pis.join(', ')}"}" : nil].compact.join(" · ")
     end
 
     # The band's numbers, as [value, label] pairs; a number the record does not carry is not drawn.
@@ -108,17 +109,16 @@ module CalCOFI
       out
     end
 
-    # Creators, as one sentence part: the record's creators[] (else its pi_names), the first PI
-    # marked "(lead)"; one organisation is said once at the end, several beside each name; two names
+    # Creators, as one sentence part: the record's creators[] (else its pi_names), no role marked (the
+    # first is the lead, which the Credit box leaves implied); one organisation is said once at the end, several beside each name; two names
     # joined by "and", three or more by commas and a final "and". nil when the record names nobody.
-    def creators(a)
+    def creators(a, org = nil)
       a ||= {}
-      lead = (a["pi_names"] || []).first
-      cs = (a["creators"] || []).map { |c| [c["name"], Fmt.present(c["organization"])] }
+      cs = (a["creators"] || []).map { |c| [c["name"], org || Fmt.present(c["organization"])] }
       cs = (a["pi_names"] || []).map { |n| [n, nil] } if cs.empty?
       return nil if cs.empty?
       orgs = cs.map(&:last).compact.uniq
-      names = cs.map { |n, o| "#{n}#{n == lead ? ' (lead)' : ''}#{orgs.size > 1 && o ? " (#{o})" : ''}" }
+      names = cs.map { |n, o| "#{n}#{orgs.size > 1 && o ? " (#{o})" : ''}" }
       list = names.size > 2 ? "#{names[0..-2].join(', ')} and #{names[-1]}" : names.join(" and ")
       orgs.size == 1 ? "#{list}, #{orgs[0]}" : list
     end
@@ -262,15 +262,125 @@ module CalCOFI
     # through the site's ONE display map (Fmt.units).
     def meas_rows(pairs)
       rows = (pairs || []).map do |m, s|
-        { "k" => m["key"], "lab" => m["short_label"] || m["label"], "units" => Fmt.units(m["units"]),
+        { "k" => m["key"], "mt" => Fmt.present(s["measurement_type"]) || m["key"], "lab" => m["short_label"] || m["label"], "units" => Fmt.units(m["units"]) || Fmt.present(s["units"]), "canon" => s["is_canonical"] != false,
           "cat" => m.dig("category", "name") || "Other", "order" => m.dig("category", "order").to_i,
           "n" => big(s["n_values"]), "n_raw" => s["n_values"].to_i, "years" => yrs(s["year_min"], s["year_max"]),
           "y0" => s["year_min"], "y1" => s["year_max"], "url" => "/measurements/#{m['slug']}/", "unified" => !!m["is_unified"],
+          # what it is: the dataset's own description of this measurement_type (the one in its measurement_type.csv), else the measurement's, when that says more than the name (Betty 2026-11-20, 2026-11-21)
+          "desc" => Fmt.present(s["description"]) || (d = m["description"].to_s.strip; d.empty? || d.casecmp?(m["short_label"].to_s) || d.casecmp?(m["label"].to_s) ? nil : d),
           "pick" => pickable?(m, s) }
       end
       rows.uniq! { |x| x["k"] }
       rows.group_by { |x| [x["order"], x["cat"]] }.sort_by { |(o, _), _| o }
           .map { |(_, c), rs| { "cat" => c, "rows" => rs.sort_by { |x| -x["n_raw"] } } }
+    end
+  end
+
+  module DatasetPage
+    module_function
+
+    # The rows of the Measurements table, one list for every kind of dataset (Betty 2026-11-21: "Measurements" on environmental and
+    # biology pages alike, named for the `measurement_type` column). Two sources, so nothing the dataset carries is left out:
+    #   * measurements.json (meas_rows): the measurements with values counted in the dataset, which bring the years, the page of
+    #     the measurement and a CSV of just that measurement;
+    #   * the release's own measurement_types (release_metadata.json): every value `measurement_type` can take in the dataset, with its units
+    #     and description. These are the rest of an environmental dataset's (the cast's wind, waves, Secchi depth ... in Bottle) and ALL of a
+    #     biology dataset's, which measurements.json does not cover.
+    # `measurements:` in _data/dataset_extras.yml (name, desc, units) replaces a row's words, or adds a row the release does not have.
+    # The cleaned (QC'd) measurements come first, the "Reported ..." pre-QC ones after them; within each, the ones every dataset shares
+    # (temperature, salinity ...), then the record's category order, then most values.
+    def table_rows(groups, listed, types = nil, key = nil)
+      env = groups.flat_map { |g| g["rows"] }
+      has_series = !env.empty?
+      rows = env.map { |x| x.merge("env" => true) }
+      seen = rows.map { |x| x["mt"] }
+      (types.is_a?(Hash) ? types : {}).each do |name, v|
+        next unless v.is_a?(Hash) && Array(v["datasets"]).include?(key) && !seen.include?(name)
+        rows << { "k" => name, "mt" => name, "lab" => nil, "units" => Fmt.units(v["units"]), "desc" => Fmt.present(v["description"]),
+                  "years" => nil, "url" => nil, "pick" => false, "env" => has_series, "canon" => v["is_canonical"] != false,
+                  "unified" => false, "order" => 99, "n_raw" => 0 }
+        seen << name
+      end
+      (listed || []).each do |x|
+        name = Fmt.present(x["name"]) or next
+        units = Fmt.units(x["units"]); desc = Fmt.present(x["desc"])
+        if (r = rows.find { |y| y["mt"] == name })
+          r["units"] = units if units
+          r["desc"] = desc if desc
+        else
+          rows << { "k" => name, "mt" => name, "lab" => nil, "units" => units, "desc" => desc, "years" => nil, "url" => nil,
+                    "pick" => false, "env" => has_series, "canon" => true, "unified" => false, "order" => 99, "n_raw" => 0 }
+        end
+      end
+      rows.each_with_index.sort_by { |x, i| [x["canon"] == false ? 1 : 0, x["unified"] ? 0 : 1, x["order"].to_i, -x["n_raw"].to_i, i] }.map(&:first)
+    end
+  end
+
+  # The Code tab of "Every endpoint", written for the dataset (Betty 2026-11-21): its name, its tables, its own measurement names, and a working
+  # example in R, Python and plain DuckDB, in place of the same two lines for every dataset. The first two measurements are the ones the Measurements
+  # table lists first; a dataset with a species table also filters on its most recorded taxon.
+  module DatasetCode
+    module_function
+
+    def vec(names) = names.size == 1 ? "\"#{names[0]}\"" : "c(#{names.map { |n| "\"#{n}\"" }.join(', ')})"
+    def sqlin(names) = names.map { |n| "'#{n}'" }.join(", ")
+
+    # -> the block that replaces "Packages", or nil when the dataset has no obs table
+    # (an obs row already carries its date, position and depth, so the examples need no join to `sample`)
+    def block(key, tables, mrows, sci, duck_url, release)
+      return nil unless tables.include?("obs")
+      # only measurements stored in obs: a per-cast value (pick false, with years) is in sample_measurement, so an obs query for it finds nothing
+      names = mrows.select { |m| m["pick"] || m["env"] == false }.first(2).map { |m| m["mt"] }.compact
+      return nil if names.empty?
+      tax = sci && tables.include?("taxon") ? sci : nil
+      rin = names.size == 1 ? "\"#{names[0]}\"" : "c(#{names.map { |n| "\"#{n}\"" }.join(', ')})"
+      r = +"library(dplyr)\ncon <- calcofi4r::cc_get_db()\ncalcofi4r::cc_cite(\"#{key}\")\n\n"
+      r << "tbl(con, \"obs\") |>\n  filter(dataset_key == \"#{key}\",\n         measurement_type %in% #{rin}) |>\n"
+      r << "  left_join(tbl(con, \"taxon\"), by = \"taxon_key\") |>\n  filter(scientific_name == \"#{tax}\") |>\n" if tax
+      r << "  select(datetime, latitude, longitude, depth_min_m,\n         #{tax ? 'scientific_name, ' : ''}measurement_type, measurement_value) |>\n  collect()"
+      py = +"import calcofi4py\ncon = calcofi4py.cc_get_db()\ncalcofi4py.cc_cite(\"#{key}\")\n\ncon.sql(\"\"\"\n"
+      py << "  SELECT o.datetime, o.latitude, o.longitude, o.depth_min_m,\n         #{tax ? 't.scientific_name, ' : ''}o.measurement_type, o.measurement_value\n  FROM obs o\n"
+      py << "  JOIN taxon t USING (taxon_key)\n" if tax
+      py << "  WHERE o.dataset_key = '#{key}'\n    AND o.measurement_type IN (#{sqlin(names)})\n"
+      py << "    AND t.scientific_name = '#{tax.to_s.gsub("'", "''")}'\n" if tax
+      py << "\"\"\").df()"
+      rows = [
+        { "label" => "R · calcofi4r", "label_url" => "https://calcofi.io/calcofi4r/", "url" => "https://calcofi.io/calcofi4r/", "code" => r },
+        { "label" => "Python · calcofi4py", "label_url" => "https://calcofi.io/calcofi4py/", "url" => "https://calcofi.io/calcofi4py/", "code" => py }
+      ]
+      if duck_url
+        sql = "-- DuckDB, nothing to install: this dataset's rows, read from the table above\n" \
+              "SELECT measurement_type, COUNT(*) AS n,\n       MIN(measurement_value) AS min, MAX(measurement_value) AS max\n" \
+              "FROM read_parquet('#{duck_url}')\nWHERE measurement_type IN (#{sqlin(names)})\nGROUP BY measurement_type;"
+        rows << { "label" => "SQL · DuckDB, no package", "code" => sql }
+      end
+      all = mrows.map { |m| m["mt"] }.compact
+      more = all.size - 8
+      { "title" => "Start with this dataset",
+        "lede" => "Each `obs` row carries its date, position and depth#{tax ? "; the example keeps one species (#{tax}), so swap in any from Species" : ""}. " \
+                  "Filter `measurement_type` on #{all.first(5).map { |m| "`#{m}`" }.join(', ')}#{all.size > 5 ? ", or #{all.size - 5} more in Measurements" : ''}.",
+        "rows" => rows }
+    end
+
+    # Replaces "Packages" with the dataset's own block, drops the generic "DuckDB, anywhere" block (its
+    # example is in ours) and the db-query snippet (the link is prefilled): the tab stays short (Betty 2026-11-21)
+    def apply!(access, n_endpoints_was, blk)
+      g = (access || []).find { |x| x["id"] == "code" }
+      return n_endpoints_was unless g && blk
+      i = (g["blocks"] || []).index { |b| b["title"] == "Packages" }
+      return n_endpoints_was unless i
+      cnt = ->(gr) { gr["blocks"].sum { |b| (b["rows"] || []).size + (b["matrix"] || []).size } }
+      was = cnt.call(g)
+      g["blocks"][i] = blk
+      g["blocks"].reject! { |b| b["title"] == "DuckDB, anywhere" }
+      g["blocks"].each do |b|
+        next unless b["title"] == "db-query, in the browser"
+        b["rows"] = b["rows"].map { |r| r.reject { |k, _| %w[code meta].include?(k) } }
+        b["rows"].each { |r| r["label"] = "Open in db-query ↗"; r["meta"] = "SQL in your browser, prefilled for this dataset" if r["label_url"] }
+        b.delete("lede")
+      end
+      g["n"] = cnt.call(g)
+      n_endpoints_was.to_i - was + g["n"]
     end
   end
 
@@ -317,9 +427,25 @@ module CalCOFI
       a = r["attribution"] || {}
       dist = r["distributions"] || []
       lede, rest = DatasetPage.lede_rest(@cat.plain(r["description_md"]), @cat.first_sentence(r["description_md"]))
+      # A dataset listed in _data/dataset_extras.yml (Betty 2026-11-20): "More about the record" is only what that file's
+      # `more:` gives, and the sentence under the title its `lede:` when the record's first sentence is cut short. Nothing
+      # else of the record's description reaches the page, so notes for the data team never do. An unlisted dataset
+      # keeps the record's own first sentence and the rest.
+      xe = DatasetExtras.for(@extras, key)
+      if xe["listed"]
+        lede = xe["lede"] || lede
+        rest = xe["more"]
+      end
       taxa = DatasetPage.taxa_rows(@by_ds[key], cov, @taxa, @media, namer: @namer)
       meas = DatasetPage.meas_rows(@series[key])
-      n_meas = meas.sum { |g| g["rows"].size }
+      mrows = DatasetPage.table_rows(meas, xe["measurements"], (@meta.is_a?(Hash) ? @meta["measurement_types"] : nil), key)
+      n_meas = mrows.size
+      # the Code tab written for this dataset: the DuckDB example reads the dataset's own obs table, whose address the tab already lists
+      acc = page.data["access"]
+      duck = (acc || []).find { |g| g["id"] == "code" }&.dig("blocks")&.find { |b| b["title"] == "DuckDB, anywhere" }&.dig("rows", 0)
+      duck_url = duck && duck["label"].to_s.start_with?("obs") ? duck["url"] : nil
+      blk = DatasetCode.block(key, (r["tables"] || []).map(&:to_s), mrows, taxa[:rows].first&.dig("sci"), duck_url, nil)
+      page.data["n_endpoints"] = DatasetCode.apply!(acc, page.data["n_endpoints"], blk)
       products = @cat.products_by_dataset[key]
       explore = products.find { |p| p["key"] == "explore" && p["dataset_url"] }
       finder = products.find { |p| p["key"] == "db-viz-station" && p["dataset_url"] }
@@ -327,7 +453,7 @@ module CalCOFI
       src = dist.find { |x| x["kind"] == "source" && Fmt.present(x["url"]) }
       {
         "lede" => lede, "rest" => rest,
-        "byline" => DatasetPage.byline(r),
+        "byline" => DatasetPage.byline(r, !(xe["analysis_lab"] || xe["analysis_who"])),
         "facts" => DatasetPage.facts(r, years_span: page.data["years_span"], depth: page.data["depth"],
                                         n_taxa: taxa[:rows].size, n_meas: n_meas),
         "years" => DatasetPage.years_svg(cov, @cat.strip_span), "months" => DatasetPage.months_html(cov),
@@ -336,25 +462,29 @@ module CalCOFI
         "taxa" => taxa[:rows].first(SHOWN), "sprite" => taxa[:sprite], "n_taxa" => taxa[:rows].size,
         # the rest, drawn by assets/dataset-page.js on "Show all" or a search (992 rows for Ichthyoplankton)
         "taxa_more" => taxa[:rows].size > SHOWN ? JSON.generate(taxa[:rows].drop(SHOWN).map { |x| x.values_at("k", "sci", "com", "rank", "n", "n_raw", "url", "sil", "pct") }) : nil,
-        "meas" => meas, "n_meas" => n_meas,
+        "mrows" => mrows, "n_meas" => n_meas,
         "stages" => cov["life_stages"] || [],
         # no Explorer link for a record with sampling events and no counted observation yet (as the old page)
         "explore" => explore && !@cat.samples_only?(r) ? explore["dataset_url"].gsub("{key}", key) : nil,
         "samples_only" => @cat.samples_only?(r),
         # the citation as the provider gives it; the page's own cite_text adds licence, DOI and acknowledgement,
         # which sit beside it here
-        "cite" => Fmt.present(a["citation_main"]),
+        "cite" => xe["citation_override"] || Fmt.present(a["citation_main"]),
         "finder" => finder && finder["dataset_url"].gsub("{key}", key),
-        "map_cap" => [cov["n_stations"].to_i.positive? ? "#{DatasetPage.num(cov['n_stations'])} stations sampled" : nil, Fmt.present(cov["spatial"])].compact.join(" · "),
+        # `map_note:` in _data/dataset_extras.yml says so where a dataset has no stations (samples pooled into regions) instead of counting them (Betty 2026-11-21)
+        "map_cap" => [xe["map_note"] || (cov["n_stations"].to_i.positive? ? "#{DatasetPage.num(cov['n_stations'])} stations sampled" : nil), Fmt.present(cov["spatial"])].compact.join(" · "),
         "erddap_obs" => erd.find { |x| x["url"].end_with?("/#{key}.html") }&.dig("url"),
         "erddap_sample" => erd.find { |x| x["url"].end_with?("/#{key}_sample.html") }&.dig("url"),
         # a portal's short name is the catalog's (Catalog#portal_short), not a second map kept here
-        "src" => src && src["url"], "src_portal" => src && src["portal"] != "other" ? @cat.portal_short(src["portal"]) : nil,
-        "archived" => (r["registrations"] || []).select { |x| x["status"] == "published" && x["portal"] != "erddap" && Fmt.present(x["url"]) }
+        "src" => xe["source_url"] || (src && src["url"]), "src_portal" => xe["source_url"] ? xe["source_label"] : (src && src["portal"] != "other" ? @cat.portal_short(src["portal"]) : nil),
+        "archived" => (r["registrations"] || []).select { |x| x["status"] == "published" && !%w[erddap ncei edi obis].include?(x["portal"]) && Fmt.present(x["url"]) } # the box is for the whole release (Zenodo); a portal's record of this one dataset (NCEI, EDI, OBIS) is under Archives & portals (Betty 2026-11-21)
                         .map { |x| { "name" => @cat.portal_short(x["portal"]), "url" => x["url"] } },
-        "creators" => DatasetPage.creators(a),
+        "creators" => DatasetPage.creators(a, xe["creator_org"]),
         "contact" => Fmt.present(a["contact"].to_s.sub(/\Amailto:/, "")),
-        "funding" => Fmt.present(a["funding"]), "ack" => Fmt.present(a["acknowledgement"]),
+        "data_provider" => (a["data_provider"].is_a?(Hash) ? a["data_provider"] : nil),
+        "funding" => Fmt.present(a["funding"]), "ack" => xe["ack_override"] || Fmt.present(a["acknowledgement"]),
+        "ack_only" => !xe["ack_override"].nil?, "licence_note" => xe["licence_note"], "sources_inline" => xe["sources_inline"], "refs" => xe["refs"],
+        "agreement_url" => xe["agreement_url"], "agreement_label" => xe["agreement_label"],
         "license" => Fmt.present(a["license_name"]) || Fmt.present(a["license"]), "license_url" => Fmt.present(a["license_url"]),
         "doi" => Fmt.present(a["doi"]),
         # Betty 2026-11-18: the words the record does not carry yet, the tile it sits in (the back link),

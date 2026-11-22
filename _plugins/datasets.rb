@@ -121,7 +121,58 @@ module CalCOFI
         ReleaseDoi.call(rec["release"], @site.data["release_catalog"], vers.is_a?(Hash) ? vers["versions"] : nil)
       end
     end
-    def datasets     = @datasets ||= visible(rec["datasets"])
+    def datasets     = @datasets ||= with_cite(visible(rec["datasets"]))
+    # A stopgap for a record the release gives no `citation_main` (Betty 2026-11-20): the citation typed in
+    # _data/dataset_extras.yml (`citation:`) stands in until the release carries its own, which then wins.
+    LICENCE_FILL = {
+      "CC-BY-4.0" => ["Creative Commons Attribution 4.0 International", "https://creativecommons.org/licenses/by/4.0/"],
+      "CC0-1.0" => ["Public domain (CC0) - Free use and reuse", "https://creativecommons.org/publicdomain/zero/1.0/"]
+    }.freeze
+    def with_cite(rows)
+      ex = site.data["dataset_extras"]
+      ex = ex.is_a?(Hash) ? (ex["datasets"] || {}) : {}
+      rows.map do |r|
+        c = Fmt.present(ex.dig(r["dataset_key"], "citation"))
+        a = r["attribution"] || {}
+        # `name:` in _data/dataset_extras.yml replaces the release's short name (Betty 2026-11-20), everywhere the page shows it
+        nm = Fmt.present(ex.dig(r["dataset_key"], "name"))
+        r = r.merge("dataset_name_short" => nm) if nm
+        # `ack_override:` replaces the release's acknowledgement, so the citation's "Acknowledgement:" sentence and the page's
+        # "Created by" box say the provider's own words (Betty 2026-11-20)
+        # `license: CC-BY-4.0` in _data/dataset_extras.yml fills in the licence where the release record states none (Betty 2026-11-21)
+        # (and CC0-1.0, the public-domain dedication, for the provider that states it: Betty 2026-11-21)
+        lic = LICENCE_FILL[ex.dig(r["dataset_key"], "license")]
+        if lic && Fmt.blank?(a["license"])
+          a = a.merge("license" => ex.dig(r["dataset_key"], "license"), "license_name" => lic[0], "license_url" => lic[1])
+          r = r.merge("attribution" => a)
+        end
+        # `creators:` in _data/dataset_extras.yml fills in the Credit box where the release names no creator (Betty 2026-11-21)
+        # `creators_override:` replaces whatever the release names (Betty 2026-11-21: Noelle Bowlin for the SWFSC egg and larva sets)
+        cro = ex.dig(r["dataset_key"], "creators_override")
+        cr = cro.is_a?(Array) ? cro : ex.dig(r["dataset_key"], "creators")
+        if cr.is_a?(Array) && (cro.is_a?(Array) || (a["creators"] || []).empty?)
+          list = cr.filter_map { |x| x.is_a?(Hash) && Fmt.present(x["name"]) ? { "name" => x["name"], "organization" => Fmt.present(x["organization"]), "orcid" => nil, "email" => Fmt.present(x["email"]), "role" => "lead" } : nil }
+          unless list.empty?
+            a = a.merge("creators" => list)
+            a = a.merge("contact" => list.first["email"]) if Fmt.blank?(a["contact"]) && list.first["email"]
+            r = r.merge("attribution" => a)
+          end
+        end
+        # `data_provider:` (name, email) is the person at the provider who holds the data; shown under Credit
+        dpv = ex.dig(r["dataset_key"], "data_provider")
+        if dpv.is_a?(Hash) && Fmt.present(dpv["name"])
+          a = a.merge("data_provider" => { "name" => dpv["name"], "email" => Fmt.present(dpv["email"]) })
+          r = r.merge("attribution" => a)
+        end
+        ak = Fmt.present(ex.dig(r["dataset_key"], "ack_override"))
+        if ak
+          a = a.merge("acknowledgement" => ak, "ack_in_cite" => false)
+          r = r.merge("attribution" => a)
+        end
+        next r unless c && Fmt.blank?(a["citation_main"])
+        r.merge("attribution" => a.merge("citation_main" => c))
+      end
+    end
     def holdings     = @holdings ||= visible(rec["holdings"])
     # `visibility: internal` keeps a record off the public site; a private preview
     # (scripts/build_preview.sh, `preview: true`) exists to show exactly that record
@@ -1360,8 +1411,7 @@ module CalCOFI
                                   "the app opens at its own start; pick the dataset there" }
       end
       groups << { "id" => "explore", "title" => "Explore",
-                  "lede" => "Apps that read this dataset from the release. The icons after a name are " \
-                            "the app’s lenses — the spatial grain it shows the data at.",
+                  "lede" => "Apps that show this dataset.",
                   "blocks" => [{ "rows" => rows }] } unless rows.empty?
 
       # ── Get the data ─────────────────────────────────────────────────────────
@@ -1371,14 +1421,12 @@ module CalCOFI
         zrows = (dl["main"] + dl["other"]).select { |o| o["written"] }.map do |o|
           { "label" => "#{o['label']} (zip)", "label_url" => o["url"], "url" => o["url"],
             "label_title" => o["about"],
-            "meta" => [o["size"], o["inside"]].compact.join(" · "), "hash" => o["sha256"],
+            "meta" => o["size"], "hash" => o["sha256"], # what is inside is said once, in the block lede (Betty 2026-11-21)
             "note" => o["note"], "note_summary" => "too many rows for a spreadsheet" }
         end
         blocks << { "title" => "Download as a zip",
-                    "lede" => "One zip per format, each with the data tables, #{Downloads::INSIDE}" \
-                              "#{dl['version'] ? " — verified against release #{dl['version']}" : ''}" \
-                              "#{dl['since'] ? ", unchanged since #{dl['since']}" : ''}. Excel is offered only " \
-                              "where every table fits a workbook.",
+                    "lede" => "Each zip has the data tables, readme, citation, licence and column dictionary" \
+                              "#{dl['version'] ? " (#{dl['version']})" : ''}.",
                     "rows" => zrows }
       end
       objs = ((d["objects"] || []) + per_cast_objects(d)).map do |o|
@@ -1402,11 +1450,7 @@ module CalCOFI
         end
       end
       blocks << { "title" => "Tables from the release (Parquet)",
-                  "lede" => "The release’s own tables, as the parquet objects it is frozen from — the " \
-                            "same bytes every app and package below reads. A table this dataset " \
-                            "shares with others holds every dataset’s rows, so filter on " \
-                            "`dataset_key`; a partition holds only this dataset’s. *since* is the " \
-                            "release whose rows these are: an unchanged table keeps its object.",
+                  "lede" => "The release’s tables as parquet. A table shared with other datasets holds all their rows, so filter on `dataset_key`.",
                   "layout" => "table", "rows" => objs } unless objs.empty?
 
       nc = dist.select { |x| x["format"] == "netcdf" }.map do |x|
@@ -1437,10 +1481,7 @@ module CalCOFI
             "sunset" => ERDDAP_SUNSET }
         end
         blocks << { "title" => "ERDDAP (erddap.calcofi.io)",
-                    "lede" => "One ERDDAP dataset per grain. Its *subset form* picks variables, years and " \
-                              "an area and returns CSV, JSON, netCDF and more; ERDDAP refuses a request for a " \
-                              "whole table, so for everything take a zip or the parquet above. For netCDF " \
-                              "take the CF file above.",
+                    "lede" => "One ERDDAP dataset per grain. Pick variables, years and an area; for everything, take a zip or the parquet.",
                     "matrix" => matrix, "gloss" => gloss, "legacy" => legacy }
       end
 
@@ -1455,7 +1496,7 @@ module CalCOFI
                   "rows" => src } unless src.empty?
 
       groups << { "id" => "data", "title" => "Get the data",
-                  "lede" => "Every way to have the bytes, by source. Nothing here asks you to register first.",
+                  "lede" => "Download or query the data, by source.",
                   "blocks" => blocks } unless blocks.empty?
 
       # ── Code ─────────────────────────────────────────────────────────────────
@@ -1463,7 +1504,7 @@ module CalCOFI
       # other row of that table can stand in for it.
       code_blocks = []
       code_blocks << { "title" => "Packages", "layout" => "pair",
-                       "lede" => "The whole release, pinned to a version, with the citation one call away.",
+                       "lede" => "The whole release, pinned to a version.",
                        "rows" => [
         { "label" => "R · calcofi4r", "label_url" => "https://calcofi.io/calcofi4r/", "url" => "https://calcofi.io/calcofi4r/",
           "code" => "con <- calcofi4r::cc_get_db()\ncalcofi4r::cc_cite(\"#{key}\")" },
@@ -1473,12 +1514,8 @@ module CalCOFI
       if obj && obj["url"]
         code_blocks << {
           "title" => "DuckDB, anywhere",
-          "lede" => "No CalCOFI package needed: each table above is a plain parquet object, readable " \
-                    "by any DuckDB (or Arrow, pandas, Spark) from its URL. The path carries a content " \
-                    "hash — a table whose rows did not change between releases keeps the same object, " \
-                    "so nothing unchanged is stored or downloaded twice. Swap in any table above; one " \
-                    "shared with other datasets needs `WHERE dataset_key = '#{key}'`. Every object of " \
-                    "every release is listed in [db-schema](https://calcofi.io/db-schema/?v=#{release['version']}).",
+          "lede" => "No package needed: any DuckDB, Arrow, pandas or Spark reads these parquet files from their URL. " \
+                    "A shared table needs `WHERE dataset_key = '#{key}'`. All tables: [db-schema](https://calcofi.io/db-schema/?v=#{release['version']}).",
           "rows" => ([obj] + objs.select { |o| o["label"] == "sample_measurement" && !o.equal?(obj) }).map do |o|
             w = o["shared"] ? "\nWHERE dataset_key = '#{key}'" : ""
             { "label" => "#{o['label']} · #{o['scope']}", "url" => o["url"],
@@ -1498,13 +1535,11 @@ module CalCOFI
                        "label_url" => "https://calcofi.io/db-query/##{saved}",
                        "url" => "https://calcofi.io/db-query/##{saved}" }) if saved
         code_blocks << { "title" => "db-query, in the browser",
-                         "lede" => "`__TBL:#{tbl}__` is db-query’s name for the pinned release’s `#{tbl}` " \
-                                   "object — the hashed path above, resolved for you — so the same SQL " \
-                                   "keeps working when a release changes the object.",
+                         "lede" => "`__TBL:#{tbl}__` is the pinned release’s `#{tbl}` table, so the SQL keeps working when a release changes it.",
                          "rows" => rows }
       end
       groups << { "id" => "code", "title" => "Code",
-                  "lede" => "The same release, from a script or a browser SQL shell.",
+                  "lede" => "From a script or a browser SQL shell.",
                   "blocks" => code_blocks }
 
       # ── Metadata records ─────────────────────────────────────────────────────
@@ -1539,8 +1574,8 @@ module CalCOFI
       meta_rows << { "label" => "STAC collection", "label_url" => stac_browser_url(key), "url" => stac_json,
                      "label_title" => "open in the STAC browser",
                      "meta" => "one Collection per dataset, an Item per release" } if stac_json
-      groups << { "id" => "metadata", "title" => "Metadata records",
-                  "lede" => "Records about the data, in the standards each portal harvests.",
+      groups << { "id" => "metadata", "title" => "Metadata",
+                  "lede" => "Records about the data, in the standards portals harvest.",
                   "blocks" => [{ "layout" => "pair", "rows" => meta_rows }] }
 
       # ── Archives & portals: a table, with the policy stated above it ─────────
@@ -1591,11 +1626,8 @@ module CalCOFI
       order = %w[archive aggregator publisher service portal catalog]
       rows = by_portal.values.sort_by { |r| [order.index(r["role"]) || 9, r["label"].to_s] }
       rows.each { |r| r["chips"] = [status_chip(r["status"])].compact }
-      groups << { "id" => "archives", "title" => "Archives & portals",
-                  "lede" => "Where this dataset is registered outside calcofi.io: each portal’s role, " \
-                            "what it is for, the dataset’s status there and the identifier it is known by. " \
-                            "The policy — which portal is the archive of record and why — is in " \
-                            "[Portals](https://calcofi.io/docs/portals.html).",
+      groups << { "id" => "archives", "title" => "Archives",
+                  "lede" => "Where this dataset is registered outside calcofi.io. Which portal is the archive of record: [Portals](https://calcofi.io/docs/portals.html).",
                   "policy" => Fmt.present(r_policy(d)),
                   "blocks" => [{ "layout" => "portals", "rows" => rows }] } unless rows.empty?
       groups
@@ -1954,7 +1986,7 @@ module CalCOFI
         lines << ltxt
       end
       lines << "DOI: https://doi.org/#{a['doi']}" if Fmt.present(a["doi"])
-      lines << "Acknowledgement: #{a['acknowledgement']}" if Fmt.present(a["acknowledgement"])
+      lines << "Acknowledgement: #{a['acknowledgement']}" if Fmt.present(a["acknowledgement"]) && a["ack_in_cite"] != false
       lines.join("\n")
     end
 
@@ -1963,7 +1995,7 @@ module CalCOFI
       cit = Fmt.present(a["citation_main"])
       note = [
         license_text(a),
-        (Fmt.present(a["acknowledgement"]) ? "Acknowledgement: #{a['acknowledgement']}" : nil)
+        (Fmt.present(a["acknowledgement"]) && a["ack_in_cite"] != false ? "Acknowledgement: #{a['acknowledgement']}" : nil)
       ].compact.join("; ")
       fields = {
         "title"        => r["dataset_name"] || r["dataset_key"],

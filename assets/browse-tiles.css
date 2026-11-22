@@ -26,7 +26,7 @@
 .bt-ft span { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
 
 /* one category open */
-.bt-cats .bt-cat + .bt-cat { margin-top: 48px; }
+.bt-cats .bt-cat:not([hidden]) ~ .bt-cat:not([hidden]) { margin-top: 48px; }   /* between two categories that are both drawn (no JavaScript); when one is open the others are hidden and it must not carry the gap (Betty 2026-11-20: space above Carbonate Chemistry, not CTD & Bottle) */
 .bt-cat { display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 28px; align-items: start; scroll-margin-top: calc(var(--header-h, 72px) + 16px); }
 .bt-rail { display: flex; flex-direction: column; gap: 2px; position: sticky; top: calc(var(--header-h, 72px) + 14px); }
 .bt-back { padding: 4px 10px 10px; font-size: 14.5px; font-weight: 700; color: var(--accent); text-decoration: none; }
@@ -103,7 +103,7 @@
 
 /* the view switch: a two-button switch on the catalogs line (Datasets · Species · Measurements), right-aligned, so it
    takes no line of its own (Betty 2026-11-18). The count it carried is on each realm's heading already. */
-.ds-browse .cf-crumb { min-height: 42px; align-items: center; padding-right: 260px; }
+.ds-browse .cf-crumb { min-height: 42px; align-items: flex-end; padding-right: 260px; }
 .ds-browse .bd-views { position: static; }
 .ds-browse .bd-views > .tabrow { position: absolute; top: calc(var(--space, 8px) * 3); right: var(--gutter-r, 16px); z-index: 2; margin: 0;
   display: flex; gap: 2px; padding: 4px; border: 0; border-radius: 11px; background: color-mix(in srgb, var(--fg) 7%, var(--bg)); box-shadow: none; }
@@ -194,3 +194,87 @@
 
 /* no rule under the group headings (Betty 2026-11-19) */
 .bt-rh { border-bottom: 0; padding-bottom: 0; margin-bottom: 14px; }
+
+
+/* Category tiles (Betty, 2026-11-19): white with a subtle light-slate outline (#d5dce6) at rest; the icon in a pale slate circle
+   (#eef2f7) in the slate ink (#3a4b64). Outline darker at rest (#8796ac, Betty 2026-11-21) and softer on hover (#b7c2d2) with the lift shadow; focus keeps the dark outline (#3a4b64). No fill, the words stay
+   as they are. Light theme only; the dark theme keeps its own tiles. */
+:root:not([data-theme="dark"]) main .bt-tile { background: #ffffff; border: 1.5px solid #8796ac; box-shadow: 0 1px 3px rgba(18,43,73,.06); color: #182b49; transition: border-color .15s, box-shadow .15s; }
+:root:not([data-theme="dark"]) main .bt-ic { background: #eef2f7; }
+:root:not([data-theme="dark"]) main .bt-ic .cc-i { color: #3a4b64; opacity: 1; }
+:root:not([data-theme="dark"]) main .bt-line { color: #3d5172; }
+:root:not([data-theme="dark"]) main .bt-ft { border-top-color: #e3e8ef; }
+:root:not([data-theme="dark"]) main .bt-ft b { color: #00629b; } :root:not([data-theme="dark"]) main .bt-ft span { color: #3d5172; }
+:root:not([data-theme="dark"]) main .bt-tile:hover { background: #ffffff; border-color: #b7c2d2; color: #182b49; box-shadow: 0 6px 18px rgba(18,43,73,.12); }
+:root:not([data-theme="dark"]) main .bt-tile:focus-visible { background: #ffffff; border-color: #3a4b64; color: #182b49; box-shadow: 0 6px 18px rgba(18,43,73,.12); }
+
+/* an opened category's fuller description, under its one line (Betty 2026-11-19; _data/dataset_extras.yml `about`) */
+.bt-ch .bt-about { max-width: 860px; margin: 8px 0 4px; font-size: 15.5px; line-height: 1.55; color: color-mix(in srgb, var(--fg) 82%, var(--bg)); }
+
+/* no catalogs row (Betty 2026-11-19): the By category / List switch on its own short line above the content, at the right,
+   so it never sits on the preview's map */
+.ds-browse .bd-views > .tabrow { position: static; width: max-content; margin: 0 0 8px auto; }   /* at the RIGHT (Betty 2026-11-19, later) */
+main.calm-page.ds-browse { padding-top: 8px; }   /* everything a little closer under the search band */
+/* with a category open the switch is hidden (Betty 2026-11-19): "← All categories" goes back to the tiles, and the List is
+   on the main page (and a search opens it) */
+.ds-browse .bd-views:has(#ds-view-grid:not([hidden])):has(.bd-find:not(.bt-home-on)) > .tabrow { display: none; }
+
+/* the preview's map: one height for every dataset (Betty 2026-11-19: Hydrographic Bottle's ran tall); a tall map is cut
+   at the top and bottom, centred on the stations */
+.bd-pv-map { height: 210px; overflow: hidden; position: relative; }
+.bd-pv-map .cc-map { position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 100%; height: auto; max-height: none; }
+
+/* a dataset card: its years large at the top right, and Full details at the bottom right once it is picked (Betty 2026-11-19) */
+.bt-ry { display: flex; flex-direction: column; align-items: center; line-height: 1.1; }
+.bt-ry b { font-size: 20px; font-weight: 700; color: var(--fg); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.bt-ry small { margin-top: 2px; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.bt-more { display: none; margin-top: auto; align-self: flex-end; white-space: nowrap; font-size: 14.5px; font-weight: 700; color: var(--accent); text-decoration: none; }
+.bt-row.on .bt-more { display: inline-flex; gap: 4px; }   /* only on the card that is picked (Betty 2026-11-19) */
+.bt-more:hover { color: color-mix(in srgb, var(--accent) 75%, var(--fg)); }
+
+/* the breadcrumb at the top of an open category (Betty 2026-11-19): Datasets › Environment › CTD & Bottle */
+.bt-crumb { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; padding: 0 0 6px; font-size: 15px; color: var(--muted); }
+.bt-crumb a { font-weight: 600; color: var(--accent); text-decoration: none; }
+.bt-crumb a:hover { color: color-mix(in srgb, var(--accent) 75%, var(--fg)); }
+.bt-crumb svg { flex: none; color: var(--muted); }
+.bt-crumb [aria-current] { font-weight: 600; color: var(--fg); }
+.bt-realm { scroll-margin-top: calc(var(--header-h, 72px) + 16px); }
+
+/* a dataset card, option A (Betty 2026-11-20): text on the left, the method picture on the right, and a footer across the
+   bottom with the years, whether collection goes on, and Open dataset →. The picture is drawn in colour: its outline
+   follows the text colour, the fills follow the site's accent and background. */
+.cc-method .mi-a { fill: var(--accent); }
+.cc-method .mi-w { fill: color-mix(in srgb, var(--accent) 38%, var(--bg)); }
+.cc-method .mi-p { fill: color-mix(in srgb, var(--accent) 15%, var(--bg)); }
+.cc-method .mi-f { fill: var(--bg); }
+.cc-method .mi-s { stroke: var(--accent); }
+.bt-cat .bt-row { --rp: 24px; grid-template-columns: minmax(0, 1fr) 112px; column-gap: 24px; row-gap: 0; padding: 22px var(--rp) 0; overflow: hidden; }
+.bt-cat .bt-rs { align-self: start; gap: 8px; }
+.bt-cat .bt-mi { width: 96px; height: 96px; border-radius: 20px; background: color-mix(in srgb, var(--fg) 6%, var(--bg)); color: var(--fg); }
+.bt-cat .bt-row.on .bt-mi { background: color-mix(in srgb, var(--fg) 6%, var(--bg)); }
+.bt-ml { font-size: 14px; line-height: 1.25; color: var(--muted); text-align: center; }
+.bt-rf { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px 18px; flex-wrap: wrap; margin: 18px calc(-1 * var(--rp)) 0; padding: 13px var(--rp); border-top: 1px solid var(--border); }
+.bt-rf .bt-ry { display: inline; }
+.bt-rf .bt-ry b { font-size: 16px; }
+.bt-rf .bt-st { align-self: auto; font-size: 14.5px; }
+.bt-rf .bt-st i { width: 8px; height: 8px; }
+/* "Open dataset" only on the open card, the one shown in the preview: the first when the category opens, then the one clicked (Betty 2026-11-20) */
+.bt-cat .bt-more { display: none; }
+.bt-cat .bt-row.on .bt-more { display: inline-flex; margin: 0 0 0 auto; align-self: auto; }
+/* as a solid button, so it is the obvious next step (Betty 2026-11-20); the negative margin keeps the footer the height it was */
+.bt-cat .bt-row.on .bt-more { margin: -2px 0 -2px auto; padding: 4px 14px; border-radius: 7px; background: var(--accent); color: #fff; font-size: 14.5px; line-height: 1.3; }
+.bt-cat .bt-row.on .bt-more:hover { background: color-mix(in srgb, var(--accent) 80%, #000); color: #fff; }
+.bt-cat .bt-row.on .bt-more:focus-visible { outline: 2px solid #ffcd00; outline-offset: 2px; }
+@media (max-width: 760px) { .bt-cat .bt-row { grid-template-columns: minmax(0, 1fr); --rp: 18px; } .bt-cat .bt-rs { flex-direction: row; align-items: center; gap: 12px; order: 2; margin-top: 14px; } .bt-cat .bt-mi { width: 72px; height: 72px; border-radius: 16px; } .bt-cat .bt-mi svg { width: 48px; height: 48px; } .bt-ml { text-align: left; } }
+
+/* Betty 2026-11-20: the first row's heading (Environment, with its "3 categories · 7 datasets") rides up beside the By category / List
+   switch, filling the empty space to its left, and the tiles follow it up. The count stops short of the switch (about 190 px). */
+@media (min-width: 900px) {
+  .ds-browse .bd-find.bt-home-on .bt-home > .bt-realm:first-child { margin-top: -47px; }
+  .ds-browse .bd-find.bt-home-on .bt-home > .bt-realm:first-child .bt-rh { margin-right: 190px; margin-bottom: 22px; }
+}
+/* with four tile columns (wider than 1200 px) the heading stops at the right edge of the third tile, the last one in this row, so "3 categories · 7 datasets"
+   sits above the edge of Underway Weather (Betty 2026-11-20); below that the tiles run the full width and the count stays clear of the switch */
+@media (min-width: 1201px) {
+  .ds-browse .bd-find.bt-home-on .bt-home > .bt-realm:first-child .bt-rh { margin-right: 0; width: calc(75% - 3.5px); }
+}

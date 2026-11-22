@@ -42,11 +42,11 @@ module CalCOFI
 
     FORMATS = {
       "csv"     => { "label" => "CSV",
-                     "about" => "Plain tables that open in Excel, Google Sheets, R or Python. Start here." },
+                     "about" => "" },
       "xlsx"    => { "label" => "Excel",
-                     "about" => "One workbook with a sheet per table, ready to open in Excel." },
+                     "about" => "" },
       "parquet" => { "label" => "Parquet",
-                     "about" => "Compact, typed columns for R, Python, DuckDB or Arrow: the quickest to load when a table is large." }
+                     "about" => "Typed columns for R, Python, DuckDB or Arrow; fastest for big tables." }
     }.freeze
 
     # what travels with the tables in every zip (the manifest's contract), in plain words
@@ -119,15 +119,15 @@ module CalCOFI
       when "custom"
         { "kind" => "custom", "label" => "Provider terms",
           "text" => "The provider’s own terms apply#{url ? '' : ' (the record carries no link to them)'}. " \
-                    "Read them before you reuse or redistribute the data.",
+                    "Read them before you reuse the data.",
           "url" => url, "url_label" => "Read the provider’s terms" }
       when "CC-BY-4.0"
         { "kind" => "standard", "label" => "CC BY 4.0",
-          "text" => "CC BY 4.0 — free to reuse and share, with credit. The zip says how to cite it.",
+          "text" => "CC BY 4.0: free to reuse with credit.",
           "url" => url, "url_label" => "The licence" }
       when "CC0-1.0"
         { "kind" => "public-domain", "label" => "CC0 · public domain",
-          "text" => "CC0, public domain — no conditions. A citation is still appreciated; the zip says how.",
+          "text" => "CC0, public domain: no conditions. Citing is appreciated.",
           "url" => url, "url_label" => "The dedication" }
       else
         name = a["license_name"].to_s.strip
@@ -160,6 +160,7 @@ module CalCOFI
             "checked_version" => b["checked_version"], "since" => b["since"],
             "size" => b["bytes"] ? bytes.call(b["bytes"]) : nil, "sha256" => b["sha256"],
             "n_tables" => n.positive? ? n : nil,
+            "tables" => (b["rows"] || {}).keys,
             "inside" => "#{n.positive? ? "#{n} data table#{'s' unless n == 1}" : 'the data tables'}, #{INSIDE}",
             "note" => present?(b["note"]) ? b["note"] : nil }
         else

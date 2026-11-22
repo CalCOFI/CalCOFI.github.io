@@ -41,6 +41,11 @@
 .dl-inside { color: var(--muted); }
 .dl-note { color: var(--muted); }
 .dl-opt.is-off .dl-note { margin-top: 4px; }
+/* a format's button and its "Inside:" line share a row (wrapping under the button when narrow);
+   a note, like the big-table warning, takes the full row beneath */
+.dl-opt:not(.is-off) { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+.dl-opt:not(.is-off) > .dl-about { flex: 1 1 14em; margin: 0; }
+.dl-opt:not(.is-off) > .dl-note { flex: 1 0 100%; margin: 0; }
 .dl-off { font-weight: 700; font-size: 14px; color: var(--muted); }
 .dl-off-t { color: var(--fg); text-transform: uppercase; letter-spacing: 0.08em; }
 .dl-part { margin: 14px 0 0; font-size: 15px; line-height: 1.4; }
