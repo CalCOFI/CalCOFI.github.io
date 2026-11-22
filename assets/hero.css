@@ -287,9 +287,9 @@ body:has(.hero) .cc-wave-auto { --cc-wave-slim-h: 22px; --cc-wave-h: 13px; }
   .hero-in, .hero-in-row { zoom: .9; }
   :root:not([data-theme="dark"]) .hero-start::before { width: 200vw; }
 }
-/* in a window 720 px tall or less the heading sits 8 px down, not 40, so the scrim's fade is short there: full strength by the heading (the long fade left it at 1.6:1 at 901 x 700) and no wash over the words above */
+/* in a window 720 px tall or less the heading sits 8 px down, not 40, so the scrim's fade is short there, and darker (.6): the heading is over pale sky at 901 x 700 (white on it was 2.7:1 at .44), and no wash over the words above */
 @media (min-width: 901px) and (max-height: 720px) {
-  :root:not([data-theme="dark"]) .hero-start::before { background: linear-gradient(180deg, rgba(18, 63, 104, 0) 0, rgba(18, 63, 104, .44) 10px, rgba(18, 63, 104, .44) 100%); }
+  :root:not([data-theme="dark"]) .hero-start::before { background: linear-gradient(180deg, rgba(18, 63, 104, 0) 0, rgba(18, 63, 104, .6) 8px, rgba(18, 63, 104, .6) 100%); }
 }
 
 /* the strip under the cards (Contribute · Cite the data · Statewide monitoring) sat ~27 px above the hero's edge,
