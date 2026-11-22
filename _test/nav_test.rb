@@ -71,8 +71,8 @@ class NavTest < Minitest::Test
   def test_query_is_its_own_address
     w = resolve([{ "id" => "query", "title" => "Query", "query" => "" }]).first
     assert_equal ["https://calcofi.io/query/", "https://calcofi.io/query/"], w.values_at("path", "url")
-    get = committed.find { |x| x["id"] == "data" }["menu"].find { |c| c["title"] == "Get it" }["items"]
-    assert_equal ["Query Builder", "https://calcofi.io/query/"], get.first.values_at("title", "url"), "the committed line: first under Data ▾ › Get it"
+    get = committed.find { |x| x["id"] == "data" }["menu"].find { |c| c["title"] == "Get the data" }["items"]
+    assert_equal ["Query Builder", "https://calcofi.io/query/"], get.first.values_at("title", "url"), "the committed line: first under Data ▾ › Get the data"
     assert_nil committed.find { |x| x["id"] == "query" }, "Query is not also a word of the bar (Ben, 2026-11-17)"
   end
 
@@ -142,7 +142,7 @@ class NavTest < Minitest::Test
                  learn["menu"][0]["items"].map { |i| i["url"] }
     assert_equal [["Tutorials", "https://calcofi.io/news/?type=tutorial"], ["Stories", "https://calcofi.io/news/?type=story"], ["All news", "https://calcofi.io/news/"]],
                  learn["menu"][1]["items"].map { |i| [i["title"], i["url"]] }
-    assert_equal "right", learn["align"]
+    assert_equal "center", learn["align"]
     assert_equal %w[news stories tutorials], learn["here"]
     assert_empty ws.map { |w| w["id"] } & %w[docs faq news cite], "none of them is also a word of the bar"
   end
