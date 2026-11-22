@@ -153,6 +153,12 @@
      same link.
    · the strip is absolutely placed for one line; wrapped to two or three it rode up over the last
      card. It joins the flow, under the cards. */
+/* under 900 px in the dark theme the heading is white on the pale water at the surface (2.35:1 at 820 x 900): a soft
+   navy plate behind it (white on the palest water behind it is then 5.7:1) */
+@media (max-width: 900px) {
+  [data-theme="dark"] .hero .hero-h2 { position: relative; isolation: isolate; }
+  [data-theme="dark"] .hero .hero-h2::before { content: ""; position: absolute; z-index: -1; pointer-events: none; inset: -6px -16px -4px -16px; border-radius: 12px; background: rgba(10, 22, 42, .45); }
+}
 @media (max-width: 900px) {
   /* Under 900 px the hero is as tall as what it holds, not as the window, and the cards follow the numbers
      directly. The heading then always sits at the sea surface or above it (the picture's surface is at 49% of
@@ -161,6 +167,8 @@
      to the deep (ink 3:1), depending on the window's height. */
   .hero { min-height: 0; }
   .hero-start { margin-top: 0; }
+  /* the heading sat on the sea-surface line; 64 px of room above it moves it about 14 px below the line (Betty 2026-11-21) */
+  .hero .hero-start { padding-top: 64px; }
   .hero .hero-h2 { color: var(--h-ink); }
   .hero-sea .hero-tag { display: none; }
   .hero-start { margin-bottom: 20px; }
@@ -278,6 +286,10 @@ body:has(.hero) .cc-wave-auto { --cc-wave-slim-h: 22px; --cc-wave-h: 13px; }
 @media (min-width: 901px) {
   .hero-in, .hero-in-row { zoom: .9; }
   :root:not([data-theme="dark"]) .hero-start::before { width: 200vw; }
+}
+/* in a window 720 px tall or less the heading sits 8 px down, not 40, so the scrim's fade is short there: full strength by the heading (the long fade left it at 1.6:1 at 901 x 700) and no wash over the words above */
+@media (min-width: 901px) and (max-height: 720px) {
+  :root:not([data-theme="dark"]) .hero-start::before { background: linear-gradient(180deg, rgba(18, 63, 104, 0) 0, rgba(18, 63, 104, .44) 10px, rgba(18, 63, 104, .44) 100%); }
 }
 
 /* the strip under the cards (Contribute · Cite the data · Statewide monitoring) sat ~27 px above the hero's edge,
