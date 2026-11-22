@@ -87,11 +87,6 @@ datasets:
     analysis: Visual microscopy (CalCOFI, NOAA SWFSC)   # method to confirm with SWFSC
     method: net
     status: ongoing        # Betty’s CalOOS list: ongoing
-    citation_override: "Southwest Fisheries Science Center, 2026: CalCOFI Database. NOAA National Centers for Environmental Information, https://www.fisheries.noaa.gov/inport/item/20691."
-    license: CC0-1.0   # Betty 2026-11-21: public domain (CC0), free use and reuse (the release states none here)
-    creators_override:   # Betty 2026-11-21
-      - name: Noelle Bowlin
-        organization: NOAA SWFSC
     data_provider:       # Betty 2026-11-21
       name: Ed Weber
       email: ed.weber@noaa.gov
@@ -102,11 +97,6 @@ datasets:
     analysis: Visual microscopy (CalCOFI, NOAA SWFSC)
     method: pump
     status: ongoing        # "Sampling is ongoing" (record description)
-    citation: "Southwest Fisheries Science Center, 2026: Continuous Underway Fish-Egg Sampler (CUFES) Database. NOAA National Centers for Environmental Information, https://www.fisheries.noaa.gov/inport/item/20692."
-    license: CC0-1.0   # Betty 2026-11-21: same as ichthyoplankton
-    creators_override:   # Betty 2026-11-21
-      - name: Noelle Bowlin
-        organization: NOAA SWFSC
     data_provider:       # Betty 2026-11-21
       name: Ed Weber
       email: ed.weber@noaa.gov
@@ -181,10 +171,6 @@ datasets:
     source_label: UC San Diego Library
     method: net
     status: archived        # Betty’s CalOOS list: archived
-    data_provider:       # Betty 2026-11-21
-      name: Christy Juhasz
-      organization: California Department of Fish and Wildlife (CDFW)
-      email: christy.juhasz@wildlife.ca.gov
   cce-lter_picoplankton-bacteria:
     more: "Seawater is collected from Niskin bottles at 3–8 depths per station; cells are fixed on board with paraformaldehyde, stained with a DNA-specific dye and counted on an Altra flow cytometer."
     plain: Counts of the Smallest Phytoplankton and Bacteria
@@ -234,10 +220,6 @@ datasets:
     collection: 10-liter Niskin bottles on a 24-place CTD-Rosette
     analysis: Laboratory analyses of water samples (CalCOFI)
     who: Rasmus Swalethorp
-    creators:          # the release names no creator for this dataset (Betty 2026-11-21); as it does for CTD Cast Files
-      - name: Rasmus Swalethorp
-        organization: UCSD SIO
-        email: rswalethorp@ucsd.edu
     blurb: Water-sample measurements from CalCOFI cruises since 1949 — temperature, salinity, oxygen, chlorophyll, nutrients and 14C primary productivity, each with a quality code.   # from the provider’s Bottle Database page (Betty 2026-11-20)
     method: bottle
     status: ongoing        # Betty’s CalOOS list: ongoing
@@ -251,9 +233,7 @@ datasets:
       depth_max_m: "Depth of the bottle, in metres (Depthm in the original bottle file)."
       measurement_type: "Which bottle quantity the row is, for example btl_temperature, salinity_btl or btl_nitrate. Each is described, with its units, under Measurements below and in measurement_type.csv."
       sample_type: "What one row of sample.csv is. In this dataset, a bottle."
-    citation_override: "Scripps Institution of Oceanography, UC San Diego, 2026. CalCOFI Hydrographic CTD Bottle Data. https://calcofi.org/data/oceanographic-data/bottle-database/"   # as the provider gives it (Betty 2026-11-20)
   calcofi_ctd-cast:
-    license: CC-BY-4.0   # Betty 2026-11-21: CC BY 4.0 for Rasmus Swalethorp’s CTD and bottle datasets (the release states none here)
     more: "The CTD is a Sea-Bird SBE 911plus, surrounded by a rosette of 24 10-liter Niskin bottles. Final 1 m-binned data for 1993–2002 come from the SIO-CalCOFI Technical Group’s own archive (J. Wilkinson), which covers the decade calcofi.org does not publish finals for; 1998 and 2003 onward come from calcofi.org. Where both publish the same cruise, calcofi.org is used."
     plain: "Sensor Profiles by Depth: Temperature, Salinity, Oxygen"
     collection: CTD sensor package on a 24-bottle rosette, lowered at each CalCOFI station
@@ -290,24 +270,18 @@ datasets:
       dataset_key: "calcofi_ctd-cast on every row."
       order_occ: "Order in which the station was occupied on the cruise (Order_Occ in the original cast file)."
       data_stage: "final, or preliminary while a cruise’s calibrations are not yet applied."
-    citation_override: "Scripps Institution of Oceanography, UC San Diego, 2026. CalCOFI Hydrographic CTD Cast Profile Data. https://calcofi.org/data/oceanographic-data/bottle-database/"   # as the provider gives it (Betty 2026-11-20)
   calcofi_ctd-derived:
     field_notes:
       cruise_key: "CalCOFI cruise, as year-month-ship code (YYYY-MM-NODC). Cruise_ID in the original cast file."
       site_key: "CalCOFI line and station, for example 090.0 060.0 (Sta_ID in the original files)."
       line: "CalCOFI line number: the first number of site_key, for example 090.0."
       station: "CalCOFI station number along the line: the second number of site_key, for example 060.0."
-    license: CC-BY-4.0   # Betty 2026-11-21: CC BY 4.0 for Rasmus Swalethorp’s CTD and bottle datasets (the release states none here)
     lede: "Hydrographic products derived from the CalCOFI CTD cast profiles rather than measured: spiciness and sigma-theta at every published CTD depth, and, per cast, the mixed-layer depth, chlorophyll-a maximum and integral, hypoxic boundary depths, nitracline depth and pycnocline depth."
     more: "Mixed-layer depth follows the CalCOFI legacy definition, with two alternative criteria beside it. The hypoxic boundaries are where oxygen falls to 2.4, 1.4 and 0.5 mL/L; the nitracline is where nitrate reaches 1 µmol/L; the pycnocline is the maximum of the buoyancy frequency (N²). Everything is computed from the full-resolution 1 m bins of the CTD Cast Files after the provider’s quality flags are applied, by the definitions of the CalCOFI CTD team."
     plain: "Calculated from Sensor Profiles: Mixed-Layer Depth, Low-Oxygen Depths, Spiciness"
     collection: Calculated from the CTD Cast Files
     analysis: TEOS-10 for spiciness and density; CalCOFI’s definitions for the mixed-layer, low-oxygen, nitracline and pycnocline depths (CalCOFI)
     who: Rasmus Swalethorp
-    creators:          # the release names no creator for this dataset (Betty 2026-11-21)
-      - name: Rasmus Swalethorp
-        organization: UCSD SIO
-        email: rswalethorp@ucsd.edu
     method: calc
     status: ongoing        # derived from the CTD Cast Files, so it runs to 2026 too
     blurb: Values worked out from the CTD profiles, not measured. Per depth, spiciness and density; per cast, the mixed-layer, chlorophyll-maximum, low-oxygen, nitracline and pycnocline depths.
@@ -323,10 +297,6 @@ datasets:
     collection: Calculated from the Hydrographic Bottle data
     analysis: TEOS-10 for spiciness and density; nitracline interpolated between bottles (CalCOFI)
     who: Rasmus Swalethorp
-    creators:          # the release names no creator for this dataset (Betty 2026-11-21)
-      - name: Rasmus Swalethorp
-        organization: UCSD SIO
-        email: rswalethorp@ucsd.edu
     method: calc
     status: ongoing        # Betty’s CalOOS list: ongoing
     blurb: Values worked out from the bottle data, not measured. At every bottle, spiciness and density (sigma-theta); per cast, the nitracline depth.
