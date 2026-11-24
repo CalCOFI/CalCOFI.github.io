@@ -147,16 +147,6 @@ button.bd-b2 { font: inherit; font-weight: 700; font-size: 14px; background: var
 .bd-pv-act .bd-b2 { padding: 0 11px; white-space: nowrap; }
 .bd-pv-act .bd-b3 { white-space: nowrap; }
 
-/* "Open dataset" as a blue chevron tab on the right edge of the preview card, outside it (Betty 2026-11-20); on narrower screens,
-   with no room outside the card, the link at the foot of the card stays */
-.bd-pv-go { display: none; }
-@media (min-width: 1200px) {
-  .bd-pv .bd-pv-go { position: absolute; left: calc(100% + 1px); top: 50%; transform: translateY(-50%); display: flex; align-items: center; justify-content: center; width: 26px; height: 76px;
-    background: var(--accent); color: #fff; border-radius: 0 12px 12px 0; box-shadow: 2px 1px 6px rgba(24, 43, 73, .16); text-decoration: none; }
-  .bd-pv .bd-pv-go:hover { background: color-mix(in srgb, var(--accent) 80%, #000); }
-  .bd-pv .bd-pv-go:focus-visible { outline: 2px solid #ffcd00; outline-offset: 2px; }
-}
-
 /* picking another dataset: a yellow bar sweeps the top of the preview card and its content fades up from dim (Betty 2026-11-20) */
 .bd-pv-bar { position: absolute; left: 0; top: 0; height: 4px; width: 0; background: #ffcd00; border-radius: 14px 14px 0 0; pointer-events: none; }
 .bd-pv-bar-b { top: auto; bottom: 0; border-radius: 0 0 14px 14px; }   /* the same bar along the foot, for a card scrolled so its top is out of sight */

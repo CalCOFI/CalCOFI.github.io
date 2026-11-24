@@ -249,10 +249,8 @@ module CalCOFI
       b = cat.browse(raw_measurements(site))
       # the record's display words (datasets.json `display`) and the category tiles (`browse`)
       extras = DatasetExtras.from_record(site.data["datasets"])
-      recs = cat.datasets.to_h { |d| [d["dataset_key"], d] }
       b["rows"].each do |r|
         r.merge!(DatasetExtras.for(extras, r["key"]))
-        r["sources"] = DatasetExtras.source_tables(recs[r["key"]] || {})
         r["short"] = r["blurb"] || DatasetExtras.short_desc(r["desc"])
       end
       b["tiles"] = DatasetExtras.tiles(extras, b["rows"])

@@ -6,69 +6,60 @@
 .bd-find.bt-home-on { grid-template-columns: minmax(0, 1fr); }
 .bd-find.bt-home-on .bd-pv { display: none !important; }
 .bt-home[hidden], .bt-cat[hidden] { display: none; }
-.bt-realm + .bt-realm { margin-top: 34px; }
-.bt-rh { display: flex; align-items: flex-end; gap: 16px; padding-bottom: 10px; margin-bottom: 16px; border-bottom: 2px solid var(--fg); }
-.bt-rh h2 { margin: 0; font: 700 28px/1.15 var(--sans); letter-spacing: 0; text-transform: none; }
-.bt-rh p { margin: 2px 0 0; font-size: 16px; color: var(--muted); }
-.bt-rh > span { margin-left: auto; font-size: 15px; color: var(--muted); white-space: nowrap; }
-.bt-tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; }
-.bt-tile { display: flex; flex-direction: column; align-items: center; gap: 10px; min-height: 240px; padding: 26px 22px 20px; box-sizing: border-box;
-  text-align: center; color: var(--fg); text-decoration: none; background: color-mix(in srgb, var(--fg) 7%, var(--bg)); border-radius: 10px;
+.bt-realm + .bt-realm { margin-top: 30.5px; }
+.bt-rh { display: flex; align-items: flex-end; gap: 14.5px; padding-bottom: 9px; margin-bottom: 14.5px; border-bottom: 2px solid var(--fg); }
+.bt-rh h2 { margin: 0; font: 700 25px/1.15 var(--sans); letter-spacing: 0; text-transform: none; }
+.bt-rh p { margin: 2px 0 0; font-size: 14.5px; color: var(--muted); }
+.bt-rh > span { margin-left: auto; font-size: 13.5px; color: var(--muted); white-space: nowrap; }
+.bt-tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; }
+.bt-tile { display: flex; flex-direction: column; align-items: center; gap: 9px; min-height: 216px; padding: 23.5px 20px 18px; box-sizing: border-box;
+  text-align: center; color: var(--fg); text-decoration: none; background: color-mix(in srgb, var(--fg) 7%, var(--bg)); border-radius: 9px;
   border: 1px solid transparent; transition: border-color .15s, transform .15s; }
 .bt-tile:hover { border-color: var(--accent); transform: translateY(-2px); }
 .bt-tile:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.bt-ic { width: 84px; height: 84px; border-radius: 50%; display: grid; place-items: center; background: var(--bg); }
-.bt-ic .cc-i { font-size: 46px; color: var(--fg); opacity: .9; }
-.bt-nm { margin-top: 4px; font-size: 21px; line-height: 1.2; }
-.bt-line { flex: 1; font-size: 15.5px; line-height: 1.4; color: color-mix(in srgb, var(--fg) 85%, var(--bg)); }
-.bt-ft { align-self: stretch; display: flex; flex-direction: column; gap: 2px; padding-top: 10px; border-top: 1px solid color-mix(in srgb, var(--fg) 14%, var(--bg)); }
-.bt-ft b { font-size: 14px; color: var(--accent); }
-.bt-ft span { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.bt-ic { width: 75.5px; height: 75.5px; border-radius: 50%; display: grid; place-items: center; background: var(--bg); }
+.bt-ic .cc-i { font-size: 41.5px; color: var(--fg); opacity: .9; }
+.bt-nm { margin-top: 3.5px; font-size: 19px; line-height: 1.2; }
+.bt-line { flex: 1; font-size: 14px; line-height: 1.4; color: color-mix(in srgb, var(--fg) 85%, var(--bg)); }
+.bt-ft { align-self: stretch; display: flex; flex-direction: column; gap: 2px; padding-top: 9px; border-top: 1px solid color-mix(in srgb, var(--fg) 14%, var(--bg)); }
+.bt-ft b { font-size: 12.5px; color: var(--accent); }
+.bt-ft span { font-size: 11.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
 
 /* one category open */
-.bt-cats .bt-cat:not([hidden]) ~ .bt-cat:not([hidden]) { margin-top: 48px; }   /* between two categories that are both drawn (no JavaScript); when one is open the others are hidden and it must not carry the gap (Betty 2026-11-20: space above Carbonate Chemistry, not CTD & Bottle) */
-.bt-cat { display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 28px; align-items: start; scroll-margin-top: calc(var(--header-h, 72px) + 16px); }
+.bt-cats .bt-cat:not([hidden]) ~ .bt-cat:not([hidden]) { margin-top: 43px; }   /* between two categories that are both drawn (no JavaScript); when one is open the others are hidden and it must not carry the gap (Betty 2026-11-20: space above Carbonate Chemistry, not CTD & Bottle) */
+.bt-cat { display: grid; grid-template-columns: 207px minmax(0, 1fr); gap: 25px; align-items: start; scroll-margin-top: calc(var(--header-h, 72px) + 16px); }
 .bt-rail { display: flex; flex-direction: column; gap: 2px; position: sticky; top: calc(var(--header-h, 72px) + 14px); }
-.bt-back { padding: 4px 10px 10px; font-size: 14.5px; font-weight: 700; color: var(--accent); text-decoration: none; }
-.bt-rl { padding: 14px 10px 6px; font-size: 12.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
-.bt-rail a[data-cat] { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; font-size: 15px; color: var(--fg); text-decoration: none; }
-.bt-rail a[data-cat] .cc-i { font-size: 18px; color: var(--accent); flex: none; }
+.bt-back { padding: 3.5px 9px 9px; font-size: 13px; font-weight: 700; color: var(--accent); text-decoration: none; }
+.bt-rl { padding: 12.5px 9px 5.5px; font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.bt-rail a[data-cat] { display: flex; align-items: center; gap: 9px; padding: 7px 9px; border-radius: 7px; font-size: 13.5px; color: var(--fg); text-decoration: none; }
+.bt-rail a[data-cat] .cc-i { font-size: 16px; color: var(--accent); flex: none; }
 .bt-rail a[data-cat] span { flex: 1; min-width: 0; }
-.bt-rail a[data-cat] em { font-style: normal; font-size: 13px; color: var(--muted); }
+.bt-rail a[data-cat] em { font-style: normal; font-size: 11.5px; color: var(--muted); }
 .bt-rail a[data-cat]:hover { background: color-mix(in srgb, var(--panel) 70%, var(--bg)); }
 .bt-rail a[aria-current="true"] { background: var(--accent-bg); font-weight: 700; }
-.bt-main { min-width: 0; display: flex; flex-direction: column; gap: 18px; }
-.bt-ch { padding: 2px 0 14px; border-bottom: 1px solid var(--border); }
-.bt-eb { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
-.bt-ch h2 { margin: 6px 0 0; font: 700 34px/1.1 var(--sans); letter-spacing: 0; text-transform: none; }
-.bt-cd { margin: 8px 0 0; font-size: 16px; line-height: 1.5; color: color-mix(in srgb, var(--fg) 85%, var(--bg)); max-width: 60ch; }
-.bt-cs { margin: 10px 0 0; font-size: 15px; color: var(--muted); } .bt-cs b { color: var(--fg); }
+.bt-main { min-width: 0; display: flex; flex-direction: column; gap: 16px; }
+.bt-ch { padding: 2px 0 12.5px; border-bottom: 1px solid var(--border); }
+.bt-eb { display: inline-flex; align-items: center; gap: 7px; font-size: 11.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.bt-ch h2 { margin: 5.5px 0 0; font: 700 30.5px/1.1 var(--sans); letter-spacing: 0; text-transform: none; }
+.bt-cd { margin: 7px 0 0; font-size: 14.5px; line-height: 1.5; color: color-mix(in srgb, var(--fg) 85%, var(--bg)); max-width: 60ch; }
+.bt-cs { margin: 9px 0 0; font-size: 13.5px; color: var(--muted); } .bt-cs b { color: var(--fg); }
 
-.bt-rows { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: var(--bg); }
-.bt-row { display: grid; grid-template-columns: minmax(0, 1fr) 130px; gap: 20px; padding: 20px 22px; cursor: pointer; }
+.bt-rows { border: 1px solid var(--border); border-radius: 11px; overflow: hidden; background: var(--bg); }
+.bt-row { display: grid; grid-template-columns: minmax(0, 1fr) 117px; gap: 18px; padding: 18px 20px; cursor: pointer; }
 .bt-row + .bt-row { border-top: 1px solid var(--border); }
 .bt-row:hover { background: color-mix(in srgb, var(--panel) 60%, var(--bg)); }
 .bt-row.on { background: var(--accent-bg); }
-.bt-rb { min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.bt-rb { min-width: 0; display: flex; flex-direction: column; gap: 7px; }
 .bt-rn { color: var(--fg); text-decoration: none; }
-.bt-rn b { display: block; font-size: 19px; line-height: 1.25; }
+.bt-rn b { display: block; font-size: 17px; line-height: 1.25; }
 .bt-row.on .bt-rn b, .bt-rn:hover b { color: var(--accent); }
-.bt-rn span { font-size: 14px; color: var(--muted); }
-.bt-ca { font-size: 15px; line-height: 1.5; }
-.bt-ca strong { color: var(--accent); }
-.bt-rd { margin: 0; font-size: 14.5px; line-height: 1.5; color: color-mix(in srgb, var(--fg) 80%, var(--bg));
-  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.bt-src { font-size: 14px; }
-.bt-src summary { cursor: pointer; color: var(--accent); font-weight: 600; }
-.bt-src ul { list-style: none; margin: 8px 0 0; padding: 0; }
-.bt-src li { display: flex; justify-content: space-between; gap: 12px; padding: 4px 0; border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent); }
-.bt-src a { text-decoration: none; } .bt-src code { font: 12.5px var(--mono); color: var(--muted); }
-.bt-rs { display: flex; flex-direction: column; align-items: center; gap: 12px; }
-.bt-st { align-self: flex-end; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--muted); }
-.bt-st i { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
-.bt-st-archived i { background: var(--muted); }
-.bt-mt { display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 13.5px; color: var(--muted); text-align: center; }
-.bt-mi { width: 92px; height: 92px; border-radius: 16px; display: grid; place-items: center; background: color-mix(in srgb, var(--fg) 7%, var(--bg)); color: var(--fg); }
+.bt-rn span { font-size: 12.5px; color: var(--muted); }
+.bt-rs { display: flex; flex-direction: column; align-items: center; gap: 11px; }
+.bt-st { align-self: flex-end; display: inline-flex; align-items: center; gap: 5.5px; font-size: 11.5px; font-weight: 600; color: var(--muted); }
+.bt-st i { width: 6.5px; height: 6.5px; border-radius: 50%; background: var(--accent); }
+.bt-st-ended i { background: var(--muted); }
+.bt-mt { display: flex; flex-direction: column; align-items: center; gap: 5.5px; font-size: 12px; color: var(--muted); text-align: center; }
+.bt-mi { width: 83px; height: 83px; border-radius: 14.5px; display: grid; place-items: center; background: color-mix(in srgb, var(--fg) 7%, var(--bg)); color: var(--fg); }
 .bt-row.on .bt-mi { background: var(--bg); }
 
 @media (max-width: 1200px) { .bt-tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
@@ -80,42 +71,35 @@
 @media (max-width: 480px) { .bt-tiles { grid-template-columns: 1fr; } .bt-rh { flex-wrap: wrap; } .bt-rh > span { margin-left: 0; } }
 
 /* Years covered, moved under the datasets (Betty 2026-11-18) */
-.ds-browse > .bd-when { margin: 40px 0 16px; }
+.ds-browse > .bd-when { margin: 36px 0 14.5px; }
 
 /* smaller tiles (Betty 2026-11-18: "the cards quite big") — same card, about two-thirds the height */
-.bt-tiles { gap: 14px; }
-.bt-tile { min-height: 0; gap: 6px; padding: 16px 16px 12px; }
-.bt-ic { width: 56px; height: 56px; } .bt-ic .cc-i { font-size: 30px; }
-.bt-nm { margin-top: 2px; font-size: 17.5px; }
-.bt-line { font-size: 14px; line-height: 1.35; }
-.bt-ft { padding-top: 7px; margin-top: 4px; } .bt-ft b { font-size: 13px; } .bt-ft span { font-size: 12.5px; }
-.bt-realm + .bt-realm { margin-top: 26px; }
-.bt-rh { margin-bottom: 12px; } .bt-rh h2 { font-size: 24px; } .bt-rh p { font-size: 15px; }
+.bt-tiles { gap: 12.5px; }
+.bt-tile { min-height: 0; gap: 5.5px; padding: 14.5px 14.5px 11px; }
+.bt-ic { width: 50.5px; height: 50.5px; } .bt-ic .cc-i { font-size: 27px; }
+.bt-nm { margin-top: 2px; font-size: 16px; }
+.bt-line { font-size: 12.5px; line-height: 1.35; }
+.bt-ft { padding-top: 6.5px; margin-top: 3.5px; } .bt-ft b { font-size: 11.5px; } .bt-ft span { font-size: 11px; }
+.bt-realm + .bt-realm { margin-top: 23.5px; }
+.bt-rh { margin-bottom: 11px; } .bt-rh h2 { font-size: 21.5px; } .bt-rh p { font-size: 13.5px; }
 
-/* an open category: less padding and narrower side columns give the rows more room beside the preview, inside the
-   page's own width; the (short) description is read whole (Betty 2026-11-18, "very cluttered in middle") */
-.bt-cat .bt-rd { display: block; -webkit-line-clamp: unset; overflow: visible; }
-.bt-cat { grid-template-columns: 200px minmax(0, 1fr); gap: 24px; }
-.bt-cat .bt-row { grid-template-columns: minmax(0, 1fr) 120px; gap: 22px; }
-
-/* the page: about an inch of margin each side instead of two (Betty 2026-11-18) */
-.calm-page.ds-browse { position: relative; max-width: min(1720px, calc(100% - 2in)); }
+.bt-cat { grid-template-columns: 180px minmax(0, 1fr); gap: 21.5px; }
+.bt-cat .bt-row { grid-template-columns: minmax(0, 1fr) 108px; gap: 20px; }
 
 /* the view switch: a two-button switch on the catalogs line (Datasets · Species · Measurements), right-aligned, so it
    takes no line of its own (Betty 2026-11-18). The count it carried is on each realm's heading already. */
-.ds-browse .cf-crumb { min-height: 42px; align-items: flex-end; padding-right: 260px; }
+.ds-browse .cf-crumb { min-height: 38px; align-items: flex-end; padding-right: 234px; }
 .ds-browse .bd-views { position: static; }
 .ds-browse .bd-views > .tabrow { position: absolute; top: calc(var(--space, 8px) * 3); right: var(--gutter-r, 16px); z-index: 2; margin: 0;
-  display: flex; gap: 2px; padding: 4px; border: 0; border-radius: 11px; background: color-mix(in srgb, var(--fg) 7%, var(--bg)); box-shadow: none; }
-.ds-browse .bd-views > .tabrow button { padding: 6px 18px; border: 0; border-radius: 8px; background: none; box-shadow: none;
-  font: 500 15.5px var(--sans); letter-spacing: 0; text-transform: none; color: var(--muted); }
+  display: flex; gap: 2px; padding: 3.5px; border: 0; border-radius: 10px; background: color-mix(in srgb, var(--fg) 7%, var(--bg)); box-shadow: none; }
+.ds-browse .bd-views > .tabrow button { padding: 5.5px 16px; border: 0; border-radius: 7px; background: none; box-shadow: none;
+  font: 500 14px var(--sans); letter-spacing: 0; text-transform: none; color: var(--muted); }
 .ds-browse .bd-views > .tabrow button:hover { color: var(--fg); }
-.ds-browse .bd-views > .tabrow button[aria-selected="true"] { color: var(--fg); font-weight: 700; background: var(--bg); box-shadow: 0 1px 3px rgba(0,0,0,.14); border-bottom: 0; }
+.ds-browse .bd-views > .tabrow button[aria-selected="true"] { color: var(--fg); font-weight: 700; background: var(--bg); box-shadow: 0 1px 2.5px rgba(0,0,0,.14); border-bottom: 0; }
 .ds-browse .bd-views > .tabrow .bd-count { display: none; }
 @media (max-width: 760px) {
-  .calm-page.ds-browse { max-width: none; }
   .ds-browse .cf-crumb { padding-right: 0; }
-  .ds-browse .bd-views > .tabrow { position: static; width: max-content; margin: 0 0 12px auto; }
+  .ds-browse .bd-views > .tabrow { position: static; width: max-content; margin: 0 0 11px auto; }
 }
 
 /* the search's dropdown: the datasets the words match, as they are typed (Betty 2026-11-18) */
@@ -132,18 +116,18 @@
 .bd-dd-n { min-width: 0; } .bd-dd-n b { display: block; font-size: 15px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .bd-dd-n small { display: block; font-size: 13px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .bd-dd-n mark { background: none; color: var(--fg); font-weight: 700; }
-.bd-dd-all { all: unset; box-sizing: border-box; display: block; width: 100%; padding: 9px 16px; cursor: pointer; font-size: 14px; font-weight: 700; color: var(--accent); }
+.bd-dd-all { box-sizing: border-box; display: block; width: 100%; padding: 9px 16px; cursor: pointer; font-size: 14px; font-weight: 700; color: var(--accent); }
 .bd-dd-all:hover, .bd-dd-all.on, .bd-dd-all:focus-visible { background: var(--accent-bg); }
 .bd-dd-none { margin: 0; padding: 10px 16px; font-size: 14px; color: var(--muted); }
 .bd-dd-o { display: flex; flex-wrap: wrap; gap: 4px 20px; margin-top: 4px; padding: 9px 16px 5px; border-top: 1px solid var(--border); font-size: 13.5px; }
 .bd-dd-o a { color: var(--accent); text-decoration: none; } .bd-dd-o a:hover { text-decoration: underline; }
 
 /* each dataset its own card, with space between, so one ends clearly before the next (Betty 2026-11-18) */
-.bt-rows { display: flex; flex-direction: column; gap: 14px; border: 0; border-radius: 0; overflow: visible; background: none; }
-.bt-row, .bt-cat .bt-row { border: 1px solid var(--border); border-radius: 12px; background: var(--bg); box-shadow: 0 1px 4px rgba(0,0,0,.05); }
+.bt-rows { display: flex; flex-direction: column; gap: 12.5px; border: 0; border-radius: 0; overflow: visible; background: none; }
+.bt-row, .bt-cat .bt-row { border: 1px solid var(--border); border-radius: 11px; background: var(--bg); box-shadow: 0 1px 3.5px rgba(0,0,0,.05); }
 .bt-row + .bt-row { border-top: 1px solid var(--border); }
 .bt-row.on { border-color: color-mix(in srgb, var(--accent) 45%, var(--border)); }
-.bt-rn span { display: block; margin-top: 3px; font-size: 14.5px; }
+.bt-rn span { display: block; margin-top: 2.5px; font-size: 13px; }
 .bd-dd-n b em { font-style: normal; font-weight: 400; color: var(--muted); }
 
 /* the preview's map: the box takes the map's own shape (no fixed height), so it is never cut off; a tall one (the
@@ -153,68 +137,60 @@
 
 /* the tiles (Betty 2026-11-19): outlined at rest, as the hover outline was, a little taller, and no underlined words
    when pointed at — the card lifts and its outline darkens instead */
-.bt-tile { border: 1.5px solid color-mix(in srgb, var(--accent) 35%, var(--border)); padding: 20px 18px 14px; gap: 8px; min-height: 240px; }
-.bt-tile:hover { border-color: var(--accent); box-shadow: 0 6px 18px rgba(10, 40, 80, .10); text-decoration: none; }
+.bt-tile { border: 1.5px solid color-mix(in srgb, var(--accent) 35%, var(--border)); padding: 18px 16px 12.5px; gap: 7px; min-height: 216px; }
+.bt-tile:hover { border-color: var(--accent); box-shadow: 0 5.5px 16px rgba(10, 40, 80, .10); text-decoration: none; }
 .bt-tile, .bt-tile:hover, .bt-tile:hover * { text-decoration: none; }
-.bt-tile .bt-ic { width: 64px; height: 64px; } .bt-tile .bt-ic .cc-i { font-size: 32px; }
-.bt-tile .bt-nm { font-size: 19px; }
+.bt-tile .bt-ic { width: 57.5px; height: 57.5px; } .bt-tile .bt-ic .cc-i { font-size: 29px; }
+.bt-tile .bt-nm { font-size: 17px; }
 
 /* Years covered, easier to read (Betty 2026-11-19): names in dark type with the dataset's colour square, not blue
    underlined links; bigger decade labels; taller rows with a faint line under each; each row's years at its end; the
    same light border as the rest of the page (no dark outline when it is opened by a click) */
 .bd-when > summary:focus:not(:focus-visible) { outline: none; }
 .bd-when { background: var(--bg); }
-.bd-strip.fd-ylist { grid-template-columns: max-content minmax(0, 1fr) 84px; column-gap: 16px; }
-.bd-strip .fd-ydec span { font: 600 13px/1.2 var(--sans); color: color-mix(in srgb, var(--fg) 75%, var(--bg)); }
-.bd-strip .fd-yaxis { padding-bottom: 18px; }
+.bd-strip.fd-ylist { grid-template-columns: max-content minmax(0, 1fr) 75.5px; column-gap: 14.5px; }
+.bd-strip .fd-ydec span { font: 600 11.5px/1.2 var(--sans); color: color-mix(in srgb, var(--fg) 75%, var(--bg)); }
+.bd-strip .fd-yaxis { padding-bottom: 16px; }
 .bd-strip .fd-ybars .bar { fill: var(--muted); opacity: .35; }
-.bd-strip .fd-yg { margin-top: 14px; padding-bottom: 6px; font-size: 13px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: color-mix(in srgb, var(--fg) 75%, var(--bg)); }
+.bd-strip .fd-yg { margin-top: 12.5px; padding-bottom: 5.5px; font-size: 11.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: color-mix(in srgb, var(--fg) 75%, var(--bg)); }
 .bd-strip .fd-yg .cc-i { display: none; }
 .bd-strip .fd-yrow { border-bottom: 1px solid color-mix(in srgb, var(--border) 55%, transparent); }
-.bd-strip .fd-yname { min-height: 32px; font-size: 15.5px; font-weight: 600; color: var(--fg); text-decoration: none; }
+.bd-strip .fd-yname { min-height: 29px; font-size: 14px; font-weight: 600; color: var(--fg); text-decoration: none; }
 .bd-strip .fd-yname:hover, .bd-strip .fd-yname:focus-visible { color: var(--accent-d, var(--accent)); text-decoration: underline; text-underline-offset: .18em; }
-.bd-strip .bd-ysw { flex: none; width: 11px; height: 11px; border-radius: 2px; }
-.bd-strip .fd-ycells { min-height: 22px; }
-.bd-strip .bd-yr { align-self: center; text-align: right; font-size: 13.5px; font-variant-numeric: tabular-nums; color: color-mix(in srgb, var(--fg) 75%, var(--bg)); white-space: nowrap; }
-
-/* sizes (Betty 2026-11-19): this page was tuned with the browser at 90%; drawn at 90% at desktop widths so it looks
-   at 100% the way it was approved. assets/stick.js allows for the zoom. */
-@media (min-width: 901px) { .calm-page.ds-cat.ds-browse { zoom: .9; } }
+.bd-strip .bd-ysw { flex: none; width: 10px; height: 10px; border-radius: 2px; }
+.bd-strip .fd-ycells { min-height: 20px; }
+.bd-strip .bd-yr { align-self: center; text-align: right; font-size: 12px; font-variant-numeric: tabular-nums; color: color-mix(in srgb, var(--fg) 75%, var(--bg)); white-space: nowrap; }
 
 /* a group's name and its line on one line (Betty 2026-11-19): "Environment  Temperature, salinity…" */
-.bt-rh > div { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 14px; }
+.bt-rh > div { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 12.5px; }
 .bt-rh > div p { margin: 0; }
 
 /* an open category without the category list on its left (Betty 2026-11-19): only "← All categories" above it,
    and the datasets take the room */
-.bt-cat { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+.bt-cat { grid-template-columns: minmax(0, 1fr); gap: 5.5px; }
 .bt-rail { position: static; flex-direction: row; }
 .bt-rail .bt-rl, .bt-rail a[data-cat] { display: none; }
-.bt-rail .bt-back { padding: 0 0 4px; }
+.bt-rail .bt-back { padding: 0 0 3.5px; }
 
 /* no rule under the group headings (Betty 2026-11-19) */
-.bt-rh { border-bottom: 0; padding-bottom: 0; margin-bottom: 14px; }
+.bt-rh { border-bottom: 0; padding-bottom: 0; margin-bottom: 12.5px; }
 
 
 /* Category tiles (Betty, 2026-11-19): white with a subtle light-slate outline (#d5dce6) at rest; the icon in a pale slate circle
    (#eef2f7) in the slate ink (#3a4b64). Outline darker at rest (#8796ac, Betty 2026-11-21) and softer on hover (#b7c2d2) with the lift shadow; focus keeps the dark outline (#3a4b64). No fill, the words stay
    as they are. Light theme only; the dark theme keeps its own tiles. */
-:root:not([data-theme="dark"]) main .bt-tile { background: #ffffff; border: 1.5px solid #8796ac; box-shadow: 0 1px 3px rgba(18,43,73,.06); color: #182b49; transition: border-color .15s, box-shadow .15s; }
+:root:not([data-theme="dark"]) main .bt-tile { background: #ffffff; border: 1.5px solid #8796ac; box-shadow: 0 1px 2.5px rgba(18,43,73,.06); color: #182b49; transition: border-color .15s, box-shadow .15s; }
 :root:not([data-theme="dark"]) main .bt-ic { background: #eef2f7; }
 :root:not([data-theme="dark"]) main .bt-ic .cc-i { color: #3a4b64; opacity: 1; }
 :root:not([data-theme="dark"]) main .bt-line { color: #3d5172; }
 :root:not([data-theme="dark"]) main .bt-ft { border-top-color: #e3e8ef; }
 :root:not([data-theme="dark"]) main .bt-ft b { color: #00629b; } :root:not([data-theme="dark"]) main .bt-ft span { color: #3d5172; }
-:root:not([data-theme="dark"]) main .bt-tile:hover { background: #ffffff; border-color: #b7c2d2; color: #182b49; box-shadow: 0 6px 18px rgba(18,43,73,.12); }
-:root:not([data-theme="dark"]) main .bt-tile:focus-visible { background: #ffffff; border-color: #3a4b64; color: #182b49; box-shadow: 0 6px 18px rgba(18,43,73,.12); }
+:root:not([data-theme="dark"]) main .bt-tile:hover { background: #ffffff; border-color: #b7c2d2; color: #182b49; box-shadow: 0 5.5px 16px rgba(18,43,73,.12); }
+:root:not([data-theme="dark"]) main .bt-tile:focus-visible { background: #ffffff; border-color: #3a4b64; color: #182b49; box-shadow: 0 5.5px 16px rgba(18,43,73,.12); }
 
-/* an opened category's fuller description, under its one line (Betty 2026-11-19; _data/dataset_extras.yml `about`) */
-.bt-ch .bt-about { max-width: 860px; margin: 8px 0 4px; font-size: 15.5px; line-height: 1.55; color: color-mix(in srgb, var(--fg) 82%, var(--bg)); }
+/* an opened category's fuller description, under its one line (Betty 2026-11-19; the record's browse group `description`) */
+.bt-ch .bt-about { max-width: 774px; margin: 7px 0 3.5px; font-size: 14px; line-height: 1.55; color: color-mix(in srgb, var(--fg) 82%, var(--bg)); }
 
-/* no catalogs row (Betty 2026-11-19): the By category / List switch on its own short line above the content, at the right,
-   so it never sits on the preview's map */
-.ds-browse .bd-views > .tabrow { position: static; width: max-content; margin: 0 0 8px auto; }   /* at the RIGHT (Betty 2026-11-19, later) */
-main.calm-page.ds-browse { padding-top: 8px; }   /* everything a little closer under the search band */
 /* with a category open the switch is hidden (Betty 2026-11-19): "← All categories" goes back to the tiles, and the List is
    on the main page (and a search opens it) */
 .ds-browse .bd-views:has(#ds-view-grid:not([hidden])):has(.bd-find:not(.bt-home-on)) > .tabrow { display: none; }
@@ -226,14 +202,10 @@ main.calm-page.ds-browse { padding-top: 8px; }   /* everything a little closer u
 
 /* a dataset card: its years large at the top right, and Full details at the bottom right once it is picked (Betty 2026-11-19) */
 .bt-ry { display: flex; flex-direction: column; align-items: center; line-height: 1.1; }
-.bt-ry b { font-size: 20px; font-weight: 700; color: var(--fg); font-variant-numeric: tabular-nums; white-space: nowrap; }
-.bt-ry small { margin-top: 2px; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
-.bt-more { display: none; margin-top: auto; align-self: flex-end; white-space: nowrap; font-size: 14.5px; font-weight: 700; color: var(--accent); text-decoration: none; }
-.bt-row.on .bt-more { display: inline-flex; gap: 4px; }   /* only on the card that is picked (Betty 2026-11-19) */
-.bt-more:hover { color: color-mix(in srgb, var(--accent) 75%, var(--fg)); }
-
+.bt-ry b { font-size: 18px; font-weight: 700; color: var(--fg); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.bt-ry small { margin-top: 2px; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 /* the breadcrumb at the top of an open category (Betty 2026-11-19): Datasets › Environment › CTD & Bottle */
-.bt-crumb { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; padding: 0 0 6px; font-size: 15px; color: var(--muted); }
+.bt-crumb { display: flex; flex-wrap: wrap; align-items: center; gap: 3.5px 5.5px; padding: 0 0 5.5px; font-size: 13.5px; color: var(--muted); }
 .bt-crumb a { font-weight: 600; color: var(--accent); text-decoration: none; }
 .bt-crumb a:hover { color: color-mix(in srgb, var(--accent) 75%, var(--fg)); }
 .bt-crumb svg { flex: none; color: var(--muted); }
@@ -248,33 +220,40 @@ main.calm-page.ds-browse { padding-top: 8px; }   /* everything a little closer u
 .cc-method .mi-p { fill: color-mix(in srgb, var(--accent) 15%, var(--bg)); }
 .cc-method .mi-f { fill: var(--bg); }
 .cc-method .mi-s { stroke: var(--accent); }
-.bt-cat .bt-row { --rp: 24px; grid-template-columns: minmax(0, 1fr) 112px; column-gap: 24px; row-gap: 0; padding: 22px var(--rp) 0; overflow: hidden; }
-.bt-cat .bt-rs { align-self: start; gap: 8px; }
-.bt-cat .bt-mi { width: 96px; height: 96px; border-radius: 20px; background: color-mix(in srgb, var(--fg) 6%, var(--bg)); color: var(--fg); }
+.bt-cat .bt-row { --rp: 21.5px; grid-template-columns: minmax(0, 1fr) 101px; column-gap: 21.5px; row-gap: 0; padding: 20px var(--rp) 0; overflow: hidden; }
+.bt-cat .bt-rs { align-self: start; gap: 7px; }
+.bt-cat .bt-mi { width: 86.5px; height: 86.5px; border-radius: 18px; background: color-mix(in srgb, var(--fg) 6%, var(--bg)); color: var(--fg); }
 .bt-cat .bt-row.on .bt-mi { background: color-mix(in srgb, var(--fg) 6%, var(--bg)); }
-.bt-ml { font-size: 14px; line-height: 1.25; color: var(--muted); text-align: center; }
-.bt-rf { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px 18px; flex-wrap: wrap; margin: 18px calc(-1 * var(--rp)) 0; padding: 13px var(--rp); border-top: 1px solid var(--border); }
+.bt-ml { font-size: 12.5px; line-height: 1.25; color: var(--muted); text-align: center; }
+.bt-rf { grid-column: 1 / -1; display: flex; align-items: center; gap: 7px 16px; flex-wrap: wrap; margin: 16px calc(-1 * var(--rp)) 0; padding: 11.5px var(--rp); border-top: 1px solid var(--border); }
 .bt-rf .bt-ry { display: inline; }
-.bt-rf .bt-ry b { font-size: 16px; }
-.bt-rf .bt-st { align-self: auto; font-size: 14.5px; }
-.bt-rf .bt-st i { width: 8px; height: 8px; }
-/* "Open dataset" only on the open card, the one shown in the preview: the first when the category opens, then the one clicked (Betty 2026-11-20) */
-.bt-cat .bt-more { display: none; }
-.bt-cat .bt-row.on .bt-more { display: inline-flex; margin: 0 0 0 auto; align-self: auto; }
-/* as a solid button, so it is the obvious next step (Betty 2026-11-20); the negative margin keeps the footer the height it was */
-.bt-cat .bt-row.on .bt-more { margin: -2px 0 -2px auto; padding: 4px 14px; border-radius: 7px; background: var(--accent); color: #fff; font-size: 14.5px; line-height: 1.3; }
-.bt-cat .bt-row.on .bt-more:hover { background: color-mix(in srgb, var(--accent) 80%, #000); color: #fff; }
-.bt-cat .bt-row.on .bt-more:focus-visible { outline: 2px solid #ffcd00; outline-offset: 2px; }
-@media (max-width: 760px) { .bt-cat .bt-row { grid-template-columns: minmax(0, 1fr); --rp: 18px; } .bt-cat .bt-rs { flex-direction: row; align-items: center; gap: 12px; order: 2; margin-top: 14px; } .bt-cat .bt-mi { width: 72px; height: 72px; border-radius: 16px; } .bt-cat .bt-mi svg { width: 48px; height: 48px; } .bt-ml { text-align: left; } }
+.bt-rf .bt-ry b { font-size: 14.5px; }
+.bt-rf .bt-st { align-self: auto; font-size: 13px; }
+.bt-rf .bt-st i { width: 7px; height: 7px; }
 
-/* Betty 2026-11-20: the first row's heading (Environment, with its "3 categories · 7 datasets") rides up beside the By category / List
-   switch, filling the empty space to its left, and the tiles follow it up. The count stops short of the switch (about 190 px). */
-@media (min-width: 900px) {
-  .ds-browse .bd-find.bt-home-on .bt-home > .bt-realm:first-child { margin-top: -47px; }
-  .ds-browse .bd-find.bt-home-on .bt-home > .bt-realm:first-child .bt-rh { margin-right: 190px; margin-bottom: 22px; }
+
+/* ── after the review of PR 57 (2026-11-23) ─────────────────────────────────────────────────────────────────────────
+   One scale: this page was drawn at 90% with CSS zoom at desktop widths. The zoom is gone and every length above is the
+   size the 90% view arrived at, written as its own value (so 13.5px where the page said 15px under the zoom). What this
+   page shares with /species/ and /measurements/ (the catalogs row, the preview, the List, the folds) is at their size.
+   One column: the body is the page's own column (.calm-page), the one the search band and the other two catalogs use. */
+
+/* the view switch is placed on the catalogs row's line from the page's own corner */
+.calm-page.ds-browse { position: relative; }
+
+/* a dataset in an open category, four slots: the method picture and its label · the name and provider over the plain
+   name · the years over whether collection goes on. The row is the click target; "Open dataset" is in the preview. */
+.bt-cat .bt-row { grid-template-columns: 76px minmax(0, 1fr) auto; column-gap: 16px; row-gap: 0; align-items: center; padding: 12.5px 20px; overflow: visible; }
+.bt-cat .bt-rs { align-self: center; gap: 4.5px; }
+.bt-cat .bt-mi { width: 50px; height: 50px; border-radius: 11px; }
+.bt-cat .bt-mi svg { width: 34px; height: 34px; }
+.bt-cat .bt-ml { font-size: 12px; }
+.bt-cat .bt-rn span { font-size: 13.5px; }
+.bt-cat .bt-rf { grid-column: 3; display: flex; flex-direction: column; align-items: flex-end; gap: 3.5px; margin: 0; padding: 0; border-top: 0; }
+@media (max-width: 760px) {
+  .bt-cat .bt-row { grid-template-columns: 56px minmax(0, 1fr); row-gap: 8px; padding: 12px 14px; }
+  .bt-cat .bt-rf { grid-column: 2; flex-direction: row; align-items: center; gap: 12px; }
+  .bt-cat .bt-ml { display: none; }
 }
-/* with four tile columns (wider than 1200 px) the heading stops at the right edge of the third tile, the last one in this row, so "3 categories · 7 datasets"
-   sits above the edge of Underway Weather (Betty 2026-11-20); below that the tiles run the full width and the count stays clear of the switch */
-@media (min-width: 1201px) {
-  .ds-browse .bd-find.bt-home-on .bt-home > .bt-realm:first-child .bt-rh { margin-right: 0; width: calc(75% - 3.5px); }
-}
+/* the smallest words of a tile keep a readable size where the page was never drawn at 90% (under 901 px) */
+@media (max-width: 900px) { .bt-ft b, .bt-ft span { font-size: 12.5px; } }

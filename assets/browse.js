@@ -33,8 +33,9 @@
   function apply() {
     var v = (q && q.value || "").trim().toLowerCase(), t = type ? type.value : "", n = 0, seen = {};
     // a search, a "Try" word or a type reads the whole list: on the tiles or an open category the hits were out of
-    // sight, so the search seemed not to work (Betty 2026-11-18). Only the List's rows are filtered.
-    if (t && listTab && listTab.getAttribute("aria-selected") !== "true") toList();
+    // sight, so the search seemed not to work (Betty 2026-11-18). Only the List's rows are filtered, so the List is
+    // what shows: with a category left open, the preview beside it changed to a dataset from elsewhere (PR 57 review F10).
+    if ((t || v) && listTab && listTab.getAttribute("aria-selected") !== "true") toList();
     [].slice.call(document.querySelectorAll("#bd-list .bd-r[data-k]")).forEach(function (a) {
       var r = BY[a.dataset.k], m = v ? hit(r, v) : true, show = !!m && (!t || r.realm === t);
       a.hidden = !show;
@@ -93,17 +94,15 @@
       (f ? '<dl class="bd-pv-f">' + f + "</dl>" : "") +
       '<div class="bd-pv-act">' + (r.explore ? '<a class="bd-b1" href="' + esc(r.explore) + '">View on map</a>' : "") +
       dlMenu(r) +
-      '<a class="bd-b3" href="' + esc(r.url) + '">Open dataset →</a></div></div>' +
-      '<a class="bd-pv-go" href="' + esc(r.url) + '" title="Open dataset" aria-label="Open dataset: ' + esc(r.name) + '"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></a>';
+      '<a class="bd-b3" href="' + esc(r.url) + '">Open dataset →</a></div></div>';   // the one "Open dataset" (PR 57 review: it was on the card, here and on a side tab)
   }
-  // The preview's description is the short one (the record's long text carries the provenance, which is on the dataset's page),
-  // and the Measurements / Species and groups line is the names the record leads with, without "and 38 more" or a "show all"
-  // (Betty 2026-11-20).
+  // The preview's description is the short one (the record's long text carries the provenance, which is on the dataset's page).
+  // The Measurements / Species and groups line is the names the record leads with and, where there are more, "and 38 more":
+  // six names with nothing after them read as the whole list (PR 57 review C5).
   function blurb(r) { return r.short || r.desc || ""; }
   function hasBlock(r) {
     if (!r.has_long) return "";
-    var m = /^(.*) and ([\d,]+) more$/.exec(r.has_long);
-    return '<div class="bd-pv-has"><b>' + esc(r.has_label) + "</b>" + esc(m ? m[1] : r.has_long) + "</div>";
+    return '<div class="bd-pv-has"><b>' + esc(r.has_label) + "</b>" + esc(r.has_long) + "</div>";
   }
   function axis() {
     var w = BSPAN[1] - BSPAN[0] + 1, h = '<span style="left:0">' + BSPAN[0] + "</span>";
@@ -131,11 +130,10 @@
 
   function select(key) {
     sel = key;
-    rowsEls().forEach(function (a) { a.classList.toggle("on", a.dataset.k === key); if (a.dataset.k !== key) a.classList.remove("picked"); a.setAttribute("aria-current", a.dataset.k === key ? "true" : "false"); });
+    rowsEls().forEach(function (a) { a.classList.toggle("on", a.dataset.k === key); a.setAttribute("aria-current", a.dataset.k === key ? "true" : "false"); });
     if (!pv) return;
     if (!key) { pv.hidden = true; return; }
     pv.innerHTML = preview(BY[key]) + '<span class="bd-pv-bar" aria-hidden="true"></span><span class="bd-pv-bar bd-pv-bar-b" aria-hidden="true"></span>'; pv.hidden = false;
-    pv.classList.remove("picked");   // the chevron tab shows only once a card has been clicked (Betty 2026-11-20)
   }
 
   document.addEventListener("click", function (e) {
@@ -151,8 +149,6 @@
       } else showCat(t.getAttribute("data-cat"), true);
       return;
     }
-    // the ERDDAP fold in a row and its links are not "show this row"
-    if (e.target.closest && e.target.closest("details, .bt-ext, .bt-more")) return;
     var a = e.target.closest && e.target.closest(".bd-r[data-k]");
     if (!a || e.metaKey || e.ctrlKey || e.shiftKey || e.button) return;
     if (pv && getComputedStyle(pv).display === "none") {
@@ -166,8 +162,6 @@
     // every click on a card, even the one already shown, plays the bar: it tells the reader that card is the selected one (Betty 2026-11-20)
     // the bar runs along whichever edge of the pane is in view: the top, or the foot when the top is scrolled under the header
     if (pv) { var top = pv.getBoundingClientRect().top >= 70; pv.classList.remove("swap", "swap-b"); void pv.offsetWidth; pv.classList.add("swap"); if (!top) pv.classList.add("swap-b"); }
-    if (pv) pv.classList.add("picked");
-    a.classList.add("picked");   // "Open dataset" shows on the card that was clicked, not on the one picked for the preview by default (Betty 2026-11-20)
   });
   // "Show more" on the preview's description, which is otherwise cut at three lines
   if (pv) pv.addEventListener("click", function (e) {
@@ -187,11 +181,13 @@
   var dd = document.getElementById("bd-dd"), ddAt = -1;
   function toList() { if (listTab && listTab.getAttribute("aria-selected") !== "true") listTab.click(); }
   function ddItems() { return dd ? [].slice.call(dd.querySelectorAll("[data-dd]")) : []; }
-  function ddClose() { if (!dd) return; dd.hidden = true; ddAt = -1; if (q) q.setAttribute("aria-expanded", "false"); }
+  function ddClose() { if (!dd) return; dd.hidden = true; ddAt = -1; if (q) { q.setAttribute("aria-expanded", "false"); q.removeAttribute("aria-activedescendant"); } }
   function ddMark(i) {
     var it = ddItems(); ddAt = Math.max(-1, Math.min(i, it.length - 1));
     it.forEach(function (el, j) { el.classList.toggle("on", j === ddAt); el.setAttribute("aria-selected", j === ddAt ? "true" : "false"); });
     if (ddAt >= 0) it[ddAt].scrollIntoView({ block: "nearest" });
+    // what the arrow keys are on is said to a screen reader: the input keeps focus and names the option (PR 57 review C4)
+    if (q) { if (ddAt >= 0) q.setAttribute("aria-activedescendant", it[ddAt].id); else q.removeAttribute("aria-activedescendant"); }
   }
   function drop() {
     if (!dd || !q) return;
@@ -203,23 +199,24 @@
       if (m) hits.push({ r: r, m: m, rank: m === true ? ((r.name || "").toLowerCase().indexOf(v) === 0 || (r.plain || "").toLowerCase().indexOf(v) === 0 ? 0 : 1) : 2 });
     });
     hits.sort(function (a, b) { return a.rank - b.rank || a.r.order - b.r.order; });
+    // the listbox holds its options and nothing else (each with an id); the group's heading names it, and the two
+    // links to the other catalogs follow it, outside
     var w = esc(q.value.trim()), h = "";
-    if (hits.length) {
-      h += '<div class="bd-dd-g">Datasets<span>' + hits.length + "</span></div>";
-      hits.slice(0, 7).forEach(function (x) {
-        var r = x.r, why = typeof x.m === "string" ? 'Has <mark>' + esc(x.m) + "</mark>" : esc(r.cat || "");
-        h += '<a class="bd-dd-r" role="option" data-dd="' + esc(r.key) + '" href="' + esc(r.url || "#") + '">' +
-          '<i class="cc-i cc-i-' + esc(r.icon || "cat-other") + '" aria-hidden="true"></i>' +
-          '<span class="bd-dd-n"><b>' + esc(r.name) + (r.plain ? " <em>" + esc(r.plain) + "</em>" : "") + "</b><small>" + why + (r.years ? " · " + esc(r.years) : "") + "</small></span></a>";
-      });
-      h += '<button type="button" class="bd-dd-all" data-dd="all">See all ' + hits.length + ' in the list <span aria-hidden="true">↵</span></button>';
-    } else {
-      h += '<p class="bd-dd-none">No dataset matches &#8220;' + w + '&#8221;</p>';
-    }
+    if (hits.length) h += '<div class="bd-dd-g" id="bd-dd-h">Datasets<span>' + hits.length + "</span></div>";
+    h += '<div class="bd-dd-list" id="bd-dd-list" role="listbox" aria-label="Matching datasets">';
+    hits.slice(0, 7).forEach(function (x, n) {
+      var r = x.r, why = typeof x.m === "string" ? 'Has <mark>' + esc(x.m) + "</mark>" : esc(r.cat || "");
+      h += '<a class="bd-dd-r" role="option" aria-selected="false" id="bd-dd-o' + n + '" data-dd="' + esc(r.key) + '" href="' + esc(r.url || "#") + '">' +
+        '<i class="cc-i cc-i-' + esc(r.icon || "cat-other") + '" aria-hidden="true"></i>' +
+        '<span class="bd-dd-n"><b>' + esc(r.name) + (r.plain ? " <em>" + esc(r.plain) + "</em>" : "") + "</b><small>" + why + (r.years ? " · " + esc(r.years) : "") + "</small></span></a>";
+    });
+    if (hits.length) h += '<div class="bd-dd-all" role="option" aria-selected="false" id="bd-dd-all" data-dd="all">See all ' + hits.length + ' in the list <span aria-hidden="true">↵</span></div>';
+    h += "</div>";
+    if (!hits.length) h += '<p class="bd-dd-none">No dataset matches &#8220;' + w + '&#8221;</p>';
     var enc = encodeURIComponent(q.value.trim());
     h += '<div class="bd-dd-o"><a href="' + esc(dd.getAttribute("data-species")) + "?q=" + enc + '">Species named &#8220;' + w + '&#8221; →</a>' +
          '<a href="' + esc(dd.getAttribute("data-measurements")) + "?q=" + enc + '">Measurements named &#8220;' + w + '&#8221; →</a></div>';
-    dd.innerHTML = h; dd.hidden = false; ddAt = -1; q.setAttribute("aria-expanded", "true");
+    dd.innerHTML = h; dd.hidden = false; ddAt = -1; q.setAttribute("aria-expanded", "true"); q.removeAttribute("aria-activedescendant");
   }
   function ddPick(el) {
     var k = el.getAttribute("data-dd");
@@ -251,15 +248,20 @@
   var find = document.getElementById("bd-find"), home = document.getElementById("bt-home");
   var cats = [].slice.call(document.querySelectorAll(".bt-cat"));
   var gridTab = document.getElementById("ds-view-tab-grid"), listTab = document.getElementById("ds-view-tab-list");
+  // Opening a category, or going back to the tiles, is a step in the history (pushState), so the browser's Back returns
+  // from a category to the tiles and not to the page before /datasets/ (PR 57 review C3); popstate redraws from the URL.
   function setUrl(slug) {
-    try { var u = new URL(location.href); if (slug) u.searchParams.set("cat", slug); else u.searchParams.delete("cat"); u.hash = ""; history.replaceState(null, "", u.toString()); } catch (err) { /* an old browser keeps its URL */ }
+    try {
+      var u = new URL(location.href); if (slug) u.searchParams.set("cat", slug); else u.searchParams.delete("cat"); u.hash = "";
+      if (u.toString() !== location.href) history.pushState(null, "", u.toString());
+    } catch (err) { /* an old browser keeps its URL */ }
   }
   // every time a category (or the tiles) opens, the page starts at its very top (Betty 2026-11-20); before, it kept the scroll from the tile that was clicked, or put the breadcrumb under the header
   function toTop() { window.scrollTo(0, 0); }
   function showHome(user) {
     if (!home) return;
     home.hidden = false; cats.forEach(function (c) { c.hidden = true; });
-    if (find) find.classList.add("bt-home-on");
+    if (find) find.classList.toggle("bt-home-on", !listTab || listTab.getAttribute("aria-selected") !== "true");
     if (user) { setUrl(null); toTop(); }
   }
   function showCat(slug, user) {
@@ -268,7 +270,6 @@
     if (gridTab && gridTab.getAttribute("aria-selected") !== "true") gridTab.click();
     if (home) home.hidden = true;
     cats.forEach(function (c) { c.hidden = c !== sec; });
-    [].forEach.call(sec.querySelectorAll(".bt-row.picked"), function (x) { x.classList.remove("picked"); });
     if (find) find.classList.remove("bt-home-on");
     var first = sec.querySelector(".bd-r[data-k]");
     if (first) select(first.getAttribute("data-k"));
@@ -277,16 +278,31 @@
   // the List shows the preview; the tiles do not
   if (listTab) listTab.addEventListener("click", function () { if (find) find.classList.remove("bt-home-on"); });
   if (gridTab) gridTab.addEventListener("click", function () { if (find && home && !home.hidden) find.classList.add("bt-home-on"); });
-  // ?cat= : a tile's slug, or a record category's name (a dataset page's breadcrumb)
-  try {
-    var c = new URL(location.href).searchParams.get("cat");
-    var cm = c && cats.filter(function (x) { return x.getAttribute("data-cat") === c || (x.getAttribute("data-cats") || "").split("|").indexOf(c) >= 0; })[0];
-    if (cm) {
-      showCat(cm.getAttribute("data-cat"));
-      // arriving by a link that ends #cat-…: the browser jumps to that spot; start at the top instead, and drop the hash
-      if (/^#cat-/.test(location.hash)) { setUrl(cm.getAttribute("data-cat")); toTop(); window.addEventListener("load", toTop); }
-    } else showHome();
-  } catch (err) { showHome(); }
+  // The category the address names: ?cat= with a tile's slug or a record category's name (a dataset page's back link),
+  // or main's old anchor, /datasets/#cat-physical-oceanography, by the tile's slug or the slug of a record category in it
+  // (PR 57 review C9: the old anchors opened the tiles with nothing selected).
+  function slugOf(x) { return String(x || "").toLowerCase().replace(/&/g, " and ").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""); }
+  function catFromUrl() {
+    var c = null, h = null;
+    try { c = new URL(location.href).searchParams.get("cat"); } catch (err) { /* no URL API */ }
+    var m = /^#cat-(.+)$/.exec(location.hash || ""); if (m) { try { h = decodeURIComponent(m[1]); } catch (err) { h = m[1]; } }
+    function names(x) { return (x.getAttribute("data-cats") || "").split("|").filter(Boolean); }
+    return (c && cats.filter(function (x) { return x.getAttribute("data-cat") === c || names(x).indexOf(c) >= 0; })[0]) ||
+           (h && cats.filter(function (x) { return x.getAttribute("data-cat") === h || names(x).map(slugOf).indexOf(h) >= 0; })[0]) || null;
+  }
+  function fromUrl() {
+    var cm = catFromUrl();
+    if (cm) showCat(cm.getAttribute("data-cat")); else showHome();
+    return cm;
+  }
+  var cm0 = fromUrl();
+  // arriving by a link that ends #cat-…: the browser jumps to that spot; start at the top instead, and write the address
+  // as ?cat= (replaced, not pushed: it is the same step)
+  if (cm0 && /^#cat-/.test(location.hash)) {
+    try { var u0 = new URL(location.href); u0.searchParams.set("cat", cm0.getAttribute("data-cat")); u0.hash = ""; history.replaceState(null, "", u0.toString()); } catch (err) { /* keeps its URL */ }
+    toTop(); window.addEventListener("load", toTop);
+  }
+  window.addEventListener("popstate", function () { fromUrl(); toTop(); });
 
   if (!sel) select(ROWS.length ? ROWS[0].key : null);
   if (mapsUrl && window.fetch) fetch(mapsUrl).then(function (r) { return r.json(); }).then(function (m) { maps = m; if (sel) select(sel); }).catch(function () { maps = {}; if (sel) select(sel); });

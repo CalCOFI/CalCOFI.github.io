@@ -11,10 +11,8 @@
     return h ? h.getBoundingClientRect().height : 72;
   }
   function fit(el) {
-    // inside a page drawn at 90% (css zoom), the pane's height and its top are both in its own, unzoomed px
-    var z = el.currentCSSZoom || 1;
-    var top = headerH() + GAP, room = window.innerHeight - top - GAP, h = el.offsetHeight * z;
-    el.style.top = (h > room ? window.innerHeight - h - GAP : top) / z + "px";
+    var top = headerH() + GAP, room = window.innerHeight - top - GAP, h = el.offsetHeight;
+    el.style.top = (h > room ? window.innerHeight - h - GAP : top) + "px";
   }
   function init() {
     var els = [].slice.call(document.querySelectorAll("[data-stick]"));

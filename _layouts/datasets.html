@@ -52,9 +52,11 @@ layout: default
       <label class="bd-q"><i class="cc-i cc-i-ui-search" aria-hidden="true"></i>
         <span class="sr-only">Search datasets, species or measurements</span>
         <input id="bd-q" type="search" autocomplete="off" spellcheck="false" placeholder="Search datasets, species or measurements"
-               role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="bd-dd">
+               role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="bd-dd-list">
         <span class="bd-qn" id="bd-qn" aria-hidden="true">{{ b.rows.size }}</span></label>
-      <div class="bd-dd" id="bd-dd" role="listbox" aria-label="Matching datasets" hidden
+      {%- comment -%} the dropdown: a listbox that holds only its options (#bd-dd-list; each has an id, and the input's
+        aria-activedescendant names the one the arrow keys are on), then the two links to the other catalogs, outside it {%- endcomment -%}
+      <div class="bd-dd" id="bd-dd" hidden
            data-species="{{ '/species/' | relative_url }}" data-measurements="{{ '/measurements/' | relative_url }}"></div>
       </div>
       <label class="bd-sel"><span class="sr-only">Type</span><select id="bd-type">
@@ -71,17 +73,16 @@ layout: default
 </header>
 
 <main class="calm-page ds-cat ds-browse">
-{%- comment -%} the Datasets · Species · Measurements row was here; it is now the header menu beside the logo (Betty 2026-11-19) {%- endcomment -%}
+{%- comment -%} the three catalogs, the same row on each of them (PR 57 review D4); this page's view switch sits on its line {%- endcomment -%}
+{% include catalog_crumb.html on="datasets" %}
 
 <h2 class="sr-only">The datasets</h2>
 {%- comment -%}
   Two views (Betty 2026-11-18, mockup "Browse datasets — by category", Option A):
-    By category  (first, the default) the category TILES, Environment then Biology (_data/dataset_extras.yml
-                 `tiles`, _plugins/dataset_extras.rb). A tile opens its category: the other categories on the
-                 left, its datasets as rows (plain name, the record's name and program, collection, analysis,
-                 a short description, the NOAA ERDDAP tables it combines; status and the collection-method
-                 picture on the right), the preview on the right as before. Without JavaScript every category
-                 is drawn below the tiles and a tile is a link to it.
+    By category  (first, the default) the category TILES, Environment then Biology (the record's `browse`
+                 realms and groups, _plugins/dataset_extras.rb). A tile opens its category: its datasets as
+                 rows of four slots (_includes/browse_cat_row.html), the preview on the right as before.
+                 Without JavaScript every category is drawn below the tiles and a tile is a link to it.
     List         every dataset in one list, as before; a search switches to it.
 {%- endcomment -%}
 <div class="tabset calm-views ds-views bd-views" id="ts-ds-views" data-url-tab>
@@ -211,7 +212,7 @@ layout: default
       <span class="calm-ans">{{ ref.tables.size }} tables · {{ ref.layers.size }} spatial layers{% for r in ref.rasters %} · {{ r.name | escape }}{% endfor %}</span><i class="calm-chev cc-i cc-i-ui-down" aria-hidden="true"></i></summary>
     <div class="calm-body">{% include reference_band.html %}</div>
   </details>
-  <details class="calm-fold" id="release" open>
+  <details class="calm-fold" id="release">
     <summary><i class="cc-i cc-i-el-release" aria-hidden="true"></i>The release
       <span class="calm-ans">{{ rel.version | escape }}{% if rel.release_date %} · {{ rel.release_date | escape }}{% endif %} · {{ rel.n_tables }} tables · {{ nums.rows_m }} M rows</span><i class="calm-chev cc-i cc-i-ui-down" aria-hidden="true"></i></summary>
     <div class="calm-body">{% include release_strip.html %}</div>
