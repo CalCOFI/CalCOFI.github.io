@@ -9,7 +9,7 @@
    as a sideways scroll of all three catalog pages in the PR workflow, 2026-11-17) */
 /* the three catalogs as a tab bar (Betty 2026-11-19, mockup "The three catalogs", option 1): the one you are on bold
    with a slate bar under it, the others in link blue with a light bar on hover, all on one rule */
-.cf-crumb { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0 32px; margin: 0 0 18px; border-bottom: 1px solid color-mix(in srgb, var(--fg) 16%, var(--bg)); }
+.cf-crumb { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0 32px; margin: 0 0 6px; border-bottom: 1px solid color-mix(in srgb, var(--fg) 16%, var(--bg)); }
 .cf-crumb a { display: flex; align-items: baseline; gap: 8px; padding: 10px 2px; margin-bottom: -1px; border-bottom: 3px solid transparent; color: var(--accent); text-decoration: none; }
 .cf-crumb b { font-size: 19px; font-weight: 600; }
 .cf-crumb span { font: 600 13.5px var(--sans); color: var(--muted); font-variant-numeric: tabular-nums; }
