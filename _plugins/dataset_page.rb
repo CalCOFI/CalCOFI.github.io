@@ -90,7 +90,8 @@ module CalCOFI
     #   Dates        where the years cannot be measured, the record's asserted `temporal`
     #                ("1996 to 2022"), as main's page says it — never nothing
     #   Records · Sampling events · Stations
-    #   Taxa         for a dataset with taxa (singular for one), else Measurements, else neither
+    #   Taxa         for a dataset with taxa (singular for one)
+    #   Measurements for a dataset with measurement types (a biology dataset has both; PR 57 review: every number)
     #   Depth        the page's own depth phrase, "surface" capitalized
     def facts(r, years_span: nil, depth: nil, n_taxa: 0, n_meas: 0)
       cov = r["coverage"] || {}
@@ -102,9 +103,8 @@ module CalCOFI
       out << [num(cov["n_obs"]), "Records"] if cov["n_obs"].to_i.positive?
       out << [num(cov["n_roots"]), "Sampling events"] if cov["n_roots"].to_i.positive?
       out << [num(cov["n_stations"]), "Stations"] if cov["n_stations"].to_i.positive?
-      if n_taxa.to_i.positive? then out << [num(n_taxa), n_taxa == 1 ? "Taxon" : "Taxa"]
-      elsif n_meas.to_i.positive? then out << [num(n_meas), n_meas == 1 ? "Measurement" : "Measurements"]
-      end
+      out << [num(n_taxa), n_taxa == 1 ? "Taxon" : "Taxa"] if n_taxa.to_i.positive?
+      out << [num(n_meas), n_meas == 1 ? "Measurement" : "Measurements"] if n_meas.to_i.positive?
       out << [depth.to_s.sub(/\Asurface\z/, "Surface"), "Depth"] if depth
       out
     end
@@ -171,7 +171,20 @@ module CalCOFI
       hi = ms.each_with_index.max_by(&:first)
       note = hi && hi[0].positive? ? "Most in #{Date::MONTHNAMES[hi[1] + 1]}" : nil
       note = "#{note}, fewest in #{Date::MONTHNAMES[lo[1] + 1]}" if note && lo && lo[1] != hi[1]
-      { "tiles" => ms.each_with_index.map { |v, i| { "m" => MONTHS[i], "n" => num(v), "pct" => (v * 100.0 / max).round } }, "note" => note }
+      { "tiles" => ms.each_with_index.map { |v, i| pct = (v * 100.0 / max).round; { "m" => MONTHS[i], "n" => num(v), "pct" => pct, "ink" => tile_ink(pct) } }, "note" => note }
+    end
+
+    # The ink a month tile's words take, per theme, as the tile's classes (assets/dataset-page.css). A tile is the
+    # theme's accent mixed into its panel by `pct` (color-mix in srgb), so its shade runs from the panel to the full
+    # accent and no one ink reads on all of it (PR 57 review F7: 2.28:1 at worst, in both themes). The bands, measured
+    # against brand/v2/theme.css at every whole percent, each 4.5:1 or better:
+    #   light  the page ink to 58% (4.97:1 at 58), black 59 to 82% (4.60 at 82), white from 83% (4.65 at 83)
+    #   dark   the page ink to 45% (4.97:1 at 45), white 46 to 58% (4.60 at 58), black from 59% (4.65 at 59)
+    # "" is the page ink (no class). _test/dataset_page_test.rb pins the edges.
+    INK = { "l" => [[58, nil], [82, "k"], [100, "w"]], "d" => [[45, nil], [58, "w"], [100, "k"]] }.freeze
+    def tile_ink(pct)
+      pct = pct.to_i.clamp(0, 100)
+      INK.filter_map { |theme, bands| (ink = bands.find { |top, _| pct <= top }[1]) && "m#{theme}-#{ink}" }.join(" ")
     end
 
     # taxa.json → {dataset_key => [[taxon, n_obs in that dataset], …]}: every taxon a dataset observed
@@ -434,10 +447,10 @@ module CalCOFI
       a = r["attribution"] || {}
       dist = r["distributions"] || []
       lede, rest = DatasetPage.lede_rest(@cat.plain(r["description_md"]), @cat.first_sentence(r["description_md"]))
-      # A dataset listed in _data/dataset_extras.yml (Betty 2026-11-20): "More about the record" is only what that file's
-      # `more:` gives, and the sentence under the title its `lede:` when the record's first sentence is cut short. Nothing
-      # else of the record's description reaches the page, so notes for the data team never do. An unlisted dataset
-      # keeps the record's own first sentence and the rest.
+      # A dataset whose record carries display words (Betty 2026-11-20): "More about the record" is only the record's
+      # `display.notes_md`, and the sentence under the title its `display.description_lede` when the first sentence is
+      # cut short. Nothing else of the description reaches the page, so notes for the data team never do. A dataset
+      # without display words keeps the record's own first sentence and the rest.
       xe = DatasetExtras.for(@extras, key)
       if xe["listed"]
         lede = xe["lede"] || lede
@@ -477,8 +490,9 @@ module CalCOFI
         # the citation as the provider gives it; the page's own cite_text adds licence, DOI and acknowledgement,
         # which sit beside it here
         "cite" => Fmt.present(a["citation_main"]),
+        # the Dataset Finder's page for this dataset: the line under "Just part of it?"
         "finder" => finder && finder["dataset_url"].gsub("{key}", key),
-        # `map_note:` in _data/dataset_extras.yml says so where a dataset has no stations (samples pooled into regions) instead of counting them (Betty 2026-11-21)
+        # the record's `display.spatial_note` says so where a dataset has no stations (samples pooled into regions) instead of counting them (Betty 2026-11-21)
         "map_cap" => [xe["map_note"] || (cov["n_stations"].to_i.positive? ? "#{DatasetPage.num(cov['n_stations'])} stations sampled" : nil), Fmt.present(cov["spatial"])].compact.join(" · "),
         "erddap_obs" => erd.find { |x| x["url"].end_with?("/#{key}.html") }&.dig("url"),
         "erddap_sample" => erd.find { |x| x["url"].end_with?("/#{key}_sample.html") }&.dig("url"),

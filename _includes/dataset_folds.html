@@ -9,6 +9,20 @@
 {%- endcomment -%}
 <div class="calm-folds ds-folds">
 
+{%- comment -%} ── Also on NOAA ERDDAP · N tables: the NOAA ERDDAP tables the record marks `kind: mirror` — other places the
+  same data are served, not what the release was built from (PR 57 review F5; the page said "Combined from N source
+  tables" of them). Reference, so a closed fold. Only the redesigned page has page.dp. ── {%- endcomment -%}
+{%- assign mirrors = page.dp.sources | where: "kind", "mirror" -%}
+{%- if mirrors.size > 0 -%}
+<details class="calm-fold" id="noaa">
+  <summary><i class="cc-i cc-i-way-erddap" aria-hidden="true"></i>Also on NOAA ERDDAP
+    <span class="calm-ans">{{ mirrors.size }} table{% if mirrors.size != 1 %}s{% endif %} · the same data, served by NOAA</span><i class="calm-chev cc-i cc-i-ui-down" aria-hidden="true"></i></summary>
+  <div class="calm-body">
+    <ul class="dp-cg">{% for t in mirrors %}<li><a href="{{ t.url | escape }}" target="_blank" rel="noopener"><b>{{ t.title | escape }} <span aria-hidden="true">↗</span></b><code>{{ t.id | escape }}</code></a></li>{% endfor %}</ul>
+  </div>
+</details>
+{%- endif -%}
+
 {%- comment -%} ── Every endpoint · N (D16): the Access tabset, unchanged — one tab per group, the
   copy buttons, the ERDDAP format matrix, the portals and their status. Each group's own pill
   (g.n) and the fold's answer (page.n_endpoints) are the same sum, computed once in the plugin. ── {%- endcomment -%}

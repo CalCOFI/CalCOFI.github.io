@@ -132,6 +132,13 @@ class DatasetExtrasTest < Minitest::Test
     assert_equal "Event latitude.", f[1]["desc"], "the first file's description"
     assert_equal "Net gear code, C1.", f[2]["desc"], "backticks dropped"
     assert_equal [true, true, false], f.map { |x| x["main"] }, "tow_type folds with the rest (Betty 2026-11-21)"
+    # a dataset with no species: the species columns its files carry empty are left out, not typed into a hide list
+    meta["columns"]["obs.scientific_name"] = { "description_md" => "Accepted name." }
+    meta["columns"]["obs.taxon_key"] = { "description_md" => "Taxon." }
+    meta["columns"]["obs.life_stage"] = { "description_md" => "Stage." }
+    assert_equal %w[datetime latitude scientific_name tow_type taxon_key life_stage], X.fields(meta, { "tables" => %w[sample obs measurement_type] }).map { |x| x["field"] }
+    assert_equal %w[datetime latitude], X.fields(meta, { "tables" => %w[sample obs measurement_type] }, bio: false).map { |x| x["field"] },
+                 "scientific_name, taxon_key, life_stage and tow_type are not drawn for a dataset without taxa"
     assert_equal [], X.fields(nil, { "tables" => %w[obs] })
   end
 

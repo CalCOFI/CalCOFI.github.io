@@ -142,8 +142,9 @@ class DatasetPageTest < Minitest::Test
   def test_facts_for_a_biology_dataset
     r = { "coverage" => { "year_min" => 1951, "year_max" => 2023, "n_obs" => 487_616, "n_roots" => 53_604, "n_stations" => 215 } }
     assert_equal [["1951–2023", "Years"], ["487,616", "Records"], ["53,604", "Sampling events"], ["215", "Stations"],
-                  ["992", "Taxa"], ["0–210 m", "Depth"]],
-                 DP.facts(r, years_span: "1951–2023", depth: "0–210 m", n_taxa: 992, n_meas: 6)
+                  ["992", "Taxa"], ["6", "Measurements"], ["0–210 m", "Depth"]],
+                 DP.facts(r, years_span: "1951–2023", depth: "0–210 m", n_taxa: 992, n_meas: 6),
+                 "a biology dataset shows its taxa AND its measurement types (PR 57 review: every number)"
   end
 
   def test_facts_for_an_environment_dataset_singular_and_surface
@@ -408,10 +409,49 @@ class DatasetPageTest < Minitest::Test
   def test_month_tiles
     m = DP.month_tiles({ "months" => [54370, 54004, 40939, 89529, 34989, 31411, 56301, 33624, 19214, 38448, 23091, 11696] })
     assert_equal 12, m["tiles"].size
-    assert_equal({ "m" => "Apr", "n" => "89,529", "pct" => 100 }, m["tiles"][3])
+    assert_equal({ "m" => "Apr", "n" => "89,529", "pct" => 100, "ink" => "ml-w md-k" }, m["tiles"][3])
     assert_equal 13, m["tiles"][11]["pct"]
+    assert_equal "", m["tiles"][11]["ink"], "a pale tile keeps the page ink in both themes"
     assert_equal "Most in April, fewest in December", m["note"]
     assert_equal "Most in March", DP.month_tiles({ "months" => [0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0] })["note"]
     assert_nil DP.month_tiles({ "months" => [1, 2] })
+  end
+
+  # PR 57 review F7: the words on a month tile take the ink that reads on that tile's shade, per theme.
+  # The edges of each band (see DP::INK): light 58|59 and 82|83, dark 45|46 and 58|59.
+  def test_tile_ink_bands
+    assert_equal "", DP.tile_ink(0)
+    assert_equal "", DP.tile_ink(45)
+    assert_equal "md-w", DP.tile_ink(46), "dark: white from 46%"
+    assert_equal "md-w", DP.tile_ink(58)
+    assert_equal "ml-k md-k", DP.tile_ink(59), "light: black from 59%; dark: black from 59%"
+    assert_equal "ml-k md-k", DP.tile_ink(82)
+    assert_equal "ml-w md-k", DP.tile_ink(83), "light: white from 83%"
+    assert_equal "ml-w md-k", DP.tile_ink(100)
+    assert_equal "ml-w md-k", DP.tile_ink(140), "clamped"
+  end
+
+  # every band's ink is 4.5:1 or better on the tile it is drawn on, at every whole percent, against the theme's
+  # own tokens (brand/v2/theme.css: read here, so a token change that breaks a band fails this test)
+  def test_tile_ink_passes_aa_at_every_shade
+    css = File.read(File.expand_path("../brand/v2/theme.css", __dir__))
+    tok = lambda do |block, name|
+      block[/--#{name}:\s*(#[0-9a-fA-F]{6})/, 1].scan(/\h\h/).map { |x| x.to_i(16) }
+    end
+    light = css[/:root\s*\{.*?\}/m] or flunk "no :root block in theme.css"
+    dark = css[/\[data-theme="dark"\]\s*\{.*?\}/m] or flunk "no dark block in theme.css"
+    lum = lambda do |c|
+      r, g, b = c.map { |v| v /= 255.0; v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055)**2.4 }
+      0.2126 * r + 0.7152 * g + 0.0722 * b
+    end
+    cr = ->(a, b) { x, y = lum.(a), lum.(b); ([x, y].max + 0.05) / ([x, y].min + 0.05) }
+    { "l" => light, "d" => dark }.each do |theme, block|
+      acc, panel, fg = tok.(block, "accent"), tok.(block, "panel"), tok.(block, "fg")
+      (0..100).each do |p|
+        bg = acc.zip(panel).map { |a, b| a * p / 100.0 + b * (100 - p) / 100.0 }
+        ink = case DP.tile_ink(p)[/m#{theme}-(\w)/, 1] when "k" then [0, 0, 0] when "w" then [255, 255, 255] else fg end
+        assert_operator cr.(ink, bg), :>=, 4.5, "theme #{theme}, tile at #{p}%"
+      end
+    end
   end
 end

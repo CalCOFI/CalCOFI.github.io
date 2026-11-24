@@ -1,6 +1,6 @@
 /* The dataset page (_includes/dataset_page.html; Betty 2026-11-15): the rest of the description,
-   finding a species in the list, showing all of it, the CSV buttons beside each species or measurement, the Measurements table
-   (assets/download-form.js), and copying the citation. The whole-dataset button is main's Download link
+   finding a species in the list, showing all of it, the CSV buttons beside each species or measurement
+   (assets/download-form.js), the Species · Measurements · Fields tabs' anchors, and copying the citation. The whole-dataset button is main's Download link
    and dialog (assets/download.js). */
 (function () {
   "use strict";
@@ -86,19 +86,40 @@
   });
 })();
 
-// the hero's Download button opens the same dialog as the side card's (#dl-btn; assets/download.js), and
-// "In code" opens the Every endpoint fold it points to
+// "In code" opens the Every endpoint fold it points to. (The hero's own Download button is gone: the side card's
+// #dl-btn is the page's one Download; PR 57 review.)
 (function () {
   "use strict";
   document.addEventListener("click", function (e) {
-    var t = e.target.closest && e.target.closest("[data-dl-open], [data-open-fold]");
+    var t = e.target.closest && e.target.closest("[data-open-fold]");
     if (!t) return;
-    if (t.hasAttribute("data-dl-open")) { var b = document.getElementById("dl-btn"); if (b) { e.preventDefault(); b.click(); } return; }
     var f = document.querySelector(t.getAttribute("href"));
     if (f && f.tagName === "DETAILS") f.open = true;
     // and on the tab the link is about ("In code" lands on Code, not on Explore) (Betty 2026-11-21)
     var tab = t.getAttribute("data-fold-tab"), tb = tab && document.getElementById("access-tab-" + tab);
     if (tb) tb.click();
+  });
+})();
+
+// Species · Measurements · Fields is one tabset (assets/tabs.js). The panels keep the page's anchors (#taxa, #variables,
+// #fields): arriving on one, or following a link to one, selects its tab first, so the anchor never lands on a hidden panel.
+(function () {
+  "use strict";
+  var set = document.getElementById("ts-dp-lists");
+  if (!set) return;
+  function show(hash, scroll) {
+    var id = String(hash || "").replace(/^#/, "");
+    var el = id && document.getElementById(id), panel = el && el.closest && el.closest(".tabpanel");
+    if (!panel || !set.contains(panel)) return;
+    var tab = set.querySelector('.tabrow > button[data-tab="' + panel.getAttribute("data-panel") + '"]');
+    if (tab && tab.getAttribute("aria-selected") !== "true") tab.click();
+    if (scroll) set.scrollIntoView({ block: "start" });
+  }
+  show(location.hash, !!location.hash);
+  window.addEventListener("hashchange", function () { show(location.hash, true); });
+  document.addEventListener("click", function (e) {
+    var a = e.target.closest && e.target.closest('a[href^="#"]');
+    if (a) show(a.getAttribute("href"), false);
   });
 })();
 
@@ -125,58 +146,34 @@
   });
 })();
 
-// Field descriptions: "Show N more fields" sits under the extra rows and becomes "Show less" when they are open (Betty 2026-11-20).
-// Closing brings the top of the table back into view, so the reader is not left far below it. Without JavaScript the rows are all shown.
+// Measurements and Fields: the first eight rows show, the rest ([data-rest]) fold behind one button at the END of the table.
+// The same pair of words on every list of the page, the species list's too: "Show all N" / "Show fewer" (PR 57 review).
+// Closing brings the top of the list back into view. The button is drawn hidden and shown here; without JavaScript every row shows.
 (function () {
   "use strict";
-  var wrap = document.querySelector("[data-fmore]"); if (!wrap) return;
-  var body = wrap.querySelector("[data-fmore-body]"), btn = wrap.querySelector("[data-fmore-btn]");
-  if (!body || !btn) return;
-  var more = btn.textContent;
-  btn.hidden = false;
-  btn.addEventListener("click", function () {
-    var opening = body.hidden;
-    body.hidden = !opening;
-    btn.setAttribute("aria-expanded", opening ? "true" : "false");
-    btn.textContent = opening ? "Show less" : more;
-    if (!opening) { var f = document.getElementById("fields"); if (f && f.getBoundingClientRect().top < 0) f.scrollIntoView({ block: "start" }); }
+  [].forEach.call(document.querySelectorAll("[data-show-all]"), function (b) {
+    var panel = b.closest(".dp-panel"); if (!panel) return;
+    var rows = panel.querySelectorAll("tr[data-rest]"), n = b.getAttribute("data-n");
+    function set(open) {
+      [].forEach.call(rows, function (r) { r.hidden = !open; });
+      b.setAttribute("aria-expanded", open ? "true" : "false");
+      b.textContent = open ? "Show fewer" : "Show all " + n;
+    }
+    set(false); b.hidden = false;
+    b.addEventListener("click", function () {
+      var open = b.getAttribute("aria-expanded") !== "true"; set(open);
+      if (!open && panel.getBoundingClientRect().top < 0) panel.scrollIntoView({ block: "start" });
+    });
   });
 })();
 
-/* Field descriptions (Betty 2026-11-20): the first rows show, the rest fold behind "Show N more fields", and that button sits at the
-   END of the table, after the rows it reveals; "Hide" puts them away again. Without JavaScript every row is shown. */
-(function () {
-  "use strict";
-  var b = document.querySelector("[data-fmore-btn]");
-  if (!b) return;
-  var rows = document.querySelectorAll("#fields tr[data-fmore]"), n = b.getAttribute("data-n");
-  function set(open) {
-    [].forEach.call(rows, function (r) { r.hidden = !open; });
-    b.setAttribute("aria-expanded", open ? "true" : "false");
-    b.textContent = open ? "Hide the last " + n + " fields" : "Show " + n + " more field" + (n === "1" ? "" : "s");
-  }
-  set(false); b.hidden = false;
-  b.addEventListener("click", function () { set(b.getAttribute("aria-expanded") !== "true"); });
-})();
-
-// Measurements (Betty 2026-11-21): the first eight rows show, the rest fold behind a button at the END of the table (as Field descriptions does),
-// and "Measurement list (CSV)" writes every row, shown or folded: measurement_type, units, description (the columns of the release's measurement_type.csv).
-// Both are drawn hidden and shown here, so nothing sits there doing nothing without JavaScript (then every row shows).
+// "Measurement list (CSV)" writes every row, shown or folded: measurement_type, units, description (the columns of the
+// release's measurement_type.csv). Drawn hidden and shown here, so it never sits there doing nothing without JavaScript.
 (function () {
   "use strict";
   var sec = document.getElementById("variables");
   if (!sec) return;
-  var rows = sec.querySelectorAll("tbody tr"), more = sec.querySelectorAll("tr[data-mmore]"), btn = sec.querySelector("[data-mmore-btn]"), csv = sec.querySelector("[data-meas-csv]");
-  if (btn) {
-    var n = btn.getAttribute("data-n");
-    var set = function (open) {
-      [].forEach.call(more, function (r) { r.hidden = !open; });
-      btn.setAttribute("aria-expanded", open ? "true" : "false");
-      btn.textContent = open ? "Hide the last " + n + " measurements" : "Show " + n + " more measurement" + (n === "1" ? "" : "s");
-    };
-    set(false); btn.hidden = false;
-    btn.addEventListener("click", function () { set(btn.getAttribute("aria-expanded") !== "true"); });
-  }
+  var rows = sec.querySelectorAll("tbody tr"), csv = sec.querySelector("[data-meas-csv]");
   if (csv) {
     csv.hidden = false;
     var q = function (v) { v = String(v == null ? "" : v).trim(); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };

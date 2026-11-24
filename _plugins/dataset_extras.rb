@@ -65,7 +65,7 @@ module CalCOFI
     # A short description for a dataset's row (Betty 2026-11-18: "desc are unnecessarily long"): the record's
     # first sentence, and the second too when the first is short; without the notes meant for the data team
     # ("(see questions calcofidic01 and calcofidic07)") or a status the row already shows ("(completed)").
-    # `blurb:` in _data/dataset_extras.yml replaces it.
+    # The record's `display.description_short` replaces it.
     NOTE = /\s*\((?:see\b[^)]*|[^)]*\bquestions?\b[^)]*|completed|ongoing|archived)\)/i
     def short_desc(text)
       s = present(text.to_s.gsub(NOTE, "").gsub(/\s+/, " ").strip) or return nil
@@ -161,7 +161,8 @@ module CalCOFI
     SKIP = /\A_|(_uuid|_id|hex\d*|hex_id|geom|_source_row|_source_file)\z|\A(sample_key|parent_sample_key|root_sample_key|
             dataset_key|grid_key|realm|data_stage|order_occ)\z/x
 
-    # (`bio: false`, a dataset with no species, also folds the species columns its files carry empty)
+    # (`bio: false`, a dataset with no species: the species columns its files carry empty are left out altogether;
+    # they are still in columns.csv in the zip)
     BIO = %w[scientific_name taxon_key life_stage tow_type].freeze
     # The page's Units column also says how a value is written, where the release gives no units (the CSV keeps only the units) (Betty 2026-11-21: UTC, YYYY-MM-NODC, line station),
     # and the words of a column the release describes too thinly (scientific_name: where its identifiers are).
@@ -176,6 +177,7 @@ module CalCOFI
         cols.each do |k, v|
           tb, col = k.to_s.split(".", 2)
           next unless tb == t && col && !col.match?(SKIP)
+          next if !bio && BIO.include?(col)
           v = {} unless v.is_a?(Hash)
           d = present(v["description"]) || present(v["description_md"])
           next unless d
@@ -184,7 +186,7 @@ module CalCOFI
             row["units"] ||= present(v["units"])
           else
             by[col] = { "field" => col, "files" => ["#{t}.csv"], "units" => present(v["units"]),
-                        "desc" => d.gsub(/`([^`]+)`/, '\1'), "main" => MAIN.include?(col) && (bio || !BIO.include?(col)) }
+                        "desc" => d.gsub(/`([^`]+)`/, '\1'), "main" => MAIN.include?(col) }
           end
         end
       end
