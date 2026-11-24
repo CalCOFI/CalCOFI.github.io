@@ -286,31 +286,37 @@ module CalCOFI
     #   * the release's own measurement_types (release_metadata.json): every value `measurement_type` can take in the dataset, with its units
     #     and description. These are the rest of an environmental dataset's (the cast's wind, waves, Secchi depth ... in Bottle) and ALL of a
     #     biology dataset's, which measurements.json does not cover.
-    # `measurements:` in _data/dataset_extras.yml (name, desc, units) replaces a row's words, or adds a row the release does not have.
     # The cleaned (QC'd) measurements come first, the "Reported ..." pre-QC ones after them; within each, the ones every dataset shares
     # (temperature, salinity ...), then the record's category order, then most values.
-    def table_rows(groups, listed, types = nil, key = nil)
+    # the measurement_type values the release holds a value for in one dataset: the record's measured `obs`
+    # variables and the per-cast types counted from sample_measurement (_data/dataset_measurements.json)
+    def counted_types(record, per_cast)
+      v = ((record || {}).dig("coverage", "variables") || []).filter_map { |x| x.is_a?(Hash) ? x["name"] : nil }
+      pc = ((per_cast || {}).dig("per_cast", "types") || []).filter_map { |x| x["measurement_type"] }
+      (v + pc).uniq
+    end
+
+    # a provider's own terms document: the licence's link when it is not the licence's standard page
+    def agreement_url(a)
+      u = Fmt.present((a || {})["license_url"]) or return nil
+      return nil if (a["license"].to_s == "custom") || u.match?(%r{\Ahttps?://(www\.)?(creativecommons\.org|usa\.gov)/})
+      u
+    end
+
+    def table_rows(groups, counted, types = nil, key = nil)
       env = groups.flat_map { |g| g["rows"] }
       has_series = !env.empty?
       rows = env.map { |x| x.merge("env" => true) }
       seen = rows.map { |x| x["mt"] }
+      counted = counted.to_a
       (types.is_a?(Hash) ? types : {}).each do |name, v|
-        next unless v.is_a?(Hash) && Array(v["datasets"]).include?(key) && !seen.include?(name)
+        # the registry says which datasets a type MAY appear in; the page lists it only where the release holds a value
+        # (80 listed rows across 10 datasets had none: PR 57 review F1)
+        next unless v.is_a?(Hash) && Array(v["datasets"]).include?(key) && !seen.include?(name) && counted.include?(name)
         rows << { "k" => name, "mt" => name, "lab" => nil, "units" => Fmt.units(v["units"]), "desc" => Fmt.present(v["description"]),
                   "years" => nil, "url" => nil, "pick" => false, "env" => has_series, "canon" => v["is_canonical"] != false,
                   "unified" => false, "order" => 99, "n_raw" => 0 }
         seen << name
-      end
-      (listed || []).each do |x|
-        name = Fmt.present(x["name"]) or next
-        units = Fmt.units(x["units"]); desc = Fmt.present(x["desc"])
-        if (r = rows.find { |y| y["mt"] == name })
-          r["units"] = units if units
-          r["desc"] = desc if desc
-        else
-          rows << { "k" => name, "mt" => name, "lab" => nil, "units" => units, "desc" => desc, "years" => nil, "url" => nil,
-                    "pick" => false, "env" => has_series, "canon" => true, "unified" => false, "order" => 99, "n_raw" => 0 }
-        end
       end
       rows.each_with_index.sort_by { |x, i| [x["canon"] == false ? 1 : 0, x["unified"] ? 0 : 1, x["order"].to_i, -x["n_raw"].to_i, i] }.map(&:first)
     end
@@ -402,7 +408,8 @@ module CalCOFI
       # every taxon a dataset observed, from taxa.json (the record's coverage lists only the top 50)
       @by_ds = DatasetPage.observed_by_dataset(@taxa.values)
       @series = DatasetPage.series_by_dataset((read("measurements") || {})["measurements"])
-      @extras = site.data["dataset_extras"]
+      @extras = DatasetExtras.from_record(site.data["datasets"])
+      @per_cast = (read("dataset_measurements") || {})["datasets"]
       @tiles = site.data.dig("browse", "tiles") || []
       @meta = read("release_metadata")
       site.pages.each do |page|
@@ -438,7 +445,7 @@ module CalCOFI
       end
       taxa = DatasetPage.taxa_rows(@by_ds[key], cov, @taxa, @media, namer: @namer)
       meas = DatasetPage.meas_rows(@series[key])
-      mrows = DatasetPage.table_rows(meas, xe["measurements"], (@meta.is_a?(Hash) ? @meta["measurement_types"] : nil), key)
+      mrows = DatasetPage.table_rows(meas, DatasetPage.counted_types(r, @per_cast&.dig(key)), (@meta.is_a?(Hash) ? @meta["measurement_types"] : nil), key)
       n_meas = mrows.size
       # the Code tab written for this dataset: the DuckDB example reads the dataset's own obs table, whose address the tab already lists
       acc = page.data["access"]
@@ -453,7 +460,7 @@ module CalCOFI
       src = dist.find { |x| x["kind"] == "source" && Fmt.present(x["url"]) }
       {
         "lede" => lede, "rest" => rest,
-        "byline" => DatasetPage.byline(r, !(xe["analysis_lab"] || xe["analysis_who"])),
+        "byline" => DatasetPage.byline(r, !xe["analysis_lab"]),
         "facts" => DatasetPage.facts(r, years_span: page.data["years_span"], depth: page.data["depth"],
                                         n_taxa: taxa[:rows].size, n_meas: n_meas),
         "years" => DatasetPage.years_svg(cov, @cat.strip_span), "months" => DatasetPage.months_html(cov),
@@ -469,29 +476,29 @@ module CalCOFI
         "samples_only" => @cat.samples_only?(r),
         # the citation as the provider gives it; the page's own cite_text adds licence, DOI and acknowledgement,
         # which sit beside it here
-        "cite" => xe["citation_override"] || Fmt.present(a["citation_main"]),
+        "cite" => Fmt.present(a["citation_main"]),
         "finder" => finder && finder["dataset_url"].gsub("{key}", key),
         # `map_note:` in _data/dataset_extras.yml says so where a dataset has no stations (samples pooled into regions) instead of counting them (Betty 2026-11-21)
         "map_cap" => [xe["map_note"] || (cov["n_stations"].to_i.positive? ? "#{DatasetPage.num(cov['n_stations'])} stations sampled" : nil), Fmt.present(cov["spatial"])].compact.join(" · "),
         "erddap_obs" => erd.find { |x| x["url"].end_with?("/#{key}.html") }&.dig("url"),
         "erddap_sample" => erd.find { |x| x["url"].end_with?("/#{key}_sample.html") }&.dig("url"),
         # a portal's short name is the catalog's (Catalog#portal_short), not a second map kept here
-        "src" => xe["source_url"] || (src && src["url"]), "src_portal" => xe["source_url"] ? xe["source_label"] : (src && src["portal"] != "other" ? @cat.portal_short(src["portal"]) : nil),
+        "src" => src && src["url"], "src_portal" => (src && src["portal"] != "other" ? @cat.portal_short(src["portal"]) : nil),
         "archived" => (r["registrations"] || []).select { |x| x["status"] == "published" && !%w[erddap ncei edi obis].include?(x["portal"]) && Fmt.present(x["url"]) } # the box is for the whole release (Zenodo); a portal's record of this one dataset (NCEI, EDI, OBIS) is under Archives & portals (Betty 2026-11-21)
                         .map { |x| { "name" => @cat.portal_short(x["portal"]), "url" => x["url"] } },
-        "creators" => DatasetPage.creators(a, xe["creator_org"]),
+        "creators" => DatasetPage.creators(a, nil),
         "contact" => Fmt.present(a["contact"].to_s.sub(/\Amailto:/, "")),
         "data_provider" => (a["data_provider"].is_a?(Hash) ? a["data_provider"] : nil),
-        "funding" => Fmt.present(a["funding"]), "ack" => xe["ack_override"] || Fmt.present(a["acknowledgement"]),
-        "ack_only" => !xe["ack_override"].nil?, "licence_note" => xe["licence_note"], "sources_inline" => xe["sources_inline"], "refs" => xe["refs"],
-        "agreement_url" => xe["agreement_url"], "agreement_label" => xe["agreement_label"],
+        "funding" => Fmt.present(a["funding"]), "ack" => Fmt.present(a["acknowledgement"]), "refs" => xe["refs"],
+        # the provider's own terms, when the licence links a document that is not the licence's standard page
+        "agreement_url" => DatasetPage.agreement_url(a),
         "license" => Fmt.present(a["license_name"]) || Fmt.present(a["license"]), "license_url" => Fmt.present(a["license_url"]),
         "doi" => Fmt.present(a["doi"]),
         # Betty 2026-11-18: the words the record does not carry yet, the tile it sits in (the back link),
         # the NOAA ERDDAP tables it combines, the download's columns, and the first five species
-        "extra" => DatasetExtras.for(@extras, key),
+        "extra" => xe,
         "tile" => DatasetExtras.tile_of(@tiles, key),
-        "sources" => DatasetExtras.source_tables(r),
+        "sources" => (srcs = DatasetExtras.source_tables(r)), "combined" => DatasetExtras.combined?(srcs),
         "fields" => DatasetExtras.fields(@meta, r, bio: taxa[:rows].any?),
         # what assets/dataset-page.js needs for the download form
         "dl" => JSON.generate({

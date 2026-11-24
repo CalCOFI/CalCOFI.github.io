@@ -1,76 +1,64 @@
 # frozen_string_literal: true
 
-# Words for people browsing the datasets that the release record does not carry yet
-# (_data/dataset_extras.yml; Betty 2026-11-18): a plain name, how the data were collected and
-# analysed, a collection-method picture, ongoing/ended, and the category tiles of /datasets/.
+# Words for people browsing the datasets, read from the release record (datasets.json schema 1.2: each
+# dataset's `display` block, `browse`, and `attribution.associated_parties`): a plain name, how the data
+# were collected and analysed, a collection-method picture, ongoing/ended, and the tiles of /datasets/.
+# They are authored in workflows (ingest notebooks, sidecars, registries), never here: there is no
+# _data/dataset_extras.yml, and _test/dataset_extras_test.rb fails the build if one comes back.
 #
-# Pure rules, no Jekyll dependency, so _test/dataset_extras_test.rb pins them. browse.rb merges them
-# into the rows and builds the tiles; dataset_page.rb adds them to page.dp. Anything the file does
-# not give is nil and is not drawn: nothing here is guessed.
+# Pure rules, no Jekyll dependency. browse.rb merges them into the rows and builds the tiles;
+# dataset_page.rb adds them to page.dp. Anything the record does not give is nil and is not drawn.
 module CalCOFI
   module DatasetExtras
     module_function
-
-    METHODS = {
-      "net" => "Net tow", "pump" => "Ship’s pump", "ctd" => "CTD sensors", "bottle" => "Water samples",
-      "ship" => "Underway sensors", "eye" => "Visual survey", "calc" => "Derived"
-    }.freeze
-    STATUS = { "ongoing" => "Ongoing", "archived" => "Ended" }.freeze
 
     def present(s)
       s = s.to_s.strip
       s.empty? ? nil : s
     end
 
-    # "Visual microscopy (NOAA SWFSC)" → ["Visual microscopy", "NOAA SWFSC"]; "(SIO)" → [nil, "SIO"];
-    # "Flow cytometry" → ["Flow cytometry", nil]. The lab is the LAST bracket, so a method may hold its own.
-    def analysis(s)
-      s = present(s) or return [nil, nil]
-      m = s.match(/\A(.*?)\s*\(([^()]*)\)\s*\z/)
-      return [s, nil] unless m
-      [present(m[1]), present(m[2])]
+    # The record's own display words, as this module's "extras": { "datasets" => { key => record }, "browse" => … }.
+    # Built once from datasets.json (schema 1.2). An older record has no `display` and no `browse`: every word
+    # is then nil and the tiles fall back to the record's categories.
+    def from_record(rec)
+      rec = {} unless rec.is_a?(Hash)
+      ds = {}
+      (rec["datasets"] || []).each { |r| ds[r["dataset_key"]] = r if r.is_a?(Hash) }
+      { "datasets" => ds, "browse" => (rec["browse"].is_a?(Hash) ? rec["browse"] : nil) }
     end
 
-    # one dataset's extras, every key present (nil when not given)
+    # The person at the provider who holds the data: the record's associated party whose role says so.
+    def data_provider(record)
+      ps = record.dig("attribution", "associated_parties")
+      p = (ps.is_a?(Array) ? ps : []).find { |x| x.is_a?(Hash) && x["role"].to_s.match?(/data provider/i) && present(x["name"]) }
+      p && { "name" => p["name"], "organization" => present(p["organization"]), "email" => present(p["email"]) }
+    end
+
+    # one dataset's display words, every key present (nil when the record does not give it)
     def for(extras, key)
-      e = (extras.is_a?(Hash) ? extras.dig("datasets", key) : nil) || {}
-      meth, lab = analysis(e["analysis"])
-      mk = present(e["method"])
-      st = present(e["status"])&.downcase
+      r = (extras.is_a?(Hash) ? extras.dig("datasets", key) : nil) || {}
+      e = r["display"].is_a?(Hash) ? r["display"] : {}
+      m = e["collection_method"].is_a?(Hash) ? e["collection_method"] : {}
+      st = present(e["collection_status"])&.downcase
+      refs = e["references"].is_a?(Array) ? e["references"] : []
+      notes = e["column_notes"].is_a?(Hash) ? e["column_notes"] : {}
       {
-        "plain" => present(e["plain"]), "collection" => present(e["collection"]),
-        "analysis_method" => meth, "analysis_lab" => lab,
-        # the people who did the analysis, written in `who:`; shown after the lab and not in bold (Betty 2026-11-20)
-        "analysis_who" => present(e["who"]),
-        # where "Original data" goes when the release record names no source, or the wrong one (Betty 2026-11-20)
-        "source_url" => present(e["source_url"]), "source_label" => present(e["source_label"]),
-        "method" => METHODS.key?(mk) ? mk : nil, "method_label" => METHODS[mk],
-        "status" => STATUS.key?(st) ? st : nil, "status_label" => STATUS[st],
-        "blurb" => present(e["blurb"]),
-        # the citation the data's provider wants used; it wins over the release record's citation_main (Betty 2026-11-20)
-        "citation_override" => present(e["citation_override"]),
-        # the acknowledgement a provider asks for, which replaces the record's funding/acknowledgement line, and the signed
-        # data-sharing agreement it comes from (a file under assets/agreements/) (Betty 2026-11-20)
-        "ack_override" => present(e["ack_override"]),
-        "licence_note" => present(e["licence_note"]),
-        # a biology dataset's Measurements table: what each value of `measurement_type` means, [{name:, desc:, units:}] (Betty 2026-11-21);
-        # an environmental dataset's comes from measurements.json
-        "measurements" => (e["measurements"].is_a?(Array) ? e["measurements"].select { |x| x.is_a?(Hash) } : []),
-        # papers that describe the method, linked at the end of "More about the record": [{label:, url:}] (Betty 2026-11-20)
-        "refs" => (e["refs"].is_a?(Array) ? e["refs"].filter_map { |x| x.is_a?(Hash) && present(x["url"]) ? { "label" => present(x["label"]) || x["url"], "url" => x["url"] } : nil } : []),
-        # true: "Original data" links each source table itself and the "Combined from N source tables" section is left out (Betty 2026-11-20)
-        "sources_inline" => e["sources_inline"] == true,
-        # the organisation said beside the creators, where the release record's is wrong or too wide (Betty 2026-11-20)
-        "creator_org" => present(e["creator_org"]),
-        "agreement_url" => present(e["agreement_url"]), "agreement_label" => present(e["agreement_label"]),
-        # the dataset page's sentence under the title and what "More about the record" opens (Betty 2026-11-20)
-        # the map's caption, in place of the station count, for a dataset with no stations (Betty 2026-11-21)
-        "map_note" => present(e["map_note"]),
-        "lede" => present(e["lede"]), "more" => present(e["more"]), "listed" => !e.empty?,
-        # the Field descriptions table, made fit for this dataset (Betty 2026-11-20): columns that mean nothing for it are left
-        # out (`field_hide`), and the release record's all-datasets wording is replaced where it is about other datasets (`field_notes`)
-        "field_hide" => (e["field_hide"].is_a?(Array) ? e["field_hide"].map(&:to_s) : []),
-        "field_notes" => (e["field_notes"].is_a?(Hash) ? e["field_notes"].transform_values { |v| present(v) }.compact : {})
+        "plain" => present(e["name_plain"]), "collection" => present(e["collection"]),
+        "analysis_method" => present(e["analysis"]), "analysis_lab" => present(e["analysis_org"]),
+        "method" => present(m["key"]), "method_label" => present(m["label"]),
+        "status" => st, "status_label" => st&.capitalize,
+        "blurb" => present(e["description_short"]),
+        "browse_group" => present(e["browse_group"]),
+        # papers that describe the method, linked at the end of "More about the record": [{label:, url:}]
+        "refs" => refs.filter_map { |x| x.is_a?(Hash) && present(x["url"]) ? { "label" => present(x["label"]) || x["url"], "url" => x["url"] } : nil },
+        # the map's caption, in place of the station count, for a dataset with no stations
+        "map_note" => present(e["spatial_note"]),
+        # the sentence under the title and what "More about the record" opens. `listed`: the record gives reader's
+        # words, so the rest of its description (which holds notes for the data team) stays off the page
+        "lede" => present(e["description_lede"]), "more" => present(e["notes_md"]),
+        "listed" => !!(present(e["notes_md"]) || present(e["description_lede"]) || present(e["name_plain"])),
+        # a column's words where the all-datasets wording is about other datasets
+        "field_notes" => notes.transform_values { |v| present(v) }.compact
       }
     end
 
@@ -97,21 +85,20 @@ module CalCOFI
 
     def slug(s) = s.to_s.downcase.gsub(/&/, " and ").gsub(/[^a-z0-9]+/, "-").gsub(/\A-|-\z/, "")
 
-    # The tiles: realms in the file's order, each group holding the rows its `datasets` or
-    # `categories` name, in the rows' own (browse) order. A row no group claims falls into a tile of
+    # The tiles: the record's `browse` realms and groups in their order, each group holding the rows whose
+    # `display.browse_group` names it, in the rows' own (browse) order. A row no group claims falls into a tile of
     # its own record category at the end of its realm, so a new dataset is never lost. A group with
     # no rows is dropped. rows: site.data["browse"]["rows"].
     def tiles(extras, rows)
       rows = rows.to_a
-      spec = (extras.is_a?(Hash) ? extras["tiles"] : nil).to_a
+      br = (extras.is_a?(Hash) ? extras["browse"] : nil) || {}
+      groups_all = br["groups"].to_a
       claimed = {}
-      realms = spec.map do |rs|
-        groups = rs["groups"].to_a.map do |g|
-          keys = g["datasets"].to_a
-          cats = g["categories"].to_a
-          mine = rows.select { |r| !claimed[r["key"]] && (keys.include?(r["key"]) || cats.include?(r["cat"])) }
+      realms = br["realms"].to_a.map do |rs|
+        groups = groups_all.select { |g| g["realm"] == rs["realm"] }.map do |g|
+          mine = rows.select { |r| !claimed[r["key"]] && r["browse_group"] == g["key"] }
           mine.each { |r| claimed[r["key"]] = true }
-          group(g["name"], g["icon"] || mine.first&.dig("icon"), g["line"], rs["realm"], mine, g["about"])
+          group(g["name"], present(g["icon"]) || mine.first&.dig("icon"), g["line"], rs["realm"], mine, g["description"])
         end
         { "id" => rs["realm"], "title" => rs["title"], "sub" => rs["sub"], "groups" => groups }
       end
@@ -143,8 +130,9 @@ module CalCOFI
       nil
     end
 
-    # The tables a person may know this dataset as elsewhere: the record's current NOAA ERDDAP
-    # mirrors (portal erddap-noaa). A dataset is "combined" only with two or more.
+    # The tables a person may know this dataset as elsewhere: the record's NOAA ERDDAP distributions
+    # (portal erddap-noaa), each with its `kind`. `source` tables are what the release was built from;
+    # `mirror` tables are other places the same data are served (see combined?).
     # A table the record lists without an id or a title (the plain "source" link, as Seabirds & Marine Mammals' observations
     # table) gets its id from the end of its address and, for an _obs table, the title "Observations" (Betty 2026-11-20).
     def source_tables(record)
@@ -153,9 +141,12 @@ module CalCOFI
         t = present(x["title"])
         t = nil if t == "source"
         title = present(t.to_s.sub(/\ACalCOFI (NOAA |SIO )?/, "")) || (id.end_with?("_obs") ? "Observations" : id)
-        { "id" => id, "title" => title, "url" => x["url"] }
+        { "id" => id, "title" => title, "url" => x["url"], "kind" => x["kind"] }
       end
     end
+
+    # true when the release was built from two or more of these tables (kind source), never for mirrors
+    def combined?(sources) = sources.to_a.count { |x| x["kind"] == "source" } > 1 && sources.to_a.all? { |x| x["kind"] == "source" }
 
     # The columns of the download, from the release's own metadata.json (_data/release_metadata.json,
     # scripts/fetch_release.sh): `columns` keyed "table.column" → { description, units, … }. Only the

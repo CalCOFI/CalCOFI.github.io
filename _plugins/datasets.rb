@@ -25,6 +25,7 @@
 # plugin runs; `jekyll build` on a fresh clone runs it too.
 
 require "json"
+require_relative "dataset_extras"
 require "cgi"
 require "net/http"
 require "uri"
@@ -122,55 +123,11 @@ module CalCOFI
       end
     end
     def datasets     = @datasets ||= with_cite(visible(rec["datasets"]))
-    # A stopgap for a record the release gives no `citation_main` (Betty 2026-11-20): the citation typed in
-    # _data/dataset_extras.yml (`citation:`) stands in until the release carries its own, which then wins.
-    LICENCE_FILL = {
-      "CC-BY-4.0" => ["Creative Commons Attribution 4.0 International", "https://creativecommons.org/licenses/by/4.0/"],
-      "CC0-1.0" => ["Public domain (CC0) - Free use and reuse", "https://creativecommons.org/publicdomain/zero/1.0/"]
-    }.freeze
+    # the person at the provider who holds the data (the record's associated party with that role), for Credit
     def with_cite(rows)
-      ex = site.data["dataset_extras"]
-      ex = ex.is_a?(Hash) ? (ex["datasets"] || {}) : {}
       rows.map do |r|
-        c = Fmt.present(ex.dig(r["dataset_key"], "citation"))
-        a = r["attribution"] || {}
-        # `name:` in _data/dataset_extras.yml replaces the release's short name (Betty 2026-11-20), everywhere the page shows it
-        nm = Fmt.present(ex.dig(r["dataset_key"], "name"))
-        r = r.merge("dataset_name_short" => nm) if nm
-        # `ack_override:` replaces the release's acknowledgement, so the citation's "Acknowledgement:" sentence and the page's
-        # "Created by" box say the provider's own words (Betty 2026-11-20)
-        # `license: CC-BY-4.0` in _data/dataset_extras.yml fills in the licence where the release record states none (Betty 2026-11-21)
-        # (and CC0-1.0, the public-domain dedication, for the provider that states it: Betty 2026-11-21)
-        lic = LICENCE_FILL[ex.dig(r["dataset_key"], "license")]
-        if lic && Fmt.blank?(a["license"])
-          a = a.merge("license" => ex.dig(r["dataset_key"], "license"), "license_name" => lic[0], "license_url" => lic[1])
-          r = r.merge("attribution" => a)
-        end
-        # `creators:` in _data/dataset_extras.yml fills in the Credit box where the release names no creator (Betty 2026-11-21)
-        # `creators_override:` replaces whatever the release names (Betty 2026-11-21: Noelle Bowlin for the SWFSC egg and larva sets)
-        cro = ex.dig(r["dataset_key"], "creators_override")
-        cr = cro.is_a?(Array) ? cro : ex.dig(r["dataset_key"], "creators")
-        if cr.is_a?(Array) && (cro.is_a?(Array) || (a["creators"] || []).empty?)
-          list = cr.filter_map { |x| x.is_a?(Hash) && Fmt.present(x["name"]) ? { "name" => x["name"], "organization" => Fmt.present(x["organization"]), "orcid" => nil, "email" => Fmt.present(x["email"]), "role" => "lead" } : nil }
-          unless list.empty?
-            a = a.merge("creators" => list)
-            a = a.merge("contact" => list.first["email"]) if Fmt.blank?(a["contact"]) && list.first["email"]
-            r = r.merge("attribution" => a)
-          end
-        end
-        # `data_provider:` (name, email) is the person at the provider who holds the data; shown under Credit
-        dpv = ex.dig(r["dataset_key"], "data_provider")
-        if dpv.is_a?(Hash) && Fmt.present(dpv["name"])
-          a = a.merge("data_provider" => { "name" => dpv["name"], "email" => Fmt.present(dpv["email"]) })
-          r = r.merge("attribution" => a)
-        end
-        ak = Fmt.present(ex.dig(r["dataset_key"], "ack_override"))
-        if ak
-          a = a.merge("acknowledgement" => ak, "ack_in_cite" => false)
-          r = r.merge("attribution" => a)
-        end
-        next r unless c && Fmt.blank?(a["citation_main"])
-        r.merge("attribution" => a.merge("citation_main" => c))
+        dpv = DatasetExtras.data_provider(r)
+        dpv ? r.merge("attribution" => (r["attribution"] || {}).merge("data_provider" => dpv)) : r
       end
     end
     def holdings     = @holdings ||= visible(rec["holdings"])

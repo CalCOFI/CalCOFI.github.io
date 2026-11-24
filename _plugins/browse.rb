@@ -247,8 +247,8 @@ module CalCOFI
       cat = self.class.catalog
       return unless cat
       b = cat.browse(raw_measurements(site))
-      # the words the record does not carry yet (_data/dataset_extras.yml) and the category tiles
-      extras = site.data["dataset_extras"]
+      # the record's display words (datasets.json `display`) and the category tiles (`browse`)
+      extras = DatasetExtras.from_record(site.data["datasets"])
       recs = cat.datasets.to_h { |d| [d["dataset_key"], d] }
       b["rows"].each do |r|
         r.merge!(DatasetExtras.for(extras, r["key"]))
