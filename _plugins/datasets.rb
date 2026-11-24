@@ -2327,6 +2327,8 @@ module CalCOFI
         "release"    => cat.release,
         "counts"     => { "datasets" => cat.datasets.size, "holdings" => cat.holdings.size,
                           "reference" => cat.reference.size },
+        # the formats the release's zips are written in ("CSV, Excel or Parquet"), for the front door's Download card
+        "zip_formats" => Downloads.any_of(Downloads.format_labels(site.data["zip_manifest"])),
         "categories" => cat.categories,
         "realms"     => cat.realms,
         "span"       => cat.strip_span,

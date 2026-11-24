@@ -1,7 +1,7 @@
 {%- comment -%}
   The front door, v2 (Betty, 2026-11-13, after the 12 Nov database tour: Ed, Mark, Nastassia, Erin's "what do you want to
-  do?"). One screen: what CalCOFI is, then three goals, each with its destinations named — Explore species and ocean conditions (the
-  Explorer), Download a dataset (the dataset pages), Pull exact data (the Query Builder · code). Data providers and the
+  do?"). One screen: what CalCOFI is, then three goals, each with its destinations named — See it on a map (the
+  Explorer), Download the files (the dataset pages), Pull only what you need (the Query Builder · code). Data providers and the
   seven tasks' panels (main, 2026-11-16) are one row of quiet links under them. Behind it, Line 90's real sea floor (_data/line90_floor.json,
   GEBCO 2025, drawn by assets/hero.js) — no figure is drawn from anything else.
   Every number is read at build (site.data.catalog.numbers); a number the build cannot read is not rendered.
@@ -15,7 +15,7 @@
 {%- comment -%} "Contribute" is the docs book's chapter on providing data, as the seven-task front door linked it (main
   c064e7d). index.html passes it; the default keeps the include usable alone. {%- endcomment -%}
 {%- assign provide_url = include.provide_url | default: "https://calcofi.io/docs/provide.html" -%}
-<link rel="stylesheet" href="{{ '/assets/hero.css' | relative_url }}?v={{ site.time | date: '%s' }}">
+<link rel="stylesheet" href="{{ '/assets/hero.css' | relative_url }}">
 <section class="hero" aria-label="CalCOFI ocean data">
   <svg class="hero-sea" id="hero-sea" viewBox="0 0 1280 720" preserveAspectRatio="xMidYMax slice" role="group" aria-label="Line 90: the survey ship over the sea floor"></svg>
   <script type="application/json" id="hero-floor">{{ site.data.line90_floor | jsonify }}</script>
@@ -23,7 +23,7 @@
     <div class="hero-intro">
       <div class="hero-eyebrow">CalCOFI ocean data</div>
       <h1 class="hero-h1">California's ocean,<br>measured{% if nums.since %} since {{ nums.since }}{% endif %}</h1>
-      <p class="hero-lede">Data from CalCOFI's quarterly ocean surveys off California: oceanographic, plankton, larval fish &amp; eggs, seabirds and marine mammals.</p>
+      <p class="hero-lede">Data from CalCOFI's quarterly ocean surveys off California: ocean conditions, plankton, fish eggs and larvae, seabirds and marine mammals.</p>
     </div>
     <dl class="hero-nums" aria-label="CalCOFI by the numbers">
       {%- if nums.years %}<div><dd>{{ nums.years }}</dd><dt>years</dt></div>{% endif -%}
@@ -36,34 +36,38 @@
     <div class="hero-start">
       <h2 class="hero-h2" id="start-h" tabindex="-1">Where do you want to start?</h2>
       <div class="hero-goals">
-        {%- comment -%} the three cards' words (Betty 2026-11-18): what it is, the question it answers, a title and a
-          sentence on what you can do there, then the ways in {%- endcomment -%}
+        {%- comment -%} the three cards, one job per slot (Ben 2026-11-23, after the review of PR 57: its cards said two and a
+          half times main's words and repeated themselves). Icon, heading, one line, button:
+            button   names where you go, by its own name ("Explorer", not "Explorer App")
+            heading  says what you will do there, in other words than the button's; it answers "Where do you want to start?"
+            line     one fact neither has said (scope, a format, a number read from the release); never a second sentence
+          No eyebrow, no question, and a caption only where two buttons need telling apart. The count is the record's and
+          the formats are the zip manifest's (site.data.catalog.zip_formats); a part the build cannot read is left out. {%- endcomment -%}
+        {%- assign n_ds = site.data.catalog.counts.datasets -%}
+        {%- assign zip_formats = site.data.catalog.zip_formats -%}
         <div class="hero-goal">
-          <div class="hero-who"><i class="cc-i cc-i-door-explore" aria-hidden="true"></i>Explore</div>
-          <p class="hero-q">Want to explore the data visually?</p>
-          <h3>Explore species and ocean conditions</h3>
-          <p>Use the Explorer to visualize species distributions and ocean conditions, examine patterns over time, and download the data from any cruise.</p>
+          <div class="hero-who"><i class="cc-i cc-i-door-explore" aria-hidden="true"></i></div>
+          <h3>See it on a map</h3>
+          <p>Species and ocean conditions, with trends over time</p>
           {%- comment -%} one app on the first screen (reconciled 2026-11-17): the reply to Ed Weber (2026-11-10) committed to
             one explorer, and main stopped calling to the station app from the front door on 2026-11-16 ("the Explorer
             replaces it", Ben). The Dataset Finder keeps its card in Maps and apps (#explore) and its line in Map ▾. {%- endcomment -%}
           <div class="hero-dest">
-            <a class="hero-opt" href="{{ explore_url }}"><span class="hero-btn main">Explorer App</span><small>Maps and trends over time</small></a>
+            <a class="hero-opt" href="{{ explore_url }}"><span class="hero-btn main">Explorer</span></a>
           </div>
         </div>
         <a class="hero-goal" href="{{ '/datasets/' | relative_url }}">
-          <div class="hero-who"><i class="cc-i cc-i-ui-download" aria-hidden="true"></i>Find</div>
-          <p class="hero-q">Looking for a specific dataset?</p>
-          <h3>Find and download datasets</h3>
-          <p>Browse individual datasets and download them in CalCOFI&#8217;s standard format, so they&#8217;re easy to combine, or get the original files from the data provider.</p>
-          <div class="hero-dest"><span class="hero-opt"><span class="hero-btn">Browse datasets</span><small>All {{ site.data.catalog.counts.datasets }} datasets</small></span></div>
+          <div class="hero-who"><i class="cc-i cc-i-ui-download" aria-hidden="true"></i></div>
+          <h3>Download the files</h3>
+          <p>{% if n_ds %}All {{ n_ds }}{% else %}Every dataset{% endif %}{% if zip_formats %}, as {{ zip_formats | escape }}, or as the provider published them{% else %}, or as the provider published them{% endif %}</p>
+          <div class="hero-dest"><span class="hero-opt"><span class="hero-btn">Datasets</span></span></div>
         </a>
         <div class="hero-goal">
-          <div class="hero-who"><i class="cc-i cc-i-view-matrix" aria-hidden="true"></i>Query</div>
-          <p class="hero-q">Need specific data across datasets?</p>
-          <h3>Build a custom data query</h3>
-          <p>Use the Query Builder to pull data across datasets by station or area, no coding needed. For more advanced access, use R, Python, SQL, or ERDDAP.</p>
+          <div class="hero-who"><i class="cc-i cc-i-view-matrix" aria-hidden="true"></i></div>
+          <h3>Pull only what you need</h3>
+          <p>Stations, years and variables, joined in one table</p>
           <div class="hero-dest two">
-            <a class="hero-opt" href="{{ builder_url }}"><span class="hero-btn">Query Builder</span><small>No code needed</small></a>
+            <a class="hero-opt" href="{{ builder_url }}"><span class="hero-btn">Query Builder</span><small>Point and click</small></a>
             {%- comment -%} #program: R, Python, SQL and ERDDAP side by side (main's "Work with the data in code"), where the
               SQL shell is one of four; the button said R, Python, SQL and opened only the SQL shell {%- endcomment -%}
             <a class="hero-opt" href="#program"><span class="hero-btn">Code</span><small>R, Python, SQL</small></a>
@@ -74,8 +78,8 @@
   </div>
   <div class="hero-foot"><div class="hero-in-row">
     {%- comment -%} the strip (Ben, 2026-11-17): the links nothing else on the first screen says. It had five; "What CalCOFI
-      collects" and "More visualizations" repeated the header's Learn and Map, and left. "Cite the data" is back (Betty
-      2026-11-18). {%- endcomment -%}
+      collects" and "More visualizations" repeated the header's Learn and Map, and left. "Cite the data" left too, came
+      back (Betty 2026-11-18) and stays (Ben 2026-11-23: a reader reported she could not find it under Learn). {%- endcomment -%}
     <nav aria-label="More">
       {%- comment -%} each wears the glyph its door wore on main's seven-task front door (c064e7d), and both are the strip's bold white (Ben, 2026-11-17) {%- endcomment -%}
       <a class="hero-share" href="{{ provide_url }}"><i class="cc-i cc-i-el-contributes" aria-hidden="true"></i>Contribute</a>
@@ -85,4 +89,4 @@
     <span>Line 90 sea floor, GEBCO 2025</span>
   </div></div>
 </section>
-<script defer src="{{ '/assets/hero.js' | relative_url }}?v={{ site.time | date: '%s' }}"></script>
+<script defer src="{{ '/assets/hero.js' | relative_url }}"></script>

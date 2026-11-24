@@ -63,6 +63,21 @@ module CalCOFI
 
     def schema_ok?(v) = v.to_s.match?(/\A\d+(\.|\z)/) && v.to_s.to_i >= 1
 
+    # The formats the release's zips come in, as a reader says them, in ORDER: the labels of every format written for
+    # at least one dataset ("CSV", "Excel", "Parquet"). The front door's Download card names them from here, so a
+    # format the release stops writing stops being promised (PR 57 review: the card typed them). [] without a manifest.
+    def format_labels(manifest)
+      fs = index(manifest).values.flat_map { |d| (d["bundles"] || []).select { |b| b.is_a?(Hash) && b["written"] && present?(b["url"]) }.map { |b| b["format"] } }
+      ORDER.select { |f| fs.include?(f) }.map { |f| FORMATS[f]["label"] }
+    end
+
+    # ["CSV", "Excel", "Parquet"] → "CSV, Excel or Parquet"; one is itself; none is nil
+    def any_of(words)
+      words = Array(words)
+      return nil if words.empty?
+      words.size == 1 ? words[0] : "#{words[0..-2].join(', ')} or #{words[-1]}"
+    end
+
     # the name a browser saves the zip under: the URL's last path segment, as given (never built)
     def file_name(url)
       seg = url.to_s.sub(/[?#].*\z/, "").split("/").last

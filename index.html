@@ -565,44 +565,26 @@ SELECT * FROM read_json('{{ rel.catalog_url }}')</pre>
 </section>
 
 {%- comment -%}
-  ── 7 · Inform ocean and fisheries management (was "Ocean monitoring throughout California"): the
-  products carrying `doors: [monitor]`: the statewide inventory (Betty 2026-11-18: the offshore wind map is
-  archived, so it is in the archived apps now, not here; no eyebrow over the title).
+  ── 7 · Statewide monitoring (was "Inform ocean and fisheries management"): the products carrying `doors: [monitor]`,
+  today the statewide inventory (Betty 2026-11-18: the offshore wind map is archived, so it is with the archived apps).
+  After the review of PR 57 (2026-11-23), one job per slot: the question the map answers, its screenshot uncropped,
+  one line, one button. No number is typed here: the panel carried three (programs, parameters, a share of waters)
+  counted by hand from the map's files, and the site draws no number the build cannot read. The distance is the
+  owner's (Ben 2026-11-23: "about 13 miles", statute miles).
 {%- endcomment -%}
 {%- assign m_items = data.products | where_exp: "p", "p.doors contains 'monitor'" -%}
 <section class="fd-panel fd-apps fd-mon" id="monitor" hidden aria-labelledby="monitor-h">
   <div class="cc-container">
     {{ close_btn }}
-    {%- comment -%} the words (Betty 2026-11-18): a question the map answers, and what it shows {%- endcomment -%}
-    <div class="mon-head"><p class="mon-eb">Statewide monitoring</p>
-      <h2 id="monitor-h">Who monitors California&#8217;s coastal ocean?</h2>
-      <p>Every ocean and coastal monitoring program out to 350 miles from the California coast, on one map: who samples where, what they measure, and where no one does.</p></div>
-    {%- comment -%} Betty 2026-11-18: the map as one big card, the screenshot beside what it shows and how to open
-      it, as the Explorer's card in Maps and apps (.ap-feat) {%- endcomment -%}
+    <div class="mon-head"><h2 id="monitor-h">Who monitors California&#8217;s coastal ocean?</h2></div>
     {%- for p in m_items -%}
     <article class="ap-feat prod-card" data-key="{{ p.key | escape }}">
       {%- if p.img %}<a class="ap-feat-shot" href="{{ p.live_url }}" tabindex="-1" aria-hidden="true"><img src="{{ p.img | relative_url }}" alt="" loading="lazy"></a>{% endif %}
       <div class="ap-feat-b">
         {%- if p.credits %}<span class="ap-k">{{ p.credits.org | escape }}{% if p.credits.year %} {{ p.credits.year }}{% endif %}{% if p.credits.team %} · {{ p.credits.team | join: ", " | escape }}{% endif %}</span>{% endif %}
         <h3><a href="{{ p.live_url }}">{{ p.title | escape }}</a></h3>
-        {%- comment -%} the numbers, from the map's own files (Betty 2026-11-18): 35 program names in Master_Inventory_5km,
-          one of them "Dischargers"; 559 distinct parameter names (376 from the programs, 219 from discharger permits);
-          the gap layer's own statistics (gap_stats.json: 19,431 of 51,005 km² at 1 km, the ocean within 13.4 mi of shore).
-          Typed here: recount them when the map's data changes. Then what is on the map, the most important first. {%- endcomment -%}
-        <dl class="mon-nums">
-          <div><dt>34</dt><dd>monitoring programs, plus discharger permits</dd></div>
-          <div><dt>559</dt><dd>parameters measured</dd></div>
-          <div><dt>38%</dt><dd>of waters near shore with no monitoring</dd></div>
-        </dl>
-        <p class="mon-h">On the map</p>
-        <ul class="ap-mon">
-          <li><i class="cc-i cc-i-ui-search" aria-hidden="true"></i>Monitoring gaps</li>
-          <li><i class="cc-i cc-i-lens-stations" aria-hidden="true"></i>Dischargers and wastewater plants</li>
-          <li><i class="cc-i cc-i-lens-hexagons" aria-hidden="true"></i>Coverage by program or parameter, 1–5 km hexagons</li>
-          <li><i class="cc-i cc-i-ui-years" aria-hidden="true"></i>Years sampled and a data link, per hexagon</li>
-          <li><i class="cc-i cc-i-lens-regions" aria-hidden="true"></i>Marine protected areas and wind energy areas</li>
-        </ul>
-        <p class="ap-acts"><a class="ap-y" href="{{ p.live_url }}">Open the monitoring map</a></p>
+        <p class="mon-line">Every program within about 13 miles of the coast: who samples where, what they measure, and where no one does.</p>
+        <p class="ap-acts"><a class="ap-y" href="{{ p.live_url }}">Monitoring map</a></p>
         {% include app_links.html p=p open=false %}
       </div>
     </article>

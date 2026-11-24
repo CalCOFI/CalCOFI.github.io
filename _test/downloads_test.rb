@@ -52,6 +52,21 @@ class DownloadsTest < Minitest::Test
   end
 
   # ── all three formats ──────────────────────────────────────────────────────
+  # the front door names the formats from the manifest, never from a typed list
+  def test_format_labels_are_the_formats_the_release_writes
+    assert_equal %w[CSV Excel Parquet], D.format_labels(MANIFEST)
+    one = { "schema_version" => "1.0", "datasets" => [{ "dataset_key" => "a", "bundles" => [
+      { "format" => "parquet", "written" => true, "url" => "https://x/a_parquet.zip" },
+      { "format" => "xlsx", "written" => false, "reason" => "too many rows" },
+      { "format" => "csv", "written" => true, "url" => "" }] }] }
+    assert_equal %w[Parquet], D.format_labels(one), "a format no dataset is written in, or with no address, is not promised"
+    assert_equal [], D.format_labels(nil)
+    assert_equal "CSV, Excel or Parquet", D.any_of(%w[CSV Excel Parquet])
+    assert_equal "CSV or Parquet", D.any_of(%w[CSV Parquet])
+    assert_equal "CSV", D.any_of(%w[CSV])
+    assert_nil D.any_of([])
+  end
+
   def test_all_three_formats_csv_first
     o = offer("x_all", license: "CC-BY-4.0", license_url: "https://creativecommons.org/licenses/by/4.0/")
     assert_equal %w[csv xlsx], o["main"].map { |x| x["format"] }

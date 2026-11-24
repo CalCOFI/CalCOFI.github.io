@@ -47,22 +47,23 @@
   // here rather than assumed, so no white strip of footer shows under it on any screen (assets/hero.css --hero-top)
   var hero = svg.closest('.hero');
   if (hero) {
-    // and the words and cards fit inside it (Betty, 2026-11-19): assets/hero.css picks a zoom for the window's size;
-    // where that still pushes the cards past the window's bottom edge, the zoom is brought down until they fit
-    // (never below .75), and the header's column follows the same zoom (--hz) so the logo stays over the words
-    var inner = hero.querySelectorAll('.hero-in, .hero-in-row'), head = document.querySelector('.cc-header');
+    // and the words and cards fit inside it (Betty, 2026-11-19): assets/hero.css picks the hero's scale (--hs, which
+    // every length of the text layer is written in) for the window's size; where that still pushes the cards past
+    // the window's bottom edge, the scale is brought down until they fit (never below .75), and the header's column
+    // follows the same scale (--hz) so the logo stays over the words
+    var head = document.querySelector('.cc-header');
     var fit = function () {
       var top = Math.round(hero.getBoundingClientRect().top + window.scrollY);
       hero.style.setProperty('--hero-top', top + 'px');
-      for (var i = 0; i < inner.length; i++) inner[i].style.zoom = '';
+      hero.style.removeProperty('--hs');
       if (head) head.style.removeProperty('--hz');
-      if (window.innerWidth < 901 || !inner.length) return;
-      var z = parseFloat(getComputedStyle(inner[0]).zoom) || 1, room = window.innerHeight - top;
+      if (window.innerWidth < 901) return;
+      var z = parseFloat(getComputedStyle(hero).getPropertyValue('--hs')) || 1, z0 = z, room = window.innerHeight - top;
       for (var n = 0; n < 6 && hero.offsetHeight > room + 1 && z > 0.75; n++) {
         z = Math.max(0.75, Math.floor(z * Math.min(0.98, room / hero.offsetHeight) * 100) / 100);
-        for (var j = 0; j < inner.length; j++) inner[j].style.zoom = z;
+        hero.style.setProperty('--hs', z);
       }
-      if (head && inner[0].style.zoom) head.style.setProperty('--hz', z);
+      if (head && z !== z0) head.style.setProperty('--hz', z);
     };
     fit(); window.addEventListener('resize', fit); window.addEventListener('load', fit);
   }
