@@ -17,7 +17,11 @@
         column, Escape closes it and returns focus to the button, and growing past the breakpoint closes it.
       · in the column the menus are inline and their buttons are headings: aria-expanded says "true".
 
-   window.ccHeader = { version: "3", words: Promise<list>, render(nav, words) }.   No dependency. */
+   3. A PANEL STAYS INSIDE THE WINDOW. Each menu's panel is measured where the CSS hangs it and moved back inside
+      (--cc-dd-x) when it would pass the window's edge, on any product, bar and width; its arrow keeps pointing at
+      its word.
+
+   window.ccHeader = { version: "3", words(url) → Promise<list>, render(nav, words), fit() }.   No dependency. */
 (function () {
   "use strict";
   var NAV_BREAK = 1100;   // = header.css @media (max-width: 1099px), and calcofi.io's scripts/check_layout.py
@@ -58,7 +62,7 @@
     });
     nav.innerHTML = h;
     nav.classList.add("cc-links", "cc-nav");
-    sync();
+    sync(); fit();
   }
   var cache = {};
   function words(url) {
@@ -154,14 +158,36 @@
   });
   window.addEventListener("resize", function () {
     [].forEach.call(document.querySelectorAll(".cc-header.cc-nav-open"), function (h) { if (!column(h)) setNav(h, false); });
-    sync();
+    sync(); fit();
   });
 
+  // ── 3 · a panel never leaves the window ──
+  // A panel hangs from its word (left, right or centre: nav.json `align`), and how far that puts it depends on the
+  // product's bar and the window. Each floating panel is measured where the CSS puts it (it is laid out while hidden)
+  // and, if an edge would pass within EDGE px of the window's, --cc-dd-x moves it back; header.css moves the arrow
+  // the other way so it still points at the word. Run when the words are drawn, on resize and before a menu opens.
+  var EDGE = 8;
+  function fit() {
+    var vw = document.documentElement.clientWidth;
+    [].forEach.call(document.querySelectorAll(".cc-header .cc-dd"), function (p) {
+      p.style.removeProperty("--cc-dd-x");
+      if (column(header(p)) || getComputedStyle(p).position !== "absolute") return;
+      var r = p.getBoundingClientRect();
+      if (!r.width) return;
+      var x = r.right > vw - EDGE ? vw - EDGE - r.right : 0;
+      if (r.left + x < EDGE) x = EDGE - r.left;
+      if (Math.abs(x) >= 0.5) p.style.setProperty("--cc-dd-x", Math.round(x) + "px");
+    });
+  }
+  document.addEventListener("mouseover", function (e) { if (e.target && e.target.closest && e.target.closest(".cc-header .cc-m2-t")) fit(); });
+  document.addEventListener("focusin", function (e) { if (e.target && e.target.closest && e.target.closest(".cc-header .cc-m2-t")) fit(); });
+
   function start() {
-    fillAll(); sync();
+    fillAll(); sync(); fit();
     // a header a framework mounts later (React, Shiny): draw its words when it appears
     if (window.MutationObserver) new MutationObserver(function () { fillAll(); }).observe(document.documentElement, { childList: true, subtree: true });
   }
-  window.ccHeader = { version: "3", words: words, render: render, navBreak: NAV_BREAK };
+  window.addEventListener("load", fit);   // the fonts are in: a panel sized to its words has its final width
+  window.ccHeader = { version: "3", words: words, render: render, navBreak: NAV_BREAK, fit: fit };
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start); else start();
 })();

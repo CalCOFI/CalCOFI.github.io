@@ -52,6 +52,18 @@ v2's contract (`../v2/README.md` § The contract) stands, point for point, excep
    Data ▾ › Get it, not a word. A destination is said once:
    Learn holds the guides (How CalCOFI samples, Frequently asked questions, Cite the data, Documentation) and the
    news (Tutorials, Stories, All news), and none of them is also a word of the bar.
+   **The words of a menu.** A column's title is one or two words (Data ▾ has "Find" and "Get it"). A line is a
+   name and, under it, one grey line that says what the name does not: for a catalog its count and a fact
+   ("20, from 1949", "1,000 observed", "104, with units": the numbers are the release's, never typed), for an app
+   what it is ("Maps and trends over time"). A product goes by the name on its own bar: "Explorer", "Dataset
+   Finder", never "Explorer App".
+   **A panel never leaves the window.** A panel hangs from its word: from its left (the default; the Data panel,
+   so "Find" sits directly under "Data"), its right (`align: right`) or its centre (`align: center`, Learn). How
+   far that puts it depends on the product's bar and the window, so `header.js` measures every panel where the CSS
+   hangs it and moves it back 8 px inside the window (`--cc-dd-x`); the arrow moves the other way and still points
+   at its word. `window.ccHeader.fit()` runs it again for a header that changes its own layout. `header.css` also
+   eases the Data panel left in three steps under 1320 px, which is the same correction without JavaScript,
+   measured on calcofi.io's own bar. Nothing about where a panel sits belongs in a product's own stylesheet.
 4. **The bar never wraps.** From 1100 px the words are inline. Below that the menu button
    (`<button class="cc-icon-button cc-menu-button" aria-controls="cc-nav" aria-expanded="false">`) carries them
    in one column, every line of every menu shown, scrolling inside itself. The number 1100 is `NAV_BREAK` in
@@ -172,3 +184,18 @@ bother more than that risk, the change is small: move `header.css`'s rules into 
 ## Changes within v3
 
 - **2026-11-17 — proposed.** Everything above.
+- **2026-11-23 — the menus' words, and panels that stay in the window** (after the review of calcofi.io PR 57, which
+  had changed `header.css`, `header.js` and `nav.json` without an entry here).
+  - `nav.json`: Data ▾'s columns are titled "Find" and "Get it"; a catalog's grey line is its count and a fact
+    ("20, from 1949" · "1,000 observed" · "104, with units") in place of the bare count; the lines under "Get it"
+    say more ("Combine datasets into one table"); the apps under Map ▾ carry `"new": true` and open in a new tab;
+    the rule above "All apps" is gone; Learn ▾ is `"align": "center"`. An item may now carry `new`; `align` may be
+    `center`.
+  - `header.css`: the Data panel is as wide as its words (two `max-content` columns with a hairline between,
+    about 440 px) and hangs from the left of its word; the Map panel's lines do not wrap; `.cc-dd-c` centres a
+    panel under its word; `--cc-dd-x` moves a panel (and its arrow back).
+  - `header.js`: draws `new` and `align: center`; measures every panel and keeps it inside the window (above);
+    `ccHeader.fit()` is public.
+  - For a product: nothing to change. A product that had worked around a panel leaving its window can remove
+    the workaround. The specimen (`index.html`) is now one of the pages `scripts/check_layout.py --nav` opens, at
+    1100, 1200 and 1280 px among others, because it draws the header the way a product does.

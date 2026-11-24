@@ -54,14 +54,14 @@ new Promise(done => setTimeout(() => done((() => {
   const cs = el => getComputedStyle(el), drawn = el => cs(el).display !== "none" && cs(el).visibility !== "hidden" && el.getBoundingClientRect().height > 0;
   // the bar is the brand's own (.cc-header) or, where a framework owns it (Quarto, pkgdown, mkdocs, bslib:
   // brand v3 § 6), the framework's navbar: that one is held to the wave and the case, not to the markup
-  const hdr = document.querySelector(".cc-header"), nav = hdr && hdr.querySelector(".cc-links:not(.cc-viewnav)");  // not the catalog menu beside the logo (Datasets ▾, Species ▾, Measurements ▾)
+  const hdr = document.querySelector(".cc-header"), nav = hdr && hdr.querySelector(".cc-links");
   const fw = hdr ? null : document.querySelector("#quarto-header, header.md-header, nav.navbar, .navbar, body > header");
   const words = nav ? [...nav.children].filter(el => el.matches("a, .cc-m2, .cc-m")).map(el => el.matches("a") ? el : el.querySelector(":scope > .cc-m2-t, :scope > a")).filter(Boolean)
     : fw ? [...fw.querySelectorAll("a.nav-link, .navbar-nav a, .md-tabs__link, a.dropdown-toggle")].filter(drawn) : [];
   const bar = hdr || fw, title = bar && bar.querySelector(".cc-title, .navbar-title, .navbar-brand");
   const hjs = [...document.scripts].map(x => x.src).find(x => /\/brand\/v3\/header\.js(\?|$)/.test(x)) || null;
   const v3 = {
-    header: !!hdr, framework: !hdr && !!fw, ownBand: !!document.querySelector(".dp-band"), headerJs: hjs, headerVersion: (window.ccHeader && window.ccHeader.version) || null,
+    header: !!hdr, framework: !hdr && !!fw, headerJs: hjs, headerVersion: (window.ccHeader && window.ccHeader.version) || null,
     navState: nav ? nav.getAttribute("data-cc-nav-state") : null, navClass: nav ? String(nav.className) : null,
     words: words.map(el => el.textContent.replace(/\s+/g, " ").trim()),
     cased: words.map(el => cs(el).textTransform).concat(title ? [cs(title).textTransform] : []),
@@ -85,7 +85,7 @@ new Promise(done => {
       const d = f.contentDocument, w = f.contentWindow;
       const shown = el => !!el && w.getComputedStyle(el).display !== "none" && el.getBoundingClientRect().width > 0;
       const hdr = d.querySelector(".cc-header");
-      done({width: w.innerWidth, header: !!hdr, button: shown(hdr && hdr.querySelector(".cc-menu-button")), nav: shown(hdr && hdr.querySelector(".cc-links:not(.cc-viewnav)"))});
+      done({width: w.innerWidth, header: !!hdr, button: shown(hdr && hdr.querySelector(".cc-menu-button")), nav: shown(hdr && hdr.querySelector(".cc-links"))});
     } catch (e) { done({error: String(e)}); }
   }, WAIT_MS);
   document.body.appendChild(f);
@@ -160,9 +160,6 @@ def judge_v3(v3, narrow, titles):
         why.append(f"case: text-transform on the bar's words and title is {sorted(set(cased)) or 'unread (no words)'}, expected none (sentence case)")
     waves, hb = v3.get("waves") or [], v3.get("headerBottom")
     wave = len(waves) == 1 and hb is not None and abs(waves[0]["top"] - hb) <= 1
-    # a dataset page draws its own navy band (.dp-band) under the bar in place of the header's wave (Betty 2026-11-21)
-    if not waves and v3.get("ownBand"):
-        wave = True
     if not wave:
         why.append(f"wave: {len(waves)} .cc-wave band(s) drawn"
                    + (f", starting {[x['top'] for x in waves]}px under a bar that ends {hb}px" if waves else ", none under the bar"))

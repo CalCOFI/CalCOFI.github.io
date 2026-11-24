@@ -74,13 +74,20 @@ module CalCOFI
       out
     end
 
-    # "All 20" for datasets (the menu's first line names the whole list), the bare number otherwise
-    # `before` / `after` (nav.yml) put words round the number: "Browse all 20 datasets"
+    # "All 20" for datasets (the menu's first line names the whole list), the bare number otherwise.
+    # `before` / `after` (nav.yml) put words round the number: "1,000 observed". A `{name}` in them is another of the
+    # release's numbers ("20, from {since}" → "20, from 1949"); where the build cannot read that one, the words that
+    # needed it are left off and the count stands alone — never a typed number.
     def count_line(name, counts, before = nil, after = nil)
       n = counts[name]
       return nil unless present?(n)
-      return "#{before}#{n}#{after}" if present?(before) || present?(after)
-      name == "datasets" ? "All #{n}" : n.to_s
+      return name == "datasets" ? "All #{n}" : n.to_s unless present?(before) || present?(after)
+      fill = lambda do |s|
+        ok = true
+        out = s.to_s.gsub(/\{(\w+)\}/) { present?(counts[$1]) ? counts[$1].to_s : (ok = false; "") }
+        ok ? out : ""
+      end
+      "#{fill.(before)}#{n}#{fill.(after)}"
     end
 
     # {path:, url:}: `path` is what this site links (a site path stays a path), `url` what another origin links
@@ -117,7 +124,7 @@ module CalCOFI
       cat = site.data["catalog"] || {}
       nums = cat["numbers"] || {}
       counts = { "datasets" => cat.dig("counts", "datasets")&.to_s, "species" => nums["species_fmt"],
-                 "measurements" => nums["measurements_keys_fmt"] }
+                 "measurements" => nums["measurements_keys_fmt"], "since" => nums["since"]&.to_s }
       prods = site.data["products"] || {}
       words = Nav.resolve(raw, products: prods["products"], sections: prods["sections"], counts: counts,
                                site_url: "#{site.config['url']}#{site.config['baseurl']}",

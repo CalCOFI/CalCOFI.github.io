@@ -451,7 +451,7 @@ HERO_JS = r"""
     try { floorData = ((JSON.parse(d.getElementById("hero-floor").textContent) || {}).profile || []).length > 0; } catch (e) {}
     // the header is part of the first screen (brand v3): each word, whether it is drawn, the link it
     // is or the lines its menu holds — a task may be answered by a word instead of a link below it
-    const navEl = d.querySelector(".cc-header .cc-links:not(.cc-viewnav)"), burger = d.querySelector(".cc-header .cc-menu-button");
+    const navEl = d.querySelector(".cc-header .cc-links"), burger = d.querySelector(".cc-header .cc-menu-button");
     const navShown = !!navEl && w.getComputedStyle(navEl).display !== "none";
     const header = navEl ? [...navEl.children].filter(el => el.matches("a, .cc-m2, .cc-m")).map(el => {
       const t = el.matches("a") ? el : el.querySelector(":scope > .cc-m2-t, :scope > a");
@@ -541,7 +541,7 @@ async (w, d) => {
       // is stuck there and its height is that place)
       headerBottom: hdr ? px(sy > 0 ? hdr.getBoundingClientRect().height : hdr.getBoundingClientRect().bottom) : null, scrolled: px(sy),
       ground: tok("--bg"),
-      all: d.querySelectorAll(".cc-wave").length, dpBand: !!d.querySelector(".dp-band"),
+      all: d.querySelectorAll(".cc-wave").length,
       drawn: [...d.querySelectorAll(".cc-wave")].filter(el => cs(el).display !== "none" && cs(el).visibility !== "hidden" && el.getBoundingClientRect().height > 0).map(el => {
         const b = el.getBoundingClientRect(), st = cs(el), af = w.getComputedStyle(el, "::after");
         const own = el.classList.contains("cc-wave-own");
@@ -721,6 +721,8 @@ async (w, d) => {
       measKeys: [...dpMain.querySelectorAll(".dp-m .dp-tr:not(.dp-th) .dp-nm a[href]")].map(a => (/\/measurements\/([^\/]+)\/?$/.exec(a.getAttribute("href")) || [])[1] || a.getAttribute("href"))
         // the table of the redesigned page (Erin's feedback, 2026-11-21): a row per measurement_type, each linking its measurement's page; two rows may share one page
         .concat([...new Set([...dpMain.querySelectorAll(".dp-mtbl tbody tr td:first-child a[href*='/measurements/']")].map(a => (/\/measurements\/([^\/]+)\/?$/.exec(a.getAttribute("href")) || [])[1] || a.getAttribute("href")))]),
+      // every row of the Measurements table, linked or not: a biology dataset's measurement types have no page of their own
+      measRows: dpMain.querySelectorAll(".dp-mtbl tbody tr").length,
       measCsv: dpMain.querySelectorAll('.dp-csv[data-one="env"]').length, measNoCsv: dpMain.querySelectorAll(".dp-m .dp-nocsv").length,
       taxaDrawn: dpMain.querySelectorAll('.dp-csv[data-one="bio"]').length,
       taxaMore: (() => { try { return JSON.parse(dpMain.querySelector("[data-more-rows]").textContent).length; } catch (e) { return 0; } })(),
@@ -949,9 +951,9 @@ async (w, d) => {
       // line that opened the panel is hidden by then, so focus must land on something that IS drawn
       // — never on a hidden link, which leaves it on <body>. Under NAV_BREAK the same line is in the
       // menu button's column; it is followed the same way.
-      const line = d.querySelector('.cc-header .cc-links:not(.cc-viewnav) a[href$="#explore"]');
+      const line = d.querySelector('.cc-header .cc-links a[href$="#explore"]');
       const lineMenu = line && line.closest(".cc-m2"), lineBtn = lineMenu && lineMenu.querySelector(".cc-m2-t");
-      const navDrawn = !!line && cs(d.querySelector(".cc-header .cc-links:not(.cc-viewnav)")).display !== "none";
+      const navDrawn = !!line && cs(d.querySelector(".cc-header .cc-links")).display !== "none";
       let viaHeader = null;
       if (line) {
         if (navDrawn && lineBtn) { lineBtn.focus(); lineBtn.click(); await sleep(80); line.focus(); }
@@ -1030,7 +1032,7 @@ async (w, d) => {
   // button), then it is pressed open again and focus is sent away (it must shut). A menu closes on a
   // short delay (the visibility transition that lets a pointer cross the gap), so each state is read
   // after waiting it out.
-  const nav = d.querySelector(".cc-header .cc-links:not(.cc-viewnav)");
+  const nav = d.querySelector(".cc-header .cc-links");
   const navItems = () => nav ? [...nav.children].filter(el => el.matches("a, .cc-m, .cc-m2")) : [];
   const trigOf = el => el.matches(".cc-m, .cc-m2") ? el.querySelector(":scope > .cc-m2-t, :scope > a") : el;
   const listOf = m => m.querySelector(":scope > ul, :scope > .cc-dd");
@@ -1161,7 +1163,7 @@ async (w, d) => {
       height: Math.round(header.getBoundingClientRect().height),
       overlap: items.length && burger ? (() => { const last = items[items.length - 1].getBoundingClientRect().right;
         // the icon buttons beside the nav (the menus' own words are buttons too, inside it)
-        const btns = [...header.querySelectorAll("button")].filter(b => !nav.contains(b) && !b.closest(".cc-viewnav") && b.getBoundingClientRect().width > 0);
+        const btns = [...header.querySelectorAll("button")].filter(b => !nav.contains(b) && b.getBoundingClientRect().width > 0);
         return btns.length ? Math.round(last - Math.min(...btns.map(b => b.getBoundingClientRect().left))) : null; })() : null
     };
   }
@@ -1867,15 +1869,21 @@ PV_MIN_VIEW = 200     # px of the finder's preview on screen once a row is chose
 #   the number is then restated on purpose, or the list is paged; it is not a licence for taller rows
 #   (20 rows over 2,725 px means the rows grew to more than 81 px each).
 # dataset — unchanged.
-# dataset: 4200 since 2026-11-21 (Erin's feedback put the measurements and the field descriptions on the page; the longest, ichthyo, is 3,991 px)
-MAX_DS_H = {"catalog": 2725, "dataset": 4200}
+# dataset — 2,650 since 2026-11-23 (was 2,200). The redesigned page (PR 57) holds three lists where the page before it
+#   held one: Species, Measurements and Fields, in ONE tabset, eight rows each, so only one is ever open. With that
+#   the 20 pages measured 2,021 to 2,616 px on the approved mockup and measure 2,075 to 2,627 as built (the tallest
+#   is calcofi_ctd-derived, whose eight measurement rows run to three and four lines). A third are under 2,200 and
+#   no arrangement of the tabset brings the rest under it without taking the hero back to main's slim band. 2,650
+#   fits every page with the tabset closed to eight rows. It is not room for a second open list: PR 57 as
+#   submitted drew all three open (3,971 px) and asked for 4,200.
+MAX_DS_H = {"catalog": 2725, "dataset": 2650}
 MAX_GRID_H = 4400     # px at 1470 with the staging record (was 4,910)
 # front door v2's finder: Groups · All species · The tree · the matrix, and (2026-11-17, Ben: "add species
 # hierarchy view back as another tab") The hierarchy, main's icicle
 SPECIES_VIEWS = ["groups", "list", "tree", "matrix", "hierarchy"]
 # a view's id on main that an old link may still carry, and the view it must land on now
 SPECIES_OLD_VIEWS = {"classes": "groups"}
-MAX_SPECIES_INDEX_H = 2300   # issue #30: /species/ at 1470, nothing open — the mockup's 1,775 + 25 %
+MAX_SPECIES_INDEX_H = 2220   # issue #30: /species/ at 1470, nothing open — the mockup's 1,775 + 25 %
 MAX_SPECIES_PAGE_H = 1500    # issue #30: a taxon page at 1470, nothing open — ~1,200 + 25 %
 # the front door (issue #30; the seven tasks of 2026-11-16; front door v2's first screen, 2026-11-17)
 FOLD_W, FOLD_H = 1280, 645
@@ -2024,10 +2032,17 @@ NAV_REACH = [
 # words fit one line from there (four since 9f2b542; nine had 179 px to spare at 1100), so the header never wraps
 NAV_BREAK = 1100
 # the widths the header's own assertions are run at by --nav (one line from NAV_BREAK, the menu below)
-NAV_WIDTHS = [1100, 1280, 1470, 1024, 800, 640, 375]
+NAV_WIDTHS = [1100, 1200, 1280, 1470, 1024, 800, 640, 375]
 # (/datasets/ joined on 2026-11-17: its preview pane made the page scroll sideways 4 px at 1100 px, a
 # width the full run does not visit)
-NAV_PATHS = ["/", "/datasets/", "/datasets/swfsc_ichthyo/", "/species/", "/measurements/"]
+NAV_PATHS = ["/", "/datasets/", "/datasets/swfsc_ichthyo/", "/species/", "/measurements/", "/brand/v3/"]
+# the brand's specimen page (joined on 2026-11-23, PR 57 review F3): it draws the header the way every OTHER product
+# does, through brand/v3/header.js from nav.json, so it is where a menu that leaves the window on a product is seen
+# here (the Data panel ran up to 114 px off the right edge at 1100 to 1320 px while this site's own pages, whose
+# stylesheet corrected it, passed). It shows the wave three times, as samples, and its links are nav.json's full
+# URLs: those two assertions of an ordinary page are not made of it.
+SPECIMEN_PATHS = ["/brand/v3/"]
+def is_specimen(path): return re.sub(r"^https?://[^/]+", "", path).split("?")[0] in SPECIMEN_PATHS
 PHONE = (375, 667)    # a small phone's window, for the open menu's column (--nav)
 # the sections whose tabs are CARDS, so a pill must equal the number of cards in its panel. DATA's
 # three pills count datasets, species and measurements — the release's numbers, checked against the
@@ -2215,9 +2230,6 @@ def is_navy(c):
 def check_wave(where, wv, width, fails, notes):
     """brand v3 § 4: every page has ONE navy band directly under the bar, ending in a wave"""
     drawn = (wv or {}).get("drawn") or []
-    if not drawn and (wv or {}).get("dpBand"):
-        notes.append(f"{where}: the dataset page draws its own band (.dp-band) in place of the header's wave")
-        return
     if len(drawn) != 1:
         fails.append(f"{where}: {len(drawn)} wave bands (.cc-wave) are drawn under the bar, expected exactly one"
                      + (f": {[x['cls'] for x in drawn]}" if drawn else f" ({(wv or {}).get('all', 0)} in the page, none drawn)"))
@@ -2537,7 +2549,8 @@ def check(path, r, width, theme, fails, notes):
     fails.extend(f"{where}: {f}" for f in crumb_faults(r.get("crumb")))
 
     # the wave (brand v3 § 4): on every page, one navy band directly under the bar
-    check_wave(where, r.get("wave"), width, fails, notes)
+    if not is_specimen(path):
+        check_wave(where, r.get("wave"), width, fails, notes)
 
     g = r.get("grid")
     if g:
@@ -2580,10 +2593,8 @@ def check(path, r, width, theme, fails, notes):
         if width >= 1400 and cd["height"] > MAX_DS_H[cd["kind"]]:
             fails.append(f"{where}: {cd['kind']} page is {cd['height']}px with nothing open, "
                          f"max {MAX_DS_H[cd['kind']]} (issue #30)")
-        # "The release" opens on load by design (Betty 2026-11-21)
-        cd_open = [x for x in cd["open"] if x != "release"]
-        if cd_open:
-            fails.append(f"{where}: open on load, expected closed: {cd_open}")
+        if cd["open"]:
+            fails.append(f"{where}: open on load, expected closed: {cd['open']}")
         if cd["folds"] < (2 if cd["kind"] == "dataset" else 3):
             fails.append(f"{where}: only {cd['folds']} fold(s) — the dense parts are supposed to be folded")
         if cd["kind"] == "catalog":
@@ -2759,8 +2770,11 @@ def check(path, r, width, theme, fails, notes):
             fails.append(f"{where}: a measurement is listed twice")
         for fct in dp["facts"]:
             n_ = int(re.sub(r"[^0-9]", "", fct["value"]) or 0)
-            if fct["label"].startswith("Measurement") and n_ != len(dp["measKeys"]):
-                fails.append(f"{where}: the band says {fct['value']} {fct['label']} but the page lists {len(dp['measKeys'])}")
+            # the band's count is the Measurements table's rows (2026-11-23: the band shows it for a biology dataset
+            # too, whose rows link no measurement page); the page before the table listed only linked rows
+            listed = dp.get("measRows") or len(dp["measKeys"])
+            if fct["label"].startswith("Measurement") and n_ != listed:
+                fails.append(f"{where}: the band says {fct['value']} {fct['label']} but the page lists {listed}")
             if fct["label"] in ("Taxon", "Taxa") and n_ != dp["taxaDrawn"] + dp["taxaMore"]:
                 fails.append(f"{where}: the band says {fct['value']} {fct['label']} but the page holds {dp['taxaDrawn'] + dp['taxaMore']}")
         if dp["csvUnnamed"]:
@@ -3718,7 +3732,7 @@ def check(path, r, width, theme, fails, notes):
                     name = t["title"].split()[0].lower()
                     want = {"datasets": "/datasets/", "species": "/species/", "measurements": "/measurements/"}.get(name)
                     exists = name == "datasets" or r.get("pageExists", {}).get(want)
-                    if want and exists and (t.get("href") or "").rstrip("/") + "/" != want:
+                    if want and exists and not is_specimen(path) and (t.get("href") or "").rstrip("/") + "/" != want:
                         fails.append(f"{where}: the Data menu's {t['title']!r} links {t.get('href')!r}, not {want} (the page exists)")
                     # the three catalogs carry their count, the catalog's own
                     if want and exists and not re.search(r"\d", t.get("pill") or ""):
