@@ -11,7 +11,8 @@ measurements calcofi_ctd-derived ships (CalCOFI.github.io#26).  This script read
     _data/dataset_measurements.json
         { schema_version, release, source{...}, datasets{ <dataset_key>: { per_cast: {table, n_values,
           n_samples, types[{measurement_type, units, description, n_values, n_samples, year_min,
-          year_max, date_min, date_max (YYYY-MM)}]} } } }
+          year_max, date_min, date_max (YYYY-MM)}]},
+          by_class: {the same shape, from obs_attribute: counts by length class or stage} } } }
 
 Never a hand-built `releases/{v}/parquet/` path: the object paths come from the release's catalog.json
 (`_data/release_catalog.json`, fetched by fetch_release.sh), which is the one place a table's current
@@ -32,6 +33,11 @@ import sys
 # the tables whose per-dataset rows are per-cast values.  One entry per table: a new per-cast table is
 # one line here, and the page names the table beside its group.
 PER_CAST_TABLES = ("sample_measurement",)
+# the tables whose rows are counts by class of a measurement_type (a length class, a stage): the
+# larvae's body_length and stage in swfsc_ichthyo live here and in no other table the page reads,
+# so its page listed neither (2026-11-25).  Same shape of group, under `by_class`.
+BY_CLASS_TABLES = ("obs_attribute",)
+TABLE_GROUPS = [("per_cast", t) for t in PER_CAST_TABLES] + [("by_class", t) for t in BY_CLASS_TABLES]
 
 
 def object_urls(catalog, table, base):
@@ -81,7 +87,7 @@ def main():
         token = os.environ.get("CALCOFI_RELEASE_TOKEN", "")
         if token:
             con.execute("CREATE SECRET release_token (TYPE http, BEARER_TOKEN ?)", [token])
-        for table in PER_CAST_TABLES:
+        for group, table in TABLE_GROUPS:
             urls = object_urls(catalog, table, a.base)
             if not urls or not sample_urls:
                 continue
@@ -110,7 +116,7 @@ def main():
               GROUP BY 1, 2 ORDER BY 1, n_values DESC, 2"""
             for (dk, mt, units, desc, n, ns, y0, y1, d0, d1) in con.execute(q).fetchall():
                 g = datasets.setdefault(dk, {}).setdefault(
-                    "per_cast", {"table": table, "n_values": 0, "n_samples": None, "types": []})
+                    group, {"table": table, "n_values": 0, "n_samples": None, "types": []})
                 g["types"].append({"measurement_type": mt, "units": units or None,
                                    "description": desc or None, "n_values": n, "n_samples": ns,
                                    "year_min": y0, "year_max": y1, "date_min": d0, "date_max": d1})
@@ -118,7 +124,7 @@ def main():
             # distinct samples per dataset (a cast carries several types)
             q2 = f"""SELECT dataset_key, count(DISTINCT sample_key) FROM read_parquet({sql_list(urls)}) GROUP BY 1"""
             for dk, ns in con.execute(q2).fetchall():
-                datasets[dk]["per_cast"]["n_samples"] = ns
+                datasets[dk][group]["n_samples"] = ns
     except Exception as e:  # unreachable is not a fact: no sidecar, no per-cast group
         print(f"NOTE: could not measure the per-cast tables ({type(e).__name__}: {e}) -- "
               "the dataset pages list the profile variables only")
@@ -131,9 +137,9 @@ def main():
     json.dump({"schema_version": "1.0", "release": rel,
                "source": {"catalog": "release catalog.json", "objects": source},
                "datasets": datasets}, open(out, "w"), indent=1, ensure_ascii=False)
-    n_types = sum(len(d["per_cast"]["types"]) for d in datasets.values())
-    print(f"dataset measurements: release {rel} · {len(datasets)} datasets carry per-cast values · "
-          f"{n_types} dataset x measurement_type series in {', '.join(PER_CAST_TABLES)}")
+    n_types = sum(len(g["types"]) for d in datasets.values() for g in d.values())
+    print(f"dataset measurements: release {rel} · {len(datasets)} datasets carry per-cast or by-class values · "
+          f"{n_types} dataset x measurement_type series in {', '.join(t for _, t in TABLE_GROUPS)}")
     return 0
 
 

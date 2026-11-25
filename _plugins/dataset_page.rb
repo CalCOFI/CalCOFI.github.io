@@ -87,8 +87,8 @@ module CalCOFI
 
     # The band's numbers, as [value, label] pairs; a number the record does not carry is not drawn.
     #   Years        the measured span (`years_span`, Catalog#span_years; else the coverage's own)
-    #   Dates        where the years cannot be measured, the record's asserted `temporal`
-    #                ("1996 to 2022"), as main's page says it — never nothing
+    #                where the record carries no measured years, the years of its `temporal` string
+    #                in the same form (Browse.span_of) — never nothing
     #   Records · Sampling events · Stations
     #   Taxa         for a dataset with taxa (singular for one)
     #   Measurements for a dataset with measurement types (a biology dataset has both; PR 57 review: every number)
@@ -98,7 +98,7 @@ module CalCOFI
       out = []
       if cov["year_min"] then out << [years_span || yrs(cov["year_min"], cov["year_max"]), "Years"]
       elsif Fmt.present(years_span) then out << [years_span, "Years"]
-      elsif Fmt.present(cov["temporal"]) then out << [cov["temporal"], "Dates"]
+      elsif Fmt.present(cov["temporal"]) then out << [Browse.span_of(cov["temporal"]), "Years"]
       end
       out << [num(cov["n_obs"]), "Records"] if cov["n_obs"].to_i.positive?
       out << [num(cov["n_roots"]), "Sampling events"] if cov["n_roots"].to_i.positive?
@@ -302,11 +302,17 @@ module CalCOFI
     # The cleaned (QC'd) measurements come first, the "Reported ..." pre-QC ones after them; within each, the ones every dataset shares
     # (temperature, salinity ...), then the record's category order, then most values.
     # the measurement_type values the release holds a value for in one dataset: the record's measured `obs`
-    # variables and the per-cast types counted from sample_measurement (_data/dataset_measurements.json)
+    # variables, the per-cast types counted from sample_measurement and the by-class types counted from
+    # obs_attribute (a length class, a stage), both in _data/dataset_measurements.json
     def counted_types(record, per_cast)
       v = ((record || {}).dig("coverage", "variables") || []).filter_map { |x| x.is_a?(Hash) ? x["name"] : nil }
       pc = ((per_cast || {}).dig("per_cast", "types") || []).filter_map { |x| x["measurement_type"] }
-      (v + pc).uniq
+      (v + pc + by_class_types(per_cast)).uniq
+    end
+
+    # the types counted by class in obs_attribute: listed on the page, never offered in an `obs` query
+    def by_class_types(per_cast)
+      ((per_cast || {}).dig("by_class", "types") || []).filter_map { |x| x["measurement_type"] }
     end
 
     # a provider's own terms document: the licence's link when it is not the licence's standard page
@@ -464,7 +470,10 @@ module CalCOFI
       acc = page.data["access"]
       duck = (acc || []).find { |g| g["id"] == "code" }&.dig("blocks")&.find { |b| b["title"] == "DuckDB, anywhere" }&.dig("rows", 0)
       duck_url = duck && duck["label"].to_s.start_with?("obs") ? duck["url"] : nil
-      blk = DatasetCode.block(key, (r["tables"] || []).map(&:to_s), mrows, taxa[:rows].first&.dig("sci"), duck_url, nil)
+      # the Code example queries `obs`: a type the release keeps only in sample_measurement or obs_attribute would return nothing there
+      in_obs = (r.dig("coverage", "variables") || []).filter_map { |x| x.is_a?(Hash) ? x["name"] : nil }
+      elsewhere = DatasetPage.counted_types(nil, @per_cast&.dig(key)) - in_obs
+      blk = DatasetCode.block(key, (r["tables"] || []).map(&:to_s), mrows.reject { |m| elsewhere.include?(m["mt"]) }, taxa[:rows].first&.dig("sci"), duck_url, nil)
       page.data["n_endpoints"] = DatasetCode.apply!(acc, page.data["n_endpoints"], blk)
       products = @cat.products_by_dataset[key]
       explore = products.find { |p| p["key"] == "explore" && p["dataset_url"] }

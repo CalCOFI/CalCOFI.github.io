@@ -84,6 +84,15 @@ class DatasetPageTest < Minitest::Test
 
   # regression (2026-11-17, release v2026.11.14): all 13 per-cast measurements of calcofi_ctd-derived
   # (mld_temperature_02, chl_max, nitracline_depth …) drew a CSV button whose pick the builder does not have
+  def test_counted_types_include_the_types_counted_by_class
+    rec = { "coverage" => { "variables" => [{ "name" => "abundance" }] } }
+    side = { "per_cast" => { "types" => [{ "measurement_type" => "volume_sampled" }] },
+             "by_class" => { "types" => [{ "measurement_type" => "body_length" }, { "measurement_type" => "stage" }] } }
+    assert_equal %w[abundance volume_sampled body_length stage], DP.counted_types(rec, side)
+    assert_equal %w[body_length stage], DP.by_class_types(side)
+    assert_equal %w[abundance], DP.counted_types(rec, nil)
+  end
+
   def test_pickable_is_false_for_a_per_cast_series
     refute DP.pickable?({ "key" => "mld_temperature_02", "grain" => "sample" }, { "dataset_key" => "x", "grain" => "sample" })
     refute DP.pickable?({ "key" => "m" }, { "grain" => "sample" }), "the series' grain alone is enough"
@@ -164,12 +173,12 @@ class DatasetPageTest < Minitest::Test
   # regression (2026-11-17, S-24): calcofi_phytoplankton showed no year at all; main's page shows its asserted dates
   def test_facts_show_asserted_dates_where_no_year_is_measured
     r = { "coverage" => { "temporal" => "1996 to 2022", "n_obs" => 155_553, "n_roots" => 409 } }
-    assert_equal [["1996 to 2022", "Dates"], ["155,553", "Records"], ["409", "Sampling events"], ["305", "Taxa"], ["Surface", "Depth"]],
+    assert_equal [["1996–2022", "Years"], ["155,553", "Records"], ["409", "Sampling events"], ["305", "Taxa"], ["Surface", "Depth"]],
                  DP.facts(r, depth: "surface", n_taxa: 305)
   end
 
   def test_facts_for_a_samples_only_record_are_what_it_carries_and_no_more
-    assert_equal [["1939-05 to 2024-04", "Dates"]], DP.facts({ "coverage" => { "temporal" => "1939-05 to 2024-04", "n_obs" => nil } })
+    assert_equal [["1939–2024", "Years"]], DP.facts({ "coverage" => { "temporal" => "1939-05 to 2024-04", "n_obs" => nil } })
     assert_equal [], DP.facts({ "coverage" => {} })
     assert_equal [], DP.facts({})
   end

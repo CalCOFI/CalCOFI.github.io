@@ -188,8 +188,10 @@ class BrowseTest < Minitest::Test
   def test_years_label_is_the_measured_span_else_the_asserted_one
     assert_equal "1951–2023", B.years_label("1951–2023", "1951-01 to 2023-11")
     assert_equal "1996", B.years_label("1996", nil)
-    assert_equal "1996 to 2022", B.years_label(nil, "1996 to 2022")
-    assert_equal "1939-05 to 2024-04", B.years_label("", "1939-05 to 2024-04")
+    assert_equal "1996–2022", B.years_label(nil, "1996 to 2022")
+    assert_equal "1939–2024", B.years_label("", "1939-05 to 2024-04")
+    assert_equal "2012", B.span_of("2012-03 to 2012-11")
+    assert_equal "ongoing", B.span_of("ongoing")
     assert_nil B.years_label(nil, nil)
     assert_nil B.years_label(nil, "")
   end
@@ -261,7 +263,7 @@ class BrowseTest < Minitest::Test
     rows = catalog(DATASETS.call(self)).browse(MEAS)["rows"].to_h { |r| [r["key"], r] }
     assert_equal "1949", rows["x_bottle"]["years"], "one year alone"
     assert_equal "1993–2026", rows["x_ctd"]["years"]
-    assert_equal "1996 to 2022", rows["x_phyto"]["years"], "asserted, where no year is measured"
+    assert_equal "1996–2022", rows["x_phyto"]["years"], "asserted, where no year is measured"
     assert_nil rows["x_phyto"]["y0"], "the sort keys stay the measured years"
     assert_equal "Surface", rows["x_phyto"]["depth"]
     assert_equal "0–515 m", rows["x_ctd"]["depth"]
@@ -280,7 +282,7 @@ class BrowseTest < Minitest::Test
     assert_nil b["span"]
     assert_equal [], b["ticks"]
     assert_nil b["rows"][0]["strip"]
-    assert_equal "1996 to 2022", b["rows"][0]["years"]
+    assert_equal "1996–2022", b["rows"][0]["years"]
   end
 
   # regression (2026-11-17, S-27): the dataset page kept its own shorter portal map, so datazoo,
