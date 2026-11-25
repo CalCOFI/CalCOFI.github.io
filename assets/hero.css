@@ -38,8 +38,6 @@
 .hero-goal { position: relative; display: flex; flex-direction: column; padding: calc(14px * var(--hs)) calc(18px * var(--hs)); border-radius: calc(14px * var(--hs)); background: var(--c-bg); border: 1px solid var(--c-b); color: var(--c-ink); text-decoration: none;
   backdrop-filter: blur(calc(10px * var(--hs))) saturate(130%); -webkit-backdrop-filter: blur(calc(10px * var(--hs))) saturate(130%); box-shadow: 0 calc(8px * var(--hs)) calc(24px * var(--hs)) rgba(4,12,24,.18); transition: transform .18s ease, border-color .18s ease; }
 .hero-goal:hover { transform: translateY(calc(-3px * var(--hs))); border-color: var(--cc-yellow, #ffcd00); }
-.hero-who { display: flex; align-items: center; gap: calc(8px * var(--hs)); font-size: calc(11.5px * var(--hs)); font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--c-who); }
-.hero-who .cc-i { font-size: calc(18px * var(--hs)); }
 .hero-goal h3 { margin: calc(8px * var(--hs)) 0 1px; font-size: calc(20px * var(--hs)); font-weight: 700; color: var(--c-ink); }
 .hero-goal p { margin: 0 0 calc(10px * var(--hs)); font-size: calc(14px * var(--hs)); color: var(--c-mute); }
 .hero-dest { margin-top: auto; display: flex; align-items: flex-start; gap: calc(10px * var(--hs)); padding-top: calc(10px * var(--hs)); border-top: 1px solid var(--c-line); font-size: calc(14px * var(--hs)); font-weight: 700; }
@@ -248,7 +246,6 @@ body:has(.hero) .cc-wave-auto { --cc-wave-below: #f3f7fb; }
   .hero-goal { min-height: calc(230px * var(--hs)); padding: calc(22px * var(--hs)) calc(26px * var(--hs)) calc(20px * var(--hs)); }
   .hero-goal h3 { margin-top: calc(12px * var(--hs)); font-size: calc(24px * var(--hs)); line-height: 1.2; }
   .hero-goal p { margin: calc(4px * var(--hs)) 0 calc(16px * var(--hs)); font-size: calc(15.5px * var(--hs)); line-height: 1.45; }
-  .hero-who { font-size: calc(12.5px * var(--hs)); }
   .hero-dest { padding-top: calc(14px * var(--hs)); font-size: calc(15px * var(--hs)); }
   .hero-btn { padding: calc(8px * var(--hs)) calc(18px * var(--hs)); border-radius: calc(8px * var(--hs)); }
   .hero-opt small { font-size: calc(12.5px * var(--hs)); }
@@ -433,3 +430,8 @@ body:has(.hero) .cc-wave-auto { --cc-wave-slim-h: 22px; --cc-wave-h: 13px; }
 [data-theme="dark"] #learn .sec .pin[data-cat="cat-meteorology"] { --pin: #dbe7f6; }
 [data-theme="dark"] #learn .sec .pin:hover use, [data-theme="dark"] #learn .sec .pin:focus-visible use { fill: #0a1426; color: #0a1426; }
 [data-theme="dark"] #learn .fd-secscreen { border-color: rgba(255, 255, 255, .16); }
+/* the card's icon leads its heading, on the heading's line (Ben, 2026-11-25). It had a row of its own above, left
+   from the eyebrow whose words went; alone there it read as a stray mark. In the heading it labels the card where the
+   eye lands and the card is one row shorter. Not in the button: the third card has two. */
+.hero-goal > h3:first-child { margin-top: 0; display: flex; align-items: center; gap: .5em; }
+.hero-goal > h3 > .cc-i { flex: none; font-size: 1.1em; color: var(--c-who); }

@@ -37,7 +37,8 @@
       <h2 class="hero-h2" id="start-h" tabindex="-1">Where do you want to start?</h2>
       <div class="hero-goals">
         {%- comment -%} the three cards, one job per slot (Ben 2026-11-23, after the review of PR 57: its cards said two and a
-          half times main's words and repeated themselves). Icon, heading, one line, button:
+          half times main's words and repeated themselves). Heading led by its icon, one line, button (the icon sat alone on
+          a row above the heading, where the eyebrow's words used to follow it; Ben 2026-11-25):
             button   names where you go, by its own name ("Explorer", not "Explorer App")
             heading  says what you will do there, in other words than the button's; it answers "Where do you want to start?"
             line     one fact neither has said (scope, a format, a number read from the release); never a second sentence
@@ -46,8 +47,7 @@
         {%- assign n_ds = site.data.catalog.counts.datasets -%}
         {%- assign zip_formats = site.data.catalog.zip_formats -%}
         <div class="hero-goal">
-          <div class="hero-who"><i class="cc-i cc-i-door-explore" aria-hidden="true"></i></div>
-          <h3>See it on a map</h3>
+          <h3><i class="cc-i cc-i-door-explore" aria-hidden="true"></i>See it on a map</h3>
           <p>Species and ocean conditions, with trends over time</p>
           {%- comment -%} one app on the first screen (reconciled 2026-11-17): the reply to Ed Weber (2026-11-10) committed to
             one explorer, and main stopped calling to the station app from the front door on 2026-11-16 ("the Explorer
@@ -57,14 +57,12 @@
           </div>
         </div>
         <a class="hero-goal" href="{{ '/datasets/' | relative_url }}">
-          <div class="hero-who"><i class="cc-i cc-i-ui-download" aria-hidden="true"></i></div>
-          <h3>Download the files</h3>
+          <h3><i class="cc-i cc-i-ui-download" aria-hidden="true"></i>Download the files</h3>
           <p>{% if n_ds %}All {{ n_ds }}{% else %}Every dataset{% endif %}{% if zip_formats %}, as {{ zip_formats | escape }}, or as the provider published them{% else %}, or as the provider published them{% endif %}</p>
           <div class="hero-dest"><span class="hero-opt"><span class="hero-btn">Datasets</span></span></div>
         </a>
         <div class="hero-goal">
-          <div class="hero-who"><i class="cc-i cc-i-view-matrix" aria-hidden="true"></i></div>
-          <h3>Pull only what you need</h3>
+          <h3><i class="cc-i cc-i-view-matrix" aria-hidden="true"></i>Pull only what you need</h3>
           <p>Stations, years and variables, joined in one table</p>
           <div class="hero-dest two">
             <a class="hero-opt" href="{{ builder_url }}"><span class="hero-btn">Query Builder</span><small>Point and click</small></a>
