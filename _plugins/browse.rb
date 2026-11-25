@@ -131,11 +131,20 @@ module CalCOFI
       shown.join(", ") + (more.positive? ? " and #{Fmt.num(more)} more" : "")
     end
 
-    # A row's years, as main's tiles say them: the measured span ("1951–2023", one year alone as
-    # "1996"); where the years cannot be measured, the record's asserted `temporal` ("1996 to 2022");
-    # nil only when the record says neither (the page then reads "Years not listed").
+    # A row's years: the measured span ("1951–2023", one year alone as "1996"); where the record
+    # carries no measured years, the years of its `temporal` string in the same form (`span_of`),
+    # so every row reads alike; nil only when the record says neither ("Years not listed").
     def years_label(span_years, temporal)
-      Fmt.present(span_years) || Fmt.present(temporal)
+      Fmt.present(span_years) || span_of(temporal)
+    end
+
+    # The years of a record's `temporal` string ("1996 to 2022", "1939-05 to 2024-04") as a span
+    # ("1996–2022", "1939–2024"); a string with no year in it is returned as it is, never dropped.
+    def span_of(temporal)
+      t = Fmt.present(temporal) or return nil
+      ys = t.scan(/(?<!\d)(?:18|19|20)\d{2}(?!\d)/)
+      return t if ys.empty?
+      ys.first == ys.last ? ys.first : "#{ys.first}–#{ys.last}"
     end
 
     # "Surface" for a dataset taken at the surface, "0–515 m" otherwise, nil when no depth is recorded
