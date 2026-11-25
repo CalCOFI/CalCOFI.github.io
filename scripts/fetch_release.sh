@@ -154,6 +154,12 @@ get "$record_dir/coverage_stations.json" "$DATA/coverage_stations.json" ||
 get "$record_dir/catalog.json" "$DATA/release_catalog.json" ||
   echo "NOTE: no catalog.json beside the record — the front door draws no row counts" >&2
 
+# the release's column dictionary (metadata.json: `columns` keyed "table.column" with units and
+# meaning, the same source as the columns.csv inside every download zip). Optional: without it a
+# dataset page draws no Field descriptions table (_plugins/dataset_extras.rb), never a typed one.
+get "$record_dir/metadata.json" "$DATA/release_metadata.json" ||
+  echo "NOTE: no metadata.json beside the record — dataset pages draw no field descriptions" >&2
+
 # the release's measured coverage: taxa[] is every taxon actually observed, with its rank — the
 # honest species count the band shows (the taxon TABLE's 2,614 rows include ancestors and vocabulary
 # entries never observed). Optional, exactly like catalog.json: without it the species tile collapses

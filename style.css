@@ -484,6 +484,10 @@ svg.map { display: block; width: 100%; height: auto; border-radius: var(--radius
 .v2-footer .cols a { color: var(--fg); }
 .v2-footer .cols a:hover { color: var(--accent); }
 .cc-footer-bar .cc-container a { text-decoration: underline; }
+body .cc-footer-bar .cc-container a, body .cc-footer-bar .cc-container a:visited, body .cc-footer-bar .cc-container a:hover, body .cc-footer-bar .cc-container a:focus { color: #ffffff !important; } /* the AI-use link was dark on the navy bar (Betty 2026-11-21) */
+
+/* /ai-use/: one readable column of prose */
+.ai-use { max-width: 70ch; padding-top: 48px; padding-bottom: 80px; }
 
 /* ── phone ───────────────────────────────────────────────────────────────── */
 
@@ -2173,3 +2177,37 @@ body:has(.cc-wave-own) .cc-wave-auto { display: none; }
 .fd-apps .ap-xref { margin: -6px 0 18px; }
 /* two people under one footer heading (Technical): a little air between them */
 .v2-footer .cols p + p { margin-top: 10px; }
+
+/* Statewide monitoring (Betty 2026-11-18; one job per slot since the review of PR 57, 2026-11-23): a question for a
+   title, then the map as one big card: its whole screenshot, uncropped, which sets the card's height, and beside it who
+   made it, its name, one line and one button. The panel was drawn at 90% with CSS zoom; the lengths here are the sizes
+   that view arrived at, written as values. What it shares with Maps and apps (.ap-feat, .ap-y, .ap-lk) is at their size. */
+.fd-mon .mon-head { margin: 0 0 20px; padding-right: 80px; }
+.fd-mon .mon-head h2 { margin: 0; font: 700 29px/1.2 var(--sans); letter-spacing: 0; text-transform: none; color: var(--fg); }
+.fd-mon .ap-feat { grid-template-columns: minmax(0, 2.1fr) minmax(0, 1fr); box-shadow: 0 7px 25px rgba(10, 30, 60, .12); }
+.fd-mon .ap-feat-shot { display: block; background: none; border-right: 1px solid var(--border); min-height: 0; }
+.fd-mon .ap-feat-shot img { position: static; display: block; width: 100%; height: auto; }
+.fd-mon .ap-feat-b { padding: 25px 25px 20px; }
+.fd-mon .ap-k { font-size: 12px; }
+.fd-mon .ap-feat h3 { margin-top: 5.5px; font-size: 24.5px; line-height: 1.15; }
+.fd-mon .ap-feat-b > p.mon-line { margin: 12.5px 0 0; font-size: 15.5px; line-height: 1.5; color: var(--fg); }
+.fd-mon .ap-feat-b > p.ap-acts { margin-top: 25px; }
+.fd-mon .ap-feat .ap-lk { margin-top: auto; padding-top: 16px; }
+@media (max-width: 1100px) { .fd-mon .ap-feat { grid-template-columns: 1fr; } .fd-mon .ap-feat-shot { border-right: 0; border-bottom: 1px solid var(--border); } }
+@media (max-width: 640px) { .fd-mon .mon-head { padding-right: 0; } .fd-mon .mon-head h2 { font-size: 24px; } }
+/* the station maps (Betty 2026-11-18, option C of four): a clearer ocean, a lighter coast line, and the sampled
+   stations in CalCOFI yellow to orange, four shades by how much each holds, outlined in navy. Colours only. */
+:root:not([data-theme="dark"]) { --cc-map-water: #d3e6f3; --cc-map-land: #f8f4ec; --cc-map-coast: #8fa0b0; --cc-map-grid: #6f8faa; }
+.cc-map .land { stroke-width: 0.6; }
+/* the stations back in blue to navy (Betty 2026-11-19: "changed my mind about yellow stations, i liked the navy"),
+   four shades by how much each holds; the water and land of option C stay */
+.cc-map .st { opacity: 0.45; }
+.cc-map .st-on { stroke: #fff; stroke-width: 0.7; opacity: 0.95; }
+.cc-map .st-on.l1 { fill: #6cbde0; } .cc-map .st-on.l2 { fill: #2f91c9; }
+.cc-map .st-on.l3 { fill: #0b6aa6; } .cc-map .st-on.l4 { fill: #0a3f73; }
+[data-theme="dark"] .cc-map .st-on { stroke: #0f1a2e; }
+[data-theme="dark"] .cc-map .st-on.l1 { fill: #2f6f99; } [data-theme="dark"] .cc-map .st-on.l2 { fill: #3f95c8; }
+[data-theme="dark"] .cc-map .st-on.l3 { fill: #4fb6e6; } [data-theme="dark"] .cc-map .st-on.l4 { fill: #9fdcf7; }
+/* the monitoring panel wider than the page column (Betty 2026-11-19), so the screenshot is big enough to read beside
+   the words: up to 1,620 px, with about 86 px clear at each edge */
+@media (min-width: 901px) { .fd-mon > .cc-container { max-width: min(1620px, calc(100% - 173px)); } }

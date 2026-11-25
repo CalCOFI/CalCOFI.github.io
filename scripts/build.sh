@@ -41,6 +41,8 @@ if [ -z "${CC_SKIP_TESTS:-}" ]; then
   # the Species and Measurements finders: which rows, the groups (every species in one), the hidden datasets,
   # the taxa a search finds that are not species rows, what a closed measurement category says is inside
   ruby _test/finder_test.rb >/dev/null || { echo "FAIL: _test/finder_test.rb" >&2; exit 1; }
+  # the dataset display words come from the record; a typed _data/dataset_extras.yml fails here
+  ruby _test/dataset_extras_test.rb >/dev/null || { echo "FAIL: _test/dataset_extras_test.rb" >&2; exit 1; }
 fi
 
 scripts/fetch_release.sh

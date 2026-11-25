@@ -25,6 +25,7 @@
 # plugin runs; `jekyll build` on a fresh clone runs it too.
 
 require "json"
+require_relative "dataset_extras"
 require "cgi"
 require "net/http"
 require "uri"
@@ -121,7 +122,14 @@ module CalCOFI
         ReleaseDoi.call(rec["release"], @site.data["release_catalog"], vers.is_a?(Hash) ? vers["versions"] : nil)
       end
     end
-    def datasets     = @datasets ||= visible(rec["datasets"])
+    def datasets     = @datasets ||= with_cite(visible(rec["datasets"]))
+    # the person at the provider who holds the data (the record's associated party with that role), for Credit
+    def with_cite(rows)
+      rows.map do |r|
+        dpv = DatasetExtras.data_provider(r)
+        dpv ? r.merge("attribution" => (r["attribution"] || {}).merge("data_provider" => dpv)) : r
+      end
+    end
     def holdings     = @holdings ||= visible(rec["holdings"])
     # `visibility: internal` keeps a record off the public site; a private preview
     # (scripts/build_preview.sh, `preview: true`) exists to show exactly that record
@@ -1146,8 +1154,10 @@ module CalCOFI
     # drawn — clipped to the frame, dashed, with a corner note when it continues beyond.
     #
     # Projection: equirectangular with a cos(mean latitude) correction on longitude, as bbox_svg
-    # used. Width is 360; height follows the frame's aspect.
+    # used. Width is 360; height is 360 / MAP_ASPECT.
     MAP_W = 360.0
+    MAP_ASPECT = 1.9  # the width : height a map is widened toward (Betty 2026-11-18: shorter boxes)
+    LAND_FRAME = [-135.0, -105.0, 19.0, 49.0].freeze # lon0, lon1, lat0, lat1 of _data/land.geojson (build_land.py)
 
     def map_svg(r)
       cells = grid
@@ -1163,7 +1173,23 @@ module CalCOFI
       pady = [(y1 - y0) * 0.06, 0.4].max
       x0 -= padx; x1 += padx; y0 -= pady; y1 += pady
 
+      # Toward one shape, MAP_ASPECT wide to 1 tall (Betty 2026-11-18, "don't cut off map"): a frame narrower
+      # than that widens about its centre, more ocean west and more coast east; a wider one grows north and
+      # south. Less empty box around a tall map, more real geography in it.
       k  = Math.cos((y0 + y1) / 2 * Math::PI / 180)
+      if (x1 - x0) * k < MAP_ASPECT * (y1 - y0)
+        grow = (MAP_ASPECT * (y1 - y0) / k - (x1 - x0)) / 2
+        x0 -= grow; x1 += grow
+      else
+        grow = ((x1 - x0) * k / MAP_ASPECT - (y1 - y0)) / 2
+        y0 -= grow; y1 += grow
+      end
+      # …but never past the coast the site has (scripts/build_land.py's frame), where land would stop at a
+      # straight edge; a frame that cannot widen enough there stays a little taller, and the box it sits in
+      # takes the map's own shape ("aspect" below), so nothing is cut off either way
+      x0 = [x0, LAND_FRAME[0]].max; x1 = [x1, LAND_FRAME[1]].min
+      y0 = [y0, LAND_FRAME[2]].max; y1 = [y1, LAND_FRAME[3]].min
+      k = Math.cos((y0 + y1) / 2 * Math::PI / 180)
       wl = (x1 - x0) * k
       hl = (y1 - y0)
       w  = MAP_W
@@ -1193,11 +1219,14 @@ module CalCOFI
         cy = format("%.1f", py.(c["lat"]))
         if (v = sampled[c["key"]])
           n = v["n"]
-          rr = 1.6 + 4.4 * Math.sqrt(n.to_f / max)
+          f  = Math.sqrt(n.to_f / max)
+          rr = 1.6 + 4.4 * f
+          # four shades by the same measure as the size (style.css .cc-map .l1–.l4), light for few, deep for many
+          lv = f < 0.3 ? 1 : f < 0.55 ? 2 : f < 0.8 ? 3 : 4
           # the data-* is what assets/coverage.js reads for the tap/hover card; <title> stays as the
           # no-JS hover and the accessible name
-          dots << format('<circle class="st st-on" cx="%s" cy="%s" r="%.1f" tabindex="0" data-key="%s" data-n="%d" data-ymin="%s" data-ymax="%s" data-nyr="%d"><title>%s · %s obs · %s–%s</title></circle>',
-                         cx, cy, rr, c["key"], n, v["ymin"], v["ymax"], v["nyr"], c["key"], Fmt.num(n), v["ymin"], v["ymax"])
+          dots << format('<circle class="st st-on l%d" cx="%s" cy="%s" r="%.1f" tabindex="0" data-key="%s" data-n="%d" data-ymin="%s" data-ymax="%s" data-nyr="%d"><title>%s · %s obs · %s–%s</title></circle>',
+                         lv, cx, cy, rr, c["key"], n, v["ymin"], v["ymax"], v["nyr"], c["key"], Fmt.num(n), v["ymin"], v["ymax"])
         else
           dots << %(<circle class="st" cx="#{cx}" cy="#{cy}" r="1.3"/>)
         end
@@ -1243,7 +1272,7 @@ module CalCOFI
         "The CalCOFI station grid over the coastline"
       end
       {
-        "svg" => %(<svg class="cc-map" viewBox="0 0 #{w.to_i} #{h}" preserveAspectRatio="xMaxYMin meet" ) +
+        "svg" => %(<svg class="cc-map" viewBox="0 0 #{w.to_i} #{h}" preserveAspectRatio="xMaxYMid meet" ) +
                  %(role="img" aria-label="#{label}">#{out}</svg>),
         "w" => w.to_i, "h" => h, "aspect" => format("%d / %d", w.to_i, h),
         "n_stations" => sampled.size, "beyond" => beyond,
@@ -1339,8 +1368,7 @@ module CalCOFI
                                   "the app opens at its own start; pick the dataset there" }
       end
       groups << { "id" => "explore", "title" => "Explore",
-                  "lede" => "Apps that read this dataset from the release. The icons after a name are " \
-                            "the app’s lenses — the spatial grain it shows the data at.",
+                  "lede" => "Apps that show this dataset.",
                   "blocks" => [{ "rows" => rows }] } unless rows.empty?
 
       # ── Get the data ─────────────────────────────────────────────────────────
@@ -1350,14 +1378,12 @@ module CalCOFI
         zrows = (dl["main"] + dl["other"]).select { |o| o["written"] }.map do |o|
           { "label" => "#{o['label']} (zip)", "label_url" => o["url"], "url" => o["url"],
             "label_title" => o["about"],
-            "meta" => [o["size"], o["inside"]].compact.join(" · "), "hash" => o["sha256"],
+            "meta" => o["size"], "hash" => o["sha256"], # what is inside is said once, in the block lede (Betty 2026-11-21)
             "note" => o["note"], "note_summary" => "too many rows for a spreadsheet" }
         end
         blocks << { "title" => "Download as a zip",
-                    "lede" => "One zip per format, each with the data tables, #{Downloads::INSIDE}" \
-                              "#{dl['version'] ? " — verified against release #{dl['version']}" : ''}" \
-                              "#{dl['since'] ? ", unchanged since #{dl['since']}" : ''}. Excel is offered only " \
-                              "where every table fits a workbook.",
+                    "lede" => "Each zip has the data tables, readme, citation, licence and column dictionary" \
+                              "#{dl['version'] ? " (#{dl['version']})" : ''}.",
                     "rows" => zrows }
       end
       objs = ((d["objects"] || []) + per_cast_objects(d)).map do |o|
@@ -1381,11 +1407,7 @@ module CalCOFI
         end
       end
       blocks << { "title" => "Tables from the release (Parquet)",
-                  "lede" => "The release’s own tables, as the parquet objects it is frozen from — the " \
-                            "same bytes every app and package below reads. A table this dataset " \
-                            "shares with others holds every dataset’s rows, so filter on " \
-                            "`dataset_key`; a partition holds only this dataset’s. *since* is the " \
-                            "release whose rows these are: an unchanged table keeps its object.",
+                  "lede" => "The release’s tables as parquet. A table shared with other datasets holds all their rows, so filter on `dataset_key`.",
                   "layout" => "table", "rows" => objs } unless objs.empty?
 
       nc = dist.select { |x| x["format"] == "netcdf" }.map do |x|
@@ -1416,10 +1438,7 @@ module CalCOFI
             "sunset" => ERDDAP_SUNSET }
         end
         blocks << { "title" => "ERDDAP (erddap.calcofi.io)",
-                    "lede" => "One ERDDAP dataset per grain. Its *subset form* picks variables, years and " \
-                              "an area and returns CSV, JSON, netCDF and more; ERDDAP refuses a request for a " \
-                              "whole table, so for everything take a zip or the parquet above. For netCDF " \
-                              "take the CF file above.",
+                    "lede" => "One ERDDAP dataset per grain. Pick variables, years and an area; for everything, take a zip or the parquet.",
                     "matrix" => matrix, "gloss" => gloss, "legacy" => legacy }
       end
 
@@ -1434,7 +1453,7 @@ module CalCOFI
                   "rows" => src } unless src.empty?
 
       groups << { "id" => "data", "title" => "Get the data",
-                  "lede" => "Every way to have the bytes, by source. Nothing here asks you to register first.",
+                  "lede" => "Download or query the data, by source.",
                   "blocks" => blocks } unless blocks.empty?
 
       # ── Code ─────────────────────────────────────────────────────────────────
@@ -1442,7 +1461,7 @@ module CalCOFI
       # other row of that table can stand in for it.
       code_blocks = []
       code_blocks << { "title" => "Packages", "layout" => "pair",
-                       "lede" => "The whole release, pinned to a version, with the citation one call away.",
+                       "lede" => "The whole release, pinned to a version.",
                        "rows" => [
         { "label" => "R · calcofi4r", "label_url" => "https://calcofi.io/calcofi4r/", "url" => "https://calcofi.io/calcofi4r/",
           "code" => "con <- calcofi4r::cc_get_db()\ncalcofi4r::cc_cite(\"#{key}\")" },
@@ -1452,12 +1471,8 @@ module CalCOFI
       if obj && obj["url"]
         code_blocks << {
           "title" => "DuckDB, anywhere",
-          "lede" => "No CalCOFI package needed: each table above is a plain parquet object, readable " \
-                    "by any DuckDB (or Arrow, pandas, Spark) from its URL. The path carries a content " \
-                    "hash — a table whose rows did not change between releases keeps the same object, " \
-                    "so nothing unchanged is stored or downloaded twice. Swap in any table above; one " \
-                    "shared with other datasets needs `WHERE dataset_key = '#{key}'`. Every object of " \
-                    "every release is listed in [db-schema](https://calcofi.io/db-schema/?v=#{release['version']}).",
+          "lede" => "No package needed: any DuckDB, Arrow, pandas or Spark reads these parquet files from their URL. " \
+                    "A shared table needs `WHERE dataset_key = '#{key}'`. All tables: [db-schema](https://calcofi.io/db-schema/?v=#{release['version']}).",
           "rows" => ([obj] + objs.select { |o| o["label"] == "sample_measurement" && !o.equal?(obj) }).map do |o|
             w = o["shared"] ? "\nWHERE dataset_key = '#{key}'" : ""
             { "label" => "#{o['label']} · #{o['scope']}", "url" => o["url"],
@@ -1477,13 +1492,11 @@ module CalCOFI
                        "label_url" => "https://calcofi.io/db-query/##{saved}",
                        "url" => "https://calcofi.io/db-query/##{saved}" }) if saved
         code_blocks << { "title" => "db-query, in the browser",
-                         "lede" => "`__TBL:#{tbl}__` is db-query’s name for the pinned release’s `#{tbl}` " \
-                                   "object — the hashed path above, resolved for you — so the same SQL " \
-                                   "keeps working when a release changes the object.",
+                         "lede" => "`__TBL:#{tbl}__` is the pinned release’s `#{tbl}` table, so the SQL keeps working when a release changes it.",
                          "rows" => rows }
       end
       groups << { "id" => "code", "title" => "Code",
-                  "lede" => "The same release, from a script or a browser SQL shell.",
+                  "lede" => "From a script or a browser SQL shell.",
                   "blocks" => code_blocks }
 
       # ── Metadata records ─────────────────────────────────────────────────────
@@ -1518,8 +1531,8 @@ module CalCOFI
       meta_rows << { "label" => "STAC collection", "label_url" => stac_browser_url(key), "url" => stac_json,
                      "label_title" => "open in the STAC browser",
                      "meta" => "one Collection per dataset, an Item per release" } if stac_json
-      groups << { "id" => "metadata", "title" => "Metadata records",
-                  "lede" => "Records about the data, in the standards each portal harvests.",
+      groups << { "id" => "metadata", "title" => "Metadata",
+                  "lede" => "Records about the data, in the standards portals harvest.",
                   "blocks" => [{ "layout" => "pair", "rows" => meta_rows }] }
 
       # ── Archives & portals: a table, with the policy stated above it ─────────
@@ -1570,11 +1583,8 @@ module CalCOFI
       order = %w[archive aggregator publisher service portal catalog]
       rows = by_portal.values.sort_by { |r| [order.index(r["role"]) || 9, r["label"].to_s] }
       rows.each { |r| r["chips"] = [status_chip(r["status"])].compact }
-      groups << { "id" => "archives", "title" => "Archives & portals",
-                  "lede" => "Where this dataset is registered outside calcofi.io: each portal’s role, " \
-                            "what it is for, the dataset’s status there and the identifier it is known by. " \
-                            "The policy — which portal is the archive of record and why — is in " \
-                            "[Portals](https://calcofi.io/docs/portals.html).",
+      groups << { "id" => "archives", "title" => "Archives",
+                  "lede" => "Where this dataset is registered outside calcofi.io. Which portal is the archive of record: [Portals](https://calcofi.io/docs/portals.html).",
                   "policy" => Fmt.present(r_policy(d)),
                   "blocks" => [{ "layout" => "portals", "rows" => rows }] } unless rows.empty?
       groups
@@ -1933,7 +1943,7 @@ module CalCOFI
         lines << ltxt
       end
       lines << "DOI: https://doi.org/#{a['doi']}" if Fmt.present(a["doi"])
-      lines << "Acknowledgement: #{a['acknowledgement']}" if Fmt.present(a["acknowledgement"])
+      lines << "Acknowledgement: #{a['acknowledgement']}" if Fmt.present(a["acknowledgement"]) && a["ack_in_cite"] != false
       lines.join("\n")
     end
 
@@ -1942,7 +1952,7 @@ module CalCOFI
       cit = Fmt.present(a["citation_main"])
       note = [
         license_text(a),
-        (Fmt.present(a["acknowledgement"]) ? "Acknowledgement: #{a['acknowledgement']}" : nil)
+        (Fmt.present(a["acknowledgement"]) && a["ack_in_cite"] != false ? "Acknowledgement: #{a['acknowledgement']}" : nil)
       ].compact.join("; ")
       fields = {
         "title"        => r["dataset_name"] || r["dataset_key"],
@@ -2317,6 +2327,8 @@ module CalCOFI
         "release"    => cat.release,
         "counts"     => { "datasets" => cat.datasets.size, "holdings" => cat.holdings.size,
                           "reference" => cat.reference.size },
+        # the formats the release's zips are written in ("CSV, Excel or Parquet"), for the front door's Download card
+        "zip_formats" => Downloads.any_of(Downloads.format_labels(site.data["zip_manifest"])),
         "categories" => cat.categories,
         "realms"     => cat.realms,
         "span"       => cat.strip_span,

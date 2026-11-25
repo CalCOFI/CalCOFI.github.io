@@ -46,6 +46,7 @@
 .cc-header .cc-dd::after { content: ""; position: absolute; top: -7px; left: 26px; width: 12px; height: 12px; background: var(--bg);
   border-left: 1px solid var(--edge); border-top: 1px solid var(--edge); transform: rotate(45deg); }
 .cc-header .cc-dd-r { left: auto; right: -16px; } .cc-header .cc-dd-r::after { left: auto; right: 30px; }
+.cc-header .cc-dd-c { left: 50%; transform: translateX(-50%); } .cc-header .cc-dd-c::after { left: calc(50% - 6px); }
 /* open: the pointer is over the group, or the button was pressed (.open, header.js: click, tap, Enter, Space).
    .shut is Escape while the pointer is still over it (WCAG 1.4.13: dismissable without moving the pointer). */
 .cc-header .cc-m2:hover > .cc-dd, .cc-header .cc-m2.open > .cc-dd { visibility: visible; opacity: 1; transition-delay: 0s; }
@@ -61,6 +62,32 @@
 .cc-header .cc-dd b { display: block; font-size: 14.5px; font-weight: 700; }
 .cc-header .cc-dd small { display: block; margin-top: 1px; font-size: 12.5px; color: var(--muted); }
 .cc-header .cc-dd hr { border: 0; border-top: 1px solid var(--border); margin: 4px 8px; }
+
+/* Betty 2026-11-20: the Data panel's two columns sized to their words (they were 230 px each, the left one mostly empty), a
+   hairline between them, lines on one row each; the Map panel's lines never wrap ("CA Ocean & Coastal Monitoring Map").
+   Not in the open column (under 1100 px), where the menus are inline. */
+.cc-header:not(.cc-nav-open) #cc-dd-data.cc-dd-2 { grid-template-columns: max-content max-content; gap: 0; padding: 14px 8px 10px; width: max-content; }
+.cc-header:not(.cc-nav-open) #cc-dd-data.cc-dd-2 > div { padding: 0 8px; }
+.cc-header:not(.cc-nav-open) #cc-dd-data.cc-dd-2 > div + div { border-left: 1px solid var(--border); padding-left: 16px; margin-left: 8px; }
+.cc-header:not(.cc-nav-open) #cc-dd-data h5 { margin: 0 10px 8px; }
+.cc-header:not(.cc-nav-open) .cc-links.cc-nav #cc-dd-data a { white-space: nowrap; padding: 8px 10px; }
+.cc-header:not(.cc-nav-open) #cc-dd-map { width: max-content; }
+.cc-header:not(.cc-nav-open) .cc-links.cc-nav #cc-dd-map a { white-space: nowrap; }
+/* The Data panel hangs from its word, so its first column's heading is directly under "Data": its left edge is 27 px
+   left of the word (its padding and the heading's margin put the text there) and the arrow points at the word.
+   A PANEL NEVER LEAVES THE WINDOW. header.js measures every panel on load and on resize and sets --cc-dd-x, the
+   distance it must move to stay 8 px inside; the arrow moves back by the same, so it still points at its word. That
+   holds for any product, bar and width. The three steps below are the same correction without JavaScript, measured
+   on calcofi.io's own bar (the panel is about 485 px wide; "Data" sits at window width - 415 px up to 1200 px); with
+   JavaScript they are only where the measuring starts from. (2026-11-23: these lived in calcofi.io's style.css, which
+   no other product loads, and the panel ran up to 114 px off the window elsewhere.) */
+.cc-header:not(.cc-nav-open) .cc-dd { translate: var(--cc-dd-x, 0px) 0; }
+.cc-header:not(.cc-nav-open) .cc-dd::after { translate: calc(-1 * var(--cc-dd-x, 0px)) 0; }
+.cc-header:not(.cc-nav-open) #cc-dd-data { left: -27px; }
+.cc-header:not(.cc-nav-open) #cc-dd-data::after { left: 43px; }
+@media (max-width: 1320px) { .cc-header:not(.cc-nav-open) #cc-dd-data { left: -50px; } .cc-header:not(.cc-nav-open) #cc-dd-data::after { left: 66px; } }
+@media (max-width: 1260px) { .cc-header:not(.cc-nav-open) #cc-dd-data { left: -70px; } .cc-header:not(.cc-nav-open) #cc-dd-data::after { left: 86px; } }
+@media (max-width: 1200px) { .cc-header:not(.cc-nav-open) #cc-dd-data { left: -86px; } .cc-header:not(.cc-nav-open) #cc-dd-data::after { left: 102px; } }
 
 /* ── 3 · the menu button, and the column it opens ─────────────────────────────
    THE BREAKPOINT IS 1100 px: the row holds the lockup, the words and the icon buttons on ONE line from

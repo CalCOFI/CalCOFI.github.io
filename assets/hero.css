@@ -5,7 +5,10 @@
   --hl:#00629b; --h-ink:#182b49; --h-body:#3d5172; --h-mute:#5b6e8c; --h-eyebrow:#00629b; --h-ship:#182b49;
   --c-bg:rgba(255,255,255,.94); --c-b:rgba(255,255,255,.6); --c-ink:#182b49; --c-mute:#5b6e8c; --c-who:#00629b; --c-link:#00629b; --c-line:#e3eaf2;
   --foot:#b9cde3;
-  position: relative; overflow: hidden; min-height: max(606px, calc(100vh - var(--header-h, 72px) - 34px)); display: flex; flex-direction: column; background: var(--w4);
+  position: relative; overflow: hidden; min-height: max(606px, calc(100vh - var(--hero-top, 106px))); display: flex; flex-direction: column;
+  /* the picture's own sky and water as the background (Betty, 2026-11-19): assets/hero.js draws the picture only once the
+     page has loaded, and the plain deep-water navy flashed first. The surface sits about 40% down, as in the picture. */
+  background: var(--w4) linear-gradient(to bottom, var(--sky1) 0%, var(--sky2) 29%, var(--sky3) 40%, var(--w1) 40%, var(--w2) 54.5%, var(--w3) 80.5%, var(--w4) 100%);
 }
 [data-theme="dark"] .hero {
   --sky1:#0a1426; --sky2:#14284a; --sky3:#22436f; --w1:#1b5d8f; --w2:#103d66; --w3:#0a2443; --w4:#06162b; --f1:#0b1a30; --f2:#040b16;
@@ -17,49 +20,49 @@
 .hero-sea .ridge { fill: none; stroke: var(--hl); stroke-opacity: .45; stroke-width: 1.2; }
 .hero-sea .surf { stroke: var(--hl); stroke-opacity: .75; stroke-width: 1.2; }
 .hero-sea .ship { fill: var(--h-ship); } .hero-sea .wire { stroke: var(--h-ship); fill: none; }
-.hero-in { position: relative; flex: 1; width: 100%; max-width: var(--container, 1280px); margin: 0 auto; padding: 0 calc(var(--space, 8px) * 3); display: flex; flex-direction: column; }
-.hero-intro { margin-top: 30px; max-width: 760px; }
-.hero-eyebrow { font-size: 12px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--h-eyebrow); }
-.hero .hero-h1 { font-family: var(--display, Teko, sans-serif); font-weight: 500; font-size: clamp(48px, 6vw, 78px); line-height: .86; text-transform: uppercase; margin: 10px 0 10px; color: var(--h-ink); letter-spacing: 0; }
-.hero-lede { margin: 0; font-size: 18.5px; line-height: 1.4; color: var(--h-body); max-width: 760px; }
-.hero-lede-2 { margin-top: 6px; color: var(--h-ink); font-weight: 600; }
-.hero-nums { position: absolute; right: calc(var(--space, 8px) * 3); top: 36px; display: grid; grid-template-columns: repeat(2, auto); gap: 14px 34px; text-align: right; margin: 0; }
+.hero-in { position: relative; flex: 1; width: 100%; max-width: calc(var(--container, 1280px) * var(--hs)); margin: 0 auto; padding: 0 calc(var(--space, 8px) * 3 * var(--hs)); display: flex; flex-direction: column; }
+/* the layer's own type size follows the scale too, for anything that does not set one */
+.hero-in, .hero-in-row { font-size: calc(1em * var(--hs)); }
+.hero-intro { margin-top: calc(30px * var(--hs)); max-width: calc(760px * var(--hs)); }
+.hero-eyebrow { font-size: calc(12px * var(--hs)); font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--h-eyebrow); }
+.hero .hero-h1 { font-family: var(--display, Teko, sans-serif); font-weight: 500; font-size: clamp(calc(48px * var(--hs)), calc(6vw * var(--hs)), calc(78px * var(--hs))); line-height: .86; text-transform: uppercase; margin: calc(10px * var(--hs)) 0 calc(10px * var(--hs)); color: var(--h-ink); letter-spacing: 0; }
+.hero-lede { margin: 0; font-size: calc(18.5px * var(--hs)); line-height: 1.4; color: var(--h-body); max-width: calc(760px * var(--hs)); }
+.hero-lede-2 { margin-top: calc(6px * var(--hs)); color: var(--h-ink); font-weight: 600; }
+.hero-nums { position: absolute; right: calc(var(--space, 8px) * 3 * var(--hs)); top: calc(36px * var(--hs)); display: grid; grid-template-columns: repeat(2, auto); gap: calc(14px * var(--hs)) calc(34px * var(--hs)); text-align: right; margin: 0; }
 .hero-nums > div { display: flex; flex-direction: column; }
-.hero-nums dd { margin: 0; font-family: var(--display, Teko, sans-serif); font-weight: 500; font-size: 40px; line-height: .9; color: var(--h-ink); font-variant-numeric: tabular-nums; }
-.hero-nums dt { font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--h-mute); }
-.hero-start { margin-top: auto; margin-bottom: 72px; padding-top: 40px; }
-.hero .hero-h2 { font-family: var(--display, Teko, sans-serif); font-weight: 500; font-size: 34px; line-height: 1; text-transform: uppercase; color: #fff; margin: 0 0 14px; letter-spacing: .01em; }
-.hero-goals { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-.hero-goal { position: relative; display: flex; flex-direction: column; padding: 14px 18px; border-radius: 14px; background: var(--c-bg); border: 1px solid var(--c-b); color: var(--c-ink); text-decoration: none;
-  backdrop-filter: blur(10px) saturate(130%); -webkit-backdrop-filter: blur(10px) saturate(130%); box-shadow: 0 8px 24px rgba(4,12,24,.18); transition: transform .18s ease, border-color .18s ease; }
-.hero-goal:hover { transform: translateY(-3px); border-color: var(--cc-yellow, #ffcd00); }
-.hero-who { display: flex; align-items: center; gap: 8px; font-size: 11.5px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--c-who); }
-.hero-who .cc-i { font-size: 18px; }
-.hero-goal h3 { margin: 8px 0 1px; font-size: 20px; font-weight: 700; color: var(--c-ink); }
-.hero-goal p { margin: 0 0 10px; font-size: 14px; color: var(--c-mute); }
-.hero-dest { margin-top: auto; display: flex; align-items: flex-start; gap: 10px; padding-top: 10px; border-top: 1px solid var(--c-line); font-size: 14px; font-weight: 700; }
-.hero-opt { display: flex; flex-direction: column; gap: 3px; text-decoration: none; }
-.hero-opt small { font-size: 11.5px; font-weight: 400; color: var(--c-mute); line-height: 1.1; }
-.hero-btn { display: inline-block; padding: 5px 12px; border-radius: 6px; border: 1.5px solid var(--c-link); color: var(--c-link); white-space: nowrap; }
+.hero-nums dd { margin: 0; font-family: var(--display, Teko, sans-serif); font-weight: 500; font-size: calc(40px * var(--hs)); line-height: .9; color: var(--h-ink); font-variant-numeric: tabular-nums; }
+.hero-nums dt { font-size: calc(11px * var(--hs)); font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--h-mute); }
+.hero-start { margin-top: auto; margin-bottom: calc(72px * var(--hs)); padding-top: calc(40px * var(--hs)); }
+.hero .hero-h2 { font-family: var(--display, Teko, sans-serif); font-weight: 500; font-size: calc(34px * var(--hs)); line-height: 1; text-transform: uppercase; color: #fff; margin: 0 0 calc(14px * var(--hs)); letter-spacing: .01em; }
+.hero-goals { display: grid; grid-template-columns: repeat(3, 1fr); gap: calc(16px * var(--hs)); }
+.hero-goal { position: relative; display: flex; flex-direction: column; padding: calc(14px * var(--hs)) calc(18px * var(--hs)); border-radius: calc(14px * var(--hs)); background: var(--c-bg); border: 1px solid var(--c-b); color: var(--c-ink); text-decoration: none;
+  backdrop-filter: blur(calc(10px * var(--hs))) saturate(130%); -webkit-backdrop-filter: blur(calc(10px * var(--hs))) saturate(130%); box-shadow: 0 calc(8px * var(--hs)) calc(24px * var(--hs)) rgba(4,12,24,.18); transition: transform .18s ease, border-color .18s ease; }
+.hero-goal:hover { transform: translateY(calc(-3px * var(--hs))); border-color: var(--cc-yellow, #ffcd00); }
+.hero-goal h3 { margin: calc(8px * var(--hs)) 0 1px; font-size: calc(20px * var(--hs)); font-weight: 700; color: var(--c-ink); }
+.hero-goal p { margin: 0 0 calc(10px * var(--hs)); font-size: calc(14px * var(--hs)); color: var(--c-mute); }
+.hero-dest { margin-top: auto; display: flex; align-items: flex-start; gap: calc(10px * var(--hs)); padding-top: calc(10px * var(--hs)); border-top: 1px solid var(--c-line); font-size: calc(14px * var(--hs)); font-weight: 700; }
+.hero-opt { display: flex; flex-direction: column; gap: calc(3px * var(--hs)); text-decoration: none; }
+.hero-opt small { font-size: calc(11.5px * var(--hs)); font-weight: 400; color: var(--c-mute); line-height: 1.1; }
+.hero-btn { display: inline-block; padding: calc(5px * var(--hs)) calc(12px * var(--hs)); border-radius: calc(6px * var(--hs)); border: 1.5px solid var(--c-link); color: var(--c-link); white-space: nowrap; }
 .hero-btn.main { background: var(--cc-yellow, #ffcd00); border-color: var(--cc-yellow, #ffcd00); color: #182b49; }
 .hero-opt:hover .hero-btn, a.hero-goal:hover .hero-btn:not(.main) { background: var(--c-link); color: #fff; }
 [data-theme="dark"] .hero-opt:hover .hero-btn { color: #0a1e38; }
 .hero-foot { position: absolute; left: 0; right: 0; bottom: 18px; }
-.hero-in-row { max-width: var(--container, 1280px); margin: 0 auto; padding: 0 calc(var(--space, 8px) * 3); display: flex; justify-content: space-between; gap: 16px; font-size: 12.5px; color: var(--foot); }
-.hero-foot nav { display: flex; flex-wrap: wrap; gap: 6px 22px; }
+.hero-in-row { max-width: calc(var(--container, 1280px) * var(--hs)); margin: 0 auto; padding: 0 calc(var(--space, 8px) * 3 * var(--hs)); display: flex; justify-content: space-between; gap: calc(16px * var(--hs)); font-size: calc(12.5px * var(--hs)); color: var(--foot); }
+.hero-foot nav { display: flex; flex-wrap: wrap; gap: calc(6px * var(--hs)) calc(22px * var(--hs)); }
 .hero-foot a { color: var(--foot); text-decoration: none; }
 .hero-foot a:hover { color: #fff; }
 @media (max-width: 900px) {
-  .hero-nums { position: static; justify-content: start; text-align: left; grid-template-columns: repeat(4, auto); margin-top: 18px; }
-  .hero-start { margin-bottom: 64px; }
+  .hero-nums { position: static; justify-content: start; text-align: left; grid-template-columns: repeat(4, auto); margin-top: calc(18px * var(--hs)); }
+  .hero-start { margin-bottom: calc(64px * var(--hs)); }
 }
 /* the three cards stay side by side down to 700 px (Ben, 2026-11-17: they went to one column "with a surprisingly
    wide screen", at 900 px, which is half of a laptop's screen). Between 700 and 900 px they are set a little tighter;
    the widest thing in a card, the two buttons of the third, needs 180 px and has 190 at 700. One column under 700. */
 @media (max-width: 900px) and (min-width: 700px) {
-  .hero-goals { gap: 12px; }
-  .hero-goal { padding: 12px 14px; }
-  .hero-dest { gap: 8px; }
+  .hero-goals { gap: calc(12px * var(--hs)); }
+  .hero-goal { padding: calc(12px * var(--hs)) calc(14px * var(--hs)); }
+  .hero-dest { gap: calc(8px * var(--hs)); }
 }
 @media (max-width: 699px) {
   .hero-goals { grid-template-columns: 1fr; }
@@ -88,11 +91,16 @@
 
 /* the label by the ship (hero.js): the way in to the Learn drawing */
 .hero-sea .hero-tag { cursor: pointer; }
+/* no underline on hover (Betty, 2026-11-19): the site-wide a:hover underlined both lines; the yellow edge is the hover */
+.hero-sea .hero-tag, .hero-sea .hero-tag:hover, .hero-sea .hero-tag:focus { text-decoration: none; }
 .hero-sea .hero-tag rect { fill: var(--c-bg); stroke: var(--c-b); stroke-width: 1; filter: drop-shadow(0 4px 10px rgba(4,12,24,.18)); }
 .hero-sea .hero-tag:hover rect, .hero-sea .hero-tag:focus rect { stroke: var(--cc-yellow, #ffcd00); stroke-width: 1.5; }
 .hero-sea .hero-tag-t { font: 700 13.5px "Source Sans 3", system-ui, sans-serif; fill: var(--c-ink); }
 .hero-sea .hero-tag-s { font: 600 12.5px "Source Sans 3", system-ui, sans-serif; fill: var(--c-who); }
 .hero-sea { pointer-events: none; } .hero-sea .hero-tag { pointer-events: auto; }
+/* the CTD's rosette is a link to #learn (hero.js), with a box so the whole of it can be clicked */
+.hero-sea .hero-gear-link { cursor: pointer; pointer-events: auto; text-decoration: none; }
+.hero-sea .hero-gear-hit { pointer-events: all; }
 /* the text layer lies over the picture: let clicks through its empty space to the label */
 .hero-in { pointer-events: none; } .hero-in > * { pointer-events: auto; }
 .hero-start { pointer-events: none; } .hero-start > * { pointer-events: auto; } .hero .hero-h2 { width: fit-content; }
@@ -130,8 +138,8 @@
 
 /* the strip under the cards (Betty 2026-11-14, option A): "Share your data" leads it, bold white with an icon */
 .hero-in-row { align-items: center; }
-.hero-foot a.hero-share { color: #fff; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; }
-.hero-foot a.hero-share .cc-i { font-size: 16px; }
+.hero-foot a.hero-share { color: #fff; font-weight: 700; display: inline-flex; align-items: center; gap: calc(6px * var(--hs)); }
+.hero-foot a.hero-share .cc-i { font-size: calc(16px * var(--hs)); }
 .hero-foot a.hero-share:hover { color: var(--cc-yellow, #ffcd00); }
 
 /* ── phone and tablet (reconciled 2026-11-17, checked at 375 px in both themes) ───────────────────
@@ -145,6 +153,20 @@
      same link.
    · the strip is absolutely placed for one line; wrapped to two or three it rode up over the last
      card. It joins the flow, under the cards. */
+/* under 900 px in the dark theme the heading is white on the pale water at the surface (2.35:1 at 820 x 900): a soft
+   navy plate behind it (white on the palest water behind it is then 5.7:1) */
+/* and in the light theme the heading is in the hero's ink, which the ship's own navy hull can sit behind: under 900 px the
+   hero is as tall as its words, so where the sea surface (and the ship on it) falls depends on how much the cards say.
+   With the cards cut to a heading and a line (2026-11-23) the hull came up behind "want to" at 375 px (1.0:1). A pale
+   plate behind the heading, the sky's own colour, keeps the ink at 10:1 or better wherever the picture lands. */
+@media (max-width: 900px) {
+  :root:not([data-theme="dark"]) .hero .hero-h2 { position: relative; isolation: isolate; }
+  :root:not([data-theme="dark"]) .hero .hero-h2::before { content: ""; position: absolute; z-index: -1; pointer-events: none; inset: -6px -12px -4px -12px; border-radius: 12px; background: rgba(243, 247, 251, .92); }
+}
+@media (max-width: 900px) {
+  [data-theme="dark"] .hero .hero-h2 { position: relative; isolation: isolate; }
+  [data-theme="dark"] .hero .hero-h2::before { content: ""; position: absolute; z-index: -1; pointer-events: none; inset: calc(-6px * var(--hs)) calc(-16px * var(--hs)) calc(-4px * var(--hs)) calc(-16px * var(--hs)); border-radius: calc(12px * var(--hs)); background: rgba(10, 22, 42, .45); }
+}
 @media (max-width: 900px) {
   /* Under 900 px the hero is as tall as what it holds, not as the window, and the cards follow the numbers
      directly. The heading then always sits at the sea surface or above it (the picture's surface is at 49% of
@@ -153,18 +175,24 @@
      to the deep (ink 3:1), depending on the window's height. */
   .hero { min-height: 0; }
   .hero-start { margin-top: 0; }
+  /* the heading sat on the sea-surface line; 64 px of room above it moves it about 14 px below the line (Betty 2026-11-21) */
+  .hero .hero-start { padding-top: calc(64px * var(--hs)); }
   .hero .hero-h2 { color: var(--h-ink); }
   .hero-sea .hero-tag { display: none; }
-  .hero-start { margin-bottom: 20px; }
+  .hero-start { margin-bottom: calc(20px * var(--hs)); }
   .hero-foot { position: relative; bottom: auto; padding: 0 0 20px; }
-  .hero-in-row { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .hero-in-row { flex-direction: column; align-items: flex-start; gap: calc(8px * var(--hs)); }
 }
 @media (max-width: 480px) {
-  .hero-nums { gap: 12px 18px; }
-  .hero-nums dd { font-size: 34px; }
+  .hero-nums { gap: calc(12px * var(--hs)) calc(18px * var(--hs)); }
+  .hero-nums dd { font-size: calc(34px * var(--hs)); }
   .hero-nums dt { letter-spacing: .08em; }
 }
 
+/* --hero-top: how far down the page the hero starts (the header and the slim wave above it), measured by
+   assets/hero.js on load and resize, so the hero ends exactly at the bottom of the window on every screen;
+   106 px (72 + 34) without JavaScript. Was a fixed 72 + 34, which left a white strip of footer showing where
+   the real header is shorter (Betty, 2026-11-19). */
 /* ── main's first-screen rules, kept on this screen (reconciled 2026-11-17; scripts/check_layout.py asserts each) ──
    · every task link is a 32 px target: the strip's links were 18 px tall
    · the dark theme's eyebrow was #ffcd00, which is --warn there: yellow marks a state, never a kind of thing. It
@@ -174,22 +202,22 @@
      size issue #30 was measured at. The hero was min-height 640 px under a 72 px header, so in that window the
      strip sat at 676 to 694 px. In a short, wide window the hero is exactly the window less the header, with a
      smaller heading and tighter gaps. */
-.hero-foot nav a { display: inline-flex; align-items: center; min-height: 32px; }
+.hero-foot nav a { display: inline-flex; align-items: center; min-height: calc(32px * var(--hs)); }
 .hero-foot { bottom: 10px; }
 .hero-nums dd a { color: inherit; text-decoration: none; }
-.hero-nums dd a:hover, .hero-nums dd a:focus-visible { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px; }
+.hero-nums dd a:hover, .hero-nums dd a:focus-visible { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: calc(4px * var(--hs)); }
 @media (max-height: 720px) and (min-width: 901px) {
   /* the window less the header (72 px) and the brand's slim wave above the hero (34 px, brand v3 § 4) */
-  .hero { min-height: calc(100vh - var(--header-h, 72px) - 34px); }
-  .hero-intro { margin-top: 6px; }
-  .hero .hero-h1 { font-size: clamp(42px, 4.3vw, 56px); margin: 4px 0 6px; }
-  .hero-lede { font-size: 17px; line-height: 1.35; }
-  .hero-nums { top: 12px; gap: 10px 34px; }
-  .hero-start { padding-top: 8px; margin-bottom: 46px; }
-  .hero .hero-h2 { font-size: 28px; margin-bottom: 8px; }
-  .hero-goal { padding: 10px 16px; }
-  .hero-goal h3 { margin-top: 6px; }
-  .hero-goal p { margin-bottom: 8px; }
+  .hero { min-height: calc(100vh - var(--hero-top, 106px)); }
+  .hero-intro { margin-top: calc(6px * var(--hs)); }
+  .hero .hero-h1 { font-size: clamp(calc(42px * var(--hs)), calc(4.3vw * var(--hs)), calc(56px * var(--hs))); margin: calc(4px * var(--hs)) 0 calc(6px * var(--hs)); }
+  .hero-lede { font-size: calc(17px * var(--hs)); line-height: 1.35; }
+  .hero-nums { top: calc(12px * var(--hs)); gap: calc(10px * var(--hs)) calc(34px * var(--hs)); }
+  .hero-start { padding-top: calc(8px * var(--hs)); margin-bottom: calc(46px * var(--hs)); }
+  .hero .hero-h2 { font-size: calc(28px * var(--hs)); margin-bottom: calc(8px * var(--hs)); }
+  .hero-goal { padding: calc(10px * var(--hs)) calc(16px * var(--hs)); }
+  .hero-goal h3 { margin-top: calc(6px * var(--hs)); }
+  .hero-goal p { margin-bottom: calc(8px * var(--hs)); }
   .hero-foot { bottom: 6px; }
 }
 
@@ -207,7 +235,203 @@ body:has(.hero) .cc-wave-auto { --cc-wave-below: #f3f7fb; }
   .hero-start { position: relative; isolation: isolate; }
   :root:not([data-theme="dark"]) .hero-start::before {
     content: ""; position: absolute; z-index: -1; pointer-events: none;
-    left: 50%; width: 100vw; transform: translateX(-50%); top: -6px; bottom: -400px;
-    background: linear-gradient(180deg, rgba(18, 63, 104, 0) 0, rgba(18, 63, 104, .44) 40px, rgba(18, 63, 104, .44) 100%);
+    left: 50%; width: 100vw; transform: translateX(-50%); top: calc(-6px * var(--hs)); bottom: calc(-400px * var(--hs));
+    background: linear-gradient(180deg, rgba(18, 63, 104, 0) 0, rgba(18, 63, 104, .44) calc(40px * var(--hs)), rgba(18, 63, 104, .44) 100%);
   }
 }
+
+/* taller cards, and the sea's surface higher (assets/hero.js SURF 352 → 300), so the cards fill the water instead of
+   leaving empty sky (Betty 2026-11-18) */
+@media (min-width: 901px) {
+  .hero-goal { min-height: calc(230px * var(--hs)); padding: calc(22px * var(--hs)) calc(26px * var(--hs)) calc(20px * var(--hs)); }
+  .hero-goal h3 { margin-top: calc(12px * var(--hs)); font-size: calc(24px * var(--hs)); line-height: 1.2; }
+  .hero-goal p { margin: calc(4px * var(--hs)) 0 calc(16px * var(--hs)); font-size: calc(15.5px * var(--hs)); line-height: 1.45; }
+  .hero-dest { padding-top: calc(14px * var(--hs)); font-size: calc(15px * var(--hs)); }
+  .hero-btn { padding: calc(8px * var(--hs)) calc(18px * var(--hs)); border-radius: calc(8px * var(--hs)); }
+  .hero-opt small { font-size: calc(12.5px * var(--hs)); }
+}
+@media (min-width: 901px) and (max-height: 720px) {
+  .hero-goal { min-height: 0; padding: calc(14px * var(--hs)) calc(20px * var(--hs)); }
+}
+
+/* the line under a card's title (Betty 2026-11-18) */
+.hero-goal h3 { margin-top: calc(6px * var(--hs)); }
+.hero-goal h3 + p { color: var(--c-mute); }
+@media (min-width: 901px) {
+  .hero-goal { min-height: 0; }
+  .hero-goal h3 { margin-top: calc(8px * var(--hs)); font-size: calc(22px * var(--hs)); }
+  .hero-goal h3 + p { margin: calc(6px * var(--hs)) 0 calc(16px * var(--hs)); font-size: calc(14.5px * var(--hs)); line-height: 1.5; }
+}
+/* the numbers, a little bigger (Betty 2026-11-18) */
+.hero-nums dd { font-size: calc(50px * var(--hs)); }
+.hero-nums dt { font-size: calc(12px * var(--hs)); }
+@media (max-height: 720px) and (min-width: 901px) { .hero-nums dd { font-size: calc(44px * var(--hs)); } }
+@media (min-width: 481px) and (max-width: 900px) { .hero-nums dd { font-size: calc(38px * var(--hs)); } }
+/* the cards (Betty 2026-11-18): a little less padding than before, the words and buttons at their full size */
+@media (min-width: 901px) {
+  .hero-goal { padding: calc(18px * var(--hs)) calc(22px * var(--hs)) calc(16px * var(--hs)); }
+  .hero-goal h3 { margin-top: calc(6px * var(--hs)); font-size: calc(23px * var(--hs)); }
+  .hero-goal h3 + p { margin: calc(6px * var(--hs)) 0 calc(14px * var(--hs)); font-size: calc(16px * var(--hs)); line-height: 1.45; }
+  .hero-dest { padding-top: calc(12px * var(--hs)); font-size: calc(15.5px * var(--hs)); }
+  .hero-btn { padding: calc(9px * var(--hs)) calc(20px * var(--hs)); }
+  .hero-opt small { font-size: calc(13px * var(--hs)); }
+}
+
+/* proportions (Betty 2026-11-18): the navy band under the bar a little shorter on this page, and the hero a little
+   wider, so the cards' sentences take three lines instead of four */
+body:has(.hero) .cc-wave-auto { --cc-wave-slim-h: 22px; --cc-wave-h: 13px; }
+@media (min-width: 1300px) {
+  .hero-in, .hero-in-row { max-width: calc(1320px * var(--hs)); }   /* Betty 2026-11-18: 1400 was too wide */
+  .hero-goals { gap: calc(20px * var(--hs)); }
+}
+
+/* sizes (Betty 2026-11-19; written as values 2026-11-23). The hero's words and cards were tuned with the browser at 90%
+   and were then drawn at 90% with CSS zoom, which no other page did. There is no zoom now: every length of the text
+   layer (.hero-in and the strip, .hero-in-row) is written as its size times --hs, the hero's scale, so the sizes are
+   ordinary CSS values and the page shares the site's one scale. --hs is .9 at desktop widths (the size that was
+   approved), 1 under 901 px, and steps up on big screens (below). The sky, sea and ship behind are not scaled. */
+.hero { --hs: 1; }
+@media (min-width: 901px) { .hero { --hs: .9; } }
+/* in a window 720 px tall or less the heading sits 8 px down, not 40, so the scrim's fade is short there, and darker (.6): the heading is over pale sky at 901 x 700 (white on it was 2.7:1 at .44), and no wash over the words above */
+@media (min-width: 901px) and (max-height: 720px) {
+  :root:not([data-theme="dark"]) .hero-start::before { background: linear-gradient(180deg, rgba(18, 63, 104, 0) 0, rgba(18, 63, 104, .6) calc(8px * var(--hs)), rgba(18, 63, 104, .6) 100%); }
+}
+
+/* the strip under the cards (Contribute · Cite the data · Statewide monitoring) sat ~27 px above the hero's edge,
+   with empty navy under it (Betty 2026-11-19): it sits nearer the edge, and the cards come down by the same */
+@media (min-width: 901px) {
+  .hero-foot { bottom: 0; }
+  .hero-foot nav a { min-height: calc(36px * var(--hs)); }
+  .hero-start { margin-bottom: calc(58px * var(--hs)); }
+}
+@media (min-width: 901px) and (max-height: 720px) { .hero-start { margin-bottom: calc(44px * var(--hs)); } }
+
+/* bigger screens (Betty, 2026-11-19): the hero's words and cards grow with the window instead of staying laptop-sized
+   in the middle of a big monitor. Each step keeps about the proportions of a ~1500 px laptop window at .9; a step
+   only applies when the window is also tall enough for the bigger cards to fit above the hero's edge. */
+@media (min-width: 1700px) and (min-height: 820px) { .hero { --hs: 1; } }
+@media (min-width: 1900px) and (min-height: 900px) { .hero { --hs: 1.12; } }
+@media (min-width: 2200px) and (min-height: 1050px) { .hero { --hs: 1.28; } }
+@media (min-width: 2500px) and (min-height: 1200px) { .hero { --hs: 1.45; } }
+@media (min-width: 3200px) and (min-height: 1550px) { .hero { --hs: 1.85; } }
+
+/* the header lines up with the hero's words (Betty, 2026-11-19): from 1300 px the hero's text column is 1272 px wide
+   (1320 less its padding) at the hero's scale (--hz, the same steps as --hs above); the header's logo and its last icon take
+   that column's edges instead of the site's own container, so the logo sits over "CalCOFI ocean data" and the icons
+   end over the numbers, at every size */
+@media (min-width: 901px) {
+  /* under 1300 px the hero is the site's container (1170) less its padding (48): 1122 px of text */
+  body:has(.hero) .cc-header { --hz: .9; --hcol: 1122px; padding-left: max(calc(var(--space, 8px) * 2), calc((100% - var(--hz) * var(--hcol)) / 2)); padding-right: max(calc(var(--space, 8px) * 2), calc((100% - var(--hz) * var(--hcol)) / 2)); }
+}
+@media (min-width: 1300px) { body:has(.hero) .cc-header { --hcol: 1272px; } }
+@media (min-width: 1700px) and (min-height: 820px) { body:has(.hero) .cc-header { --hz: 1; } }
+@media (min-width: 1900px) and (min-height: 900px) { body:has(.hero) .cc-header { --hz: 1.12; } }
+@media (min-width: 2200px) and (min-height: 1050px) { body:has(.hero) .cc-header { --hz: 1.28; } }
+@media (min-width: 2500px) and (min-height: 1200px) { body:has(.hero) .cc-header { --hz: 1.45; } }
+@media (min-width: 3200px) and (min-height: 1550px) { body:has(.hero) .cc-header { --hz: 1.85; } }
+
+/* the cards higher (Betty, 2026-11-19): on a tall window "Where do you want to start?" and the cards sat at the very
+   bottom with a wide band of empty sea above them; they now stand a tenth of the window above the edge, and the strip
+   (Contribute · Cite the data · Statewide monitoring) moves up with them, over the sea floor */
+@media (min-width: 901px) and (min-height: 820px) {
+  .hero-start { margin-bottom: max(calc(52px * var(--hs)), calc(10vh * var(--hs))); }
+  .hero-foot { bottom: max(0px, calc(10vh - 52px)); }
+}
+
+/* Betty 2026-11-20: "Where do you want to start?" and the three cards sit about as before (back to 72px; 20px, then 8px, were still a bit high, 40px ran into the "What is sampled" tag), so more of the sea floor shows
+   under them. Only where the window has room to spare: in a short window (under 800 px) the whole first screen must still
+   fit (issue #30), so it keeps its own spacing above. */
+@media (min-width: 901px) and (min-height: 800px) { .hero-start { margin-bottom: calc(72px * var(--hs)); } }
+
+/* Betty 2026-11-20: each white card a few pixels shorter (about 12 px): a little less padding top and bottom and a little
+   less between the sentence and the line over the buttons; the sides and the text sizes are as they were. */
+@media (min-width: 901px) {
+  .hero-goal { padding: calc(14px * var(--hs)) calc(22px * var(--hs)) calc(12px * var(--hs)); }
+  .hero-goal h3 + p { margin-bottom: calc(10px * var(--hs)); }
+}
+
+/* Betty 2026-11-20: the strip under the cards (Contribute, Cite the data, Statewide monitoring, the sea-floor credit) sits
+   a little higher, off the window's bottom edge (26 px at first, then 10 px lower again: 16 px). Not in a short window (under 721 px), where it keeps its own place so the
+   whole first screen still fits (issue #30). */
+@media (min-width: 901px) and (min-height: 721px) { .hero-foot { bottom: 16px; } }
+
+/* Betty 2026-11-20: Learn as a full page. The navy bar and its wave are gone: the drawing fills the window under the site
+   header, and the title, Sampling methods and Close float over its sky (the title as plain text, Sampling methods as a white pill, Close as quiet text), so nothing frames it. The drawing
+   itself is untouched. Phones (under 761 px) keep the bar above the drawing, where there is no spare sky. */
+#learn .fd-learnwavetop { display: none; }
+@media (min-width: 761px) {
+  #learn.fd-learn { position: relative; }
+  #learn .fd-learnhead { position: absolute; top: 14px; left: 16px; right: 16px; z-index: 4; background: none; padding: 0; pointer-events: none; }
+  #learn .fd-learnhead .cc-container { max-width: none; padding: 16px 22px 0; }
+  #learn .fd-learnwave { display: none; }
+  #learn .fd-learnbar { align-items: flex-start; gap: 10px; }
+  #learn .fd-learnbar > * { pointer-events: auto; }
+  /* the title is plain text on the sky (no bubble); Sampling methods is an underlined link and Close a quiet text button; the row sits close under the wave */
+  #learn .fd-learnbar .fd-learnh { display: flex; flex-direction: column; gap: 2px; margin: 0 auto 0 0; padding: 0; background: none; border: 0; box-shadow: none;
+    color: var(--c-ink, #182b49); font-size: 29px; font-weight: 700; letter-spacing: -.012em; line-height: 1.15; }
+  #learn .fd-learnbar .fd-learnh span { margin: 0; font-size: 17px; font-weight: 400; letter-spacing: 0; color: var(--c-who, #4f607a); }
+  #learn .fd-learnbar .fd-learngo { display: inline-flex; align-items: center; gap: 6px; padding: 4px 6px; font-size: 15px; font-weight: 700; line-height: 1.2;
+    background: none; border: 0; border-radius: 0; box-shadow: none; color: var(--c-ink, #182b49);
+    text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 5px; }
+  #learn .fd-learnbar .fd-learngo:hover { color: var(--c-link, #00629b); box-shadow: none; }
+  #learn .fd-learnbar .fd-close { display: inline-flex; align-items: center; gap: 6px; padding: 4px 6px 4px 10px; font-size: 15px; font-weight: 600; line-height: 1.2;
+    background: none; border: 0; box-shadow: none; color: var(--c-ink, #182b49); }
+  #learn .fd-learnbar .fd-close:hover { color: var(--c-link, #00629b); text-decoration: underline; }
+  /* the navy wave from the top of the landing and every page opens the drawing (Betty 2026-11-20), so the step up from the
+     landing above it is the brand's own edge rather than a bare strip; the drawing runs full width under it */
+  #learn.fd-learn { padding-top: 42px; }   /* the navy wave above the drawing is gone (Betty 2026-11-20); this keeps the title and frame where they were */
+  #learn .fd-learnwavetop { display: none; }
+  [data-theme="dark"] #learn .fd-learnwavetop { --cc-wave-below: var(--bg); }
+  #learn .fd-learnhead { top: 20px; left: 0; right: 0; }
+  #learn .fd-learnhead .cc-container { padding: 4px 36px 0; }
+  /* Betty 2026-11-20: the frame's sides start at the middle of the title's first letter (margin-top 22px) and end just under the caption;
+     the drawing sits 25px lower in it. The drawing sits a little above the window's bottom edge, so the caption under it is not on the edge, in a
+     thin frame that is open at the top: the line runs down the sides and along the bottom, never across the title or Close */
+  #learn .fd-secscreen { margin: 0 16px 14px; box-sizing: border-box; padding-bottom: 10px; min-height: calc(100vh - var(--header-h, 72px) - 20px - 14px - 27px);
+    display: flex; flex-direction: column; justify-content: flex-end;
+    border: 1px solid var(--c-b, #cfd8e6); border-top: 0; border-radius: 0 0 18px 18px; overflow: hidden; }
+  #learn .fd-secscreen .fd-sec svg.sec { max-height: calc(100vh - var(--header-h, 72px) - 20px - 14px - 50px - 28px); }
+  #learn .fd-secscreen .fd-cap { width: 100%; box-sizing: border-box; padding-bottom: 6px; }
+}
+/* the depth scale was grey on the blue water and hard to read: white with a dark edge, and a clearer dotted line at each depth */
+#learn .sec .ax.axd, #learn .sec .axt.axd { fill: #fff; paint-order: stroke; stroke: rgba(8, 24, 48, .6); stroke-width: 3px; stroke-linejoin: round; }
+#learn .sec .ax.axd { font-size: 12.5px; font-weight: 600; }
+#learn .sec .axt.axd { font-size: 12px; }
+#learn .sec .axl.axd { stroke: rgba(255, 255, 255, .9); stroke-width: 1.4; }
+#learn .sec .grid { stroke: #fff; opacity: .3; }
+
+/* the pins by kind, so each stands out from the pale water instead of all being the same blue (Betty 2026-11-20): the ring and the
+   icon take the kind's colour (each 4.5:1 or better on white), with a soft shadow; on hover the disc fills with it */
+#learn .sec .pin { --pin: #00629b; }
+#learn .sec .pin[data-cat="cat-phytoplankton"], #learn .sec .pin[data-cat="cat-picoplankton"], #learn .sec .pin[data-cat="cat-zooplankton"], #learn .sec .pin[data-cat="cat-krill"] { --pin: #157a3c; }
+#learn .sec .pin[data-cat="cat-ichthyo"], #learn .sec .pin[data-cat="cat-fish"] { --pin: #b4500a; }
+#learn .sec .pin[data-cat="cat-birds-mammals"] { --pin: #7a3fa8; }
+#learn .sec .pin[data-cat="cat-meteorology"] { --pin: #182b49; }
+#learn .sec .pin circle { stroke: var(--pin); stroke-width: 2.4; filter: drop-shadow(0 1px 2px rgba(8, 26, 52, .35)); }
+#learn .sec .pin use { fill: var(--pin); color: var(--pin); }
+#learn .sec .pin:hover circle, #learn .sec .pin:focus-visible circle { fill: var(--pin); }
+#learn .sec .pin:hover use, #learn .sec .pin:focus-visible use { fill: #fff; color: #fff; }
+
+/* the links and the kinds of data below the drawing, given room (Betty 2026-11-20): the row of links sat right on the heading */
+#learn .fd-learnmore { padding-top: 26px; }
+#learn .fd-learnmore .fd-pact { gap: 14px 32px; margin: 0 0 44px; }
+#learn .fd-learnmore .fd-kinds .fd-h3 { margin: 0 0 22px; }
+
+/* dark mode (Betty 2026-11-20: the title, Close and the navy-ringed pin disappeared into the dark water): light text for the
+   title and Close, and lighter pin colours that read on the dark disc */
+[data-theme="dark"] #learn .fd-learnbar .fd-learnh { color: #fff; }
+[data-theme="dark"] #learn .fd-learnbar .fd-learnh span { color: #b9c9e0; }
+[data-theme="dark"] #learn .fd-learnbar .fd-close, [data-theme="dark"] #learn .fd-learnbar .fd-learngo { color: #fff; }
+[data-theme="dark"] #learn .fd-learnbar .fd-close:hover, [data-theme="dark"] #learn .fd-learnbar .fd-learngo:hover { color: var(--cc-yellow, #ffcd00); }
+[data-theme="dark"] #learn .sec .pin { --pin: #6cc4ff; }
+[data-theme="dark"] #learn .sec .pin[data-cat="cat-phytoplankton"], [data-theme="dark"] #learn .sec .pin[data-cat="cat-picoplankton"], [data-theme="dark"] #learn .sec .pin[data-cat="cat-zooplankton"], [data-theme="dark"] #learn .sec .pin[data-cat="cat-krill"] { --pin: #4fdc86; }
+[data-theme="dark"] #learn .sec .pin[data-cat="cat-ichthyo"], [data-theme="dark"] #learn .sec .pin[data-cat="cat-fish"] { --pin: #ffa25a; }
+[data-theme="dark"] #learn .sec .pin[data-cat="cat-birds-mammals"] { --pin: #cfa6ff; }
+[data-theme="dark"] #learn .sec .pin[data-cat="cat-meteorology"] { --pin: #dbe7f6; }
+[data-theme="dark"] #learn .sec .pin:hover use, [data-theme="dark"] #learn .sec .pin:focus-visible use { fill: #0a1426; color: #0a1426; }
+[data-theme="dark"] #learn .fd-secscreen { border-color: rgba(255, 255, 255, .16); }
+/* the card's icon leads its heading, on the heading's line (Ben, 2026-11-25). It had a row of its own above, left
+   from the eyebrow whose words went; alone there it read as a stray mark. In the heading it labels the card where the
+   eye lands and the card is one row shorter. Not in the button: the third card has two. */
+.hero-goal > h3:first-child { margin-top: 0; display: flex; align-items: center; gap: .5em; }
+.hero-goal > h3 > .cc-i { flex: none; font-size: 1.1em; color: var(--c-who); }

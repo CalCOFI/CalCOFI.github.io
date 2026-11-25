@@ -1,0 +1,17 @@
+{%- comment -%} One dataset in an open category on /datasets/ (Option A, Betty 2026-11-18; four slots since the review of PR 57,
+  2026-11-23: nine said "sensor" five times on one card). The method picture with its label · the name and provider ·
+  the plain name · the years and whether collection goes on. Collection, analysis and the description are the dataset
+  page's; The name is a link to the dataset's page and a click anywhere on the row opens it; Download and
+  Details close the row (browse_row_actions.html). Every word is the release record's (its `display` block, through
+  _plugins/browse.rb); what it does not give is not drawn. {%- endcomment -%}
+{%- assign d = include.d -%}
+<div class="bt-row bd-r" data-k="{{ d.key | escape }}" data-r="{{ d.realm | escape }}">
+  <div class="bt-rs">{% if d.method %}<span class="bt-mi">{% include method_icon.html m=d.method size=38 %}</span><span class="bt-ml">{{ d.method_label }}</span>{% endif %}</div>
+  <a class="bt-rn" href="{{ d.url | relative_url }}"><b>{{ d.name | escape }} · {{ d.prov | escape }}</b>
+    {%- if d.plain %}<span>{{ d.plain | escape }}</span>{% endif %}</a>
+  <div class="bt-rf">
+    {%- if d.y0 %}<span class="bt-ry"><b>{{ d.y0 }}{% if d.y1 and d.y1 != d.y0 %}–{{ d.y1 }}{% endif %}</b></span>{% elsif d.years %}<span class="bt-ry"><b>{{ d.years | escape }}</b></span>{% endif -%}
+    {%- if d.status %}<span class="bt-st bt-st-{{ d.status }}"><i aria-hidden="true"></i>{{ d.status_label }}</span>{% endif -%}
+  </div>
+  {% include browse_row_actions.html d=d %}
+</div>

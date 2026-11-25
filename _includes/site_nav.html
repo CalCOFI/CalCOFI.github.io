@@ -22,13 +22,13 @@
   <div class="cc-m2" data-word="{{ w.id | escape }}">
     <button type="button" class="cc-m2-t" aria-expanded="false" aria-controls="cc-dd-{{ w.id | escape }}"{% if cur %} aria-current="true"{% endif %}>{{ w.title | escape }}{{ car }}</button>
     {%- assign titled = false -%}{%- if w.menu.size > 1 -%}{%- assign titled = true -%}{%- endif -%}
-    <div class="cc-dd{% if titled %} cc-dd-2{% endif %}{% if w.align == 'right' %} cc-dd-r{% endif %}" id="cc-dd-{{ w.id | escape }}">
+    <div class="cc-dd{% if titled %} cc-dd-2{% endif %}{% if w.align == 'right' %} cc-dd-r{% elsif w.align == 'center' %} cc-dd-c{% endif %}" id="cc-dd-{{ w.id | escape }}">
       {%- for c in w.menu -%}
       {%- if titled %}<div>{% if c.title %}<h5>{{ c.title | escape }}</h5>{% endif %}{% endif -%}
       {%- for i in c.items -%}
       {%- if i.rule %}<hr>{% else -%}
       {%- assign first = i.path | slice: 0 -%}
-      <a href="{% if first == '/' %}{{ i.path | relative_url }}{% else %}{{ i.path }}{% endif %}"{% if i.go %} data-go="{{ i.go | escape }}"{% endif %}>{% if i.icon %}<i class="cc-i cc-i-{{ i.icon | escape }}" aria-hidden="true"></i>{% endif %}<span><b>{{ i.title | escape }}</b>{% if i.small %}<small>{{ i.small | escape }}</small>{% endif %}</span></a>
+      <a href="{% if first == '/' %}{{ i.path | relative_url }}{% else %}{{ i.path }}{% endif %}"{% if i.go %} data-go="{{ i.go | escape }}"{% endif %}{% if i.new %} target="_blank" rel="noopener"{% endif %}>{% if i.icon %}<i class="cc-i cc-i-{{ i.icon | escape }}" aria-hidden="true"></i>{% endif %}<span><b>{{ i.title | escape }}</b>{% if i.small %}<small>{{ i.small | escape }}</small>{% endif %}</span></a>
       {%- endif -%}
       {%- endfor -%}
       {%- if titled %}</div>{% endif -%}

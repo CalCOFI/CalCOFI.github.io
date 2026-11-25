@@ -53,6 +53,7 @@ jobs:
           ruby _test/nav_test.rb
           ruby _test/browse_test.rb
           ruby _test/finder_test.rb
+          ruby _test/dataset_extras_test.rb
           python3 _test/check_layout_exemplars_test.py
           python3 _test/check_layout_downloads_test.py
           python3 _test/check_layout_front_test.py

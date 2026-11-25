@@ -26,6 +26,7 @@ layout: default
 {%- assign nums = cat.numbers -%}
 <link rel="stylesheet" href="{{ '/assets/browse.css' | relative_url }}">
 <link rel="stylesheet" href="{{ '/assets/finder.css' | relative_url }}">
+<link rel="stylesheet" href="{{ '/assets/browse-tiles.css' | relative_url }}">
 {%- comment -%}
   Browse datasets (Betty, 2026-11-14). A finder: search and filters in a navy band (no title — the
   page's h1 is kept for screen readers), "Years covered" folded, then two views of the same rows with
@@ -37,16 +38,27 @@ layout: default
   Search matches names, providers, categories AND the species and measurements inside each dataset.
 {%- endcomment -%}
 {%- assign b = site.data.browse -%}
-{%- assign try = "anchovy,oxygen,krill,chlorophyll,seabirds" | split: "," -%}
+{%- assign try = "CTD,oxygen,chlorophyll,anchovy,krill,seabirds" | split: "," -%}
 
 <header class="bd-head bd-wave cc-wave cc-wave-own">
   <div class="bd-in">
     <h1 class="sr-only">Browse datasets</h1>
     <div class="bd-tools">
+      {%- comment -%} the search, with a dropdown of the datasets it matches as you type (Betty 2026-11-18): each with
+        why it matched ("Has anchovy"), its category and years; a click shows it in the List with the preview; Enter
+        shows them all in the List; the same words on the Species and Measurements pages one click away
+        (assets/browse.js) {%- endcomment -%}
+      <div class="bd-qw">
       <label class="bd-q"><i class="cc-i cc-i-ui-search" aria-hidden="true"></i>
         <span class="sr-only">Search datasets, species or measurements</span>
-        <input id="bd-q" type="search" autocomplete="off" spellcheck="false" placeholder="Search datasets, species or measurements">
+        <input id="bd-q" type="search" autocomplete="off" spellcheck="false" placeholder="Search datasets, species or measurements"
+               role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="bd-dd-list">
         <span class="bd-qn" id="bd-qn" aria-hidden="true">{{ b.rows.size }}</span></label>
+      {%- comment -%} the dropdown: a listbox that holds only its options (#bd-dd-list; each has an id, and the input's
+        aria-activedescendant names the one the arrow keys are on), then the two links to the other catalogs, outside it {%- endcomment -%}
+      <div class="bd-dd" id="bd-dd" hidden
+           data-species="{{ '/species/' | relative_url }}" data-measurements="{{ '/measurements/' | relative_url }}"></div>
+      </div>
       <label class="bd-sel"><span class="sr-only">Type</span><select id="bd-type">
         <option value="">All types</option>
         {%- for r in b.realms %}<option value="{{ r.id | escape }}">{{ r.title | escape }}</option>{% endfor -%}
@@ -61,45 +73,81 @@ layout: default
 </header>
 
 <main class="calm-page ds-cat ds-browse">
+{%- comment -%} the three catalogs, the same row on each of them (PR 57 review D4); this page's view switch sits on its line {%- endcomment -%}
 {% include catalog_crumb.html on="datasets" %}
 
-<details class="bd-when">
-  <summary><i class="cc-i cc-i-ui-years" aria-hidden="true"></i><b>Years covered</b><span>which datasets were collected each year</span><i class="calm-chev cc-i cc-i-ui-down" aria-hidden="true"></i></summary>
-  <script type="application/json" id="reach">{{ site.data.reach | jsonify }}</script>
-  <div id="strip-host" class="fd-strip bd-strip" data-sprite="{{ '/brand/v2/icons/calcofi-icons.svg' | relative_url }}"></div>
-</details>
-
 <h2 class="sr-only">The datasets</h2>
+{%- comment -%}
+  Two views (Betty 2026-11-18, mockup "Browse datasets — by category", Option A):
+    By category  (first, the default) the category TILES, Environment then Biology (the record's `browse`
+                 realms and groups, _plugins/dataset_extras.rb). A tile opens its category: its datasets as
+                 rows of four slots (_includes/browse_cat_row.html), the preview on the right as before.
+                 Without JavaScript every category is drawn below the tiles and a tile is a link to it.
+    List         every dataset in one list, as before; a search switches to it.
+{%- endcomment -%}
 <div class="tabset calm-views ds-views bd-views" id="ts-ds-views" data-url-tab>
   <div class="tabrow" role="tablist" aria-label="How to see the datasets">
-    <button type="button" role="tab" id="ds-view-tab-list" aria-controls="ds-view-list" data-tab="list" aria-selected="true" tabindex="0">List</button>
-    <button type="button" role="tab" id="ds-view-tab-grid" aria-controls="ds-view-grid" data-tab="grid" aria-selected="false" tabindex="-1">By category</button>
-    <span class="bd-count">{{ cat.counts.datasets }} datasets · {{ nums.since | default: b.span[0] }} to today</span>
+    <button type="button" role="tab" id="ds-view-tab-grid" aria-controls="ds-view-grid" data-tab="grid" aria-selected="true" tabindex="0">By category</button>
+    <button type="button" role="tab" id="ds-view-tab-list" aria-controls="ds-view-list" data-tab="list" aria-selected="false" tabindex="-1">List</button>
+    <span class="bd-count">{{ cat.counts.datasets }} datasets{% if b.tiles %} · {% assign nt = 0 %}{% for rl in b.tiles %}{% assign nt = nt | plus: rl.groups.size %}{% endfor %}{{ nt }} categories{% endif %}</span>
   </div>
 
-  <div class="bd-find">
+  <div class="bd-find bt-home-on" id="bd-find">
     <div class="bd-lists">
-      <div class="tabpanel" id="ds-view-list" data-panel="list" role="tabpanel" aria-labelledby="ds-view-tab-list">
+      <div class="tabpanel" id="ds-view-grid" data-panel="grid" role="tabpanel" aria-labelledby="ds-view-tab-grid">
+        <div class="bt-home" id="bt-home">
+          {%- for rl in b.tiles %}
+          <section class="bt-realm" aria-labelledby="bt-h-{{ rl.id }}">
+            <header class="bt-rh"><div><h2 id="bt-h-{{ rl.id }}">{{ rl.title | escape }}</h2>{% if rl.sub %}<p>{{ rl.sub | escape }}</p>{% endif %}</div>
+              <span>{{ rl.groups.size }} categor{% if rl.groups.size == 1 %}y{% else %}ies{% endif %} · {{ rl.n }} dataset{% if rl.n != 1 %}s{% endif %}</span></header>
+            <div class="bt-tiles">
+              {%- for g in rl.groups %}
+              <a class="bt-tile" href="?cat={{ g.slug }}#cat-{{ g.slug }}" data-cat="{{ g.slug }}">
+                <span class="bt-ic"><i class="cc-i cc-i-{{ g.icon | escape }}" aria-hidden="true"></i></span>
+                <b class="bt-nm">{{ g.name | escape }}</b>
+                {%- if g.line %}<span class="bt-line">{{ g.line | escape }}</span>{% endif %}
+                <span class="bt-ft"><b>{{ g.programs | escape }}</b><span>{{ g.n }} dataset{% if g.n != 1 %}s{% endif %}{% if g.years %} · {{ g.years | escape }}{% endif %}</span></span>
+              </a>
+              {%- endfor %}
+            </div>
+          </section>
+          {%- endfor %}
+        </div>
+
+        <div class="bt-cats" id="bt-cats">
+          {%- for rl in b.tiles %}{% for g in rl.groups %}
+          <section class="bt-cat" id="cat-{{ g.slug }}" data-cat="{{ g.slug }}" data-cats="{% for d in g.rows %}{{ d.cat | escape }}|{% endfor %}">
+            <nav class="bt-rail" aria-label="Back to all categories">
+              {%- comment -%} a breadcrumb instead of "← All categories" (Betty 2026-11-19): Datasets and the realm go back to the
+                tiles (the realm also scrolls to its row, assets/browse.js); the category is where you are {%- endcomment -%}
+              {%- comment -%} simpler still (Betty 2026-11-20): "Back to Datasets › Carbonate Chemistry" — Environment and Biology went to the same page {%- endcomment -%}
+              <span class="bt-crumb"><a href="./" data-home>Back to Datasets</a><svg aria-hidden="true" viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M9 6l6 6-6 6-1.4-1.4 4.6-4.6-4.6-4.6z"/></svg><span aria-current="location">{{ g.name | escape }}</span></span>
+              {%- for rl2 in b.tiles %}
+              <span class="bt-rl">{{ rl2.title | escape }}</span>
+              {%- for g2 in rl2.groups %}<a href="?cat={{ g2.slug }}#cat-{{ g2.slug }}" data-cat="{{ g2.slug }}"{% if g2.slug == g.slug %} aria-current="true"{% endif %}><i class="cc-i cc-i-{{ g2.icon | escape }}" aria-hidden="true"></i><span>{{ g2.name | escape }}</span><em>{{ g2.n }}</em></a>{% endfor %}
+              {%- endfor %}
+            </nav>
+            <div class="bt-main">
+              <header class="bt-ch">
+                <h2>{{ g.name | escape }}</h2>
+                {%- if g.line %}<p class="bt-cd">{{ g.line | escape }}</p>{% endif %}
+                {%- if g.about %}<p class="bt-about">{{ g.about | escape }}</p>{% endif %}
+                <p class="bt-cs"><b>{{ g.n }}</b> dataset{% if g.n != 1 %}s{% endif %}{% if g.years %} · <b>{{ g.years | escape }}</b>{% endif %} · <b>{{ g.programs | escape }}</b></p>
+              </header>
+              <div class="bt-rows">
+                {%- for d in g.rows %}{% include browse_cat_row.html d=d %}{% endfor %}
+              </div>
+            </div>
+          </section>
+          {%- endfor %}{% endfor %}
+        </div>
+      </div>
+
+      <div class="tabpanel" id="ds-view-list" data-panel="list" role="tabpanel" aria-labelledby="ds-view-tab-list" hidden>
         <div class="bd-colh"><span>Dataset</span><span>What&#8217;s in it</span><span>Years with data</span></div>
         <div class="bd-list" id="bd-list"{% if cat.span %} data-span="{{ cat.span | join: ',' }}"{% endif %}>
           {%- for d in b.rows %}{% include browse_row.html d=d sub=true %}{% endfor -%}
         </div>
-      </div>
-      <div class="tabpanel" id="ds-view-grid" data-panel="grid" role="tabpanel" aria-labelledby="ds-view-tab-grid" hidden>
-        <div class="bd-colh bd-colh-2"><span>Dataset and what&#8217;s in it</span><span>Years with data</span></div>
-        {%- for r in b.realms %}
-        <section class="bd-realm" data-realm="{{ r.id }}">
-          <h2>{{ r.title | escape }}</h2>
-          {%- for g in r.groups %}
-          <section class="bd-grp" id="cat-{{ g.cat | slugify }}" data-cat="{{ g.cat | escape }}">
-            <header class="bd-gh"><span class="bd-gi"><i class="cc-i cc-i-{{ g.icon | escape }}" aria-hidden="true"></i></span><h3>{{ g.cat | escape }}</h3>{% if g.desc %}<span class="bd-gd">{{ g.desc | escape }}</span>{% endif %}<span class="bd-gn">{{ g.n }} dataset{% if g.n != 1 %}s{% endif %}</span></header>
-            <div class="bd-card">
-              {%- for d in g.rows %}{% if g.solo %}{% include browse_row.html d=d title=d.full %}{% else %}{% include browse_row.html d=d %}{% endif %}{% endfor -%}
-            </div>
-          </section>
-          {%- endfor %}
-        </section>
-        {%- endfor %}
       </div>
       <p class="bd-empty" id="bd-empty" hidden>Nothing matches. Try a species (<i>anchovy</i>), a measurement (<i>oxygen</i>) or a group (<i>krill</i>). <button type="button" id="bd-clear">Clear</button></p>
     </div>
@@ -108,6 +156,38 @@ layout: default
   </div>
 </div>
 <script type="application/json" id="bd-rows">{{ b.rows | jsonify }}</script>
+
+{%- comment -%} Years covered sits under the datasets now (Betty 2026-11-18), above the other folds {%- endcomment -%}
+<details class="bd-when">
+  <summary><i class="cc-i cc-i-ui-years" aria-hidden="true"></i><b>Years covered</b><span>which datasets were collected each year</span><i class="calm-chev cc-i cc-i-ui-down" aria-hidden="true"></i></summary>
+  <script type="application/json" id="reach">{{ site.data.reach | jsonify }}</script>
+  {%- comment -%} The rows assets/reach.js draws each dataset's years into (.fd-yaxis, .fd-yrow .fd-ycells), as on the
+    front door (index.html "Or pick one of N datasets"); the fold had only the empty host, so it opened blank. {%- endcomment -%}
+  {%- assign ydss = site.data.reach.datasets -%}
+  <div id="strip-host" class="fd-ylist bd-strip" data-sprite="{{ '/brand/v2/icons/calcofi-icons.svg' | relative_url }}">
+    <div class="fd-yhead"><div></div><div class="fd-yaxis" aria-hidden="true"></div><div></div></div>
+    {%- assign yrealms = "env:Environment,bio:Biology,:" | split: "," -%}
+    {%- for yr in yrealms -%}
+      {%- assign yrp = yr | split: ":" -%}
+      {%- if yrp[0] -%}{%- assign yrows = ydss | where: "realm", yrp[0] -%}
+      {%- else -%}{%- assign yrows = ydss | where_exp: "d", "d.realm != 'bio' and d.realm != 'env'" -%}{%- endif -%}
+      {%- if yrows.size > 0 -%}
+    {%- if yrp[1] %}<h3 class="fd-yg"><i class="cc-i cc-i-realm-{{ yrp[0] }}" aria-hidden="true"></i>{{ yrp[1] }}</h3>{% endif %}
+    <ul class="fd-yrows">
+      {%- for d in yrows %}
+      <li class="fd-yrow" data-key="{{ d.key | escape }}">
+        {%- comment -%} Betty 2026-11-19: easier to read — a colour square (the dataset's own colour, as its bars), the name in
+          dark type, and its years at the row's end {%- endcomment -%}
+        <a class="fd-yname" href="{{ d.url }}"><i class="bd-ysw" style="background: {{ d.color | default: '#00629b' | escape }}" aria-hidden="true"></i><span>{{ d.name | escape }}</span></a>
+        <span class="fd-ycells"></span>
+        <span class="bd-yr">{% if d.ymin %}{{ d.ymin }}{% if d.ymax != d.ymin %}–{{ d.ymax }}{% endif %}{% else %}{{ d.temporal | escape }}{% endif %}</span>
+      </li>
+      {%- endfor %}
+    </ul>
+      {%- endif -%}
+    {%- endfor %}
+  </div>
+</details>
 
 <div class="calm-folds ds-cat-folds">
   {%- assign n_held = cat.counts.holdings -%}

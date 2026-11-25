@@ -9,19 +9,30 @@
 {%- endcomment -%}
 <div class="calm-folds ds-folds">
 
+{%- comment -%} ── Also on NOAA ERDDAP · N tables: the NOAA ERDDAP tables the record marks `kind: mirror` — other places the
+  same data are served, not what the release was built from (PR 57 review F5; the page said "Combined from N source
+  tables" of them). Reference, so a closed fold. Only the redesigned page has page.dp. ── {%- endcomment -%}
+{%- assign mirrors = page.dp.sources | where: "kind", "mirror" -%}
+{%- if mirrors.size > 0 -%}
+<details class="calm-fold" id="noaa">
+  <summary><i class="cc-i cc-i-way-erddap" aria-hidden="true"></i>Also on NOAA ERDDAP
+    <span class="calm-ans">{{ mirrors.size }} table{% if mirrors.size != 1 %}s{% endif %} · the same data, served by NOAA</span><i class="calm-chev cc-i cc-i-ui-down" aria-hidden="true"></i></summary>
+  <div class="calm-body">
+    <ul class="dp-cg">{% for t in mirrors %}<li><a href="{{ t.url | escape }}" target="_blank" rel="noopener"><b>{{ t.title | escape }} <span aria-hidden="true">↗</span></b><code>{{ t.id | escape }}</code></a></li>{% endfor %}</ul>
+  </div>
+</details>
+{%- endif -%}
+
 {%- comment -%} ── Every endpoint · N (D16): the Access tabset, unchanged — one tab per group, the
   copy buttons, the ERDDAP format matrix, the portals and their status. Each group's own pill
   (g.n) and the fold's answer (page.n_endpoints) are the same sum, computed once in the plugin. ── {%- endcomment -%}
 {%- if page.access.size > 0 -%}
 <details class="calm-fold" id="access">
   <summary><i class="cc-i cc-i-el-endpoints" aria-hidden="true"></i>Every endpoint
-    <span class="calm-ans">{{ page.n_endpoints }} · {% for g in page.access %}{% if g.n > 0 %}{{ g.title | downcase | escape }} {{ g.n }}{% unless forloop.last %}, {% endunless %}{% endif %}{% endfor %}</span><i class="calm-chev cc-i cc-i-ui-down" aria-hidden="true"></i></summary>
+    <span class="calm-ans">{{ page.n_endpoints }}</span><i class="calm-chev cc-i cc-i-ui-down" aria-hidden="true"></i></summary>
   <div class="calm-body">
     <p class="ds-access-lede cc-prose">{% if page.is_holding %}This dataset is not in the integrated
-      database, so nothing below comes from a CalCOFI release. Here is where it lives today.{% else %}Every
-      endpoint this dataset can be reached through, grouped by how you would use it. Each name is
-      the link; the copy button beside it copies the address. Everything is in the release record and
-      was answered when the release was cut.{% endif %}</p>
+      database, so nothing below comes from a CalCOFI release. Here is where it lives today.{% else %}Grouped by use. The button beside a link copies its address.{% endif %}</p>
     <div class="tabset" id="ts-ds-access">
       <div class="tabrow" role="tablist" aria-label="Access, by group">
         {%- for g in page.access -%}
@@ -38,8 +49,12 @@
         {%- if g.lede %}<p class="ds-access-lede cc-muted cc-prose">{{ g.lede | markdownify | remove: "<p>" | remove: "</p>" }}</p>{% endif -%}
         {%- if g.policy %}<p class="ds-policy cc-prose"><span class="ds-policy-k">Policy</span> {{ g.policy | escape }}</p>{% endif -%}
         {%- for b in g.blocks -%}
+        {%- if b.title and b.lede -%}
+        <div class="ds-access-subrow"><h4 class="ds-access-sub">{{ b.title | escape }}</h4><p class="ds-access-lede cc-muted cc-prose">{{ b.lede | markdownify | remove: "<p>" | remove: "</p>" }}</p></div>
+        {%- else -%}
         {%- if b.title %}<h4 class="ds-access-sub">{{ b.title | escape }}</h4>{% endif -%}
         {%- if b.lede %}<p class="ds-access-lede cc-muted cc-prose">{{ b.lede | markdownify | remove: "<p>" | remove: "</p>" }}</p>{% endif -%}
+        {%- endif -%}
         {%- if b.layout == "table" -%}
         {% include access_table.html block=b %}
         {%- elsif b.layout == "portals" -%}

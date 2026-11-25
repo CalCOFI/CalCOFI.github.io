@@ -123,12 +123,36 @@ class NavTest < Minitest::Test
   def committed
     nav = YAML.safe_load(File.read(File.join(__dir__, "..", "_data", "nav.yml")))
     prods = YAML.safe_load(File.read(File.join(__dir__, "..", "_data", "products.yml")), permitted_classes: [Date], aliases: true)
-    N.resolve(nav, products: prods["products"], sections: prods["sections"], counts: { "datasets" => "20", "species" => "1,000", "measurements" => "104" },
+    N.resolve(nav, products: prods["products"], sections: prods["sections"], counts: { "datasets" => "20", "species" => "1,000", "measurements" => "104", "since" => "1949" },
                    site_url: "https://calcofi.io")
   end
 
   def test_the_committed_words
     assert_equal ["Data", "Map", "Learn", "calcofi.org ↗"], N.titles(committed)
+  end
+
+  # The grey line under a catalog's name says what the name does not (one job per slot, 2026-11-23): the release's
+  # count and a fact, "20, from 1949" · "1,000 observed" · "104, with units". Both numbers are the build's; where it
+  # cannot read the second, the words that needed it go and the count stands alone; with no count there is no line.
+  def test_a_count_line_carries_a_fact_and_never_a_typed_number
+    c = { "datasets" => "20", "species" => "1,000", "measurements" => "104", "since" => "1949" }
+    assert_equal "20, from 1949", N.count_line("datasets", c, nil, ", from {since}")
+    assert_equal "1,000 observed", N.count_line("species", c, nil, " observed")
+    assert_equal "104, with units", N.count_line("measurements", c, nil, ", with units")
+    assert_equal "20", N.count_line("datasets", c.merge("since" => nil), nil, ", from {since}"), "no first year: the count alone"
+    assert_nil N.count_line("datasets", {}, nil, ", from {since}"), "no count: no line"
+    assert_equal "All 20", N.count_line("datasets", c), "no words round it: main's line"
+    assert_equal "1,000", N.count_line("species", c)
+    find = committed.find { |x| x["id"] == "data" }["menu"].find { |m| m["title"] == "Find" }["items"]
+    assert_equal ["20, from 1949", "1,000 observed", "104, with units"], find.map { |i| i["small"] }, "the committed lines, with the fixture's numbers"
+    find.each { |i| refute_match(/#{Regexp.escape(i["title"])}/i, i["small"], "a caption does not repeat its title") }
+  end
+
+  # A product is named as it names itself on its own bar (2026-11-23): "Explorer", not "Explorer App".
+  def test_apps_go_by_their_own_names
+    map = committed.find { |x| x["id"] == "map" }["menu"][0]["items"]
+    assert_equal ["Explorer", "Dataset Finder"], map.first(2).map { |i| i["title"] }
+    refute(map.any? { |i| i["title"].to_s.match?(/ App\z/) })
   end
 
   # Ben, 2026-11-17 (evening): the bar is simplified and Learn holds the rest. Docs, FAQ, News and Cite had been
@@ -142,7 +166,7 @@ class NavTest < Minitest::Test
                  learn["menu"][0]["items"].map { |i| i["url"] }
     assert_equal [["Tutorials", "https://calcofi.io/news/?type=tutorial"], ["Stories", "https://calcofi.io/news/?type=story"], ["All news", "https://calcofi.io/news/"]],
                  learn["menu"][1]["items"].map { |i| [i["title"], i["url"]] }
-    assert_equal "right", learn["align"]
+    assert_equal "center", learn["align"]
     assert_equal %w[news stories tutorials], learn["here"]
     assert_empty ws.map { |w| w["id"] } & %w[docs faq news cite], "none of them is also a word of the bar"
   end

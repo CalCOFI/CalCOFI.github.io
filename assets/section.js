@@ -71,7 +71,7 @@
     { cat: 'cat-ichthyo',      x: 1040, y: 232, label: 'fish eggs & larvae · 0–' + BONGO_M + ' m', href: 'https://calcofi.org/sampling-info/methods/ichthyoplankton-methods/' },
     { cat: 'cat-fish',         x: 370,  y: 470, label: 'mesopelagic fish · 200–1,000 m', deep: true, href: 'https://calcofi.org/data/marine-ecosystem-data/' },
     { cat: 'cat-birds-mammals', glyph: 'cat-whale', x: 1070, y: 190, label: 'marine mammals · surface', href: 'https://calcofi.org/sampling-info/methods/marine-mammal-methods/' },
-    { cat: 'cat-birds-mammals', x: 1060, y: 68,  label: 'seabirds · flying bridge count', href: 'https://calcofi.org/sampling-info/methods/seabird-methods/' }
+    { cat: 'cat-birds-mammals', x: 440,  y: 100, side: 'l', label: 'seabirds · flying bridge count', href: 'https://calcofi.org/sampling-info/methods/seabird-methods/' }
   ];
 
   /* the drawn fallback for the sea floor — the mockup's profile, used ONLY if _data/line90_floor.json
@@ -163,7 +163,7 @@
         el('line', { x1: AX_X, x2: W, y1: dy(m), y2: dy(m), cls: 'grid' }, deco);
       });
     }
-    el('circle', { cx: 1310, cy: 58, r: 22, cls: 'sun' }, deco);      // the sun; a moon in dark
+    el('circle', { cx: 1310, cy: 92, r: 22, cls: 'sun' }, deco);      // the sun; a moon in dark
     el('path', { d: floor.d, cls: 'floor' }, deco);                     // the sea floor + the headland
     el('line', { x1: 0, x2: floor.coastX + 2, y1: SKY, y2: SKY, cls: 'surf' }, deco);   // the surface
 
@@ -181,7 +181,7 @@
     el('path', { d: 'M690,186 L698,152 L710,152 L718,186', cls: 'wire' }, ship);   // stern A-frame
     el('path', { d: 'M846,186 L846,170 L858,170', cls: 'wire' }, ship);            // CTD davit
     el('circle', { cx: 801, cy: 134, r: 2.6 }, ship); el('circle', { cx: 807, cy: 134, r: 2.6 }, ship);   // the observer's binoculars
-    el('line', { x1: 807, x2: 1045, y1: 133, y2: 74, cls: 'thin' }, deco);          // sight line to the bird
+    el('line', { x1: 807, x2: 458, y1: 133, y2: 103, cls: 'thin' }, deco);          // sight line to the bird (above the krill pin)
     el('line', { x1: 807, x2: 1055, y1: 135, y2: 192, cls: 'thin' }, deco);         // sight line to the whale
 
     // ── the gear, to its protocol depth ──
@@ -212,12 +212,12 @@
 
     // ── the axes ──
     var ax = el('g', { cls: 'axes' }, deco);
-    el('path', { d: 'M' + AX_X + ',' + SKY + ' V456 M76,460 L84,464 M' + AX_X + ',467 V' + FLOOR_Y, cls: 'axl' }, ax);   // the broken depth axis
+    el('path', { d: 'M' + AX_X + ',' + SKY + ' V456 M76,460 L84,464 M' + AX_X + ',467 V' + FLOOR_Y, cls: 'axl axd' }, ax);   // the broken depth axis
     [0, 100, 200, 300, 400, 500, 1000, 2000, 3000, 4000].forEach(function (m) {
-      el('line', { x1: AX_X - 4, x2: AX_X, y1: dy(m), y2: dy(m), cls: 'axl' }, ax);
-      el('text', { x: AX_X - 8, y: dy(m) + 4, cls: 'ax', 'text-anchor': 'end', text: fmt(m) }, ax);
+      el('line', { x1: AX_X - 4, x2: AX_X, y1: dy(m), y2: dy(m), cls: 'axl axd' }, ax);
+      el('text', { x: AX_X - 8, y: dy(m) + 4, cls: 'ax axd', 'text-anchor': 'end', text: fmt(m) }, ax);
     });
-    el('text', { x: 22, y: 400, cls: 'axt', transform: 'rotate(-90 22 400)', 'text-anchor': 'middle', text: 'depth (m)' }, ax);
+    el('text', { x: 22, y: 400, cls: 'axt axd', transform: 'rotate(-90 22 400)', 'text-anchor': 'middle', text: 'depth (m)' }, ax);
     el('line', { x1: AX_X, x2: floor.coastX + 2, y1: FLOOR_Y, y2: FLOOR_Y, cls: 'axl' }, ax);
     var lastLabelX = -1e9;
     stations.forEach(function (st) {                                                // the station axis, from the record's line-90 standard cells

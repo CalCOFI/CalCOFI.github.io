@@ -47,7 +47,7 @@ module CalCOFI
       if w["menu"]
         cols = columns(w["menu"], ctx)
         return nil if cols.empty?
-        base.merge("menu" => cols, "align" => w["align"] == "right" ? "right" : "left")
+        base.merge("menu" => cols, "align" => %w[right center].include?(w["align"]) ? w["align"] : "left")
       else
         l = link(w, ctx) or return nil
         base.merge(l).merge("ext" => w["ext"] == true)
@@ -68,15 +68,26 @@ module CalCOFI
       l = link(i, ctx) or return nil
       title = i["title"] == "product" ? ctx[:prod].dig(i["product"], "title") : i["title"]
       return nil unless present?(title)
-      small = i["count"] ? count_line(i["count"], ctx[:counts]) : i["small"]
-      { "title" => title, "small" => present?(small) ? small : nil, "icon" => i["icon"], "go" => i["go"] }.merge(l)
+      small = i["count"] ? count_line(i["count"], ctx[:counts], i["before"], i["after"]) : i["small"]
+      out = { "title" => title, "small" => present?(small) ? small : nil, "icon" => i["icon"], "go" => i["go"] }.merge(l)
+      out["new"] = true if i["new"] == true   # opens in a new tab (the Map menu's apps); absent otherwise
+      out
     end
 
-    # "All 20" for datasets (the menu's first line names the whole list), the bare number otherwise
-    def count_line(name, counts)
+    # "All 20" for datasets (the menu's first line names the whole list), the bare number otherwise.
+    # `before` / `after` (nav.yml) put words round the number: "1,000 observed". A `{name}` in them is another of the
+    # release's numbers ("20, from {since}" → "20, from 1949"); where the build cannot read that one, the words that
+    # needed it are left off and the count stands alone — never a typed number.
+    def count_line(name, counts, before = nil, after = nil)
       n = counts[name]
       return nil unless present?(n)
-      name == "datasets" ? "All #{n}" : n.to_s
+      return name == "datasets" ? "All #{n}" : n.to_s unless present?(before) || present?(after)
+      fill = lambda do |s|
+        ok = true
+        out = s.to_s.gsub(/\{(\w+)\}/) { present?(counts[$1]) ? counts[$1].to_s : (ok = false; "") }
+        ok ? out : ""
+      end
+      "#{fill.(before)}#{n}#{fill.(after)}"
     end
 
     # {path:, url:}: `path` is what this site links (a site path stays a path), `url` what another origin links
@@ -113,7 +124,7 @@ module CalCOFI
       cat = site.data["catalog"] || {}
       nums = cat["numbers"] || {}
       counts = { "datasets" => cat.dig("counts", "datasets")&.to_s, "species" => nums["species_fmt"],
-                 "measurements" => nums["measurements_keys_fmt"] }
+                 "measurements" => nums["measurements_keys_fmt"], "since" => nums["since"]&.to_s }
       prods = site.data["products"] || {}
       words = Nav.resolve(raw, products: prods["products"], sections: prods["sections"], counts: counts,
                                site_url: "#{site.config['url']}#{site.config['baseurl']}",

@@ -18,7 +18,8 @@
 #   explore  a path under the Explorer
 #   query    a path under the Query Builder, https://calcofi.io/query/ ("" = the builder itself)
 #   small    the grey line under the title, or
-#   count    datasets | species | measurements: the release's own number as the grey line (never typed)
+#   count    datasets | species | measurements: the release's own number as the grey line (never typed);
+#            `before` / `after` put words round it, and {since} in them is the release's first year
 #   icon     a brand glyph (brand/v2/icons.css), drawn where that sheet is loaded
 #   go       this site only: the tab a front-door link selects (section:tab)
 #   here     this site only: the first path segments that mark the word as the current one
@@ -36,31 +37,38 @@
 words:
   - id: data
     title: Data
-    align: right   # its two-column panel ran 3 px outside a 1100 to 1206 px window when it hung from the word's left
+    # left-aligned under its word (Betty 2026-11-20: the first column directly under Data; it was centred). A panel that
+    # would leave the window is moved back inside it by brand/v3/header.js (and, without JavaScript, eased by header.css),
+    # for every product that wears the header, not only this site (PR 57 review F3).
     here: [datasets, species, measurements]
     menu:
+      # one job per slot (Ben 2026-11-23): the title names the catalog, the grey line says what the title does not.
+      # The number is the release's (`count`); `after` puts words behind it, and "{since}" in it is the release's first
+      # year. A number the build cannot read leaves its line (or that part of it) off.
       - title: Find
         items:
-          - { title: Datasets,     href: /datasets/,     count: datasets,     icon: ui-data }
-          - { title: Species,      href: /species/,      count: species,      icon: realm-bio }
-          - { title: Measurements, href: /measurements/, count: measurements, icon: el-measured }
+          - { title: Datasets,     href: /datasets/,     count: datasets,     after: ", from {since}", icon: ui-data }
+          - { title: Species,      href: /species/,      count: species,      after: " observed",      icon: realm-bio }
+          - { title: Measurements, href: /measurements/, count: measurements, after: ", with units",   icon: el-measured }
       - title: Get it
         items:
-          - { title: Query Builder,          query: "",                                    small: One table across datasets,          icon: way-query }
-          - { title: ERDDAP and cloud files, href: "/#services", go: "access:services", small: For servers and scripts,      icon: way-erddap }
-          - { title: R and Python,           href: "/#packages", go: "access:packages", small: Packages,                     icon: ui-code }
-          - { title: Build with CalCOFI,     href: "/#build",                           small: Workflows and the database,   icon: ui-code }
+          - { title: Query Builder,          query: "",                                    small: Combine datasets into one table,        icon: way-query }
+          - { title: ERDDAP and cloud files, href: "/#services", go: "access:services", small: Direct links for servers and scripts, icon: way-erddap }
+          - { title: R and Python,           href: "/#packages", go: "access:packages", small: Packages that load data in code,      icon: ui-code }
+          - { title: Build with CalCOFI,     href: "/#build",                           small: Workflows and database code,           icon: ui-code }
   - id: map
     title: Map
+    # Betty 2026-11-20: each app opens in a new tab (`new: true`); one line each; no rule above "All apps".
+    # A product by its own name (Ben 2026-11-23): "Explorer", not "Explorer App"; its grey line says what it is.
     menu:
-      - { title: Explorer,       product: explore,             small: Maps and trends over time,    icon: way-explorer }
-      - { title: Dataset Finder, product: db-viz-station,      small: Data by station,              icon: way-explorer }
-      - { title: product,        product: ucla-monitoring-map, small: "Who monitors what, statewide", icon: way-explorer }
-      - { rule: true }
+      - { title: Explorer,       product: explore,             new: true, small: Maps and trends over time,    icon: way-explorer }
+      - { title: Dataset Finder, product: db-viz-station,      new: true, small: Data by station,              icon: way-explorer }
+      - { title: product,        product: ucla-monitoring-map, new: true, small: "Who monitors what, statewide", icon: way-explorer }
       - { title: All apps,       href: "/#explore",            small: "Dashboards, student projects", icon: ui-more }
   - id: learn
     title: Learn
-    align: right
+    # centred under its word (Betty 2026-11-21): right-aligned it left Guides well to the left of "Learn"; left-aligned it would run off the window
+    align: center
     here: [news, stories, tutorials]
     menu:
       - title: Guides

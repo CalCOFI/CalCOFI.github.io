@@ -13,6 +13,7 @@ _data/versions.json
 _data/grid.geojson
 _data/coverage_stations.json
 _data/release_catalog.json
+_data/release_metadata.json
 _data/release_headings.json
 _data/release_anchors.json
 _data/release_coverage.json

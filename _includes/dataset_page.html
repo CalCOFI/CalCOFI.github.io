@@ -11,33 +11,66 @@
 <link rel="stylesheet" href="{{ '/assets/download-form.css' | relative_url }}">
 <link rel="stylesheet" href="{{ '/assets/dataset-page.css' | relative_url }}">
 
-<header class="dp-band cc-wave cc-wave-own">
+{%- comment -%} The hero (Betty 2026-11-18, mockup "Full details page"; cut back after the review of PR 57, 2026-11-23):
+  a back link that names the category it goes to, the name with its status beside it, the plain name, the record's
+  first sentence, the station map with "View on map" on it, and every number along the foot. It is the brand's wave
+  band (brand v3 § 4.5: .cc-wave, with its own svg edge, .cc-wave-own). Every word is the release record's
+  (page.dp.extra is its `display` block, _plugins/dataset_extras.rb); what the record does not give is not drawn.
+  One Download (the side card's) and one link to the original (also there). {%- endcomment -%}
+{%- assign ex = dp.extra -%}
+{%- assign tile = dp.tile -%}
+<header class="dp-band dp-hero cc-wave cc-wave-own">
   <div class="dp-in">
     <div class="dp-t">
-      <div class="dp-ttl"><i class="cc-i cc-i-{{ page.icon | escape }}" aria-hidden="true"></i><h1>{{ page.h1 | escape }}</h1></div>
-      {%- if dp.byline != "" %}<p class="dp-by">{{ dp.byline | escape }}</p>{% endif -%}
+      <a class="dp-back" href="{{ '/datasets/' | relative_url }}{% if tile %}?cat={{ tile[1] }}{% endif %}"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>{% if tile %}{{ tile[0] | escape }}{% else %}Datasets{% endif %}</a>
+      <div class="dp-h1"><h1>{{ page.h1 | escape }}</h1>
+        {%- if ex.status %}<span class="dp-st dp-st-{{ ex.status }}"><i aria-hidden="true"></i>{{ ex.status_label }}</span>{% endif %}</div>
+      {%- if ex.plain %}<p class="dp-by">{{ ex.plain | escape }}</p>{% endif -%}
+      {%- if dp.lede -%}
+      <p class="dp-lede">{{ dp.lede | escape }}{% if dp.rest %} <button type="button" class="dp-lnk" data-more aria-controls="dp-rest" aria-expanded="false">More about the record</button>{% endif %}</p>
+      {%- if dp.rest %}<p class="dp-rest" id="dp-rest" hidden>{{ dp.rest | escape }}{% for x in dp.refs %}{% if forloop.first %} Methods: {% else %} · {% endif %}<a href="{{ x.url | escape }}" target="_blank" rel="noopener">{{ x.label | escape }} ↗</a>{% endfor %}</p>{% endif -%}
+      {%- endif -%}
+      {%- if dp.explore and page.map == nil %}<p class="dp-vmp"><a class="dp-vm" href="{{ dp.explore | escape }}"><i class="cc-i cc-i-way-explorer" aria-hidden="true"></i>View on map</a></p>{% endif -%}
+      {%- comment -%} the numbers close the text column, so the map beside it is as tall as both and keeps its own shape
+        (Ben 2026-11-25: under the whole hero they left the map a 2:1 strip, and the station map is taller than wide) {%- endcomment -%}
+      {%- if dp.facts.size > 0 %}
+      <dl class="dp-nums">
+        {%- for f in dp.facts %}<div><dd>{{ f[0] | escape }}</dd><dt>{{ f[1] | escape }}</dt></div>{% endfor -%}
+      </dl>
+      {%- endif %}
     </div>
-    <dl class="dp-nums">
-      {%- for f in dp.facts %}<div><dd>{{ f[0] | escape }}</dd><dt>{{ f[1] | escape }}</dt></div>{% endfor -%}
-    </dl>
+    {%- if page.map -%}
+    <div class="dp-hr">
+      <figure class="dp-hmap">
+        <div class="dp-map">{{ page.map.svg }}{% if dp.map_cap != "" %}<span class="dp-mcap">{{ dp.map_cap | escape }}</span>{% endif %}</div>
+        {%- if dp.explore %}<a class="dp-vm" href="{{ dp.explore | escape }}"><i class="cc-i cc-i-way-explorer" aria-hidden="true"></i>View on map</a>{% endif -%}
+      </figure>
+    </div>
+    {%- endif -%}
   </div>
   <svg class="dp-wave" viewBox="0 0 1200 40" preserveAspectRatio="none" aria-hidden="true"><path d="M0 30 C150 10 300 34 450 22 S750 6 900 20 S1100 34 1200 18 V40 H0Z"/></svg>
 </header>
 
-<noscript><style>.dp-tbl .dp-tr[hidden] { display: grid !important; } .dp-tbl .dp-cath[hidden] { display: flex !important; } .dp-tbl .dp-more, .dp-q { display: none !important; }</style></noscript>
+{%- comment -%} without JavaScript every list shows whole and the three lists follow one another under their own headings {%- endcomment -%}
+<noscript><style>.dp-tbl .dp-tr[hidden] { display: grid !important; } .dp-tbl .dp-cath[hidden] { display: flex !important; } .dp-tbl .dp-more, .dp-q { display: none !important; }
+  .dp-lists > .tabrow { display: none !important; } .dp-lists > .tabpanel[hidden] { display: block !important; } .dp-lists .dp-ph { position: static !important; width: auto !important; height: auto !important; clip: auto !important; clip-path: none !important; margin: 0 !important; }</style></noscript>
 <main class="dp-page" id="dp" data-builder="{{ site.data.query_url }}" data-base="{{ site.baseurl }}">
 {{ dp.sprite }}
 <div class="dp-row">
   <div class="dp-main">
 
-    <section class="dp-sec">
-      <h2>About</h2>
-      {%- if dp.lede %}<p class="dp-lede">{{ dp.lede | escape }}</p>{% endif -%}
-      {%- if dp.rest -%}
-      <p class="dp-rest" id="dp-rest" hidden>{{ dp.rest | escape }}</p>
-      <button type="button" class="dp-lnk" data-more aria-controls="dp-rest" aria-expanded="false">More about the record</button>
-      {%- endif -%}
-      {%- assign succ = page.successor -%}
+    {%- comment -%} how it was made: two lines under the hero (the record's display.collection, .analysis and .analysis_org) {%- endcomment -%}
+    {%- if ex.collection or ex.analysis_method or ex.analysis_lab -%}
+    <section class="dp-sec dp-how" aria-label="How it was collected and analysed">
+      {%- if ex.collection %}<p><b>Collection:</b> {{ ex.collection | escape }}</p>{% endif -%}
+      {%- if ex.analysis_method or ex.analysis_lab %}<p><b>Analysis:</b> {{ ex.analysis_method | escape }}{% if ex.analysis_lab %}{% if ex.analysis_method %} · {% endif %}<strong>{{ ex.analysis_lab | escape }}</strong>{% endif %}</p>{% endif -%}
+    </section>
+    {%- endif -%}
+
+    {%- comment -%} About is the hero's lede now; the notes that tie a record to its predecessor or successor stay here {%- endcomment -%}
+    {%- assign succ = page.successor -%}
+    {%- if succ or page.predecessors.size > 0 or dp.samples_only -%}
+    <section class="dp-sec dp-notes">
       {%- if succ -%}
       <p class="dp-note">This record ends in <b>{{ succ.last | escape }}</b>. From {{ succ.last | plus: 1 }} on, the bottle values are in
         <a href="{{ succ.url | relative_url }}">{{ succ.name | escape }}</a>, through {{ succ.through | escape }}.</p>
@@ -46,22 +79,47 @@
       <p class="dp-note">This dataset carries on <a href="{{ pred.url | relative_url }}">{{ pred.name | escape }}</a>, which ends in
         <b>{{ pred.last | escape }}</b>; from {{ pred.last | plus: 1 }} on, its bottle values are here, through {{ pred.through | escape }}.</p>
       {%- endfor -%}
-      {%- if dp.samples_only %}<p class="dp-note">No observations are counted yet, so there is nothing to map; the sampling events are in the release&#8217;s <span class="mono">sample</span> table{% if dp.erddap_sample %} and <a href="{{ dp.erddap_sample | escape }}">on ERDDAP</a>{% endif %}.</p>{% endif -%}
-    </section>
-
-    {%- if dp.years -%}
-    <section class="dp-sec" id="coverage">
-      <h2>When it was sampled</h2>
-      <div class="dp-when">
-        <div><div class="dp-wh"><b>Records per year</b><span>{{ dp.n_years }} year{% unless dp.n_years == 1 %}s{% endunless %} with data</span></div>{{ dp.years }}</div>
-        {%- if dp.months %}<div><div class="dp-wh"><b>By month</b><span>{{ dp.months.label }}</span></div>{{ dp.months.html }}</div>{% endif -%}
-      </div>
+      {%- if dp.samples_only %}<p class="dp-note">No observations are counted yet, so there is nothing to map; the sampling events are in the release&#8217;s <span class="mono">sample</span> table{% if dp.erddap_sample %} and <a href="{{ dp.erddap_sample | escape }}" target="_blank" rel="noopener">on ERDDAP</a>{% endif %}.</p>{% endif -%}
     </section>
     {%- endif -%}
 
+    {%- if dp.years -%}
+    <section class="dp-sec dp-card dp-pad" id="coverage">
+      <div class="dp-ih"><h2>When it was sampled</h2><span>{{ dp.n_years }} year{% unless dp.n_years == 1 %}s{% endunless %} with data</span></div>
+      <div class="dp-wh"><b>Records per year</b></div>{{ dp.years }}
+      {%- if dp.month_tiles -%}
+      <div class="dp-wh dp-wh2"><b>Records by month</b>{% if dp.month_tiles.note %}<span>{{ dp.month_tiles.note }}</span>{% endif %}</div>
+      {%- comment -%} each tile's words take the ink that reads on its shade, in each theme (DatasetPage.tile_ink) {%- endcomment -%}
+      <div class="dp-mt">{% for t in dp.month_tiles.tiles %}<div style="--p: {{ t.pct }}%"{% if t.ink != "" %} class="{{ t.ink }}"{% endif %}><b>{{ t.m }}</b><span>{{ t.n }}</span></div>{% endfor %}</div>
+      {%- endif -%}
+    </section>
+    {%- endif -%}
+
+    {%- comment -%} What is in it: ONE tabset, Species · Measurements · Fields, in the site's tabs idiom (assets/tabs.js; it is the
+      page's one data-url-tab tabset, so ?tab=fields is a link). Each list shows eight rows and "Show all N" (PR 57 review D2:
+      three open tables made the page 3,971 px; the layout contract holds it to MAX_DS_H). A list the dataset does not have
+      has no tab; one list alone has no tab row. The panels keep the anchors #taxa, #variables and #fields; a link to one
+      selects its tab (assets/dataset-page.js). {%- endcomment -%}
+    {%- assign n_lists = 0 -%}
+    {%- if dp.n_taxa > 0 %}{% assign n_lists = n_lists | plus: 1 %}{% endif -%}
+    {%- if dp.n_meas > 0 %}{% assign n_lists = n_lists | plus: 1 %}{% endif -%}
+    {%- if dp.fields.size > 0 %}{% assign n_lists = n_lists | plus: 1 %}{% endif -%}
+    {%- if n_lists > 0 -%}
+    {%- assign first_list = "fields" -%}
+    {%- if dp.n_meas > 0 %}{% assign first_list = "variables" %}{% endif -%}
+    {%- if dp.n_taxa > 0 %}{% assign first_list = "taxa" %}{% endif -%}
+    <div class="tabset dp-lists dp-sec" id="ts-dp-lists" data-url-tab>
+      {%- if n_lists > 1 %}
+      <div class="tabrow" role="tablist" aria-label="What is in this dataset">
+        {%- if dp.n_taxa > 0 %}<button type="button" role="tab" id="dp-tab-taxa" aria-controls="taxa" data-tab="taxa" aria-selected="{% if first_list == 'taxa' %}true{% else %}false{% endif %}" tabindex="{% if first_list == 'taxa' %}0{% else %}-1{% endif %}">Species<span>{{ dp.n_taxa }}</span></button>{% endif -%}
+        {%- if dp.n_meas > 0 %}<button type="button" role="tab" id="dp-tab-variables" aria-controls="variables" data-tab="variables" aria-selected="{% if first_list == 'variables' %}true{% else %}false{% endif %}" tabindex="{% if first_list == 'variables' %}0{% else %}-1{% endif %}">Measurements<span>{{ dp.n_meas }}</span></button>{% endif -%}
+        {%- if dp.fields.size > 0 %}<button type="button" role="tab" id="dp-tab-fields" aria-controls="fields" data-tab="fields" aria-selected="{% if first_list == 'fields' %}true{% else %}false{% endif %}" tabindex="{% if first_list == 'fields' %}0{% else %}-1{% endif %}">Fields<span>{{ dp.fields.size }}</span></button>{% endif -%}
+      </div>
+      {%- endif %}
+
     {%- if dp.n_taxa > 0 -%}
-    <section class="dp-sec" id="taxa">
-      <div class="dp-ih"><h2>What&#8217;s in it</h2><span>{{ dp.n_taxa }} {% if dp.n_taxa == 1 %}taxon{% else %}taxa{% endif %}, most recorded first</span>
+    <section class="tabpanel dp-panel" id="taxa" data-panel="taxa"{% if n_lists > 1 %} role="tabpanel" aria-labelledby="dp-tab-taxa"{% endif %}{% unless first_list == "taxa" %} hidden{% endunless %}>
+      <div class="dp-ih"><h2{% if n_lists > 1 %} class="dp-ph sr-only"{% endif %}>Species in dataset</h2><span>{{ dp.n_taxa }} {% if dp.n_taxa == 1 %}taxon{% else %}taxa{% endif %}, most recorded first</span>
         {%- if dp.n_taxa > 8 %}<label class="dp-q"><i class="cc-i cc-i-ui-search" aria-hidden="true"></i><span class="sr-only">Find a species in this dataset</span><input type="search" data-find placeholder="Find a species"></label>{% endif -%}
       </div>
       <div class="dp-tbl" data-list>
@@ -83,51 +141,53 @@
     {%- endif -%}
 
     {%- if dp.n_meas > 0 -%}
-    <section class="dp-sec" id="variables">
-      <div class="dp-ih"><h2>{% if dp.n_taxa > 0 %}Measurements{% else %}What&#8217;s in it{% endif %}</h2><span>{{ dp.n_meas }} measurement{% unless dp.n_meas == 1 %}s{% endunless %}, by category</span></div>
-      <div class="dp-tbl dp-m">
-        <div class="dp-tr dp-th"><span>Measurement</span><span>Values here</span><span>Years</span><span></span></div>
-        {%- comment -%} eight rows at first, as the species list above: CTD Cast Files has 44 measurements and its page was
-          4,211 px tall with nothing open (the layout contract's ceiling for a dataset page is 2,200). A category's
-          head hides with its rows; "Show all" (assets/dataset-page.js) shows the rest; with JavaScript off all show. {%- endcomment -%}
-        {%- assign mi = 0 -%}
-        {%- for g in dp.meas -%}
-        <div class="dp-cath"{% if mi >= 8 %} data-extra hidden{% endif %}>{{ g.cat | escape }}<span>{{ g.rows.size }}</span></div>
-        {%- for m in g.rows -%}
-        {%- assign mi = mi | plus: 1 -%}
-        <div class="dp-tr"{% if mi > 8 %} data-extra hidden{% endif %}>
-          <span class="dp-nm"><a href="{{ m.url | relative_url }}"><b>{{ m.lab | escape }}</b></a><span>{{ m.units | default: "no units" | escape }}</span></span>
-          <span class="dp-nb">{{ m.n }}</span><span class="dp-nb">{{ m.years }}</span>
-          {%- comment -%} a CSV button only where the Query Builder can serve the pick (dp: "pick", DatasetPage.pickable?):
-            a per-cast value (one per cast, not per depth) is in the whole-dataset zip, not in the builder {%- endcomment -%}
-          {%- if m.pick -%}
-          <button type="button" class="dp-csv" data-one="env" data-k="{{ m.k | escape }}" data-name="{{ m.lab | escape }}" data-n="{{ m.n_raw }}" data-y0="{{ m.y0 }}" data-y1="{{ m.y1 }}" aria-label="CSV of {{ m.lab | escape }}" title="Download just {{ m.lab | escape }}, from this dataset"><i class="cc-i cc-i-ui-download" aria-hidden="true"></i>CSV</button>
-          {%- else -%}
-          <span class="dp-nocsv" title="One value per cast: in the whole-dataset download">per cast</span>
-          {%- endif -%}
-        </div>
-        {%- endfor -%}
-        {%- endfor -%}
-        {%- if dp.n_meas > 8 %}<div class="dp-more"><span data-shown-m>8 of {{ dp.n_meas }}</span><button type="button" class="dp-lnk" data-all-m data-n="{{ dp.n_meas }}" aria-expanded="false">Show all {{ dp.n_meas }}</button></div>{% endif -%}
+    {%- comment -%} Measurements (Betty 2026-11-21): one table for every dataset, named for the measurement_type column. Only the types the
+      release holds a value for (DatasetPage.table_rows; review F1). Environmental datasets add the years and a CSV of each measurement.
+      Eight rows at first, the rest behind "Show all N"; with JavaScript off every row shows. {%- endcomment -%}
+    {%- assign menv = dp.mrows.first.env -%}
+    <section class="tabpanel dp-panel dp-card dp-pad" id="variables" data-panel="variables"{% if n_lists > 1 %} role="tabpanel" aria-labelledby="dp-tab-variables"{% endif %}{% unless first_list == "variables" %} hidden{% endunless %}>
+      <div class="dp-ih dp-fih"><h2{% if n_lists > 1 %} class="dp-ph sr-only"{% endif %}>Measurements</h2><span>{{ dp.n_meas }} measurement{% unless dp.n_meas == 1 %}s{% endunless %}, the values of <code>measurement_type</code></span><button type="button" class="dp-flcsv" data-meas-csv hidden><i class="cc-i cc-i-ui-download" aria-hidden="true"></i>Measurement list (CSV)</button></div>
+      <table class="dp-ft dp-mtbl{% if menv %} dp-mtbl-env{% endif %}"><thead><tr><th scope="col">Measurement</th><th scope="col">Units</th><th scope="col">What it is</th>{% if menv %}<th scope="col">Years</th><th scope="col"><span class="sr-only">Download</span></th>{% endif %}</tr></thead>
+        <tbody>
+        {%- for m in dp.mrows %}
+          <tr data-k="{{ m.mt | escape }}"{% if forloop.index > 8 %} data-rest{% endif %}>
+            <td>{% if m.lab %}<a href="{{ m.url | relative_url }}"><b>{{ m.lab | escape }}</b></a><code>{{ m.mt | escape }}</code>{% else %}<code>{{ m.mt | escape }}</code>{% endif %}</td>
+            <td>{{ m.units | escape }}</td>
+            <td>{{ m.desc | escape }}</td>
+            {%- if menv %}
+            <td>{{ m.years }}</td>
+            <td class="dp-mc">{% if m.pick %}<button type="button" class="dp-csv" data-one="env" data-k="{{ m.k | escape }}" data-name="{{ m.lab | escape }}" data-n="{{ m.n_raw }}" data-y0="{{ m.y0 }}" data-y1="{{ m.y1 }}" aria-label="CSV of {{ m.lab | escape }}" title="Download just {{ m.lab | escape }}, from this dataset"><i class="cc-i cc-i-ui-download" aria-hidden="true"></i>CSV</button>{% elsif m.years %}<span class="dp-nocsv" title="One value per cast: in the whole-dataset download">per cast</span>{% endif %}</td>
+            {%- endif %}
+          </tr>
+        {%- endfor %}</tbody></table>
+      {%- if dp.n_meas > 8 %}
+      <div class="dp-fbar"><button type="button" class="dp-fmore-btn" data-show-all data-n="{{ dp.n_meas }}" aria-expanded="true" hidden>Show all {{ dp.n_meas }}</button></div>
+      {%- endif %}
+    </section>
+    {%- endif -%}
+
+    {%- if dp.fields.size > 0 -%}
+    {%- comment -%} the columns of the download. A column's words are the record's own note for this dataset where it gives one
+      (display.column_notes), else the release's wording for every dataset. A dataset with no species has no species columns
+      here (DatasetExtras.fields, bio: false). Eight rows at first; with JavaScript off every row shows and there is no button. {%- endcomment -%}
+    {%- assign fnotes = ex.field_notes -%}
+    <section class="tabpanel dp-panel dp-card dp-pad" id="fields" data-panel="fields"{% if n_lists > 1 %} role="tabpanel" aria-labelledby="dp-tab-fields"{% endif %}{% unless first_list == "fields" %} hidden{% endunless %}>
+      <div class="dp-ih dp-fih"><h2{% if n_lists > 1 %} class="dp-ph sr-only"{% endif %}>Field descriptions</h2><span>the columns in the CSV download</span><button type="button" class="dp-flcsv" data-fields-csv hidden><i class="cc-i cc-i-ui-download" aria-hidden="true"></i>Field list (CSV)</button></div>
+      <table class="dp-ft"><thead><tr><th scope="col">File</th><th scope="col">Field</th><th scope="col">Units or format</th><th scope="col">Description</th></tr></thead>
+        <tbody>{% for f in dp.fields %}{% assign fd = fnotes[f.field] | default: f.desc %}<tr data-f="{{ f.file | escape }}"{% if forloop.index > 8 %} data-rest{% endif %}><td>{{ f.file | escape | replace: ", ", "<br>" }}</td><td><code>{{ f.field | escape }}</code></td><td data-u="{{ f.units | escape }}">{{ f.units | default: f.fmt | escape }}</td><td>{{ fd | escape }}{% if f.field == "measurement_type" and dp.n_meas > 0 %} See <a href="#variables">Measurements</a>.{% endif %}</td></tr>{% endfor %}</tbody></table>
+      <div class="dp-fbar">
+        {%- if dp.fields.size > 8 %}<button type="button" class="dp-fmore-btn" data-show-all data-n="{{ dp.fields.size }}" aria-expanded="true" hidden>Show all {{ dp.fields.size }}</button>{% endif -%}
+        <p class="dp-sm dp-fnote">Every download zip also has <code>columns.csv</code>, listing every column.</p>
       </div>
     </section>
+    {%- endif -%}
+    </div>
     {%- endif -%}
   </div>
 
   <aside class="dp-side" data-stick aria-label="Map, download and citation">
-    {%- if page.map -%}
-    <div class="dp-card">
-      <div class="dp-map">{{ page.map.svg }}</div>
-      {%- if dp.map_cap != "" %}<p class="dp-cap">{{ dp.map_cap | escape }}</p>{% endif -%}
-      {%- if dp.explore or dp.finder -%}
-      <div class="dp-mapa">
-        {%- if dp.explore %}<a class="dp-mb1" href="{{ dp.explore | escape }}">View on map<small>In the Explorer</small></a>{% endif -%}
-        {%- if dp.finder %}<a class="dp-mb2" href="{{ dp.finder | escape }}">See stations<small>In the Dataset Finder</small></a>{% endif -%}
-      </div>
-      {%- endif -%}
-    </div>
-    {%- endif -%}
-
+    {%- comment -%} no id here: #download is the page's no-JavaScript download options (_includes/download_dialog.html), which
+      every catalog row's Download link opens (PR 57 review F6) {%- endcomment -%}
     <div class="dp-card">
       <h3 class="dp-ch">Get the data</h3>
       {%- comment -%} the whole dataset is the release's zip (main 3add72f: CSV first, Excel where it fits, Parquet, how to
@@ -140,17 +200,30 @@
       {%- for o in dl.main %}{% if o.written and o.primary != true %}{% assign alts = alts | append: o.label | append: "|" %}{% endif %}{% endfor -%}
       {%- for o in dl.other %}{% assign alts = alts | append: o.label | append: "|" %}{% endfor -%}
       {%- assign alts = alts | split: "|" -%}
-      <p class="dp-bigs" id="dl-cta-s">The whole dataset as a zip, with how to cite and the licence{% if alts.size > 0 %} · also {{ alts | join: " and " | escape }}{% endif %}{% if dp.n_taxa > 0 or dp.n_meas > 0 %} · or one {% if dp.n_taxa > 0 %}species{% else %}measurement{% endif %} with the CSV buttons{% endif %}</p>
+      <p class="dp-bigs" id="dl-cta-s">The whole dataset as a zip, with how to cite and the licence</p>
       {%- endif -%}
+      <h4 class="dp-sh">Just part of it?</h4>
       <ul class="dp-gl">
+        {%- if site.data.query_url -%}
+        <li><a href="{{ site.data.query_url | escape }}"><i class="cc-i cc-i-way-query" aria-hidden="true"></i><span><b>Query Builder</b><small>Pick years, places and columns · no code</small></span><em>↗</em></a></li>
+        {%- endif -%}
+        {%- if dp.finder -%}
+        <li><a href="{{ dp.finder | escape }}"><i class="cc-i cc-i-way-explorer" aria-hidden="true"></i><span><b>Dataset Finder</b><small>By station</small></span><em>↗</em></a></li>
+        {%- endif -%}
         {%- if dp.erddap_obs -%}
-        <li class="dp-erd"><i class="cc-i cc-i-way-erddap" aria-hidden="true"></i><span><b>Filter on ERDDAP</b><small>Pick years and columns, then download</small>
-          <span class="dp-erl"><a href="{{ dp.erddap_obs | escape }}">The records ↗</a>{% if dp.erddap_sample %}<a href="{{ dp.erddap_sample | escape }}">The sampling events ↗</a>{% endif %}</span></span></li>
+        <li class="dp-erd"><i class="cc-i cc-i-way-erddap" aria-hidden="true"></i><span><b>ERDDAP (CalCOFI.io)</b><small>Filter by time, place or column, then get CSV, netCDF, MATLAB or a link for your script</small>
+          <span class="dp-erl"><a href="{{ dp.erddap_obs | escape }}" target="_blank" rel="noopener">The records ↗</a>{% if dp.erddap_sample %}<a href="{{ dp.erddap_sample | escape }}" target="_blank" rel="noopener">The sampling events ↗</a>{% endif %}</span></span></li>
         {%- endif -%}
-        {%- if dp.src -%}
-        <li><a href="{{ dp.src | escape }}"><i class="cc-i cc-i-ui-external" aria-hidden="true"></i><span><b>Original files from the provider</b>{% if dp.src_portal %}<small>{{ dp.src_portal | escape }}</small>{% endif %}</span><em>↗</em></a></li>
-        {%- endif -%}
+        {%- if page.access.size > 0 %}<li><a href="#access" data-open-fold data-fold-tab="code"><i class="cc-i cc-i-way-api" aria-hidden="true"></i><span><b>In code</b><small>R, Python and every endpoint</small></span><em>↓</em></a></li>{% endif -%}
       </ul>
+      {%- comment -%} the one link to the original. "Combined from N source tables" is said only where the record marks two
+        or more NOAA ERDDAP tables `kind: source` (DatasetExtras.combined?; review F5), each then linked; tables the record
+        marks `mirror` are in the "Also on NOAA ERDDAP" fold below. {%- endcomment -%}
+      {%- if dp.combined -%}
+      <div class="dp-orig2 dp-orig2-n"><span><b>Combined from {{ dp.sources.size }} source tables</b><small>NOAA ERDDAP:{% for t in dp.sources %}{% unless forloop.first %} ·{% endunless %} <a href="{{ t.url | escape }}" target="_blank" rel="noopener">{{ t.title | escape }} ↗</a>{% endfor %}</small></span></div>
+      {%- elsif dp.src -%}
+      <a class="dp-orig2" href="{{ dp.src | escape }}" target="_blank" rel="noopener"><span><b>Original files from the provider</b>{% if dp.src_portal %}<small>{{ dp.src_portal | escape }}</small>{% endif %}</span><em>↗</em></a>
+      {%- endif -%}
     </div>
 
     {%- assign cite = dp.cite | default: page.cite_text -%}
@@ -162,6 +235,8 @@
         has not stated reads "unstated", an open question "licence pending" — never a blank that the line under the page
         ("everything here is open") would then seem to fill (Ben, 2026-11-16: published with a "no licence established" notice) {%- endcomment -%}
       <p class="dp-lic">Licence: {% include licence_chip.html license=a.license license_url=a.license_url name=a.license_name chip_size="md" %}
+        {%- comment -%} a provider's own terms document (DatasetPage.agreement_url): the record gives its address, not a name for it {%- endcomment -%}
+        {%- if dp.agreement_url %}{% assign ag_end = dp.agreement_url | downcase | slice: -4, 4 %} (<a href="{% if dp.agreement_url contains '://' %}{{ dp.agreement_url | escape }}{% else %}{{ dp.agreement_url | relative_url }}{% endif %}" target="_blank" rel="noopener">Provider&#8217;s terms{% if ag_end == ".pdf" %} (PDF){% endif %} ↗</a>){% endif -%}
         {%- if a.license == nil or a.license == "" or a.license == "unknown" %} <span class="dp-lic-n">The provider has not stated reuse terms yet; write to <a href="mailto:{{ site.contact_email | escape }}">{{ site.contact_email | escape }}</a> to ask.</span>{% endif %}</p>
       <div class="dp-cfoot">
         {%- if dp.doi %}<a href="https://doi.org/{{ dp.doi | escape }}">DOI</a>{% endif -%}
@@ -173,20 +248,33 @@
   </aside>
 </div>
 
-<section class="dp-about">
-  <h2>About the data</h2>
-  <div class="dp-ag">
-    {%- if dp.creators or dp.contact -%}
-    <div><h3>Creators</h3>
-      {%- if dp.creators %}<p>{{ dp.creators | escape }}</p>{% endif -%}
-      {%- if dp.contact %}<p class="dp-sm">Contact <a href="mailto:{{ dp.contact | escape }}">{{ dp.contact | escape }}</a></p>{% endif -%}</div>
+<section class="dp-about" id="about">
+  {%- comment -%} Option E (Betty 2026-11-20): who made it on the left; on the right, where else it can be found, in one sentence
+    and two plain links. Both are h2: they follow the page's h2 sections (review C4: an h3 came before an h2 here). {%- endcomment -%}
+  {%- assign json_url = '/datasets/' | append: page.dataset_key | append: '.json' | relative_url -%}
+  {%- comment -%} a long acknowledgement (Farallon's; the eDNA award text) is set wide, not as a tall narrow column (Betty 2026-11-21) {%- endcomment -%}
+  {%- assign ack_len = dp.ack | size -%}
+  <div class="dp-ab{% if ack_len > 300 %} dp-ab-wide{% endif %}">
+    {%- if dp.creators or dp.contact or dp.data_provider or dp.funding or dp.ack -%}
+    <div class="dp-ab-l">
+      <div class="dp-ab-h"><span class="dp-ab-i" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M16 5.2a3.2 3.2 0 0 1 0 5.6M18 14.3c1.8.8 3 2.5 3 4.7"/></svg></span><h2>Credit</h2></div>
+      {%- if dp.creators %}<p class="dp-ab-n">{{ dp.creators | escape }}</p>{% endif -%}
+      {%- if dp.data_provider %}<p class="dp-sm">Data provider: {{ dp.data_provider.name | escape }}{% if dp.data_provider.organization %}, {{ dp.data_provider.organization | escape }}{% endif %}{% if dp.data_provider.email %} <a href="mailto:{{ dp.data_provider.email | escape }}">{{ dp.data_provider.email | escape }}</a>{% endif %}</p>{% endif -%}
+      {%- if dp.contact %}<p class="dp-sm">Contact <a href="mailto:{{ dp.contact | escape }}">{{ dp.contact | escape }}</a></p>{% endif -%}
+      {%- if dp.funding or dp.ack %}<p class="dp-sm dp-ab-c">{% if dp.funding %}Funded by {{ dp.funding | escape }}. {% endif %}{{ dp.ack | escape }}</p>{% endif -%}
+    </div>
     {%- endif -%}
-    {%- if dp.funding or dp.ack -%}
-    <div class="dp-wide"><h3>Credit</h3><p>{% if dp.funding %}Funded by {{ dp.funding | escape }}.{% endif %} {{ dp.ack | escape }}</p></div>
-    {%- endif -%}
-    <div><h3>Also archived at</h3>
-      {%- if dp.archived.size > 0 %}<p>{% for x in dp.archived %}<a href="{{ x.url | escape }}">{{ x.name | escape }}</a>{% unless forloop.last %}{% if forloop.rindex == 2 %} and {% else %}, {% endif %}{% endunless %}{% endfor %}</p>{% else %}<p class="dp-sm">Nowhere else yet</p>{% endif -%}
-      <p class="dp-sm"><a href="{{ '/datasets/' | append: page.dataset_key | append: '.json' | relative_url }}">Full record (JSON) ↗</a></p></div>
+    <div class="dp-ab-r">
+      <h2 class="dp-ab-sm">Also archived at</h2>
+      <p class="dp-sm">
+        {%- if dp.archived.size > 0 -%}
+        Part of the full CalCOFI Database release, kept on {% for x in dp.archived %}{{ x.name | escape }}{% unless forloop.last %}{% if forloop.rindex == 2 %} and {% else %}, {% endif %}{% endunless %}{% endfor %} so the exact version stays citable.
+        {%- else -%}
+        Not archived in another repository yet.
+        {%- endif %}
+        {%- for x in dp.archived %} <a href="{{ x.url | escape }}" target="_blank" rel="noopener">Release on {{ x.name | escape }} ↗</a>{% endfor %} <a href="{{ json_url }}">Full record (JSON) ↗</a>
+      </p>
+    </div>
   </div>
 </section>
 {%- comment -%} the folds the page before this one carried (main): every endpoint, provenance, related datasets, the

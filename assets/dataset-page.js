@@ -1,6 +1,6 @@
 /* The dataset page (_includes/dataset_page.html; Betty 2026-11-15): the rest of the description,
    finding a species in the list, showing all of it, the CSV buttons beside each species or measurement
-   (assets/download-form.js), and copying the citation. The whole-dataset button is main's Download link
+   (assets/download-form.js), the Species · Measurements · Fields tabs' anchors, and copying the citation. The whole-dataset button is main's Download link
    and dialog (assets/download.js). */
 (function () {
   "use strict";
@@ -8,6 +8,10 @@
   if (!root) return;
   var D = {};
   try { D = JSON.parse(document.getElementById("dp-dl").textContent); } catch (e) { /* no download form then */ }
+  // links that leave the site open in a new tab, including those inside the record's own text (Betty 2026-11-20)
+  Array.prototype.forEach.call(root.querySelectorAll("a[href]"), function (a) {
+    if (/^https?:$/.test(a.protocol) && a.host !== location.host && !a.hasAttribute("download") && !a.target) { a.target = "_blank"; a.rel = "noopener"; }
+  });
   var BUILDER = root.getAttribute("data-builder");
   var all = false;
 
@@ -18,7 +22,7 @@
   function files() { var f = {}; f[D.key] = D.file || {}; return f; }
 
   // the rest of the record's description
-  var more = root.querySelector("[data-more]"), rest = document.getElementById("dp-rest");
+  var more = document.querySelector("[data-more]"), rest = document.getElementById("dp-rest");
   if (more && rest) more.addEventListener("click", function () {
     rest.hidden = !rest.hidden;
     more.setAttribute("aria-expanded", rest.hidden ? "false" : "true");
@@ -58,15 +62,6 @@
     if (shown && btn) { var tot = btn.getAttribute("data-n"); shown.textContent = all ? "All " + tot : "8 of " + tot; btn.textContent = all ? "Show fewer" : "Show all " + tot; }
   }
   if (find) find.addEventListener("input", filter);
-  // the measurement list: 8 at first, all on request (rows and their category heads carry data-extra)
-  var allM = root.querySelector("[data-all-m]");
-  if (allM) allM.addEventListener("click", function () {
-    var open = allM.getAttribute("aria-expanded") !== "true", tot = allM.getAttribute("data-n");
-    [].forEach.call(root.querySelectorAll(".dp-m [data-extra]"), function (el) { el.hidden = !open; });
-    allM.setAttribute("aria-expanded", open ? "true" : "false");
-    allM.textContent = open ? "Show fewer" : "Show all " + tot;
-    var sh = root.querySelector("[data-shown-m]"); if (sh) sh.textContent = open ? "All " + tot : "8 of " + tot;
-  });
   var allBtn = root.querySelector("[data-all]");
   if (allBtn) allBtn.addEventListener("click", function () { all = !all; filter(); });
 
@@ -89,4 +84,108 @@
       (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(function () { toast("Copied"); }, function () { toast("Could not copy; select the text instead"); });
     }
   });
+})();
+
+// "In code" opens the Every endpoint fold it points to. (The hero's own Download button is gone: the side card's
+// #dl-btn is the page's one Download; PR 57 review.)
+(function () {
+  "use strict";
+  document.addEventListener("click", function (e) {
+    var t = e.target.closest && e.target.closest("[data-open-fold]");
+    if (!t) return;
+    var f = document.querySelector(t.getAttribute("href"));
+    if (f && f.tagName === "DETAILS") f.open = true;
+    // and on the tab the link is about ("In code" lands on Code, not on Explore) (Betty 2026-11-21)
+    var tab = t.getAttribute("data-fold-tab"), tb = tab && document.getElementById("access-tab-" + tab);
+    if (tb) tb.click();
+  });
+})();
+
+// Species · Measurements · Fields is one tabset (assets/tabs.js). The panels keep the page's anchors (#taxa, #variables,
+// #fields): arriving on one, or following a link to one, selects its tab first, so the anchor never lands on a hidden panel.
+(function () {
+  "use strict";
+  var set = document.getElementById("ts-dp-lists");
+  if (!set) return;
+  function show(hash, scroll) {
+    var id = String(hash || "").replace(/^#/, "");
+    var el = id && document.getElementById(id), panel = el && el.closest && el.closest(".tabpanel");
+    if (!panel || !set.contains(panel)) return;
+    var tab = set.querySelector('.tabrow > button[data-tab="' + panel.getAttribute("data-panel") + '"]');
+    if (tab && tab.getAttribute("aria-selected") !== "true") tab.click();
+    if (scroll) set.scrollIntoView({ block: "start" });
+  }
+  show(location.hash, !!location.hash);
+  window.addEventListener("hashchange", function () { show(location.hash, true); });
+  document.addEventListener("click", function (e) {
+    var a = e.target.closest && e.target.closest('a[href^="#"]');
+    if (a) show(a.getAttribute("href"), false);
+  });
+})();
+
+// Field list (CSV): every row of the field tables (the shown ones and the "Show more" ones) as one CSV —
+// file, field, units, description (units only: the page's "format" text, such as UTC, is not a unit). Drawn hidden, shown here, so it never sits there doing nothing without JavaScript.
+(function () {
+  "use strict";
+  var b = document.querySelector("[data-fields-csv]");
+  if (!b) return;
+  b.hidden = false;
+  var q = function (v) { v = String(v == null ? "" : v).trim(); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+  b.addEventListener("click", function () {
+    var lines = ["file,field,units,description"];
+    document.querySelectorAll("#fields .dp-ft tbody tr").forEach(function (tr) {
+      var td = tr.children;
+      lines.push([tr.getAttribute("data-f"), td[1].textContent, td[2].getAttribute("data-u"), td[3].textContent].map(q).join(","));
+    });
+    var name = (location.pathname.replace(/\/+$/, "").split("/").pop() || "dataset").replace(/\.html$/, "");
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([lines.join("\r\n") + "\r\n"], { type: "text/csv" }));
+    a.download = name + "_fields.csv";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+  });
+})();
+
+// Measurements and Fields: the first eight rows show, the rest ([data-rest]) fold behind one button at the END of the table.
+// The same pair of words on every list of the page, the species list's too: "Show all N" / "Show fewer" (PR 57 review).
+// Closing brings the top of the list back into view. The button is drawn hidden and shown here; without JavaScript every row shows.
+(function () {
+  "use strict";
+  [].forEach.call(document.querySelectorAll("[data-show-all]"), function (b) {
+    var panel = b.closest(".dp-panel"); if (!panel) return;
+    var rows = panel.querySelectorAll("tr[data-rest]"), n = b.getAttribute("data-n");
+    function set(open) {
+      [].forEach.call(rows, function (r) { r.hidden = !open; });
+      b.setAttribute("aria-expanded", open ? "true" : "false");
+      b.textContent = open ? "Show fewer" : "Show all " + n;
+    }
+    set(false); b.hidden = false;
+    b.addEventListener("click", function () {
+      var open = b.getAttribute("aria-expanded") !== "true"; set(open);
+      if (!open && panel.getBoundingClientRect().top < 0) panel.scrollIntoView({ block: "start" });
+    });
+  });
+})();
+
+// "Measurement list (CSV)" writes every row, shown or folded: measurement_type, units, description (the columns of the
+// release's measurement_type.csv). Drawn hidden and shown here, so it never sits there doing nothing without JavaScript.
+(function () {
+  "use strict";
+  var sec = document.getElementById("variables");
+  if (!sec) return;
+  var rows = sec.querySelectorAll("tbody tr"), csv = sec.querySelector("[data-meas-csv]");
+  if (csv) {
+    csv.hidden = false;
+    var q = function (v) { v = String(v == null ? "" : v).trim(); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+    csv.addEventListener("click", function () {
+      var lines = ["measurement_type,units,description"];
+      [].forEach.call(rows, function (tr) { var td = tr.children; lines.push([tr.getAttribute("data-k"), td[1].textContent, td[2].textContent].map(q).join(",")); });
+      var name = (location.pathname.replace(/\/+$/, "").split("/").pop() || "dataset").replace(/\.html$/, "");
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(new Blob([lines.join("\r\n") + "\r\n"], { type: "text/csv" }));
+      a.download = name + "_measurements.csv";
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+    });
+  }
 })();

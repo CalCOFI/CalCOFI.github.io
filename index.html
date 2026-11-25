@@ -86,9 +86,10 @@ layout: default
 {%- assign cats = site.data.catalog.categories -%}
 {%- assign core_icons = "cat-ichthyo,cat-physical,cat-zooplankton" | split: "," -%}
 <section class="fd-panel fd-learn" id="learn" hidden aria-labelledby="learn-h">
+  <div class="cc-wave cc-wave-slim fd-learnwavetop" aria-hidden="true"></div>
   <div class="fd-learnhead"><div class="cc-container">
     <div class="fd-learnbar">
-      <h2 class="fd-learnh" id="learn-h">How CalCOFI samples the ocean <span>Click anything in the drawing to learn more</span></h2>
+      <h2 class="fd-learnh" id="learn-h">What CalCOFI samples, and how deep <span>Line 90, from the ship to the sea floor. Click anything to learn more.</span></h2>
       <a class="fd-learngo" href="https://calcofi.org/sampling-info/">Sampling methods <span aria-hidden="true">↗</span></a>
       {{ close_btn }}
     </div>
@@ -112,7 +113,6 @@ layout: default
     {%- if cats and cats.size > 0 -%}
     <div class="fd-kinds" id="kinds">
       <h3 class="fd-h3">The kinds of data <span class="pill">{{ cats | size }}</span></h3>
-      <p class="blurb tab-blurb">The three long series first, then the rest. Years are the years each dataset holds.</p>
       <ul class="fd-kind-list">
         {%- comment -%} the long series, in core_icons order, then every other category in the record's order {%- endcomment -%}
         {%- assign ordered = "" | split: "" -%}
@@ -565,27 +565,30 @@ SELECT * FROM read_json('{{ rel.catalog_url }}')</pre>
 </section>
 
 {%- comment -%}
-  ── 7 · Inform ocean and fisheries management (was "Ocean monitoring throughout California"): the
-  products carrying `doors: [monitor]`. Only what is built today — the statewide inventory and the
-  offshore wind baseline; the door says more is to come and the panel claims nothing it cannot show.
+  ── 7 · Statewide monitoring (was "Inform ocean and fisheries management"): the products carrying `doors: [monitor]`,
+  today the statewide inventory (Betty 2026-11-18: the offshore wind map is archived, so it is with the archived apps).
+  After the review of PR 57 (2026-11-23), one job per slot: the question the map answers, its screenshot uncropped,
+  one line, one button. No number is typed here: the panel carried three (programs, parameters, a share of waters)
+  counted by hand from the map's files, and the site draws no number the build cannot read. The distance is the
+  owner's (Ben 2026-11-23: "about 13 miles", statute miles).
 {%- endcomment -%}
 {%- assign m_items = data.products | where_exp: "p", "p.doors contains 'monitor'" -%}
-{%- assign m_first = m_items | first -%}
-<section class="fd-panel" id="monitor" hidden aria-labelledby="monitor-h">
+<section class="fd-panel fd-apps fd-mon" id="monitor" hidden aria-labelledby="monitor-h">
   <div class="cc-container">
     {{ close_btn }}
-    <div class="fd-phead">
-      <div class="cc-eyebrow">Beyond the grid{% for p in m_items %} · {{ p.credits.org | default: p.title }} {{ p.credits.year }}{% endfor %}</div>
-      <h2 class="cc-h2" id="monitor-h">Inform ocean and fisheries management</h2>
-      <p class="blurb">Ocean monitoring throughout California: a statewide inventory of the monitoring programs
-        along the coast, and the baseline data around the planned floating offshore wind areas.</p>
-      {%- if m_first %}<p class="fd-pact"><a class="cc-btn cc-btn-cta" href="{{ m_first.live_url }}">Open the monitoring map</a></p>{% endif -%}
-    </div>
-    <div class="card-grid">
-      {%- for p in m_items -%}
-        {% include product_card.html p=p section="Monitoring" %}
-      {%- endfor -%}
-    </div>
+    <div class="mon-head"><h2 id="monitor-h">Who monitors California&#8217;s coastal ocean?</h2></div>
+    {%- for p in m_items -%}
+    <article class="ap-feat prod-card" data-key="{{ p.key | escape }}">
+      {%- if p.img %}<a class="ap-feat-shot" href="{{ p.live_url }}" tabindex="-1" aria-hidden="true"><img src="{{ p.img | relative_url }}" alt="" loading="lazy"></a>{% endif %}
+      <div class="ap-feat-b">
+        {%- if p.credits %}<span class="ap-k">{{ p.credits.org | escape }}{% if p.credits.year %} {{ p.credits.year }}{% endif %}{% if p.credits.team %} · {{ p.credits.team | join: ", " | escape }}{% endif %}</span>{% endif %}
+        <h3><a href="{{ p.live_url }}">{{ p.title | escape }}</a></h3>
+        <p class="mon-line">Every program within about 13 miles of the coast: who samples where, what they measure, and where no one does.</p>
+        <p class="ap-acts"><a class="ap-y" href="{{ p.live_url }}">Monitoring map</a></p>
+        {% include app_links.html p=p open=false %}
+      </div>
+    </article>
+    {%- endfor -%}
   </div>
 </section>
 

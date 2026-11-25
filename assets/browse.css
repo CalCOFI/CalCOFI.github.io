@@ -99,6 +99,11 @@
 .bd-pv-by { margin: 1px 0 0; font-size: 13.5px; color: var(--muted); }
 .bd-pv-desc { margin: 8px 0 0; font-size: 14px; line-height: 1.5; color: color-mix(in srgb, var(--fg) 80%, var(--bg)); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 .bd-pv-has { margin-top: 10px; font-size: 14px; line-height: 1.45; }
+/* a long preview description is cut at three lines until "Show more" (Betty 2026-11-20) */
+.bd-pv-desc.open { display: block; -webkit-line-clamp: unset; overflow: visible; }
+.bd-pv-more { display: block; margin: 4px 0 0; padding: 2px 0; border: 0; background: none; font: inherit; font-size: 13.5px; font-weight: 700; color: var(--accent); cursor: pointer; }
+.bd-pv-more:hover { text-decoration: underline; }
+
 .bd-pv-has b, .bd-pv-yr b { display: block; font-size: 12.5px; color: var(--muted); margin-bottom: 2px; }
 .bd-pv-yr { margin-top: 10px; }
 .bd-pv-yr > div:first-child { display: flex; justify-content: space-between; align-items: baseline; }
@@ -141,3 +146,39 @@ button.bd-b2 { font: inherit; font-weight: 700; font-size: 14px; background: var
 .bd-pv-act .bd-b1 { padding: 0 14px; white-space: nowrap; }
 .bd-pv-act .bd-b2 { padding: 0 11px; white-space: nowrap; }
 .bd-pv-act .bd-b3 { white-space: nowrap; }
+
+/* picking another dataset: a yellow bar sweeps the top of the preview card and its content fades up from dim (Betty 2026-11-20) */
+.bd-pv-bar { position: absolute; left: 0; top: 0; height: 4px; width: 0; background: #ffcd00; border-radius: 14px 14px 0 0; pointer-events: none; }
+.bd-pv-bar-b { top: auto; bottom: 0; border-radius: 0 0 14px 14px; }   /* the same bar along the foot, for a card scrolled so its top is out of sight */
+.bd-pv.swap .bd-pv-bar:not(.bd-pv-bar-b) { animation: bdSweep .6s ease-out; }
+.bd-pv.swap-b .bd-pv-bar:not(.bd-pv-bar-b) { animation: none; }
+.bd-pv.swap-b .bd-pv-bar-b { animation: bdSweep .6s ease-out; }
+.bd-pv.swap .bd-pv-map, .bd-pv.swap .bd-pv-b { animation: bdDim .6s ease-out; }
+@keyframes bdSweep { 0% { width: 0; opacity: 1; } 70% { width: 100%; opacity: 1; } 100% { width: 100%; opacity: 0; } }
+@keyframes bdDim { 0% { opacity: .25; } 100% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .bd-pv.swap .bd-pv-bar, .bd-pv.swap .bd-pv-map, .bd-pv.swap .bd-pv-b { animation: none !important; } }
+/* a row's end: Download and Details (Ben 2026-11-25, issue 58). The name's link is stretched over the row, so a click
+   anywhere opens the dataset; the two buttons sit above it. In the List, beside the preview, Download is its icon. */
+.bd-r { position: relative; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr) 150px 132px; }
+.bd-colh { grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr) 150px 132px; } .bd-colh-2 { grid-template-columns: minmax(0, 1fr) 150px 132px; }
+.bd-card .bd-r { grid-template-columns: minmax(0, 1fr) 150px 132px; grid-template-areas: "n y a" "w y a"; }
+.bd-card .bd-ra { grid-area: a; }
+a.bd-rn { color: inherit; text-decoration: none; }
+a.bd-rn::after { content: ""; position: absolute; inset: 0; }
+a.bd-rn:focus-visible { outline: 0; } a.bd-rn:focus-visible::after { outline: 2px solid var(--accent); outline-offset: -2px; border-radius: inherit; }
+.bd-ra { position: relative; z-index: 1; display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
+.bd-ab { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--border);
+  background: var(--bg); color: var(--accent); font: 700 13px var(--sans); text-decoration: none; white-space: nowrap; }
+.bd-ab:hover, .bd-ab:focus-visible { border-color: var(--accent); background: var(--accent); color: var(--bg); text-decoration: none; }
+.bd-ab .cc-i { font-size: 15px; }
+.bd-list .bd-ab-dl, .bd-card .bd-ab-dl { width: 34px; padding: 0; justify-content: center; }
+.bd-list .bd-ab-dl > span, .bd-card .bd-ab-dl > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+@media (max-width: 760px) {
+  .bd-r, .bd-card .bd-r { grid-template-columns: 1fr; grid-template-areas: none; }
+  .bd-card .bd-ra { grid-area: auto; }
+  .bd-ra { justify-content: flex-start; }
+  .bd-list .bd-ab-dl, .bd-card .bd-ab-dl { width: auto; padding: 0 12px; } .bd-list .bd-ab-dl > span, .bd-card .bd-ab-dl > span { position: static; width: auto; height: auto; clip-path: none; }
+}
+
+/* the stretched name link: the row shows hover, the words are not underlined */
+a.bd-rn:hover, a.bd-rn:focus, a.bt-rn:hover, a.bt-rn:focus { text-decoration: none; }

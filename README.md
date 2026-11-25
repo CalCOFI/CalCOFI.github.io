@@ -259,6 +259,36 @@ at 1470 and 375 px, in both themes. These assertions hold:
 The front door's footer puts the partner strip and the three columns on one row, scoped by
 `#layout:has(.fd-screen)`. The layout's footer is unchanged on every other page.
 
+### The start cards and the monitoring panel: one job per slot (2026-11-23)
+
+PR 57 (Betty, 2026-11-18 to 21) rewrote the three start cards and the Statewide monitoring panel; its review
+(Ben, 2026-11-23) kept the redesign and cut the words. The rule, so a card can be checked against it:
+
+| slot | its one job |
+|---|---|
+| button | names where you go, by the product's own name: "Explorer", never "Explorer App" |
+| heading | says what you will do there, in other words than the button's; it answers "Where do you want to start?" |
+| line | one fact neither has said (scope, a format, a number read from the release); optional; never a second sentence |
+| everything else | not drawn: no eyebrow, no question, no caption except where two buttons need telling apart |
+
+- **Cards** (`_includes/front_door_hero.html`): See it on a map → Explorer · Download the files → Datasets ·
+  Pull only what you need → Query Builder (Point and click), Code (R, Python, SQL). The dataset count is the
+  record's and the formats are the zip manifest's (`Downloads.format_labels`, `site.data.catalog.zip_formats`,
+  `_test/downloads_test.rb`): a format the release stops writing stops being promised.
+- **Strip**: Contribute · Cite the data · Statewide monitoring. "Cite the data" stays although Learn ▾ holds it:
+  a reader reported she could not find it there.
+- **Monitoring panel** (`index.html` § 7, `.fd-mon` in `style.css`): the question, the map's screenshot uncropped,
+  one line, one button ("Monitoring map"). The panel typed three numbers counted by hand from the map's files;
+  the site draws no number the build cannot read, so they are gone. The distance is "about 13 miles" (statute).
+- **No CSS zoom.** The hero's words and cards, `/datasets/` and this panel were drawn at 90% with `zoom`. The
+  sizes that view arrived at are now written as values: in `assets/hero.css` every length of the text layer is
+  its size times `--hs` (.9 at desktop widths, 1 under 901 px, stepping up on big screens; `assets/hero.js`
+  lowers it where the cards would pass the window's bottom edge), and `assets/browse-tiles.css` and `.fd-mon`
+  carry the scaled numbers themselves. What a zoomed page shared with the rest of the site (the catalogs row,
+  the preview, the folds, `.ap-feat`) is at the site's size again.
+- Under 900 px the hero is as tall as its words, so where the ship falls behind "Where do you want to start?"
+  depends on how much the cards say; the heading has a pale plate behind it there (a dark one in the dark theme).
+
 ### Seven words, tabs, and one search over the three indexes
 
 Since 2026-09-10 (plan `2026-09-10 Measurements catalog …` § D7, Ben's scheme) the navigation is words
@@ -526,6 +556,29 @@ named by the default zip. `/species/` and `/measurements/` are the same finder (
 link each dataset's page and download nothing themselves. The folds under the list (holdings, reference
 rows, the release) are unchanged.
 
+### Tiles by category, and words that come from the record (PR 57, 2026-11-23)
+
+`/datasets/` opens on **category tiles** (Betty 2026-11-18): Environment then Biology, a tile per group of the
+record's `browse` block (`_plugins/dataset_extras.rb` `tiles`; a dataset no group claims gets a tile of its own
+record category, so a new dataset is never lost). A tile opens its category in place (`?cat=<slug>`, a step in
+the history, so Back returns to the tiles; main's `#cat-…` anchors and `?cat=<record category>` still open the
+right tile). List is the second view; typing a query, a "Try" word or a type switches to it, because only the
+List is filtered.
+
+- **Where the words live.** The plain name, collection, analysis, method picture, status and the tiles were typed
+  in `_data/dataset_extras.yml` for six days. They are now the release record's (`datasets.json` schema 1.2: each
+  dataset's `display`, top-level `browse`, `attribution.associated_parties`), authored in the workflows repo.
+  `_test/dataset_extras_test.rb` fails the build if the file, or a read of `site.data["dataset_extras"]`, returns.
+- **A dataset in an open category is four slots** (`_includes/browse_cat_row.html`): the method picture and its
+  label · name and provider · the plain name · years and ongoing/ended. Collection, analysis and the description
+  are the dataset page's. "Open dataset" is said once, in the preview, which keeps "and 38 more".
+- **One column, one head.** The body is `.calm-page`, the column the search band and the other two catalogs use.
+  The Datasets · Species · Measurements row (`_includes/catalog_crumb.html`) is on all three catalogs, with this
+  page's By category / List switch on its line; the header keeps the tagline on every page. "The release" fold is
+  closed on load like every other fold.
+- **The search is a combobox** whose listbox (`#bd-dd-list`) holds only options, each with an id; the input's
+  `aria-activedescendant` names the one the arrow keys are on.
+
 ### The grid: an emphasis ladder, packed, with the reference frame in its own band
 
 The catalog's layout follows four rules, and `scripts/check_layout.py` is what keeps them true
@@ -628,6 +681,33 @@ is the Download link and dialog (`#dl-btn`, `#dl-dialog`, `/datasets/{key}/#down
 the data (`_includes/dataset_folds.html`, shared with the holding page): Every endpoint (`#access`),
 Provenance, Related, Open questions for the provider, Keywords. Cite is the card, so the Cite fold is
 skipped there.
+
+### The dataset page after PR 57 (2026-11-23)
+
+Betty's "Full details page" (2026-11-18), as built after its review. `_includes/dataset_page.html`,
+`assets/dataset-page.{css,js}`, `_plugins/dataset_page.rb`.
+
+- **Hero.** The brand's wave band (`cc-wave cc-wave-own`, its own svg edge), about 315 px at 1470: a back link that
+  names its category, the name with ongoing/ended beside it, the plain name, the record's first sentence, the
+  station map with "View on map" on it, and every number along the foot (a biology dataset shows its taxa and its
+  measurement types). Neither checker exempts the page from the wave.
+- **Under it**: Collection and Analysis as two lines; When it was sampled; then ONE tabset, **Species ·
+  Measurements · Fields** (`#ts-dp-lists`, the tabs idiom of `assets/tabs.js`; it is the page's one
+  `data-url-tab` tabset, so `?tab=fields` is a link, and `#taxa`, `#variables`, `#fields` select their tab). Each
+  list shows eight rows and "Show all N" / "Show fewer". Without JavaScript the three lists follow one another, whole.
+- **Height.** `MAX_DS_H["dataset"]` is 2,650 px (was 2,200): the page holds three lists where the old one held one.
+  The 20 pages measure 2,075 to 2,627 px at 1470 with nothing opened (2026-11-23). The reason is written beside the number in
+  `scripts/check_layout.py`; it is not room for a second open list.
+- **Measurements** lists only the types the release holds a value for (`DatasetPage.table_rows`,
+  `counted_types`); the registry gives the words. **Fields** leaves out the species columns for a dataset with no
+  taxa (`DatasetExtras.fields`, `bio: false`) and takes a column's words from the record's `display.column_notes`.
+- **One Download** (the side card's `#dl-btn`) and **one link to the original**. `#download` is the no-JavaScript
+  download options and nothing else. "Combined from N source tables" is said only where the record marks two or
+  more NOAA ERDDAP tables `kind: source` (`DatasetExtras.combined?`); `mirror` tables are in a closed fold,
+  "Also on NOAA ERDDAP". Under "Just part of it?": Query Builder, Dataset Finder (by station), ERDDAP, In code.
+- **Month tiles**: each tile's words take the ink that reads on its shade, per theme (`DatasetPage.tile_ink`;
+  `_test/dataset_page_test.rb` holds every shade to 4.5:1 against `brand/v2/theme.css`).
+- **Phone** (640 px and under): a table row stacks, the name and its button first, then units, description, years.
 
 ### Download: one button, plain formats, the citation in the file
 
@@ -1361,6 +1441,9 @@ wear it; every other product keeps v2 until it changes its head block.
 [`brand/v3/README.md`](brand/v3/README.md) has the contract, who wears what, the order of deployment
 (`brand/v3/` has to be live before a product that loads it) and the alternative that was not built.
 **To change a word of the header, edit `_data/nav.yml`**, nowhere else; `_test/nav_test.rb` pins the list.
+Where a menu's panel sits is the brand's business too (`header.css`, and `header.js` keeps every panel inside the
+window): the specimen page `/brand/v3/` draws the header as a product does and is one of the pages
+`scripts/check_layout.py --nav` opens.
 
 [`brand/v1/`](brand/v1/) (dark default, system font) is superseded but stays served and frozen for
 any product that has not migrated.

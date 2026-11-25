@@ -85,6 +85,8 @@
       <img class="cc-logo-dark"  src="{{ '/brand/v2/logo_calcofi_h.svg'       | relative_url }}" alt="CalCOFI.io">
       <img class="cc-logo-light" src="{{ '/brand/v2/logo_calcofi_h_light.svg' | relative_url }}" alt="CalCOFI.io">
     </a>
+    {%- comment -%} the tagline stays on every page (brand v3 § 4; PR 57 review D4: a catalog menu stood here on the three
+      catalogs). The way between the catalogs is their own row (_includes/catalog_crumb.html) and Data ▾. {%- endcomment -%}
     <span class="cc-tagline">open data ecosystem</span>
 
     <span class="cc-spacer"></span>
@@ -157,7 +159,7 @@
       </div>
     </div>
   </footer>
-  <div class="cc-footer-bar"><div class="cc-container">© {{ site.time | date: "%Y" }} CalCOFI · calcofi.io</div></div>
+  <div class="cc-footer-bar"><div class="cc-container">© {{ site.time | date: "%Y" }} CalCOFI · calcofi.io · <a href="{{ '/ai-use/' | relative_url }}">How we use AI</a></div></div>
 
 </div>
 <script defer src="{{ '/assets/feedback.js' | relative_url }}"></script>

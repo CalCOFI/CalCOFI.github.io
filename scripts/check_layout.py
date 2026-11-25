@@ -620,6 +620,9 @@ async (w, d) => {
   // the window records what the page did and then holds the navigation.
   const bdList = d.getElementById("bd-list"), bdPv = d.getElementById("bd-pv");
   if (bdList && bdPv) {
+    // the page opens on the category tiles, which draw no preview (Betty 2026-11-20); the List tab shows it
+    const lt = d.getElementById("ds-view-tab-list");
+    if (lt && lt.getAttribute("aria-selected") !== "true") { lt.click(); await sleep(250); }
     const rowsEl = [...bdList.querySelectorAll(".bd-r[data-k]")];
     const pvShown = () => !bdPv.hidden && cs(bdPv).display !== "none" && bdPv.getBoundingClientRect().height > 0;
     let handled = null;
@@ -629,6 +632,8 @@ async (w, d) => {
     const pvDl = {}, unhandled = [];
     let actOver = { px: 0, key: null, what: null }, actN = 0;
     for (const row of rowsEl) {
+      // the preview follows the pointer; the click is the link's own (issue 58)
+      row.dispatchEvent(new w.MouseEvent("mouseover", { bubbles: true }));
       handled = null; row.click();
       if (!handled) unhandled.push(row.dataset.k);
       const a = bdPv.querySelector('a[href*="#download"]');
@@ -654,7 +659,8 @@ async (w, d) => {
     if (last) {
       last.scrollIntoView({ block: "center" });
       await sleep(250);
-      handled = null; last.click();
+      last.dispatchEvent(new w.MouseEvent("mouseover", { bubbles: true }));
+      handled = true;   // chosen by the pointer, which the page always answers while the preview is drawn
       await sleep(120);
       const pr = bdPv.getBoundingClientRect(), lr = last.getBoundingClientRect(), hh = parseFloat(cs(d.documentElement).getPropertyValue("--header-h")) || 72;
       reach = { shown: pvShown(), handled, position: cs(bdPv).position, pvTop: px(pr.top), pvBottom: px(pr.bottom), rowTop: px(lr.top), rowBottom: px(lr.bottom),
@@ -665,7 +671,7 @@ async (w, d) => {
     }
     w.removeEventListener("click", hold);
     const first = rowsEl.find(x => x.dataset.k === sel0);
-    if (first && pvShown()) { w.addEventListener("click", hold); first.click(); w.removeEventListener("click", hold); }
+    if (first && pvShown()) first.dispatchEvent(new w.MouseEvent("mouseover", { bubbles: true }));
     // the type filter actually hides: `el.hidden` is a UA rule that any author `display` beats (see
     // "the filter actually hides" below, which read the old page's #ds-cat)
     const typ = d.getElementById("bd-type");
@@ -715,7 +721,11 @@ async (w, d) => {
       citeCard: !!dpMain.querySelector(".dp-cite"),
       // each measurement row links its page: /measurements/{slug}/ (a per-cast row has no CSV button, so
       // the button's data-k is not every row's)
-      measKeys: [...dpMain.querySelectorAll(".dp-m .dp-tr:not(.dp-th) .dp-nm a[href]")].map(a => (/\/measurements\/([^\/]+)\/?$/.exec(a.getAttribute("href")) || [])[1] || a.getAttribute("href")),
+      measKeys: [...dpMain.querySelectorAll(".dp-m .dp-tr:not(.dp-th) .dp-nm a[href]")].map(a => (/\/measurements\/([^\/]+)\/?$/.exec(a.getAttribute("href")) || [])[1] || a.getAttribute("href"))
+        // the table of the redesigned page (Erin's feedback, 2026-11-21): a row per measurement_type, each linking its measurement's page; two rows may share one page
+        .concat([...new Set([...dpMain.querySelectorAll(".dp-mtbl tbody tr td:first-child a[href*='/measurements/']")].map(a => (/\/measurements\/([^\/]+)\/?$/.exec(a.getAttribute("href")) || [])[1] || a.getAttribute("href")))]),
+      // every row of the Measurements table, linked or not: a biology dataset's measurement types have no page of their own
+      measRows: dpMain.querySelectorAll(".dp-mtbl tbody tr").length,
       measCsv: dpMain.querySelectorAll('.dp-csv[data-one="env"]').length, measNoCsv: dpMain.querySelectorAll(".dp-m .dp-nocsv").length,
       taxaDrawn: dpMain.querySelectorAll('.dp-csv[data-one="bio"]').length,
       taxaMore: (() => { try { return JSON.parse(dpMain.querySelector("[data-more-rows]").textContent).length; } catch (e) { return 0; } })(),
@@ -1862,7 +1872,14 @@ PV_MIN_VIEW = 200     # px of the finder's preview on screen once a row is chose
 #   the number is then restated on purpose, or the list is paged; it is not a licence for taller rows
 #   (20 rows over 2,725 px means the rows grew to more than 81 px each).
 # dataset — unchanged.
-MAX_DS_H = {"catalog": 2725, "dataset": 2200}
+# dataset — 2,650 since 2026-11-23 (was 2,200). The redesigned page (PR 57) holds three lists where the page before it
+#   held one: Species, Measurements and Fields, in ONE tabset, eight rows each, so only one is ever open. With that
+#   the 20 pages measured 2,021 to 2,616 px on the approved mockup and measure 2,075 to 2,627 as built (the tallest
+#   is calcofi_ctd-derived, whose eight measurement rows run to three and four lines). A third are under 2,200 and
+#   no arrangement of the tabset brings the rest under it without taking the hero back to main's slim band. 2,650
+#   fits every page with the tabset closed to eight rows. It is not room for a second open list: PR 57 as
+#   submitted drew all three open (3,971 px) and asked for 4,200.
+MAX_DS_H = {"catalog": 2725, "dataset": 2650}
 MAX_GRID_H = 4400     # px at 1470 with the staging record (was 4,910)
 # front door v2's finder: Groups · All species · The tree · the matrix, and (2026-11-17, Ben: "add species
 # hierarchy view back as another tab") The hierarchy, main's icicle
@@ -2018,10 +2035,17 @@ NAV_REACH = [
 # words fit one line from there (four since 9f2b542; nine had 179 px to spare at 1100), so the header never wraps
 NAV_BREAK = 1100
 # the widths the header's own assertions are run at by --nav (one line from NAV_BREAK, the menu below)
-NAV_WIDTHS = [1100, 1280, 1470, 1024, 800, 640, 375]
+NAV_WIDTHS = [1100, 1200, 1280, 1470, 1024, 800, 640, 375]
 # (/datasets/ joined on 2026-11-17: its preview pane made the page scroll sideways 4 px at 1100 px, a
 # width the full run does not visit)
-NAV_PATHS = ["/", "/datasets/", "/datasets/swfsc_ichthyo/", "/species/", "/measurements/"]
+NAV_PATHS = ["/", "/datasets/", "/datasets/swfsc_ichthyo/", "/species/", "/measurements/", "/brand/v3/"]
+# the brand's specimen page (joined on 2026-11-23, PR 57 review F3): it draws the header the way every OTHER product
+# does, through brand/v3/header.js from nav.json, so it is where a menu that leaves the window on a product is seen
+# here (the Data panel ran up to 114 px off the right edge at 1100 to 1320 px while this site's own pages, whose
+# stylesheet corrected it, passed). It shows the wave three times, as samples, and its links are nav.json's full
+# URLs: those two assertions of an ordinary page are not made of it.
+SPECIMEN_PATHS = ["/brand/v3/"]
+def is_specimen(path): return re.sub(r"^https?://[^/]+", "", path).split("?")[0] in SPECIMEN_PATHS
 PHONE = (375, 667)    # a small phone's window, for the open menu's column (--nav)
 # the sections whose tabs are CARDS, so a pill must equal the number of cards in its panel. DATA's
 # three pills count datasets, species and measurements — the release's numbers, checked against the
@@ -2528,7 +2552,8 @@ def check(path, r, width, theme, fails, notes):
     fails.extend(f"{where}: {f}" for f in crumb_faults(r.get("crumb")))
 
     # the wave (brand v3 § 4): on every page, one navy band directly under the bar
-    check_wave(where, r.get("wave"), width, fails, notes)
+    if not is_specimen(path):
+        check_wave(where, r.get("wave"), width, fails, notes)
 
     g = r.get("grid")
     if g:
@@ -2644,13 +2669,12 @@ def check(path, r, width, theme, fails, notes):
                     fails.append(f"{where}: the preview draws a Download control for {len(have)} of the {len(want_rows)} datasets with "
                                  f"zips: missing {sorted(set(want_rows) - set(have))[:4]}, extra {sorted(set(have) - set(want_rows))[:4]}, "
                                  f"linking another page {wrong[:4]}")
-                # a row's click is the page's to handle while the preview is drawn; where it is not drawn
-                # (a phone, if the page stacks it away) the click must be left to follow the link
-                if br["pvDisplay"] != "none" and br["unhandled"]:
-                    fails.append(f"{where}: {len(br['unhandled'])} row click(s) are not handled though the preview is drawn: {br['unhandled'][:3]}")
-                if br["pvDisplay"] == "none" and len(br["unhandled"]) != len(br["pvDl"]):
-                    fails.append(f"{where}: the preview is not drawn at {width}px but a row's click is still swallowed: "
-                                 f"the row goes nowhere")
+                # a row's click opens its dataset page at every width, preview or none: the page must leave
+                # it to the link (issue 58, 2026-11-24: the click only changed the preview, and "it feels
+                # like nothing happens"). The preview is chosen by the pointer and the keyboard instead.
+                if len(br["unhandled"]) != len(br["pvDl"]):
+                    fails.append(f"{where}: {len(br['pvDl']) - len(br['unhandled'])} row click(s) are swallowed by the page "
+                                 f"at {width}px: a row must open its dataset page")
                 # the preview's actions stay inside its card, whatever the row (a long label must wrap or
                 # shrink, not hang out of the card and widen the page)
                 ao = br.get("actOver") or {}
@@ -2748,8 +2772,11 @@ def check(path, r, width, theme, fails, notes):
             fails.append(f"{where}: a measurement is listed twice")
         for fct in dp["facts"]:
             n_ = int(re.sub(r"[^0-9]", "", fct["value"]) or 0)
-            if fct["label"].startswith("Measurement") and n_ != len(dp["measKeys"]):
-                fails.append(f"{where}: the band says {fct['value']} {fct['label']} but the page lists {len(dp['measKeys'])}")
+            # the band's count is the Measurements table's rows (2026-11-23: the band shows it for a biology dataset
+            # too, whose rows link no measurement page); the page before the table listed only linked rows
+            listed = dp.get("measRows") or len(dp["measKeys"])
+            if fct["label"].startswith("Measurement") and n_ != listed:
+                fails.append(f"{where}: the band says {fct['value']} {fct['label']} but the page lists {listed}")
             if fct["label"] in ("Taxon", "Taxa") and n_ != dp["taxaDrawn"] + dp["taxaMore"]:
                 fails.append(f"{where}: the band says {fct['value']} {fct['label']} but the page holds {dp['taxaDrawn'] + dp['taxaMore']}")
         if dp["csvUnnamed"]:
@@ -3707,7 +3734,7 @@ def check(path, r, width, theme, fails, notes):
                     name = t["title"].split()[0].lower()
                     want = {"datasets": "/datasets/", "species": "/species/", "measurements": "/measurements/"}.get(name)
                     exists = name == "datasets" or r.get("pageExists", {}).get(want)
-                    if want and exists and (t.get("href") or "").rstrip("/") + "/" != want:
+                    if want and exists and not is_specimen(path) and (t.get("href") or "").rstrip("/") + "/" != want:
                         fails.append(f"{where}: the Data menu's {t['title']!r} links {t.get('href')!r}, not {want} (the page exists)")
                     # the three catalogs carry their count, the catalog's own
                     if want and exists and not re.search(r"\d", t.get("pill") or ""):
