@@ -157,7 +157,7 @@ a.dp-big, .dp-page a.dp-big, .dp-page a.dp-big:hover { box-sizing: border-box; t
    its category, the name with its status beside it, the plain name, the record's first sentence; the station map
    beside them with "View on map" on it; every number along the foot. About 310 px at 1470. */
 .dp-hero { padding: 0 0 46px; }
-.dp-hero .dp-in { align-items: center; gap: 32px; padding-top: 14px; padding-bottom: 0; }
+.dp-hero .dp-in { align-items: stretch; gap: 32px; padding-top: 14px; padding-bottom: 0; }
 .dp-hero .dp-wave { height: 34px; display: block; }
 .dp-back { display: inline-flex; align-items: center; gap: 6px; font-size: 13.5px; font-weight: 600; color: #c9d4e3; text-decoration: none; }
 .dp-back:hover { color: #fff; text-decoration: underline; }
@@ -176,8 +176,8 @@ a.dp-big, .dp-page a.dp-big, .dp-page a.dp-big:hover { box-sizing: border-box; t
 .dp-hero .dp-rest a { color: #fff; text-decoration: underline; text-underline-offset: 2px; }
 .dp-back:focus-visible, .dp-vm:focus-visible { outline: 2px solid #ffcd00; outline-offset: 2px; }
 /* the right column: a rounded station map, its count as a label on it and "View on map" at its foot */
-.dp-hr { flex: none; width: 400px; }
-.dp-hr .dp-hmap { position: relative; display: flex; width: 100%; height: 196px; margin: 0; }
+.dp-hr { flex: none; display: flex; width: 360px; }
+.dp-hr .dp-hmap { position: relative; display: flex; width: 100%; min-height: 250px; margin: 0; }   /* as tall as the text and its numbers: the map's own shape is 5:6 */
 .dp-hmap .dp-map { flex: 1; position: relative; margin: 0; height: auto; border-radius: 16px; border: 0; overflow: hidden; }
 .dp-hmap .dp-map .cc-map { position: absolute; inset: 0; width: 100%; height: 100%; max-height: none; border-radius: 0; }
 .dp-mcap { position: absolute; right: 14px; top: 14px; max-width: calc(100% - 28px); padding: 6px 12px; border-radius: 99px; background: rgba(20, 40, 75, .86); color: #fff; font-size: 13.5px; font-weight: 600; line-height: 1.3; }
@@ -187,7 +187,8 @@ a.dp-big, .dp-page a.dp-big, .dp-page a.dp-big:hover { box-sizing: border-box; t
 .dp-vm:hover, .dp-vm:focus-visible { background: #14284a; color: #fff; text-decoration: none; }   /* the site's a:hover (dark teal, underlined) was winning on the navy hero (Betty 2026-11-21) */
 .dp-vmp { margin: 14px 0 0; }
 /* every number, across the foot of the hero */
-.dp-hero > .dp-nums { max-width: var(--container, 1280px); margin: 16px auto 0; padding: 0 calc(var(--space, 8px) * 3); box-sizing: border-box; flex-wrap: wrap; row-gap: 8px; }
+.dp-hero .dp-t { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.dp-hero .dp-nums { margin: auto 0 0; padding-top: 18px; flex-wrap: wrap; row-gap: 8px; }
 
 /* how it was made: two lines under the hero */
 .dp-how { margin: 0 0 18px; display: grid; gap: 3px; font-size: 15px; line-height: 1.45; }
@@ -242,7 +243,7 @@ a.dp-big, .dp-page a.dp-big, .dp-page a.dp-big:hover { box-sizing: border-box; t
 @media (max-width: 860px) {
   .dp-hero .dp-in { align-items: stretch; }
   .dp-hr { width: 100%; max-width: 520px; }
-  .dp-hr .dp-hmap { height: auto; } .dp-hmap .dp-map { aspect-ratio: 16 / 10; }
+  .dp-hr .dp-hmap { min-height: 0; } .dp-hmap .dp-map { aspect-ratio: 4 / 3; }
 }
 @media (max-width: 640px) {
   .dp-hero h1 { font-size: 24px; }

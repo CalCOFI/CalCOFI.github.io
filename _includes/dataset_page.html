@@ -31,6 +31,13 @@
       {%- if dp.rest %}<p class="dp-rest" id="dp-rest" hidden>{{ dp.rest | escape }}{% for x in dp.refs %}{% if forloop.first %} Methods: {% else %} · {% endif %}<a href="{{ x.url | escape }}" target="_blank" rel="noopener">{{ x.label | escape }} ↗</a>{% endfor %}</p>{% endif -%}
       {%- endif -%}
       {%- if dp.explore and page.map == nil %}<p class="dp-vmp"><a class="dp-vm" href="{{ dp.explore | escape }}"><i class="cc-i cc-i-way-explorer" aria-hidden="true"></i>View on map</a></p>{% endif -%}
+      {%- comment -%} the numbers close the text column, so the map beside it is as tall as both and keeps its own shape
+        (Ben 2026-11-25: under the whole hero they left the map a 2:1 strip, and the station map is taller than wide) {%- endcomment -%}
+      {%- if dp.facts.size > 0 %}
+      <dl class="dp-nums">
+        {%- for f in dp.facts %}<div><dd>{{ f[0] | escape }}</dd><dt>{{ f[1] | escape }}</dt></div>{% endfor -%}
+      </dl>
+      {%- endif %}
     </div>
     {%- if page.map -%}
     <div class="dp-hr">
@@ -41,11 +48,6 @@
     </div>
     {%- endif -%}
   </div>
-  {%- if dp.facts.size > 0 %}
-  <dl class="dp-nums">
-    {%- for f in dp.facts %}<div><dd>{{ f[0] | escape }}</dd><dt>{{ f[1] | escape }}</dt></div>{% endfor -%}
-  </dl>
-  {%- endif %}
   <svg class="dp-wave" viewBox="0 0 1200 40" preserveAspectRatio="none" aria-hidden="true"><path d="M0 30 C150 10 300 34 450 22 S750 6 900 20 S1100 34 1200 18 V40 H0Z"/></svg>
 </header>
 

@@ -149,20 +149,23 @@
       } else showCat(t.getAttribute("data-cat"), true);
       return;
     }
+    // a click on a row opens the dataset's page, everywhere (issue 58, 2026-11-24: "when I click it feels like nothing
+    // happens", though the preview beside the list had changed). The preview follows the pointer and the keyboard
+    // instead (below). A row is a link where it can be; where its markup is not, the click finds the name's link.
     var a = e.target.closest && e.target.closest(".bd-r[data-k]");
     if (!a || e.metaKey || e.ctrlKey || e.shiftKey || e.button) return;
-    if (pv && getComputedStyle(pv).display === "none") {
-      // no preview (a phone, or a category's rows): a click anywhere on a row opens the dataset's page
-      var go = !e.target.closest("a") && a.querySelector("a.bt-rn");
-      if (go) location.href = go.href;
-      return;
-    }
-    e.preventDefault();
-    select(a.dataset.k);
-    // every click on a card, even the one already shown, plays the bar: it tells the reader that card is the selected one (Betty 2026-11-20)
-    // the bar runs along whichever edge of the pane is in view: the top, or the foot when the top is scrolled under the header
-    if (pv) { var top = pv.getBoundingClientRect().top >= 70; pv.classList.remove("swap", "swap-b"); void pv.offsetWidth; pv.classList.add("swap"); if (!top) pv.classList.add("swap-b"); }
+    if (a.tagName === "A" || e.target.closest("a")) return;
+    var go = a.querySelector("a.bt-rn") || a.querySelector("a[href]");
+    if (go) location.href = go.href;
   });
+  // the preview shows the row under the pointer, or the one the keyboard is on
+  function peek(e) {
+    var a = e.target.closest && e.target.closest(".bd-r[data-k]");
+    if (!a || !pv || getComputedStyle(pv).display === "none" || a.dataset.k === sel) return;
+    select(a.dataset.k);
+  }
+  document.addEventListener("mouseover", peek);
+  document.addEventListener("focusin", peek);
   // "Show more" on the preview's description, which is otherwise cut at three lines
   if (pv) pv.addEventListener("click", function (e) {
     var b = e.target.closest && e.target.closest(".bd-pv-more");

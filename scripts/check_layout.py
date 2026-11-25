@@ -632,6 +632,8 @@ async (w, d) => {
     const pvDl = {}, unhandled = [];
     let actOver = { px: 0, key: null, what: null }, actN = 0;
     for (const row of rowsEl) {
+      // the preview follows the pointer; the click is the link's own (issue 58)
+      row.dispatchEvent(new w.MouseEvent("mouseover", { bubbles: true }));
       handled = null; row.click();
       if (!handled) unhandled.push(row.dataset.k);
       const a = bdPv.querySelector('a[href*="#download"]');
@@ -657,7 +659,8 @@ async (w, d) => {
     if (last) {
       last.scrollIntoView({ block: "center" });
       await sleep(250);
-      handled = null; last.click();
+      last.dispatchEvent(new w.MouseEvent("mouseover", { bubbles: true }));
+      handled = true;   // chosen by the pointer, which the page always answers while the preview is drawn
       await sleep(120);
       const pr = bdPv.getBoundingClientRect(), lr = last.getBoundingClientRect(), hh = parseFloat(cs(d.documentElement).getPropertyValue("--header-h")) || 72;
       reach = { shown: pvShown(), handled, position: cs(bdPv).position, pvTop: px(pr.top), pvBottom: px(pr.bottom), rowTop: px(lr.top), rowBottom: px(lr.bottom),
@@ -668,7 +671,7 @@ async (w, d) => {
     }
     w.removeEventListener("click", hold);
     const first = rowsEl.find(x => x.dataset.k === sel0);
-    if (first && pvShown()) { w.addEventListener("click", hold); first.click(); w.removeEventListener("click", hold); }
+    if (first && pvShown()) first.dispatchEvent(new w.MouseEvent("mouseover", { bubbles: true }));
     // the type filter actually hides: `el.hidden` is a UA rule that any author `display` beats (see
     // "the filter actually hides" below, which read the old page's #ds-cat)
     const typ = d.getElementById("bd-type");
@@ -2666,13 +2669,12 @@ def check(path, r, width, theme, fails, notes):
                     fails.append(f"{where}: the preview draws a Download control for {len(have)} of the {len(want_rows)} datasets with "
                                  f"zips: missing {sorted(set(want_rows) - set(have))[:4]}, extra {sorted(set(have) - set(want_rows))[:4]}, "
                                  f"linking another page {wrong[:4]}")
-                # a row's click is the page's to handle while the preview is drawn; where it is not drawn
-                # (a phone, if the page stacks it away) the click must be left to follow the link
-                if br["pvDisplay"] != "none" and br["unhandled"]:
-                    fails.append(f"{where}: {len(br['unhandled'])} row click(s) are not handled though the preview is drawn: {br['unhandled'][:3]}")
-                if br["pvDisplay"] == "none" and len(br["unhandled"]) != len(br["pvDl"]):
-                    fails.append(f"{where}: the preview is not drawn at {width}px but a row's click is still swallowed: "
-                                 f"the row goes nowhere")
+                # a row's click opens its dataset page at every width, preview or none: the page must leave
+                # it to the link (issue 58, 2026-11-24: the click only changed the preview, and "it feels
+                # like nothing happens"). The preview is chosen by the pointer and the keyboard instead.
+                if len(br["unhandled"]) != len(br["pvDl"]):
+                    fails.append(f"{where}: {len(br['pvDl']) - len(br['unhandled'])} row click(s) are swallowed by the page "
+                                 f"at {width}px: a row must open its dataset page")
                 # the preview's actions stay inside its card, whatever the row (a long label must wrap or
                 # shrink, not hang out of the card and widen the page)
                 ao = br.get("actOver") or {}
