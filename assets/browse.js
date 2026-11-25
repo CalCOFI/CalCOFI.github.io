@@ -154,9 +154,9 @@
     // instead (below). A row is a link where it can be; where its markup is not, the click finds the name's link.
     var a = e.target.closest && e.target.closest(".bd-r[data-k]");
     if (!a || e.metaKey || e.ctrlKey || e.shiftKey || e.button) return;
-    if (a.tagName === "A" || e.target.closest("a")) return;
-    var go = a.querySelector("a.bt-rn") || a.querySelector("a[href]");
-    if (go) location.href = go.href;
+    if (e.target.closest("a, button")) return;
+    var go = a.querySelector("a.bd-rn, a.bt-rn");
+    if (go) go.click();
   });
   // the preview shows the row under the pointer, or the one the keyboard is on
   function peek(e) {

@@ -1,0 +1,8 @@
+{%- comment -%} The two things a reader does with a dataset, at the end of its row on /datasets/ (Ben 2026-11-25, after
+  issue 58): Download, which opens the dataset page's download dialog (#download there), and Details, the page itself.
+  The row's own click opens the page too; the buttons say so. Download is drawn only when the record offers zips. {%- endcomment -%}
+{%- assign d = include.d -%}
+<span class="bd-ra">
+  {%- if d.download and d.download.url %}<a class="bd-ab bd-ab-dl" href="{{ d.download.url | relative_url }}" aria-label="Download {{ d.name | escape }}: {{ d.download.what | escape }}, or another format" title="{{ d.download.what | escape }} · and other formats"><i class="cc-i cc-i-ui-download" aria-hidden="true"></i><span>Download</span></a>{% endif -%}
+  <a class="bd-ab bd-ab-go" href="{{ d.url | relative_url }}" aria-label="{{ d.name | escape }}: full details">Details<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+</span>
