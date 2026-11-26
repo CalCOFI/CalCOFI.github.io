@@ -366,19 +366,26 @@ DL_ORDER = ("csv", "xlsx", "parquet")
 def download_offers(data_dir):
     """{dataset_key: {formats, urls, primary, primary_format}} for every dataset the build would draw a
     Download button for — _plugins/downloads.rb's rule: the record's own `bundle` distributions
-    first, else the zip manifest (schema 1.x or higher; unknown fields ignored); a holding never;
-    nothing written, no entry. URLs are compared exactly as given, never built."""
+    first, else the zip manifest (schema 1.x or higher; unknown fields ignored), and the manifest
+    also when it was checked against a later release than the record's rows (a release is cut before
+    its zips are built); a holding never; nothing written, no entry. URLs are compared exactly as
+    given, never built."""
     rec = _read_json(os.path.join(data_dir, "datasets.json")) or {}
     man = _read_json(os.path.join(data_dir, "zip_manifest.json")) or {}
     by_man = {}
     if re.match(r"\d+", str(man.get("schema_version", ""))) and int(re.match(r"\d+", str(man["schema_version"])).group()) >= 1:
         by_man = {d.get("dataset_key"): d.get("bundles") or [] for d in man.get("datasets") or []}
+    man_checked = {d.get("dataset_key"): d.get("checked_version") or d.get("version")
+                   for d in man.get("datasets") or []} if by_man else {}
     out = {}
     for d in rec.get("datasets") or []:
         k = d.get("dataset_key")
         own = [x for x in d.get("distributions") or []
                if x.get("kind") == "bundle" and x.get("format") in DL_ORDER and x.get("status") != "superseded"]
-        rows = [dict(x, written=x.get("written", True)) for x in own] if own else by_man.get(k, [])
+        own_checked = next((x.get("checked_version") or x.get("version") or x.get("since") for x in own
+                            if x.get("checked_version") or x.get("version") or x.get("since")), None)
+        use_man = not own or (k in by_man and release_later(man_checked.get(k), own_checked))
+        rows = by_man.get(k, []) if use_man else [dict(x, written=x.get("written", True)) for x in own]
         urls = {}
         for b in rows:
             f = b.get("format")
@@ -389,6 +396,16 @@ def download_offers(data_dir):
             out[k] = {"formats": [f for f in DL_ORDER if f in urls], "urls": urls,
                       "primary": urls[prim], "primary_format": prim}
     return out
+
+
+def release_later(a, b):
+    """Is release `a` later than `b`? vYYYY.MM.DD[-suffix]; an unreadable one is never later
+    (Downloads.later? in _plugins/downloads.rb)."""
+    def key(v):
+        m = re.match(r"v(\d{4})\.(\d{2})\.(\d{2})", str(v or ""))
+        return tuple(int(x) for x in m.groups()) if m else None
+    ka, kb = key(a), key(b)
+    return ka is not None and (kb is None or ka > kb)
 
 
 def _read_json(path):
