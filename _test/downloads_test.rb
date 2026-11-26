@@ -196,6 +196,38 @@ class DownloadsTest < Minitest::Test
     assert_empty o["other"]
   end
 
+  # regression 2026-11-26: a release is cut before its zips are built, so its record lists the zips
+  # of the release before. Once the manifest has been checked against a later release, it is the truth.
+  def test_manifest_checked_against_a_later_release_wins
+    dist  = [{ "kind" => "bundle", "format" => "csv", "url" => "https://example.org/old_csv.zip",
+               "checked_version" => "v2026.11.14" }]
+    entry = { "dataset_key" => "z", "version" => "v2026.11.26", "checked_version" => "v2026.11.26",
+              "bundles" => [{ "format" => "csv", "written" => true, "url" => "https://example.org/new_csv.zip" }] }
+    o = D.offer(record("z", dist: dist), entry, bytes: BYTES)
+    assert_equal "manifest", o["source"]
+    assert_equal "https://example.org/new_csv.zip", o["primary"]["url"]
+    assert_equal "v2026.11.26", o["version"]
+  end
+
+  def test_record_wins_a_tie_and_an_older_or_unreadable_manifest
+    dist = [{ "kind" => "bundle", "format" => "csv", "url" => "https://example.org/r_csv.zip",
+              "checked_version" => "v2026.11.26" }]
+    %w[v2026.11.26 v2026.11.14 nonsense].each do |v|
+      entry = { "dataset_key" => "z", "checked_version" => v,
+                "bundles" => [{ "format" => "csv", "written" => true, "url" => "https://example.org/m_csv.zip" }] }
+      assert_equal "record", D.offer(record("z", dist: dist), entry, bytes: BYTES)["source"], v
+    end
+  end
+
+  def test_later
+    assert D.later?("v2026.11.26", "v2026.11.14")
+    assert D.later?("v2026.12.01", "v2026.11.30")
+    assert D.later?("v2026.11.26", nil)
+    refute D.later?("v2026.11.26", "v2026.11.26")
+    refute D.later?(nil, "v2026.11.26")
+    refute D.later?("v9.9.12", "v2026.11.26")
+  end
+
   # a dataset whose only written zip is Parquet still gets a button, named for what it is
   def test_primary_falls_back_to_the_first_written
     entry = { "dataset_key" => "p", "bundles" => [{ "format" => "csv", "written" => false, "reason" => "r" },
