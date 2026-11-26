@@ -52,6 +52,25 @@ class DownloadOffers(unittest.TestCase):
         self.assertEqual(cl.download_offers(self.dir)["x_all"], {"formats": ["csv"], "urls": {"csv": "https://e/r.zip"},
                                                                   "primary": "https://e/r.zip", "primary_format": "csv"})
 
+    def test_manifest_checked_against_a_later_release_wins(self):
+        # regression 2026-11-26: a release's record lists the zips of the release before it
+        self.record("z", dist={"z": [{"kind": "bundle", "format": "csv", "url": "https://e/old.zip",
+                                      "checked_version": "v2026.11.14"}]})
+        man = {"schema_version": "1.1", "datasets": [{"dataset_key": "z", "checked_version": "v2026.11.26",
+               "bundles": [{"format": "csv", "written": True, "url": "https://e/new.zip"}]}]}
+        self.write("zip_manifest.json", man)
+        self.assertEqual(cl.download_offers(self.dir)["z"]["primary"], "https://e/new.zip")
+        for v in ("v2026.11.14", "v2026.11.13", "nonsense"):   # a tie, an older one, an unreadable one: the record
+            man["datasets"][0]["checked_version"] = v
+            self.write("zip_manifest.json", man)
+            self.assertEqual(cl.download_offers(self.dir)["z"]["primary"], "https://e/old.zip", v)
+
+    def test_release_later(self):
+        self.assertTrue(cl.release_later("v2026.11.26", "v2026.11.14"))
+        self.assertTrue(cl.release_later("v2026.11.26", None))
+        self.assertFalse(cl.release_later("v2026.11.26", "v2026.11.26"))
+        self.assertFalse(cl.release_later("v9.9.9", "v2026.11.26"))
+
     def test_holding_never(self):
         self.record(holdings=("x_all",))
         self.write("zip_manifest.json", MANIFEST)
