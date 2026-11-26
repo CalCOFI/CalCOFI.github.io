@@ -100,18 +100,29 @@ module CalCOFI
       end
     end
 
-    # the bundles to offer for a record, the record's own first:
+    # the bundles to offer for a record:
     # [bundles, "record"|"manifest", checked (verified against), since (content first appeared)]
+    # The record's own come first, EXCEPT when the manifest was checked against a later release than
+    # the record's rows were. A release is cut before its zips are built, so its record can only list
+    # the zips of the release before; publish_to-zip then writes the manifest for the new one. With
+    # the record always winning, v2026.11.26's pages kept offering the v2026.11.14 zips after the
+    # v2026.11.26 ones were uploaded (2026-11-26).
     def bundles_for(r, entry)
-      if (rb = record_bundles(r))
-        [rb, "record", rb.map { |b| b["checked_version"] || b["version"] }.compact.first,
-         rb.map { |b| b["since"] }.compact.first]
-      elsif entry.is_a?(Hash) && entry["bundles"].is_a?(Array)
-        [entry["bundles"].select { |b| b.is_a?(Hash) }, "manifest",
-         entry["checked_version"] || entry["version"], entry["since"]]
-      else
-        [[], nil, nil, nil]
-      end
+      rb = record_bundles(r)
+      rec = rb && [rb, "record", rb.map { |b| b["checked_version"] || b["version"] }.compact.first,
+                   rb.map { |b| b["since"] }.compact.first]
+      man = entry.is_a?(Hash) && entry["bundles"].is_a?(Array) &&
+            [entry["bundles"].select { |b| b.is_a?(Hash) }, "manifest",
+             entry["checked_version"] || entry["version"], entry["since"]]
+      return [[], nil, nil, nil] unless rec || man
+      return rec || man unless rec && man
+      later?(man[2], rec[2]) ? man : rec
+    end
+
+    # is release `a` later than `b`? Versions are vYYYY.MM.DD[-suffix]; an unreadable one is never later.
+    def later?(a, b)
+      ka, kb = [a, b].map { |v| v.to_s[/\Av(\d{4})\.(\d{2})\.(\d{2})/] && [$1, $2, $3].map(&:to_i) }
+      !ka.nil? && (kb.nil? || (ka <=> kb) == 1)
     end
 
     # the licence line, from the record's attribution — licence_chip.html's rule in a sentence
